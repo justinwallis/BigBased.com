@@ -41,9 +41,13 @@ const BasedVotingService = {
 
 // BasedItem Card Component
 const BasedItemCard = ({ item, userVote, onVote, type }) => {
+  const [imageError, setImageError] = useState(false)
   const totalVotes = item.basedVotes + item.cringeVotes
   const basedPercentage = totalVotes > 0 ? Math.round((item.basedVotes / totalVotes) * 100) : 50
   const isBasedDominant = item.basedVotes > item.cringeVotes
+
+  // Generate a placeholder image URL with the item title
+  const placeholderImage = `/placeholder.svg?height=160&width=320&query=${encodeURIComponent(item.title)}`
 
   return (
     <motion.div
@@ -53,7 +57,13 @@ const BasedItemCard = ({ item, userVote, onVote, type }) => {
       className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden"
     >
       <div className="relative h-40 overflow-hidden">
-        <Image src={item.imageUrl || "/placeholder.svg"} alt={item.title} fill className="object-cover" />
+        <Image
+          src={imageError ? placeholderImage : item.imageUrl || placeholderImage}
+          alt={item.title}
+          fill
+          className="object-cover"
+          onError={() => setImageError(true)}
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
           <div className="p-4 text-white">
             <div className="text-xs font-medium px-2 py-1 rounded-full bg-gray-800/60 inline-block mb-2">
@@ -113,8 +123,12 @@ const BasedItemCard = ({ item, userVote, onVote, type }) => {
 
 // Faction Card Component
 const FactionCard = ({ faction, userVote, onVote }) => {
+  const [imageError, setImageError] = useState(false)
   const totalVotes = faction.basedVotes + faction.cringeVotes
   const basedPercentage = totalVotes > 0 ? Math.round((faction.basedVotes / totalVotes) * 100) : 50
+
+  // Generate a placeholder image URL with the faction name
+  const placeholderImage = `/placeholder.svg?height=64&width=64&query=${encodeURIComponent(faction.name + " logo")}`
 
   return (
     <motion.div
@@ -127,7 +141,13 @@ const FactionCard = ({ faction, userVote, onVote }) => {
       <div className="p-4">
         <div className="flex items-center mb-4">
           <div className="w-16 h-16 relative mr-4 rounded-full overflow-hidden">
-            <Image src={faction.imageUrl || "/placeholder.svg"} alt={faction.name} fill className="object-cover" />
+            <Image
+              src={imageError ? placeholderImage : faction.imageUrl || placeholderImage}
+              alt={faction.name}
+              fill
+              className="object-cover"
+              onError={() => setImageError(true)}
+            />
           </div>
           <div>
             <h3 className="font-bold text-lg dark:text-white">{faction.name}</h3>

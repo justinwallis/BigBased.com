@@ -14,8 +14,12 @@ interface MediaOutletCardProps {
 
 export default function MediaOutletCard({ outlet, userVote, onVote }: MediaOutletCardProps) {
   const [isHovered, setIsHovered] = useState(false)
+  const [imageError, setImageError] = useState(false)
   const totalVotes = outlet.basedVotes + outlet.cringeVotes
   const basedPercentage = totalVotes > 0 ? (outlet.basedVotes / totalVotes) * 100 : 50
+
+  // Generate a placeholder image URL with the outlet name
+  const placeholderImage = `/placeholder.svg?height=64&width=64&query=${encodeURIComponent(outlet.name + " logo")}`
 
   return (
     <motion.div
@@ -30,11 +34,12 @@ export default function MediaOutletCard({ outlet, userVote, onVote }: MediaOutle
         <div className="flex items-center mb-4">
           <div className="w-16 h-16 relative mr-4 bg-gray-100 dark:bg-gray-700 rounded-md flex items-center justify-center overflow-hidden">
             <Image
-              src={outlet.logoUrl || "/placeholder.svg"}
+              src={imageError ? placeholderImage : outlet.logoUrl || placeholderImage}
               alt={`${outlet.name} logo`}
               width={64}
               height={64}
               className="object-contain p-1"
+              onError={() => setImageError(true)}
             />
           </div>
           <div>
