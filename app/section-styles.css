@@ -1,0 +1,43 @@
+/* Section styling */
+.logo-info-section {
+  background-color: #f9f9f9;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.digital-library-section {
+  background-color: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  position: relative;
+}
+
+/* Update the dark mode section styles */
+
+.dark .logo-info-section {
+  background-color: #1a1a1a; /* Dark gray instead of teal */
+  border-top: 1px solid #2a2a2a;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.dark .digital-library-section {
+  background-color: #121212; /* Darker gray */
+  border-top: 1px solid #2a2a2a;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .digital-library-section {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  .library-container {
+    height: 500px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .library-container {
+    height: 450px !important;
+  }
+}
