@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle, CheckCircle2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { createProfile } from "@/app/actions/profile-actions"
 
@@ -19,20 +19,15 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
   const { signUp } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [username, setUsername] = useState("")
-  const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError(null)
     setIsLoading(true)
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters")
-      setIsLoading(false)
-      return
-    }
+    setError(null)
+    setSuccess(false)
 
     try {
       const { data, error } = await signUp(email, password)
@@ -42,25 +37,28 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
         return
       }
 
-      // Create profile for the new user
       if (data?.user) {
+        // Create a profile for the user
         try {
           await createProfile({
             id: data.user.id,
-            username: username || email.split("@")[0],
-            email: email,
+            email: data.user.email || "",
+            username: data.user.email?.split("@")[0] || "",
           })
-        } catch (profileError: any) {
+        } catch (profileError) {
           console.error("Error creating profile:", profileError)
-          // Continue even if profile creation fails
+          // Continue anyway, as the auth was successful
+        }
+
+        setSuccess(true)
+
+        if (onSuccess) {
+          onSuccess()
         }
       }
-
-      if (onSuccess) {
-        onSuccess()
-      }
-    } catch (err: any) {
-      setError(err.message || "An error occurred during signup")
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.")
+      console.error(err)
     } finally {
       setIsLoading(false)
     }
@@ -75,16 +73,12 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
         </Alert>
       )}
 
-      <div className="space-y-2">
-        <Label htmlFor="username">Username (optional)</Label>
-        <Input
-          id="username"
-          type="text"
-          placeholder="johndoe"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-      </div>
+      {success && (
+        <Alert className="bg-green-50 text-green-800 border-green-200">
+          <CheckCircle2 className="h-4 w-4 text-green-600" />
+          <AlertDescription>Success! Check your email for a confirmation link.</AlertDescription>
+        </Alert>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
@@ -100,17 +94,20 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
 
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
-        <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        <p className="text-xs text-muted-foreground">Must be at least 6 characters</p>
+        <Input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          minLength={6}
+        />
+        <p className="text-xs text-gray-500">Password must be at least 6 characters long</p>
       </div>
 
-      <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? "Creating account..." : "Create Account"}
+      <Button type="submit" className="w-full" disabled={isLoading || success}>
+        {isLoading ? "Creating account..." : "Create account"}
       </Button>
-
-      <p className="text-xs text-center text-muted-foreground">
-        By creating an account, you agree to our Terms of Service and Privacy Policy
-      </p>
     </form>
   )
 }

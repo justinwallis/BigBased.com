@@ -18,13 +18,13 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
   const { signIn } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError(null)
     setIsLoading(true)
+    setError(null)
 
     try {
       const { error } = await signIn(email, password)
@@ -37,8 +37,9 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
       if (onSuccess) {
         onSuccess()
       }
-    } catch (err: any) {
-      setError(err.message || "An error occurred during login")
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.")
+      console.error(err)
     } finally {
       setIsLoading(false)
     }
@@ -68,15 +69,15 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <Label htmlFor="password">Password</Label>
-          <Button variant="link" className="p-0 h-auto text-xs">
+          <a href="#" className="text-sm text-gray-500 hover:text-gray-900">
             Forgot password?
-          </Button>
+          </a>
         </div>
         <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
       </div>
 
       <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? "Signing in..." : "Sign In"}
+        {isLoading ? "Signing in..." : "Sign in"}
       </Button>
     </form>
   )

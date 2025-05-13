@@ -1,23 +1,13 @@
 "use server"
 
+import { createServerClient } from "@/lib/supabase/server"
 import { cookies } from "next/headers"
-import { createServerClient as createSupabaseServerClient } from "@supabase/ssr"
 
-type ProfileData = {
-  id: string
-  username?: string
-  full_name?: string
-  avatar_url?: string
-  website?: string
-  bio?: string
-  email?: string
-}
-
-// Create a Supabase client for server components
-function createServerClient() {
+// Create a Supabase client for server-side operations
+function createServerSupabaseClient() {
   const cookieStore = cookies()
 
-  return createSupabaseServerClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!, {
+  return createServerClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!, {
     cookies: {
       get(name: string) {
         return cookieStore.get(name)?.value
@@ -34,65 +24,98 @@ function createServerClient() {
 
 export async function createProfile(profileData: {
   id: string
-  username: string
   email: string
+  username?: string
   full_name?: string
   avatar_url?: string
-}) {
-  const supabase = createServerClient()
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = createServerSupabaseClient()
 
-  // Generate avatar URL if not provided
-  const avatarUrl = profileData.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${profileData.username}`
+    // Generate a username if not provided
+    const username = profileData.username || profileData.email.split("@")[0]
 
-  const { error } = await supabase.from("profiles").insert({
-    id: profileData.id,
-    username: profileData.username,
-    full_name: profileData.full_name,
-    avatar_url: avatarUrl,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  })
+    // Generate avatar URL if not provided
+    const avatarUrl = profileData.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${username}`
 
-  if (error) {
-    console.error("Error creating profile:", error)
-    throw new Error(error.message)
-  }
-
-  return { success: true }
-}
-
-export async function getUserProfile(userId: string) {
-  const supabase = createServerClient()
-
-  const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single()
-
-  if (error) {
-    console.error("Error fetching profile:", error)
-    return null
-  }
-
-  return data
-}
-
-export async function updateUserProfile(userId: string, profileData: Partial<ProfileData>) {
-  const supabase = createServerClient()
-
-  const { error } = await supabase
-    .from("profiles")
-    .update({
-      username: profileData.username,
-      full_name: profileData.full_name,
-      avatar_url: profileData.avatar_url,
-      website: profileData.website,
-      bio: profileData.bio,
+    const { error } = await supabase.from("profiles").insert({
+      id: profileData.id,
+      username,
+      full_name: profileData.full_name || "",
+      avatar_url: avatarUrl,
+      created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
-    .eq("id", userId)
 
-  if (error) {
-    console.error("Error updating profile:", error)
-    throw new Error(error.message)
+    if (error) {
+      console.error("Error creating profile:", error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error("Error in createProfile:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error creating profile",
+    }
   }
+}
 
-  return { success: true }
+export async function updateUserProfile(
+  id: string,
+  profileData: {
+    username?: string
+    full_name?: string
+    avatar_url?: string
+    website?: string
+    bio?: string
+  },
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = createServerSupabaseClient()
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        username: profileData.username,
+        full_name: profileData.full_name,
+        avatar_url: profileData.avatar_url,
+        bio: profileData.bio,
+        website: profileData.website,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+
+    if (error) {
+      console.error("Error updating profile:", error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error("Error in updateUserProfile:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error updating profile",
+    }
+  }
+}
+
+export async function getUserProfile(userId: string): Promise<any> {
+  try {
+    const supabase = createServerSupabaseClient()
+
+    const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single()
+
+    if (error) {
+      console.error("Error fetching profile:", error)
+      return null
+    }
+
+    return data
+  } catch (error) {
+    console.error("Error in getUserProfile:", error)
+    return null
+  }
 }

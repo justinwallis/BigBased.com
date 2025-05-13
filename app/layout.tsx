@@ -8,7 +8,7 @@ import { ErrorBoundary } from "@/components/error-boundary"
 import PageTransition from "@/components/page-transition"
 import { ThemeProvider } from "@/components/theme-provider"
 import OneSignalProvider from "@/components/one-signal-provider"
-import { AuthProvider } from "@/contexts/auth-context"
+import AuthWrapper from "@/components/auth/auth-wrapper"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -441,15 +441,15 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <AuthProvider>
-            <ErrorBoundary>
-              <OneSignalProvider>
-                <ClientPreloaderContainer quotesToShow={5}>
+          <ErrorBoundary>
+            <OneSignalProvider>
+              <ClientPreloaderContainer quotesToShow={5}>
+                <AuthWrapper>
                   <PageTransition>{children}</PageTransition>
-                </ClientPreloaderContainer>
-              </OneSignalProvider>
-            </ErrorBoundary>
-          </AuthProvider>
+                </AuthWrapper>
+              </ClientPreloaderContainer>
+            </OneSignalProvider>
+          </ErrorBoundary>
         </ThemeProvider>
       </body>
     </html>
