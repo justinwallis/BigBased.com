@@ -8,6 +8,8 @@ import { ErrorBoundary } from "@/components/error-boundary"
 import PageTransition from "@/components/page-transition"
 import { ThemeProvider } from "@/components/theme-provider"
 import OneSignalProvider from "@/components/one-signal-provider"
+import { AuthProvider } from "@/contexts/auth-context"
+import { SiteHeader } from "@/components/site-header"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -23,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* Resource preloading */}
         <link rel="preload" href="/american-flag.png" as="image" />
@@ -439,15 +441,18 @@ export default function RootLayout({
 `}</Script>
       </head>
       <body className={inter.className}>
-        <ErrorBoundary>
-          <ThemeProvider defaultTheme="light">
-            <OneSignalProvider>
-              <ClientPreloaderContainer quotesToShow={5}>
-                <PageTransition>{children}</PageTransition>
-              </ClientPreloaderContainer>
-            </OneSignalProvider>
-          </ThemeProvider>
-        </ErrorBoundary>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AuthProvider>
+            <SiteHeader />
+            <ErrorBoundary>
+              <OneSignalProvider>
+                <ClientPreloaderContainer quotesToShow={5}>
+                  <PageTransition>{children}</PageTransition>
+                </ClientPreloaderContainer>
+              </OneSignalProvider>
+            </ErrorBoundary>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

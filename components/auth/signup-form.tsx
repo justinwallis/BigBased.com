@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { AlertCircle, Loader2, CheckCircle2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Checkbox } from "@/components/ui/checkbox"
+import { createUserProfile } from "@/app/actions/profile-actions"
 
 interface SignupFormProps {
   onSuccess: () => void
@@ -18,6 +19,7 @@ interface SignupFormProps {
 export default function SignupForm({ onSuccess }: SignupFormProps) {
   const { signUp } = useAuth()
   const [email, setEmail] = useState("")
+  const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -53,16 +55,30 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
     }
 
     try {
-      const { error } = await signUp(email, password)
+      const { data, error: signUpError } = await signUp(email, password)
 
-      if (error) {
-        setError(error.message || "Failed to create account. Please try again.")
-      } else {
-        setSuccess(true)
-        setTimeout(() => {
-          onSuccess()
-        }, 2000)
+      if (signUpError) {
+        setError(signUpError.message || "Failed to create account. Please try again.")
+        return
       }
+
+      if (data?.user) {
+        // Create user profile
+        try {
+          // Use email username as default if username is not provided
+          const usernameToUse = username || email.split("@")[0]
+          await createUserProfile(data.user.id, usernameToUse)
+        } catch (profileError) {
+          console.error("Error creating profile:", profileError)
+          // We don't want to block the signup if profile creation fails
+          // The profile can be created later
+        }
+      }
+
+      setSuccess(true)
+      setTimeout(() => {
+        onSuccess()
+      }, 2000)
     } catch (err) {
       setError("An unexpected error occurred. Please try again.")
     } finally {
@@ -97,6 +113,19 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
           required
           disabled={isLoading || success}
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="signup-username">Username (optional)</Label>
+        <Input
+          id="signup-username"
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="yourusername"
+          disabled={isLoading || success}
+        />
+        <p className="text-xs text-gray-500">Leave blank to use your email username</p>
       </div>
 
       <div className="space-y-2">
