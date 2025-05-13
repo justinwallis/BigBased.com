@@ -1,8 +1,8 @@
 "use client"
 
+import { useAuth } from "@/contexts/auth-context"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { useAuth } from "@/contexts/auth-context"
 import AuthModal from "./auth-modal"
 import { LogOut, User } from "lucide-react"
 import {
@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-export default function AuthButton() {
+export default function HeaderAuthIntegration() {
   const { user, signOut, isLoading } = useAuth()
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [authTab, setAuthTab] = useState<"login" | "signup">("login")
@@ -25,11 +25,7 @@ export default function AuthButton() {
   }
 
   if (isLoading) {
-    return (
-      <Button variant="outline" size="sm" disabled>
-        Loading...
-      </Button>
-    )
+    return <span className="text-sm">Loading...</span>
   }
 
   if (user) {

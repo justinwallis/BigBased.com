@@ -3,8 +3,8 @@
 import type React from "react"
 
 import { createContext, useContext, useEffect, useState } from "react"
+import { supabaseClient } from "@/lib/supabase/client"
 import type { User, Session } from "@supabase/supabase-js"
-import { getSupabaseClient } from "@/lib/supabase/client"
 
 type AuthContextType = {
   user: User | null
@@ -33,80 +33,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const supabase = getSupabaseClient()
 
   useEffect(() => {
-    // Check active session
-    const getSession = async () => {
+    // Get session from storage
+    const initializeAuth = async () => {
       setIsLoading(true)
 
-      try {
-        const {
-          data: { session },
-          error,
-        } = await supabase.auth.getSession()
+      // Check for active session
+      const {
+        data: { session },
+        error,
+      } = await supabaseClient.auth.getSession()
 
-        if (error) {
-          throw error
-        }
+      if (error) {
+        console.error("Error retrieving session:", error.message)
+      }
 
+      if (session) {
+        setSession(session)
+        setUser(session.user)
+      }
+
+      // Set up auth state listener
+      const {
+        data: { subscription },
+      } = supabaseClient.auth.onAuthStateChange((_event, session) => {
         setSession(session)
         setUser(session?.user ?? null)
-      } catch (error) {
-        console.error("Error getting session:", error)
-      } finally {
-        setIsLoading(false)
+      })
+
+      setIsLoading(false)
+
+      // Cleanup subscription
+      return () => {
+        subscription.unsubscribe()
       }
     }
 
-    getSession()
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setIsLoading(false)
-    })
-
-    return () => {
-      subscription.unsubscribe()
-    }
+    initializeAuth()
   }, [])
 
   const signUp = async (email: string, password: string) => {
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      })
-      return { data, error }
-    } catch (error) {
-      console.error("Error signing up:", error)
-      return { data: null, error }
-    }
+    return await supabaseClient.auth.signUp({
+      email,
+      password,
+    })
   }
 
   const signIn = async (email: string, password: string) => {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-      return { data, error }
-    } catch (error) {
-      console.error("Error signing in:", error)
-      return { data: null, error }
-    }
+    return await supabaseClient.auth.signInWithPassword({
+      email,
+      password,
+    })
   }
 
   const signOut = async () => {
-    try {
-      await supabase.auth.signOut()
-    } catch (error) {
-      console.error("Error signing out:", error)
-    }
+    await supabaseClient.auth.signOut()
+    setUser(null)
+    setSession(null)
   }
 
   const value = {

@@ -9,7 +9,6 @@ import PageTransition from "@/components/page-transition"
 import { ThemeProvider } from "@/components/theme-provider"
 import OneSignalProvider from "@/components/one-signal-provider"
 import { AuthProvider } from "@/contexts/auth-context"
-import { SiteHeader } from "@/components/site-header"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -443,7 +442,6 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
-            <SiteHeader />
             <ErrorBoundary>
               <OneSignalProvider>
                 <ClientPreloaderContainer quotesToShow={5}>
