@@ -6,7 +6,6 @@ import { mediaOutlets, type MediaOutlet } from "@/data/media-outlets"
 import { mediaPersonalities, type MediaPersonality } from "@/data/media-personalities"
 import MediaOutletCard from "./media-outlet-card"
 import PersonalityCard from "./personality-card"
-import TrendingPersonalities from "./trending-personalities"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 // Voting service to handle vote operations
@@ -272,8 +271,6 @@ export default function MediaVotingPlatform() {
         </div>
 
         {/* Add the TrendingPersonalities component here */}
-        <TrendingPersonalities />
-
         <Tabs
           defaultValue="outlets"
           className="mb-8"

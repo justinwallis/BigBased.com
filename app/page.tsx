@@ -43,6 +43,8 @@ import CallToAction from "@/components/call-to-action"
 import XShareWidget from "@/components/x-share-widget"
 // Import the new MediaVotingPlatform component
 import MediaVotingPlatform from "@/components/media-voting-platform"
+// Import the new LiveBasedIndexModule component
+import LiveBasedIndexModule from "@/components/live-based-index-module"
 
 // Define dropdown menu content with images and interactive elements
 const aboutMenuItems = [
@@ -423,6 +425,13 @@ export default function Home() {
       <ErrorBoundary>
         <Suspense fallback={<ContentSectionSkeleton />}>
           <MediaVotingPlatform />
+        </Suspense>
+      </ErrorBoundary>
+
+      {/* Add the new Live Based Index Module component */}
+      <ErrorBoundary>
+        <Suspense fallback={<ContentSectionSkeleton />}>
+          <LiveBasedIndexModule />
         </Suspense>
       </ErrorBoundary>
 
