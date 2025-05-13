@@ -27,15 +27,8 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* Resource preloading */}
+        <link rel="preload" href="/bb-logo.png" as="image" />
         <link rel="preload" href="/american-flag.png" as="image" />
-        <link rel="preload" href="/dove-spread-wings.png" as="image" />
-        <link rel="preload" href="/cultural-decay.png" as="image" />
-        <link rel="preload" href="/digital-sovereignty.png" as="image" />
-        <link rel="preload" href="/truth-archives.png" as="image" />
-        <link rel="preload" href="/parallel-economy.png" as="image" />
-        <link rel="preload" href="/generic-organization-logo.png" as="image" />
-        <link rel="preload" href="/generic-company-logo.png" as="image" />
-        <link rel="preload" href="/generic-college-logo.png" as="image" />
 
         {/* Preconnect to external domains */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -127,37 +120,90 @@ export default function RootLayout({
   logoWrapper.style.justifyContent = 'center';
   logoWrapper.style.marginBottom = '16px';
   
-  // Create BB logo with animation variation
-  var logo = document.createElement('div');
-  logo.style.backgroundColor = 'black';
-  logo.style.color = 'white';
-  logo.style.padding = '12px 24px';
-  logo.style.fontSize = '32px';
-  logo.style.fontWeight = 'bold';
-  logo.style.opacity = '0';
+  // Create logo image element
+  var logoImg = document.createElement('img');
+  logoImg.src = '/bb-logo.png';
+  logoImg.alt = 'BigBased Logo';
+  logoImg.style.width = '96px';
+  logoImg.style.height = '96px';
+  logoImg.style.opacity = '0';
   
   // Apply different animation styles based on random selection
   switch(animationStyle) {
     case 0: // Fade
-      logo.style.transform = 'scale(0.8)';
-      logo.style.transition = 'opacity 0.5s, transform 0.5s';
+      logoImg.style.transform = 'scale(0.8)';
+      logoImg.style.transition = 'opacity 0.5s, transform 0.5s';
       break;
     case 1: // Slide
-      logo.style.transform = 'translateX(-50px)';
-      logo.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+      logoImg.style.transform = 'translateX(-50px)';
+      logoImg.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
       break;
     case 2: // Scale
-      logo.style.transform = 'scale(0)';
-      logo.style.transition = 'opacity 0.5s, transform 0.5s cubic-bezier(.17,.67,.83,.67)';
+      logoImg.style.transform = 'scale(0)';
+      logoImg.style.transition = 'opacity 0.5s, transform 0.5s cubic-bezier(.17,.67,.83,.67)';
       break;
     case 3: // Reveal
-      logo.style.transform = 'translateY(-20px)';
-      logo.style.transition = 'opacity 0.4s, transform 0.4s';
+      logoImg.style.transform = 'translateY(-20px)';
+      logoImg.style.transition = 'opacity 0.4s, transform 0.4s';
       break;
   }
   
-  logo.textContent = 'BB';
-  logoWrapper.appendChild(logo);
+  // Handle image load error
+  logoImg.onerror = function() {
+    // Create fallback text logo
+    var fallbackLogo = document.createElement('div');
+    fallbackLogo.style.backgroundColor = 'black';
+    fallbackLogo.style.color = 'white';
+    fallbackLogo.style.padding = '12px 24px';
+    fallbackLogo.style.fontSize = '32px';
+    fallbackLogo.style.fontWeight = 'bold';
+    fallbackLogo.style.opacity = '0';
+    
+    // Apply same animation styles
+    switch(animationStyle) {
+      case 0: // Fade
+        fallbackLogo.style.transform = 'scale(0.8)';
+        fallbackLogo.style.transition = 'opacity 0.5s, transform 0.5s';
+        break;
+      case 1: // Slide
+        fallbackLogo.style.transform = 'translateX(-50px)';
+        fallbackLogo.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+        break;
+      case 2: // Scale
+        fallbackLogo.style.transform = 'scale(0)';
+        fallbackLogo.style.transition = 'opacity 0.5s, transform 0.5s cubic-bezier(.17,.67,.83,.67)';
+        break;
+      case 3: // Reveal
+        fallbackLogo.style.transform = 'translateY(-20px)';
+        fallbackLogo.style.transition = 'opacity 0.4s, transform 0.4s';
+        break;
+    }
+    
+    fallbackLogo.textContent = 'BB';
+    logoWrapper.replaceChild(fallbackLogo, logoImg);
+    
+    // Animate the fallback logo
+    setTimeout(function() {
+      fallbackLogo.style.opacity = '1';
+      
+      switch(animationStyle) {
+        case 0: // Fade
+          fallbackLogo.style.transform = 'scale(1)';
+          break;
+        case 1: // Slide
+          fallbackLogo.style.transform = 'translateX(0)';
+          break;
+        case 2: // Scale
+          fallbackLogo.style.transform = 'scale(1)';
+          break;
+        case 3: // Reveal
+          fallbackLogo.style.transform = 'translateY(0)';
+          break;
+      }
+    }, 100);
+  };
+  
+  logoWrapper.appendChild(logoImg);
   
   // Create fixed height container for tagline
   var taglineWrapper = document.createElement('div');
@@ -281,20 +327,20 @@ export default function RootLayout({
   function animatePreloader() {
     // Animate logo based on style
     setTimeout(function() {
-      logo.style.opacity = '1';
+      logoImg.style.opacity = '1';
       
       switch(animationStyle) {
         case 0: // Fade
-          logo.style.transform = 'scale(1)';
+          logoImg.style.transform = 'scale(1)';
           break;
         case 1: // Slide
-          logo.style.transform = 'translateX(0)';
+          logoImg.style.transform = 'translateX(0)';
           break;
         case 2: // Scale
-          logo.style.transform = 'scale(1)';
+          logoImg.style.transform = 'scale(1)';
           break;
         case 3: // Reveal
-          logo.style.transform = 'translateY(0)';
+          logoImg.style.transform = 'translateY(0)';
           break;
       }
     }, 100);
@@ -354,15 +400,8 @@ export default function RootLayout({
     // Preload key images
     function preloadImages() {
       var images = [
+        '/bb-logo.png',
         '/american-flag.png',
-        '/dove-spread-wings.png',
-        '/cultural-decay.png',
-        '/digital-sovereignty.png',
-        '/truth-archives.png',
-        '/parallel-economy.png',
-        '/generic-organization-logo.png',
-        '/generic-company-logo.png',
-        '/generic-college-logo.png'
       ];
       
       var loadedCount = 0;

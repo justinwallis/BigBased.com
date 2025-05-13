@@ -3,6 +3,8 @@
  * These are images that are visible above the fold
  */
 export const criticalImages = [
+  "/bb-logo.png",
+  "/BgroundTech.png", // Add this line
   "/BB_Logo_Animation.gif",
   "/BB_Logo_Animation_invert.gif",
   "/american-flag.png",

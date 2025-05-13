@@ -8,6 +8,16 @@ export default function CallToAction() {
 
   return (
     <section className="py-24 px-8 md:px-16 relative overflow-hidden">
+      {/* Digital cross background */}
+      <div
+        className="absolute inset-0 opacity-15 select-none pointer-events-none bg-center bg-no-repeat bg-contain"
+        style={{
+          backgroundImage: 'url("/digitalcross.png")',
+          backgroundSize: "80%",
+          backgroundPosition: "center",
+        }}
+      />
+
       {/* Binary code background */}
       <div className="binary-background absolute inset-0 opacity-10 select-none pointer-events-none">
         {Array.from({ length: 20 }).map((_, i) => (

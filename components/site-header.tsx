@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import AuthButton from "@/components/auth/auth-button"
@@ -26,8 +27,10 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
-          <Link href="/" className="font-bold text-xl">
-            BigBased
+          <Link href="/" className="flex items-center gap-2">
+            {/* Added BigBasedIcon */}
+            <Image src="/bb-logo.png" alt="Big Based Logo" width={32} height={32} className="h-8 w-auto" />
+            <span className="font-bold text-xl">BigBased</span>
           </Link>
         </div>
 

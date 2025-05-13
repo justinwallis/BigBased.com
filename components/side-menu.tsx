@@ -213,7 +213,9 @@ export default function SideMenu({
         <div className="flex-none p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex justify-between items-center">
             <Link href="/" className="font-bold text-2xl">
-              <div className="bg-black dark:bg-white text-white dark:text-black px-3 py-1">BB</div>
+              <div className="w-12 h-12 relative">
+                <Image src="/bb-logo.png" alt="BigBased Logo" fill className="object-contain" priority />
+              </div>
             </Link>
             <div className="flex items-center space-x-2">
               {/* Notification Bell */}

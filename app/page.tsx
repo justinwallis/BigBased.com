@@ -396,10 +396,10 @@ export default function Home() {
         </Suspense>
       </ErrorBoundary>
 
-      {/* Revolution Section */}
+      {/* Revolution Section - Extremely simplified */}
       <ErrorBoundary>
         <Suspense fallback={<ContentSectionSkeleton />}>
-          <section className="py-24 px-8 md:px-16 bg-black text-white text-center dark:bg-gray-800">
+          <section className="py-24 px-8 md:px-16 bg-black text-white text-center">
             <p className="mb-8">The Revolution</p>
             <h2 className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto leading-tight mb-12">
               Convergence of Political, Religious, and Technological Transformation Shaping our Future.

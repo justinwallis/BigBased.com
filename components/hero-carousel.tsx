@@ -29,7 +29,7 @@ const heroSections = [
       "Targets and deconstructs cringe-worthy elements in society, including cultural decay, legacy media manipulation, and revisionist history, weaking cringe media.",
     ctaText: "More about Big Cringe",
     ctaLink: "/big-cringe",
-    image: "/cultural-decay.png",
+    image: "/placeholder.svg?key=vbrti",
     imageAlt: "Two doors showing cultural contrast",
   },
   {
@@ -40,7 +40,7 @@ const heroSections = [
       "Take back control of your digital life. We provide tools and knowledge to break free from Big Tech surveillance, censorship, and manipulation while building alternative platforms rooted in freedom.",
     ctaText: "Explore Digital Freedom",
     ctaLink: "/digital-freedom",
-    image: "/digital-sovereignty.png",
+    image: "/placeholder.svg?key=uo2ww",
     imageAlt: "Breaking free from digital chains",
   },
   {
@@ -51,7 +51,7 @@ const heroSections = [
       "Our comprehensive library documents and preserves critical information that's being systematically erased from the internet. Access thousands of censored studies, articles, and historical records.",
     ctaText: "Access the Archives",
     ctaLink: "/archives",
-    image: "/truth-archives.png",
+    image: "/placeholder.svg?key=pjjug",
     imageAlt: "Archive of knowledge",
   },
   {
@@ -62,7 +62,7 @@ const heroSections = [
       "Join a growing network of freedom-minded businesses, creators, and consumers building an alternative economic ecosystem based on shared values and mutual support.",
     ctaText: "Join the Network",
     ctaLink: "/network",
-    image: "/parallel-economy.png",
+    image: "/placeholder.svg?key=rpllp",
     imageAlt: "Network of connected people",
   },
 ]
@@ -432,7 +432,7 @@ export default function HeroCarousel() {
           width={24}
           height={16}
           className="mr-2"
-          fallbackSrc="/placeholder.svg?key=ey8mx"
+          fallbackSrc="/american-flag.png"
         />
         <div className="text-[10px] dark:text-white">
           <p className="font-bold">AMERICA FIRST,</p>
@@ -478,10 +478,7 @@ export default function HeroCarousel() {
                 <div className="w-full md:w-2/3 h-full flex items-center justify-center">
                   <div className="relative h-full w-full flex items-center justify-center">
                     <OptimizedImage
-                      src={
-                        hero.image ||
-                        `/placeholder.svg?height=500&width=800&query=${encodeURIComponent(hero.imageAlt || "hero")}`
-                      }
+                      src={hero.image}
                       alt={hero.imageAlt}
                       width={800}
                       height={500}

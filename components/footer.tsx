@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { Facebook, Twitter, Youtube, Instagram, MessageSquare, Send, Map } from "lucide-react"
 import { toggleSitemapEvent } from "./sitemap-container"
+import Image from "next/image"
 
 export default function Footer() {
   const handleSitemapToggle = () => {
@@ -16,7 +17,9 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0 md:flex-shrink-0">
             <Link href="/" className="font-bold text-2xl">
-              <div className="bg-black dark:bg-white text-white dark:text-black px-3 py-1">BB</div>
+              <div className="w-12 h-12 relative">
+                <Image src="/bb-logo.png" alt="BigBased Logo" fill className="object-contain" priority />
+              </div>
             </Link>
           </div>
 

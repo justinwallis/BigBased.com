@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import loadingManager from "@/utils/loading-manager"
 import { preloadImages } from "@/utils/image-preloader"
 import { errorLogger } from "@/utils/error-logger"
+import Image from "next/image"
 
 interface PreloaderProps {
   minimumLoadingTime?: number
@@ -209,14 +210,14 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
         loadingManager.registerResource("key-images", 2)
         loadingManager.startLoading("key-images")
 
-        // List of key images to preload
+        // List of key images to preload - using placeholder images instead of potentially missing ones
         const imagesToPreload = [
           "/american-flag.png",
           "/dove-spread-wings.png",
-          "/cultural-decay.png",
-          "/digital-sovereignty.png",
-          "/truth-archives.png",
-          "/parallel-economy.png",
+          "/placeholder.svg?key=5gg9m",
+          "/placeholder.svg?key=c1d99",
+          "/placeholder.svg?key=h9bot",
+          "/placeholder.svg?key=qamom",
           "/generic-organization-logo.png",
           "/generic-company-logo.png",
           "/generic-college-logo.png",
@@ -358,11 +359,28 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
                 {/* Fixed height container for logo to prevent layout shifts */}
                 <div className="h-16 flex items-center justify-center mb-4">
                   <motion.div
-                    className="bg-black text-white px-6 py-3 text-4xl font-bold"
+                    className="w-24 h-24"
                     initial={selectedVariant.logo.initial}
                     animate={selectedVariant.logo.animate}
                   >
-                    BB
+                    <Image
+                      src="/bb-logo.png"
+                      alt="BigBased Logo"
+                      width={96}
+                      height={96}
+                      className="w-full h-full object-contain"
+                      priority
+                      onError={(e) => {
+                        // If the logo fails to load, replace with a text fallback
+                        const target = e.target as HTMLImageElement
+                        if (target && target.parentElement) {
+                          const div = document.createElement("div")
+                          div.className = "bg-black text-white px-6 py-3 text-4xl font-bold"
+                          div.textContent = "BB"
+                          target.parentElement.replaceChild(div, target)
+                        }
+                      }}
+                    />
                   </motion.div>
                 </div>
 
