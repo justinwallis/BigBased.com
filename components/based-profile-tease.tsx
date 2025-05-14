@@ -165,29 +165,8 @@ export default function BasedProfileTease() {
               </div>
             </div>
 
-            {/* Floating domain names */}
-            <div className="absolute inset-0">
-              {sampleDomains.map((domain, i) => {
-                const angle = i * 45 * (Math.PI / 180)
-                const distance = 80 + (i % 3) * 20
-                const x = 50 + distance * Math.cos(angle)
-                const y = 50 + distance * Math.sin(angle)
-
-                return (
-                  <div
-                    key={domain}
-                    className="absolute text-xs font-mono opacity-70 hover:opacity-100 transition-opacity"
-                    style={{
-                      left: `${x}%`,
-                      top: `${y}%`,
-                      transform: "translate(-50%, -50%)",
-                    }}
-                  >
-                    {domain}
-                  </div>
-                )
-              })}
-            </div>
+            {/* Domain visualization - no floating text */}
+            <div className="absolute inset-0"></div>
           </div>
 
           {/* Right column - Reserve name CTA */}

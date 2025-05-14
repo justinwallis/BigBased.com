@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useResourceLoading } from "@/hooks/use-resource-loading"
 import { preloadNextImages } from "@/utils/image-preloader"
 import OptimizedImage from "./optimized-image"
@@ -499,30 +498,6 @@ export default function HeroCarousel() {
           )
         })}
       </div>
-
-      {/* Navigation Arrows - More transparent */}
-      <button
-        onClick={() => {
-          setAutoplayPaused(true)
-          goToPrevious()
-          setTimeout(() => setAutoplayPaused(false), 5000)
-        }}
-        className="absolute left-6 top-1/2 -translate-y-1/2 z-20 bg-white/40 hover:bg-white/80 text-black p-2 rounded-full shadow-md transition-all duration-200 dark:bg-gray-800/40 dark:hover:bg-gray-800/80 dark:text-white"
-        aria-label="Previous slide"
-      >
-        <ChevronLeft size={24} />
-      </button>
-      <button
-        onClick={() => {
-          setAutoplayPaused(true)
-          goToNext()
-          setTimeout(() => setAutoplayPaused(false), 5000)
-        }}
-        className="absolute right-6 top-1/2 -translate-y-1/2 z-20 bg-white/40 hover:bg-white/80 text-black p-2 rounded-full shadow-md transition-all duration-200 dark:bg-gray-800/40 dark:hover:bg-gray-800/80 dark:text-white"
-        aria-label="Next slide"
-      >
-        <ChevronRight size={24} />
-      </button>
     </section>
   )
 }
