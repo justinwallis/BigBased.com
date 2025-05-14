@@ -6,7 +6,7 @@ export function AboutSection() {
       <div className="container mx-auto px-3 md:px-4">
         {/* Doubled the top padding in the title area */}
         <div className="text-center mb-3 pt-6 pb-3">
-          <h2 className="text-2xl md:text-3xl font-bold mb-2 text-gray-900 dark:text-white">About Big Based</h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-2 text-gray-900 dark:text-white">About Big Based</h2>
           <p className="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto text-sm">
             Big Based represents the convergence of Political, Religious, and Technological transformation.
           </p>
