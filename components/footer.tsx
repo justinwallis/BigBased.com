@@ -13,8 +13,8 @@ export default function Footer() {
 
   return (
     <footer className="border-t-2 border-gray-400 dark:border-gray-600">
-      <div className="container mx-auto px-8 md:px-16 py-10">
-        <div className="flex flex-col md:flex-row justify-between items-center">
+      <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 py-10">
+        <div className="flex flex-col md:flex-row justify-between items-center w-full">
           <div className="mb-4 md:mb-0 md:flex-shrink-0">
             <Link href="/" className="font-bold text-2xl">
               <div className="w-12 h-12 relative">
@@ -25,9 +25,8 @@ export default function Footer() {
 
           {/* Short message with improved padding for mid-responsive state */}
           <div
-            className="text-sm text-gray-600 dark:text-gray-300 max-w-md text-center md:text-left mb-4 md:mb-0 
-                          px-2 md:px-6 lg:px-8 
-                          md:mx-4 lg:mx-8"
+            className="text-sm text-gray-600 dark:text-gray-300 md:flex-grow text-center md:text-left mb-4 md:mb-0 
+                    px-2 md:px-6 lg:px-8"
           >
             Big Based is committed to restoring truth, faith, and freedom in a world increasingly dominated by deception
             and control.
@@ -79,7 +78,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row justify-center md:justify-between items-center mt-6 text-sm text-gray-600 dark:text-gray-300">
+        <div className="flex flex-col md:flex-row justify-center md:justify-between items-center mt-6 text-sm text-gray-600 dark:text-gray-300 w-full">
           <div className="flex items-center">
             <span>© 2025 BigBased. All Rights Reserved</span>
           </div>
