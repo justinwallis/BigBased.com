@@ -21,6 +21,7 @@ import { errorLogger } from "@/utils/error-logger"
 import { ThemeToggle } from "@/components/theme-toggle"
 import OptimizedImage from "@/components/optimized-image"
 import Image from "next/image"
+import FloatingNavigation from "@/components/floating-navigation"
 
 // Add the import for LogoInfoSection at the top of the file with the other imports
 import LogoInfoSection from "@/components/logo-info-section"
@@ -332,6 +333,9 @@ export default function Home() {
         <SideMenu isOpen={isSideMenuOpen} setIsOpen={setIsSideMenuOpen} openWithSearch={openWithSearch} />
       </ErrorBoundary>
 
+      {/* Floating Dot Navigation */}
+      <FloatingNavigation />
+
       {/* Navigation */}
       <nav className="flex items-center justify-between px-8 py-4 md:px-16">
         <div className="flex items-center space-x-8">
@@ -385,7 +389,9 @@ export default function Home() {
       </nav>
 
       {/* Hero Carousel */}
-      <LazyHeroCarousel />
+      <section id="hero">
+        <LazyHeroCarousel />
+      </section>
 
       {/* Enhanced Logos Marquee Section with Detailed Tooltips and Links */}
       <ErrorBoundary>
@@ -395,62 +401,72 @@ export default function Home() {
       </ErrorBoundary>
 
       {/* Add the new FundraisingAndPrayerSection component */}
-      <ErrorBoundary>
-        <FundraisingAndPrayerSection />
-      </ErrorBoundary>
+      <section id="fundraising">
+        <ErrorBoundary>
+          <FundraisingAndPrayerSection />
+        </ErrorBoundary>
+      </section>
 
       {/* Add the new DigitalLibrarySection component */}
-      <ErrorBoundary>
-        <Suspense fallback={<ContentSectionSkeleton />}>
-          <DigitalLibrarySection />
-        </Suspense>
-      </ErrorBoundary>
+      <section id="library">
+        <ErrorBoundary>
+          <Suspense fallback={<ContentSectionSkeleton />}>
+            <DigitalLibrarySection />
+          </Suspense>
+        </ErrorBoundary>
+      </section>
 
       {/* Revolution Section - Extremely simplified */}
-      <ErrorBoundary>
-        <Suspense fallback={<ContentSectionSkeleton />}>
-          <section className="py-24 px-8 md:px-16 bg-black text-white text-center relative">
-            {/* Background Image with 10% opacity */}
-            <div
-              className="absolute inset-0 w-full h-full"
-              style={{
-                backgroundImage: "url('/BckgTech.png')",
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                opacity: 0.1,
-              }}
-            ></div>
+      <section id="revolution">
+        <ErrorBoundary>
+          <Suspense fallback={<ContentSectionSkeleton />}>
+            <section className="py-24 px-8 md:px-16 bg-black text-white text-center relative">
+              {/* Background Image with 10% opacity */}
+              <div
+                className="absolute inset-0 w-full h-full"
+                style={{
+                  backgroundImage: "url('/BckgTech.png')",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  opacity: 0.1,
+                }}
+              ></div>
 
-            {/* Content with relative positioning to appear above the background */}
-            <div className="relative z-10">
-              <p className="mb-8">The Revolution</p>
-              <h2 className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto leading-tight mb-12">
-                Convergence of Political, Religious, and Technological Transformation Shaping our Future.
-              </h2>
-              <p className="max-w-2xl mx-auto">
-                Big Based represents the convergence of Political, Religious, and Technological transformation shaping
-                our future. It's a bold initiative to reclaim control, decentralize power, and align technology with
-                faith and freedom. As the world reaches a tipping point, Big Based offers the tools and vision to lead
-                this cultural and digital renaissance
-              </p>
-            </div>
-          </section>
-        </Suspense>
-      </ErrorBoundary>
+              {/* Content with relative positioning to appear above the background */}
+              <div className="relative z-10">
+                <p className="mb-8">The Revolution</p>
+                <h2 className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto leading-tight mb-12">
+                  Convergence of Political, Religious, and Technological Transformation Shaping our Future.
+                </h2>
+                <p className="max-w-2xl mx-auto">
+                  Big Based represents the convergence of Political, Religious, and Technological transformation shaping
+                  our future. It's a bold initiative to reclaim control, decentralize power, and align technology with
+                  faith and freedom. As the world reaches a tipping point, Big Based offers the tools and vision to lead
+                  this cultural and digital renaissance
+                </p>
+              </div>
+            </section>
+          </Suspense>
+        </ErrorBoundary>
+      </section>
 
       {/* About Big Based Section */}
-      <ErrorBoundary>
-        <Suspense fallback={<ContentSectionSkeleton />}>
-          <AboutSection />
-        </Suspense>
-      </ErrorBoundary>
+      <section id="about">
+        <ErrorBoundary>
+          <Suspense fallback={<ContentSectionSkeleton />}>
+            <AboutSection />
+          </Suspense>
+        </ErrorBoundary>
+      </section>
 
       {/* Add the new Media Voting Platform component */}
-      <ErrorBoundary>
-        <Suspense fallback={<ContentSectionSkeleton />}>
-          <MediaVotingPlatform />
-        </Suspense>
-      </ErrorBoundary>
+      <section id="media">
+        <ErrorBoundary>
+          <Suspense fallback={<ContentSectionSkeleton />}>
+            <MediaVotingPlatform />
+          </Suspense>
+        </ErrorBoundary>
+      </section>
 
       {/* Add the new Live Based Index Module component */}
       <ErrorBoundary>
@@ -480,11 +496,13 @@ export default function Home() {
       </ErrorBoundary>
 
       {/* Domain Scroller - Now positioned directly above the footer */}
-      <ErrorBoundary>
-        <Suspense fallback={<DomainMarqueeSkeleton />}>
-          <VerticalDomainScroller />
-        </Suspense>
-      </ErrorBoundary>
+      <section id="domains">
+        <ErrorBoundary>
+          <Suspense fallback={<DomainMarqueeSkeleton />}>
+            <VerticalDomainScroller />
+          </Suspense>
+        </ErrorBoundary>
+      </section>
 
       {/* Based Profile Tease Section */}
       <ErrorBoundary>

@@ -159,11 +159,22 @@ export default function SideMenu({
 
   // Track scroll position for sticky behavior
   useEffect(() => {
+    let ticking = false
+
     const handleScroll = () => {
-      setScrollY(window.scrollY)
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrollY(window.scrollY)
+          ticking = false
+        })
+        ticking = true
+      }
     }
 
-    window.addEventListener("scroll", handleScroll)
+    // Initial position
+    setScrollY(window.scrollY)
+
+    window.addEventListener("scroll", handleScroll, { passive: true })
     return () => {
       window.removeEventListener("scroll", handleScroll)
     }
@@ -171,10 +182,15 @@ export default function SideMenu({
 
   return (
     <>
-      {/* Hamburger Button - Fixed positioning issue by using inline style instead of dynamic class */}
+      {/* Hamburger Button - Fixed positioning with improved stickiness */}
       <button
-        className="fixed left-0 z-50 bg-black text-white p-3 transition-all duration-300 ease-in-out rounded-r-lg group hover:bg-gray-900"
-        style={{ top: scrollY > 100 ? "5rem" : "10rem" }}
+        className="fixed left-0 z-50 bg-black text-white p-3 rounded-r-lg group hover:bg-gray-900"
+        style={{
+          top: scrollY > 100 ? "5rem" : "10rem",
+          transition: "top 0.3s ease",
+          transform: "translateZ(0)", // Hardware acceleration
+          willChange: "top", // Performance optimization
+        }}
         onClick={() => setIsOpen(true)}
         aria-label="Open menu"
       >
