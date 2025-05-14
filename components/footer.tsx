@@ -26,7 +26,7 @@ export default function Footer() {
           {/* Short message with improved padding for mid-responsive state */}
           <div
             className="text-sm text-gray-600 dark:text-gray-300 md:flex-grow text-center md:text-left mb-4 md:mb-0 
-                    px-2 md:px-6 lg:px-8"
+                    px-4 md:px-12 lg:px-16"
           >
             Big Based is committed to restoring truth, faith, and freedom in a world increasingly dominated by deception
             and control.
