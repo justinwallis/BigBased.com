@@ -1,49 +1,43 @@
 "use client"
 
+import { useState, useEffect } from "react"
+import { useTheme } from "next-themes"
 import Image from "next/image"
-import { cn } from "@/lib/utils"
-import { useTheme } from "@/components/theme-provider"
-import { useEffect, useState } from "react"
+import { getImageUrl } from "@/utils/image-url"
 
 interface BBLogoProps {
-  size?: "sm" | "md" | "lg" | "xl"
+  width?: number
+  height?: number
   className?: string
-  inverted?: boolean
+  priority?: boolean
 }
 
-export default function BBLogo({ size = "md", className, inverted = false }: BBLogoProps) {
-  // Add mounted state to prevent hydration mismatch
+export default function BBLogo({ width = 64, height = 64, className = "", priority = false }: BBLogoProps) {
+  const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
-  const { theme } = useTheme()
 
-  // Set mounted to true on client
+  // After mounting, we can safely show the UI
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  const sizeClasses = {
-    sm: "w-8 h-8",
-    md: "w-12 h-12",
-    lg: "w-16 h-16",
-    xl: "w-24 h-24",
-  }
+  // Determine logo source based on theme
+  const logoSrc =
+    mounted && resolvedTheme === "dark" ? getImageUrl("/BigBasedIconInvert.png") : getImageUrl("/bb-logo.png")
 
-  // Only check theme after component is mounted to avoid hydration mismatch
-  const isDarkMode = mounted && theme === "dark"
-
-  // Use the inverted logo in dark mode, unless explicitly overridden by the inverted prop
-  const logoSrc = inverted || isDarkMode ? "/BigBasedIconInvert.png" : "/bb-logo.png"
-
-  // Log the logo source for debugging
-  useEffect(() => {
-    if (mounted) {
-      console.log("Logo source:", logoSrc, "isDarkMode:", isDarkMode)
-    }
-  }, [logoSrc, isDarkMode, mounted])
+  // Don't render anything until mounted to avoid hydration mismatch
+  if (!mounted) return null
 
   return (
-    <div className={cn(sizeClasses[size], "relative", className)}>
-      <Image src={logoSrc || "/placeholder.svg"} alt="BigBased Logo" fill className="object-contain" priority />
-    </div>
+    <Image
+      src={logoSrc || "/placeholder.svg"}
+      alt="Big Based Logo"
+      width={width}
+      height={height}
+      className={className}
+      priority={priority}
+      unoptimized={true}
+      crossOrigin="anonymous"
+    />
   )
 }

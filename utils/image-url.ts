@@ -5,16 +5,25 @@
  * This helps ensure images work in both development and production
  */
 export function getImageUrl(path: string): string {
+  // If path is already a full URL, return it as is
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path
+  }
+
+  // If path is a placeholder SVG, return it as is
+  if (path.includes("placeholder.svg")) {
+    return path
+  }
+
   // Ensure path starts with a slash
   const normalizedPath = path.startsWith("/") ? path : `/${path}`
 
-  // In production, we need to use the full URL
-  if (process.env.NODE_ENV === "production") {
-    // Use relative URLs in production to avoid CORS issues
-    return normalizedPath
+  // In production, we need to use the base path if defined
+  if (process.env.NEXT_PUBLIC_BASE_PATH) {
+    return `${process.env.NEXT_PUBLIC_BASE_PATH}${normalizedPath}`
   }
 
-  // In development, we can use relative URLs
+  // Return the normalized path
   return normalizedPath
 }
 
@@ -32,8 +41,19 @@ export function getFallbackImageUrl(width = 400, height = 300): string {
  */
 export async function checkImageExists(url: string): Promise<boolean> {
   try {
-    const response = await fetch(url, { method: "HEAD" })
-    return response.ok
+    // For local development, we can use fetch
+    if (process.env.NODE_ENV === "development") {
+      const response = await fetch(url, { method: "HEAD" })
+      return response.ok
+    }
+
+    // For production, we'll use Image() since fetch might have CORS issues
+    return new Promise((resolve) => {
+      const img = new Image()
+      img.onload = () => resolve(true)
+      img.onerror = () => resolve(false)
+      img.src = url
+    })
   } catch (error) {
     console.error("Error checking image existence:", error)
     return false

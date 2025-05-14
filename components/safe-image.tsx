@@ -14,10 +14,12 @@ interface SafeImageProps {
 }
 
 export default function SafeImage({ src, alt, width, height, className = "", priority = false }: SafeImageProps) {
-  const [imgSrc, setImgSrc] = useState<string>(getImageUrl(src))
+  const [imgSrc, setImgSrc] = useState<string>("")
   const [error, setError] = useState<boolean>(false)
+  const [mounted, setMounted] = useState<boolean>(false)
 
   useEffect(() => {
+    setMounted(true)
     // Reset error state when src changes
     setError(false)
     setImgSrc(getImageUrl(src))
@@ -31,17 +33,20 @@ export default function SafeImage({ src, alt, width, height, className = "", pri
     }
   }
 
+  // Don't render anything until mounted to avoid hydration mismatch
+  if (!mounted) return null
+
   return (
     <div className={`relative ${className}`} style={{ width, height }}>
       <Image
-        src={imgSrc || "/placeholder.svg"}
+        src={imgSrc || getFallbackImageUrl(width, height)}
         alt={alt}
         width={width}
         height={height}
         className={`${className} ${error ? "opacity-70" : ""}`}
         onError={handleError}
         priority={priority}
-        unoptimized={process.env.NODE_ENV === "development"}
+        unoptimized={true} // Always use unoptimized to avoid issues in production
         crossOrigin="anonymous" // Add this to avoid CORS issues
       />
       {error && (
