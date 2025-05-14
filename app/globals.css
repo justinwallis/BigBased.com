@@ -770,3 +770,47 @@ body {
     transform: translateX(100%);
   }
 }
+
+/* Add these styles at the end of the file */
+
+/* Grid pattern background */
+.bg-grid-pattern {
+  background-image: linear-gradient(to right, rgba(128, 128, 128, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(128, 128, 128, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Slow spin animation */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 30s linear infinite;
+}
+
+/* Pulse animation for domain dots */
+@keyframes domain-pulse {
+  0% {
+    transform: scale(1) translate(-50%, -50%);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.5) translate(-33%, -33%);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translate(-50%, -50%);
+    opacity: 0.7;
+  }
+}
+
+/* Apply the animation to domain dots */
+.domain-dot {
+  animation: domain-pulse 3s infinite;
+}

@@ -46,6 +46,8 @@ import XShareWidget from "@/components/x-share-widget"
 import MediaVotingPlatform from "@/components/media-voting-platform"
 // Import the new LiveBasedIndexModule component
 import LiveBasedIndexModule from "@/components/live-based-index-module"
+// Add the import for BasedProfileTease at the top of the file with the other imports
+import BasedProfileTease from "@/components/based-profile-tease"
 
 // Define dropdown menu content with images and interactive elements
 const aboutMenuItems = [
@@ -482,6 +484,11 @@ export default function Home() {
         <Suspense fallback={<DomainMarqueeSkeleton />}>
           <VerticalDomainScroller />
         </Suspense>
+      </ErrorBoundary>
+
+      {/* Based Profile Tease Section */}
+      <ErrorBoundary>
+        <BasedProfileTease />
       </ErrorBoundary>
 
       {/* Add the SitemapContainer component here */}
