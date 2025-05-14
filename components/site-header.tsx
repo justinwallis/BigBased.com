@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import AuthButton from "@/components/auth/auth-button"
 import { Button } from "@/components/ui/button"
 import { Menu } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 const navItems = [
   { name: "Home", href: "/" },
@@ -22,14 +22,47 @@ const navItems = [
 export function SiteHeader() {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+
+  // Add scroll event listener
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10)
+    }
+
+    // Add event listener
+    window.addEventListener("scroll", handleScroll)
+
+    // Initial check
+    handleScroll()
+
+    // Clean up
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header
+      className={cn(
+        "fixed top-0 left-0 right-0 z-[100] w-full border-b transition-all duration-200",
+        scrolled
+          ? "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-md"
+          : "bg-background",
+      )}
+      style={{ position: "fixed", top: 0, left: 0, right: 0, width: "100%" }}
+    >
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center gap-2">
-            {/* Added BigBasedIcon */}
-            <Image src="/bb-logo.png" alt="Big Based Logo" width={32} height={32} className="h-8 w-auto" />
+            <div className="relative w-8 h-8">
+              <Image
+                src="/bb-logo.png"
+                alt="Big Based Logo"
+                width={32}
+                height={32}
+                className="object-contain"
+                priority
+              />
+            </div>
             <span className="font-bold text-xl">BigBased</span>
           </Link>
         </div>

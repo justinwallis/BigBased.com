@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useState } from "react"
+import DigitalCross from "./digital-cross"
 
 export default function CallToAction() {
   const [isHovered, setIsHovered] = useState(false)
@@ -9,14 +10,11 @@ export default function CallToAction() {
   return (
     <section className="py-24 px-8 md:px-16 relative overflow-hidden">
       {/* Digital cross background */}
-      <div
-        className="absolute inset-0 opacity-15 select-none pointer-events-none bg-center bg-no-repeat bg-contain"
-        style={{
-          backgroundImage: 'url("/digitalcross.png")',
-          backgroundSize: "80%",
-          backgroundPosition: "center",
-        }}
-      />
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="w-[90%] h-[90%] digital-cross-pulse">
+          <DigitalCross />
+        </div>
+      </div>
 
       {/* Binary code background */}
       <div className="binary-background absolute inset-0 opacity-10 select-none pointer-events-none">
@@ -36,14 +34,14 @@ export default function CallToAction() {
       </div>
 
       <div className="text-center relative z-10 max-w-4xl mx-auto">
-        <h2 className="text-4xl md:text-6xl font-bold mb-8 leading-tight dark:text-white">
+        <h2 className="text-4xl md:text-6xl font-bold mb-8 leading-tight dark:text-white text-shadow-sm">
           Embrace a Future
           <br />
           Rooted in God, Freedom,
           <br />
           and Responsibility.
         </h2>
-        <p className="text-lg mb-12 max-w-3xl mx-auto dark:text-gray-200">
+        <p className="text-lg mb-12 max-w-3xl mx-auto dark:text-gray-200 text-shadow-sm">
           If Toasty can go from soy-fueled excuses to Big Based greatness, what's stopping you? The tools the truth, and
           the blueprint are all here. The only question is: Are you ready to join us?
         </p>

@@ -1,7 +1,7 @@
 export default function RevolutionPage() {
   return (
     <div
-      className="min-h-screen w-full text-white flex flex-col items-center justify-center px-4 py-16"
+      className="min-h-screen w-full text-white flex flex-col items-center justify-center px-4 py-16 revolution-page"
       style={{
         backgroundColor: "#000000",
         backgroundImage: `
@@ -12,7 +12,18 @@ export default function RevolutionPage() {
         position: "relative",
       }}
     >
-      <div className="max-w-4xl mx-auto text-center">
+      {/* Background image with 10% opacity */}
+      <div
+        className="absolute inset-0 w-full h-full z-0"
+        style={{
+          backgroundImage: `url('/BckgTech.png')`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          opacity: 0.1,
+        }}
+      />
+
+      <div className="max-w-4xl mx-auto text-center z-10 relative">
         <p className="text-lg mb-4">The Revolution</p>
 
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-12 leading-tight">

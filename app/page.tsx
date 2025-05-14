@@ -20,6 +20,7 @@ import {
 import { errorLogger } from "@/utils/error-logger"
 import { ThemeToggle } from "@/components/theme-toggle"
 import OptimizedImage from "@/components/optimized-image"
+import Image from "next/image"
 
 // Add the import for LogoInfoSection at the top of the file with the other imports
 import LogoInfoSection from "@/components/logo-info-section"
@@ -334,12 +335,19 @@ export default function Home() {
         <div className="flex items-center space-x-8">
           <Link
             href="/"
-            className={`font-bold text-2xl transition-transform duration-300 ${logoHovered ? "scale-110" : ""}`}
+            className={`font-bold text-2xl transition-transform duration-300 ${logoHovered ? "scale-110" : ""} flex items-center`}
             onMouseEnter={() => setLogoHovered(true)}
             onMouseLeave={() => setLogoHovered(false)}
           >
-            <div className="bg-black dark:bg-white text-white dark:text-black px-3 py-1 transition-all duration-300 hover:bg-gray-800 dark:hover:bg-gray-200">
-              BB
+            <div className="relative w-16 h-16 transition-all duration-300 flex items-center justify-center">
+              <Image
+                src="/bb-logo.png"
+                alt="Big Based Logo"
+                width={64}
+                height={64}
+                className="object-contain"
+                priority
+              />
             </div>
           </Link>
           <div className="hidden md:flex items-center space-x-6">
@@ -399,17 +407,31 @@ export default function Home() {
       {/* Revolution Section - Extremely simplified */}
       <ErrorBoundary>
         <Suspense fallback={<ContentSectionSkeleton />}>
-          <section className="py-24 px-8 md:px-16 bg-black text-white text-center">
-            <p className="mb-8">The Revolution</p>
-            <h2 className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto leading-tight mb-12">
-              Convergence of Political, Religious, and Technological Transformation Shaping our Future.
-            </h2>
-            <p className="max-w-2xl mx-auto">
-              Big Based represents the convergence of Political, Religious, and Technological transformation shaping our
-              future. It's a bold initiative to reclaim control, decentralize power, and align technology with faith and
-              freedom. As the world reaches a tipping point, Big Based offers the tools and vision to lead this cultural
-              and digital renaissance
-            </p>
+          <section className="py-24 px-8 md:px-16 bg-black text-white text-center relative">
+            {/* Background Image with 10% opacity */}
+            <div
+              className="absolute inset-0 w-full h-full"
+              style={{
+                backgroundImage: "url('/BckgTech.png')",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                opacity: 0.1,
+              }}
+            ></div>
+
+            {/* Content with relative positioning to appear above the background */}
+            <div className="relative z-10">
+              <p className="mb-8">The Revolution</p>
+              <h2 className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto leading-tight mb-12">
+                Convergence of Political, Religious, and Technological Transformation Shaping our Future.
+              </h2>
+              <p className="max-w-2xl mx-auto">
+                Big Based represents the convergence of Political, Religious, and Technological transformation shaping
+                our future. It's a bold initiative to reclaim control, decentralize power, and align technology with
+                faith and freedom. As the world reaches a tipping point, Big Based offers the tools and vision to lead
+                this cultural and digital renaissance
+              </p>
+            </div>
           </section>
         </Suspense>
       </ErrorBoundary>
