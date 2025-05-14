@@ -63,7 +63,7 @@ export default function LogoInfoSection({ selectedLogo, isHovering }: LogoInfoSe
   }
 
   return (
-    <div className="logo-info-section overflow-hidden">
+    <div className="logo-info-section overflow-hidden bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
       <AnimatePresence mode="wait">
         {displayedLogo && (
           <motion.div

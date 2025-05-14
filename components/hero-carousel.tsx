@@ -310,6 +310,46 @@ export default function HeroCarousel() {
     }
   }, [])
 
+  // Handle theme changes for the America First badge
+  useEffect(() => {
+    const handleThemeChange = () => {
+      const isDark = document.documentElement.classList.contains("dark")
+      const el = document.querySelector('[data-theme-style="true"]')
+      if (el) {
+        el.setAttribute(
+          "style",
+          `padding: 16px 12px 8px 12px; background: radial-gradient(circle at center, ${
+            isDark ? "rgba(30,41,59,0.05)" : "rgba(255,255,255,0.05)"
+          } 30%, ${isDark ? "rgba(30,41,59,0)" : "rgba(255,255,255,0)"} 70%);`,
+        )
+      }
+    }
+
+    // Set initial theme
+    handleThemeChange()
+
+    // Listen for theme changes
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (
+          mutation.type === "attributes" &&
+          mutation.attributeName === "class" &&
+          mutation.target === document.documentElement
+        ) {
+          handleThemeChange()
+        }
+      })
+    })
+
+    observer.observe(document.documentElement, { attributes: true })
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+
+  // America First Badge - Updated with gradient shadows for light/dark mode
+
   // Pause autoplay on hover
   const handleMouseEnter = () => {
     setAutoplayPaused(true)
@@ -427,25 +467,52 @@ export default function HeroCarousel() {
         }}
       ></div>
 
-      {/* America First Badge - Now at bottom right with hover effect */}
+      {/* America First Badge */}
       <div
-        className={`absolute bottom-8 right-12 z-20 flex items-center rounded-full transition-all duration-300 ${
-          badgeHovered ? "scale-110 shadow-md" : ""
+        className={`absolute bottom-8 right-12 z-20 flex flex-col items-start transition-all duration-300 ${
+          badgeHovered ? "scale-110" : ""
         }`}
         style={{
-          background: "radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%)",
-          padding: "8px 12px",
+          padding: "16px 12px 8px 12px", // Added more padding to the top
+          background: "radial-gradient(circle at center, rgba(255,255,255,0.05) 30%, rgba(255,255,255,0) 70%)",
         }}
-        onMouseEnter={() => setBadgeHovered(true)}
-        onMouseLeave={() => setBadgeHovered(false)}
+        data-theme-style="true"
+        onMouseEnter={() => {
+          setBadgeHovered(true)
+          // Update gradient based on theme
+          const isDark = document.documentElement.classList.contains("dark")
+          const el = document.querySelector('[data-theme-style="true"]')
+          if (el) {
+            el.setAttribute(
+              "style",
+              `padding: 16px 12px 8px 12px; background: radial-gradient(circle at center, ${
+                isDark ? "rgba(30,41,59,0.05)" : "rgba(255,255,255,0.05)"
+              } 30%, ${isDark ? "rgba(30,41,59,0)" : "rgba(255,255,255,0)"} 70%);`,
+            )
+          }
+        }}
+        onMouseLeave={() => {
+          setBadgeHovered(false)
+          // Update gradient based on theme
+          const isDark = document.documentElement.classList.contains("dark")
+          const el = document.querySelector('[data-theme-style="true"]')
+          if (el) {
+            el.setAttribute(
+              "style",
+              `padding: 16px 12px 8px 12px; background: radial-gradient(circle at center, ${
+                isDark ? "rgba(30,41,59,0.05)" : "rgba(255,255,255,0.05)"
+              } 30%, ${isDark ? "rgba(30,41,59,0)" : "rgba(255,255,255,0)"} 70%);`,
+            )
+          }
+        }}
       >
         <OptimizedImage
-          src="/american-flag.png"
+          src="/AmericaFlag.png"
           alt="American flag"
-          width={24}
-          height={16}
-          className="mr-2"
-          fallbackSrc="/american-flag.png"
+          width={30}
+          height={18}
+          className="mb-2"
+          fallbackSrc="/AmericaFlag.png"
         />
         <div className="text-[10px] text-gray-800 dark:text-gray-100">
           <p className="font-bold">AMERICA FIRST,</p>
