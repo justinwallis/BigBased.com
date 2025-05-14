@@ -20,7 +20,7 @@ const nextConfig = {
       "unec.edu.az",
       "smallpdf.com",
     ],
-    unoptimized: true, // Always use unoptimized images to avoid issues in production
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
@@ -28,14 +28,9 @@ const nextConfig = {
       },
     ],
   },
-  // Don't use assetPrefix in production as it can cause issues with image loading
-  // assetPrefix: process.env.NODE_ENV === "production" ? "/" : "",
+  assetPrefix: process.env.NODE_ENV === "production" ? "/" : "",
   basePath: "",
   output: "standalone",
-  // Add this to ensure public directory is included in the build
-  publicRuntimeConfig: {
-    staticFolder: "/public",
-  },
 }
 
 module.exports = nextConfig
