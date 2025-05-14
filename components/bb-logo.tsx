@@ -2,7 +2,8 @@
 
 import Image from "next/image"
 import { cn } from "@/lib/utils"
-import { useTheme } from "next-themes"
+import { useTheme } from "@/components/theme-provider"
+import { useEffect, useState } from "react"
 
 interface BBLogoProps {
   size?: "sm" | "md" | "lg" | "xl"
@@ -11,8 +12,14 @@ interface BBLogoProps {
 }
 
 export default function BBLogo({ size = "md", className, inverted = false }: BBLogoProps) {
+  // Add mounted state to prevent hydration mismatch
+  const [mounted, setMounted] = useState(false)
   const { theme } = useTheme()
-  const isDarkMode = theme === "dark"
+
+  // Set mounted to true on client
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const sizeClasses = {
     sm: "w-8 h-8",
@@ -21,8 +28,18 @@ export default function BBLogo({ size = "md", className, inverted = false }: BBL
     xl: "w-24 h-24",
   }
 
+  // Only check theme after component is mounted to avoid hydration mismatch
+  const isDarkMode = mounted && theme === "dark"
+
   // Use the inverted logo in dark mode, unless explicitly overridden by the inverted prop
   const logoSrc = inverted || isDarkMode ? "/BigBasedIconInvert.png" : "/bb-logo.png"
+
+  // Log the logo source for debugging
+  useEffect(() => {
+    if (mounted) {
+      console.log("Logo source:", logoSrc, "isDarkMode:", isDarkMode)
+    }
+  }, [logoSrc, isDarkMode, mounted])
 
   return (
     <div className={cn(sizeClasses[size], "relative", className)}>

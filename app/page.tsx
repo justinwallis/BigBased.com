@@ -20,10 +20,9 @@ import {
 import { errorLogger } from "@/utils/error-logger"
 import { ThemeToggle } from "@/components/theme-toggle"
 import OptimizedImage from "@/components/optimized-image"
-import Image from "next/image"
 import FloatingNavigation from "@/components/floating-navigation"
 import ScrollAnimation from "@/components/scroll-animation"
-import { useTheme } from "next-themes"
+import { useTheme } from "@/components/theme-provider"
 
 // Add the import for LogoInfoSection at the top of the file with the other imports
 import LogoInfoSection from "@/components/logo-info-section"
@@ -51,6 +50,8 @@ import MediaVotingPlatform from "@/components/media-voting-platform"
 import LiveBasedIndexModule from "@/components/live-based-index-module"
 // Add the import for BasedProfileTease at the top of the file with the other imports
 import BasedProfileTease from "@/components/based-profile-tease"
+// Import the BBLogo component
+import BBLogo from "@/components/bb-logo"
 
 // Define dropdown menu content with images and interactive elements
 const aboutMenuItems = [
@@ -349,25 +350,7 @@ export default function Home() {
             onMouseLeave={() => setLogoHovered(false)}
           >
             <div className="relative w-16 h-16 transition-all duration-300 flex items-center justify-center">
-              {theme === "dark" ? (
-                <Image
-                  src="/BigBasedIconInvert.png"
-                  alt="Big Based Logo"
-                  width={64}
-                  height={64}
-                  className="object-contain"
-                  priority
-                />
-              ) : (
-                <Image
-                  src="/bb-logo.png"
-                  alt="Big Based Logo"
-                  width={64}
-                  height={64}
-                  className="object-contain"
-                  priority
-                />
-              )}
+              <BBLogo size="lg" />
             </div>
           </Link>
           <div className="hidden md:flex items-center space-x-6">

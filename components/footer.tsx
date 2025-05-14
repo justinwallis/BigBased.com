@@ -4,15 +4,13 @@ import Link from "next/link"
 import { Facebook, Twitter, Youtube, Instagram, MessageSquare, Send, Map } from "lucide-react"
 import { toggleSitemapEvent } from "./sitemap-container"
 import Image from "next/image"
-import { useTheme } from "next-themes"
+import { useTheme } from "@/components/theme-provider"
 
 export default function Footer() {
   const { theme } = useTheme()
 
-  const LogoImage = () => {
-    const logoSrc = theme === "dark" ? "/BigBasedIconInvert.png" : "/bb-logo.png"
-    return <Image src={logoSrc || "/placeholder.svg"} alt="BigBased Logo" fill className="object-contain" priority />
-  }
+  // Use a more reliable approach with direct inline conditional
+  const logoSrc = theme === "dark" ? "/BigBasedIconInvert.png" : "/bb-logo.png"
 
   const handleSitemapToggle = () => {
     // Dispatch the custom event to toggle the sitemap
@@ -26,7 +24,13 @@ export default function Footer() {
           <div className="mb-4 md:mb-0 md:flex-shrink-0">
             <Link href="/" className="font-bold text-2xl">
               <div className="w-12 h-12 relative">
-                <LogoImage />
+                <Image
+                  src={logoSrc || "/placeholder.svg"}
+                  alt="BigBased Logo"
+                  fill
+                  className="object-contain"
+                  priority
+                />
               </div>
             </Link>
           </div>

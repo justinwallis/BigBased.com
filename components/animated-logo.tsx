@@ -1,6 +1,6 @@
 "use client"
 
-import { useTheme } from "next-themes"
+import { useTheme } from "@/components/theme-provider"
 import { useEffect, useState } from "react"
 import OptimizedImage from "./optimized-image"
 
@@ -11,7 +11,7 @@ interface AnimatedLogoProps {
 }
 
 export function AnimatedLogo({ size = "medium", className = "", pulseEffect = false }: AnimatedLogoProps) {
-  const { resolvedTheme } = useTheme()
+  const { theme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
   // After mounting, we can safely show the logo based on the theme
@@ -42,7 +42,7 @@ export function AnimatedLogo({ size = "medium", className = "", pulseEffect = fa
   if (!mounted) return <div style={{ width, height }} />
 
   // Use the appropriate logo based on the theme
-  const logoSrc = resolvedTheme === "dark" ? "/BB_Logo_Animation_invert_new.gif" : "/BB_Logo_Animation.gif"
+  const logoSrc = theme === "dark" ? "/BB_Logo_Animation_invert_new.gif" : "/BB_Logo_Animation.gif"
   const fallbackSrc = `/placeholder.svg?height=${height}&width=${width}&query=Big Based Logo`
 
   return (
