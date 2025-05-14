@@ -5,6 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { X, Search, Bell } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
+import BBLogo from "@/components/bb-logo"
 
 const logos = [
   { name: "Organization 1", path: "/logos/org1.png" },
@@ -229,9 +230,7 @@ export default function SideMenu({
         <div className="flex-none p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex justify-between items-center">
             <Link href="/" className="font-bold text-2xl">
-              <div className="w-12 h-12 relative">
-                <Image src="/bb-logo.png" alt="BigBased Logo" fill className="object-contain" priority />
-              </div>
+              <BBLogo size="md" />
             </Link>
             <div className="flex items-center space-x-2">
               {/* Notification Bell */}
