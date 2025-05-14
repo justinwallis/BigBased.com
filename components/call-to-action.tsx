@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useState } from "react"
 import DigitalCross from "./digital-cross"
+import Image from "next/image"
 
 export default function CallToAction() {
   const [isHovered, setIsHovered] = useState(false)
@@ -12,7 +13,21 @@ export default function CallToAction() {
       {/* Digital cross background */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="w-[90%] h-[90%] digital-cross-pulse">
-          <DigitalCross />
+          {/* Light mode cross */}
+          <div className="block dark:hidden w-full h-full">
+            <DigitalCross />
+          </div>
+          {/* Dark mode cross - sized to match light mode exactly */}
+          <div className="hidden dark:block w-full h-full relative">
+            <Image
+              src="/digitalcrossInvert.png"
+              alt="Digital Cross"
+              fill
+              style={{ objectFit: "contain" }}
+              priority
+              className="opacity-70"
+            />
+          </div>
         </div>
       </div>
 

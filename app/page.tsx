@@ -391,11 +391,15 @@ export default function Home() {
       </section>
 
       {/* Enhanced Logos Marquee Section with Detailed Tooltips and Links */}
-      <ErrorBoundary>
-        <Suspense fallback={<LogoMarqueeSkeleton />}>
-          {logosLoaded ? <LogoMarquee logos={logos} /> : <LogoMarqueeSkeleton />}
-        </Suspense>
-      </ErrorBoundary>
+      <section id="partners-marquee">
+        <ScrollAnimation animation="fade-up">
+          <ErrorBoundary>
+            <Suspense fallback={<LogoMarqueeSkeleton />}>
+              {logosLoaded ? <LogoMarquee logos={logos} /> : <LogoMarqueeSkeleton />}
+            </Suspense>
+          </ErrorBoundary>
+        </ScrollAnimation>
+      </section>
 
       {/* Add the new FundraisingAndPrayerSection component */}
       <section id="fundraising">
