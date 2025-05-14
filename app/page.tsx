@@ -23,6 +23,7 @@ import OptimizedImage from "@/components/optimized-image"
 import Image from "next/image"
 import FloatingNavigation from "@/components/floating-navigation"
 import ScrollAnimation from "@/components/scroll-animation"
+import { useTheme } from "next-themes"
 
 // Add the import for LogoInfoSection at the top of the file with the other imports
 import LogoInfoSection from "@/components/logo-info-section"
@@ -249,6 +250,7 @@ export default function Home() {
   const [logosLoaded, setLogosLoaded] = useState(false)
   const [hoveredLogo, setHoveredLogo] = useState(null)
   const [isHovering, setIsHovering] = useState(false)
+  const { theme } = useTheme()
 
   // Register main page component with loading manager
   const { markLoaded } = useResourceLoading("main-page", 3)
@@ -347,14 +349,25 @@ export default function Home() {
             onMouseLeave={() => setLogoHovered(false)}
           >
             <div className="relative w-16 h-16 transition-all duration-300 flex items-center justify-center">
-              <Image
-                src="/bb-logo.png"
-                alt="Big Based Logo"
-                width={64}
-                height={64}
-                className="object-contain"
-                priority
-              />
+              {theme === "dark" ? (
+                <Image
+                  src="/BigBasedIconInvert.png"
+                  alt="Big Based Logo"
+                  width={64}
+                  height={64}
+                  className="object-contain"
+                  priority
+                />
+              ) : (
+                <Image
+                  src="/bb-logo.png"
+                  alt="Big Based Logo"
+                  width={64}
+                  height={64}
+                  className="object-contain"
+                  priority
+                />
+              )}
             </div>
           </Link>
           <div className="hidden md:flex items-center space-x-6">
@@ -505,7 +518,6 @@ export default function Home() {
       </ScrollAnimation>
 
       {/* Separator before Domain Collection - More visible version */}
-      <div className="border-t-2 border-gray-400 dark:border-gray-600 mt-2 mb-1"></div>
 
       {/* Share & Connect on X */}
       <ScrollAnimation animation="fade-up" delay={800}>

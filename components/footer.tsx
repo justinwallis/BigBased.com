@@ -4,8 +4,16 @@ import Link from "next/link"
 import { Facebook, Twitter, Youtube, Instagram, MessageSquare, Send, Map } from "lucide-react"
 import { toggleSitemapEvent } from "./sitemap-container"
 import Image from "next/image"
+import { useTheme } from "next-themes"
 
 export default function Footer() {
+  const { theme } = useTheme()
+
+  const LogoImage = () => {
+    const logoSrc = theme === "dark" ? "/BigBasedIconInvert.png" : "/bb-logo.png"
+    return <Image src={logoSrc || "/placeholder.svg"} alt="BigBased Logo" fill className="object-contain" priority />
+  }
+
   const handleSitemapToggle = () => {
     // Dispatch the custom event to toggle the sitemap
     window.dispatchEvent(new Event(toggleSitemapEvent))
@@ -18,7 +26,7 @@ export default function Footer() {
           <div className="mb-4 md:mb-0 md:flex-shrink-0">
             <Link href="/" className="font-bold text-2xl">
               <div className="w-12 h-12 relative">
-                <Image src="/bb-logo.png" alt="BigBased Logo" fill className="object-contain" priority />
+                <LogoImage />
               </div>
             </Link>
           </div>

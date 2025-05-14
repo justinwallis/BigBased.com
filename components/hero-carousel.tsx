@@ -386,7 +386,7 @@ export default function HeroCarousel() {
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden py-3 px-4 md:px-8"
+      className="relative overflow-hidden py-3 px-4 md:px-8 bg-white dark:bg-gray-900 transition-colors duration-300"
       style={{ height: windowWidth < 768 ? "600px" : "520px" }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
@@ -397,19 +397,33 @@ export default function HeroCarousel() {
       aria-roledescription="carousel"
       aria-label="Hero content carousel"
     >
-      {/* Left and Right Edge Fade Effects */}
+      {/* Left and Right Edge Fade Effects - Light Mode Only */}
       <div
-        className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none"
+        className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none dark:hidden"
         style={{
           background:
             "linear-gradient(to right, rgba(255,255,255,1) 0%, rgba(255,255,255,0.8) 40%, rgba(255,255,255,0) 100%)",
         }}
       ></div>
       <div
-        className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none"
+        className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none dark:hidden"
         style={{
           background:
             "linear-gradient(to left, rgba(255,255,255,1) 0%, rgba(255,255,255,0.8) 40%, rgba(255,255,255,0) 100%)",
+        }}
+      ></div>
+
+      {/* Dark mode fade effects - Updated to match dark:bg-gray-900 */}
+      <div
+        className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none hidden dark:block"
+        style={{
+          background: "linear-gradient(to right, rgba(17,24,39,1) 0%, rgba(17,24,39,0.8) 40%, rgba(17,24,39,0) 100%)",
+        }}
+      ></div>
+      <div
+        className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none hidden dark:block"
+        style={{
+          background: "linear-gradient(to left, rgba(17,24,39,1) 0%, rgba(17,24,39,0.8) 40%, rgba(17,24,39,0) 100%)",
         }}
       ></div>
 
@@ -433,7 +447,7 @@ export default function HeroCarousel() {
           className="mr-2"
           fallbackSrc="/american-flag.png"
         />
-        <div className="text-[10px] dark:text-white">
+        <div className="text-[10px] text-gray-800 dark:text-gray-100">
           <p className="font-bold">AMERICA FIRST,</p>
           <p>UNCENSORED CHRISTIAN</p>
           <p>COMPANY</p>
@@ -456,7 +470,7 @@ export default function HeroCarousel() {
           return (
             <div
               key={slideId}
-              className="h-full w-full flex-shrink-0 flex items-center px-4 md:px-8"
+              className="h-full w-full flex-shrink-0 flex items-center px-4 md:px-8 bg-white dark:bg-gray-900 transition-colors duration-300"
               aria-hidden={activeIndex !== index}
               role="group"
               aria-roledescription="slide"
@@ -465,10 +479,13 @@ export default function HeroCarousel() {
               <div className="flex w-full h-full items-center flex-col md:flex-row">
                 {/* Text Section - 1/3 width on desktop, full width on mobile */}
                 <div className="w-full md:w-1/3 pr-0 md:pr-8 mb-6 md:mb-0">
-                  <p className="text-lg mb-2 dark:text-white">{hero.subtitle}</p>
-                  <h2 className="text-4xl md:text-5xl font-bold mb-4 dark:text-white">{hero.title}</h2>
-                  <p className="text-sm mb-6 dark:text-gray-200">{hero.description}</p>
-                  <Link href={hero.ctaLink} className="flex items-center font-medium text-sm dark:text-white">
+                  <p className="text-lg mb-2 text-gray-700 dark:text-gray-300">{hero.subtitle}</p>
+                  <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">{hero.title}</h2>
+                  <p className="text-sm mb-6 text-gray-600 dark:text-gray-400">{hero.description}</p>
+                  <Link
+                    href={hero.ctaLink}
+                    className="flex items-center font-medium text-sm text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-gray-300 transition-colors duration-200"
+                  >
                     {hero.ctaText} <span className="ml-2">→</span>
                   </Link>
                 </div>

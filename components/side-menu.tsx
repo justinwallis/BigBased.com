@@ -184,7 +184,7 @@ export default function SideMenu({
     <>
       {/* Hamburger Button - Fixed positioning with improved stickiness */}
       <button
-        className="fixed left-0 z-50 bg-black text-white p-3 rounded-r-lg group hover:bg-gray-900"
+        className="fixed left-0 z-50 bg-black dark:bg-white text-white dark:text-black p-3 rounded-r-lg group hover:bg-gray-900 dark:hover:bg-gray-100"
         style={{
           top: scrollY > 100 ? "5rem" : "10rem",
           transition: "top 0.3s ease",
@@ -195,9 +195,9 @@ export default function SideMenu({
         aria-label="Open menu"
       >
         <div className="w-3 h-5 flex flex-col justify-between transition-all duration-300 ease-in-out">
-          <span className="w-full h-0.5 bg-white rounded-full block transition-all duration-300 ease-in-out group-hover:w-5/6 group-hover:translate-y-0.5"></span>
-          <span className="w-5/6 h-0.5 bg-white rounded-full block transition-all duration-300 ease-in-out group-hover:w-full"></span>
-          <span className="w-full h-0.5 bg-white rounded-full block transition-all duration-300 ease-in-out group-hover:w-5/6 group-hover:-translate-y-0.5"></span>
+          <span className="w-full h-0.5 bg-white dark:bg-black rounded-full block transition-all duration-300 ease-in-out group-hover:w-5/6 group-hover:translate-y-0.5"></span>
+          <span className="w-5/6 h-0.5 bg-white dark:bg-black rounded-full block transition-all duration-300 ease-in-out group-hover:w-full"></span>
+          <span className="w-full h-0.5 bg-white dark:bg-black rounded-full block transition-all duration-300 ease-in-out group-hover:w-5/6 group-hover:-translate-y-0.5"></span>
         </div>
       </button>
 
