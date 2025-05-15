@@ -88,7 +88,7 @@ const DomainItem = ({ domain, index, totalVisible }: DomainItemProps) => {
       }}
       whileHover={{ scale: 1.02 }}
     >
-      <div className="font-mono text-lg md:text-xl">
+      <div className="font-sans text-lg md:text-xl">
         <span className={getCategoryColor(domain.category)}>{name}</span>
         <span className={getTldColor(tld)}>.{tld}</span>
       </div>
