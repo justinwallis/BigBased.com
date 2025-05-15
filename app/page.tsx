@@ -545,7 +545,7 @@ export default function Home() {
       </ScrollAnimation>
 
       {/* Call to Action Section - Moved to the end, right above the footer */}
-      <section id="call-to-action">
+      <section id="call-to-action" className="pb-10 mb-5">
         <ScrollAnimation animation="fade-up" delay={1200}>
           <ErrorBoundary>
             <CallToAction />
