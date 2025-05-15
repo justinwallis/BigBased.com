@@ -1,6 +1,6 @@
 import type React from "react"
 import "./globals.css"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next/types"
 import { Inter } from "next/font/google"
 import Script from "next/script"
 import ClientPreloaderContainer from "@/components/client-preloader-container"
@@ -9,32 +9,14 @@ import PageTransition from "@/components/page-transition"
 import { ThemeProvider } from "@/components/theme-provider"
 import OneSignalProvider from "@/components/one-signal-provider"
 import AuthWrapper from "@/components/auth/auth-wrapper"
-import SectionPersistence from "@/components/section-persistence"
+import SectionPersistenceWrapper from "@/components/section-persistence-wrapper"
+import { baseMetadata, viewportConfig } from "./metadata-config"
 
 const inter = Inter({ subsets: ["latin"] })
 
-export const metadata: Metadata = {
-  title: "Big Based",
-  description: "Empowering freedom-minded individuals",
-  icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/icon0.svg", type: "image/svg+xml" },
-      { url: "/icon1.png", type: "image/png" },
-    ],
-    apple: { url: "/apple-icon.png", type: "image/png" },
-    other: [{ rel: "manifest", url: "/manifest.json" }],
-  },
-  manifest: "/manifest.json",
-  themeColor: "#ffffff",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "Big Based",
-  },
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
-    generator: 'v0.dev'
-}
+export const metadata: Metadata = baseMetadata
+
+export const viewport: Viewport = viewportConfig
 
 export default function RootLayout({
   children,
@@ -51,6 +33,10 @@ export default function RootLayout({
         {/* Preconnect to external domains */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
         <link rel="preconnect" href="https://cdn.onesignal.com" />
 
         {/* Inline script to show preloader immediately before any React hydration */}
@@ -502,7 +488,7 @@ export default function RootLayout({
             <OneSignalProvider>
               <ClientPreloaderContainer quotesToShow={5}>
                 <AuthWrapper>
-                  <SectionPersistence />
+                  <SectionPersistenceWrapper />
                   <PageTransition>{children}</PageTransition>
                 </AuthWrapper>
               </ClientPreloaderContainer>

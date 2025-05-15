@@ -1,3 +1,13 @@
+import type { Metadata, Viewport } from "next/types"
+import { baseMetadata, viewportConfig } from "../metadata-config"
+
+export const metadata: Metadata = {
+  ...baseMetadata,
+  title: "Transform | Big Based",
+}
+
+export const viewport: Viewport = viewportConfig
+
 export default function TransformPage() {
   return (
     <div className="min-h-screen bg-white p-8">
