@@ -50,6 +50,38 @@ export default function SideMenu({
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState([])
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const initialRenderRef = useRef(true)
+
+  // Check localStorage for saved menu state on initial render
+  useEffect(() => {
+    if (initialRenderRef.current && typeof window !== "undefined") {
+      try {
+        const savedMenuState = localStorage.getItem("menuIsOpen")
+        if (savedMenuState === "true" && !isOpen) {
+          setIsOpen(true)
+        }
+        initialRenderRef.current = false
+      } catch (error) {
+        console.error("Error reading menu state from localStorage:", error)
+      }
+    }
+  }, [isOpen, setIsOpen])
+
+  // Save menu state to localStorage whenever it changes
+  useEffect(() => {
+    if (!initialRenderRef.current && typeof window !== "undefined") {
+      try {
+        // Use the global function if available, otherwise save directly
+        if (window.saveMenuState) {
+          window.saveMenuState(isOpen)
+        } else {
+          localStorage.setItem("menuIsOpen", isOpen ? "true" : "false")
+        }
+      } catch (error) {
+        console.error("Error saving menu state:", error)
+      }
+    }
+  }, [isOpen])
 
   // Focus search input when openWithSearch is true
   useEffect(() => {
