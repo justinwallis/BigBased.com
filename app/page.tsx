@@ -186,7 +186,7 @@ const LogoMarquee = ({ logos }) => {
                     alt={logo.alt}
                     width={85}
                     height={28}
-                    className="object-contain h-5 sm:h-6 md:h-7"
+                    className="object-contain h-5 sm:h-6 md:h-7 image-fade-in"
                     fallbackSrc="/placeholder.svg?key=4zqxa"
                   />
                 </Link>
@@ -211,7 +211,7 @@ const LogoMarquee = ({ logos }) => {
                     alt={logo.alt}
                     width={85}
                     height={28}
-                    className="object-contain h-5 sm:h-6 md:h-7"
+                    className="object-contain h-5 sm:h-6 md:h-7 image-fade-in"
                     fallbackSrc="/placeholder.svg?key=4ux7r"
                   />
                 </Link>

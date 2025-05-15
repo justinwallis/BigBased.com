@@ -125,12 +125,14 @@ body {
 }
 
 @keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
+  0% {
+    transform: scale(1);
   }
   50% {
-    opacity: 0.6;
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
   }
 }
 
@@ -907,4 +909,14 @@ body {
     transition: none !important;
     animation: none !important;
   }
+}
+
+/* Image fade-in animation */
+.image-fade-in {
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.image-fade-in.loaded {
+  opacity: 1;
 }

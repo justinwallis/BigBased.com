@@ -10,10 +10,12 @@ interface OptimizedImageProps extends Omit<ImageProps, "onError"> {
 export default function OptimizedImage({ src, alt, fallbackSrc, ...props }: OptimizedImageProps) {
   const [imgSrc, setImgSrc] = useState<string | null>(null)
   const [error, setError] = useState(false)
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     // Reset error state when src changes
     setError(false)
+    setLoaded(false) // Reset loaded state
 
     // Handle different src types
     if (typeof src === "string") {
@@ -40,14 +42,20 @@ export default function OptimizedImage({ src, alt, fallbackSrc, ...props }: Opti
   // If there's an error, use the fallback
   const displaySrc = error ? getPlaceholder() : imgSrc
 
+  const handleLoad = () => {
+    setLoaded(true)
+  }
+
   return (
     <Image
       {...props}
       src={displaySrc || getPlaceholder()}
       alt={alt || "Image"}
       onError={handleError}
+      onLoad={handleLoad}
       unoptimized={true}
       crossOrigin="anonymous" // Add this to avoid CORS issues
+      className={`image-fade-in ${loaded ? "loaded" : ""} ${props.className || ""}`}
     />
   )
 }
