@@ -13,6 +13,7 @@ import SectionPersistenceWrapper from "@/components/section-persistence-wrapper"
 import { baseMetadata, viewportConfig } from "./metadata-config"
 import { getOrganizationData, getWebsiteData } from "@/lib/structured-data"
 import StructuredData from "@/components/structured-data"
+import Head from "./head"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -34,6 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <Head />
         {/* Resource preloading */}
         <link rel="preload" href="/bb-logo.png" as="image" />
         <link rel="preload" href="/american-flag.png" as="image" />

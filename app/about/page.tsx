@@ -4,6 +4,9 @@ import Link from "next/link"
 import { getWebPageData, getBreadcrumbData } from "@/lib/structured-data"
 import StructuredData from "@/components/structured-data"
 
+// Get the base URL for absolute URLs
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bigbased.com"
+
 export const metadata: Metadata = generateMetadata(
   "About",
   "Learn about Big Based, a cultural revolution platform dedicated to reclaiming digital sovereignty, preserving truth, and building a parallel economy.",
@@ -17,7 +20,7 @@ export default function AboutPage() {
     "About Big Based",
     "Learn about Big Based, a cultural revolution platform dedicated to reclaiming digital sovereignty, preserving truth, and building a parallel economy.",
     "/about",
-    "https://bigbased.com/og-image.png",
+    `${baseUrl}/og-image.png`,
   )
 
   // Breadcrumb data for the about page
