@@ -6,6 +6,7 @@
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-rgb: 255, 255, 255;
+  --transition-speed: 200ms;
 }
 
 body {
@@ -102,6 +103,16 @@ body {
     --sidebar-border: 0 0% 15%;
     --sidebar-ring: 0 0% 59.8%;
   }
+}
+
+/* Add theme transition for smooth mode switching */
+html {
+  transition: color var(--transition-speed) ease, background-color var(--transition-speed) ease;
+}
+
+html * {
+  transition: color var(--transition-speed) ease, background-color var(--transition-speed) ease, border-color
+    var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
 }
 
 @layer base {
@@ -908,6 +919,11 @@ body {
   .scroll-animation {
     transition: none !important;
     animation: none !important;
+  }
+
+  html,
+  html * {
+    transition: none !important;
   }
 }
 
