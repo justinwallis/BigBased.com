@@ -674,6 +674,20 @@ export default function BasedQuiz() {
           </div>
         </div>
       </div>
+      <div className="text-center mt-6 text-sm text-gray-500 dark:text-gray-400">
+        <p>
+          Quiz Powered by{" "}
+          <a
+            href="https://HowBasedAreYou.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium hover:underline"
+          >
+            HowBasedAreYou.com
+          </a>
+          . Visit to take the full assessment.
+        </p>
+      </div>
     </section>
   )
 }

@@ -14,31 +14,80 @@ export default function FloatingNavigation() {
   const [animatingDot, setAnimatingDot] = useState<string | null>(null)
   const prevActiveSectionRef = useRef(activeSection)
 
+  // Define section IDs and their corresponding labels
   const navItems: NavItem[] = [
-    { id: "hero", label: "Hero" },
+    { id: "top", label: "Welcome!" },
     { id: "fundraising", label: "Fundraising" },
     { id: "library", label: "Digital Library" },
-    { id: "revolution", label: "Revolution" },
-    { id: "about", label: "About" },
-    { id: "media", label: "Media" },
-    { id: "domains", label: "Domains" },
+    { id: "about", label: "About Big Based" },
+    { id: "media", label: "Index & Voting" },
+    { id: "website-showcase", label: "Website Showcase" },
+    { id: "x-share-widget", label: "Share on X!" },
+    { id: "domains", label: "Based Domains & Profile" },
+    { id: "based-quiz", label: "How Based Are You?" },
   ]
 
-  useEffect(() => {
-    const sections = navItems.map((item) => document.getElementById(item.id)).filter(Boolean)
+  // Function to find elements by ID or class name
+  const findElement = (identifier: string): HTMLElement | null => {
+    // Try by ID first
+    let element = document.getElementById(identifier)
 
+    // If not found by ID, try by class name
+    if (!element) {
+      const elements = document.getElementsByClassName(identifier)
+      if (elements.length > 0) {
+        element = elements[0] as HTMLElement
+      }
+    }
+
+    // If still not found, try some alternative IDs
+    if (!element) {
+      const alternativeIds: Record<string, string[]> = {
+        "website-showcase": ["website_showcase", "websites", "showcase"],
+        "x-share-widget": ["share", "x-share", "share-widget", "x-widget"],
+        "based-quiz": ["quiz", "how-based", "based_quiz"],
+      }
+
+      const alternatives = alternativeIds[identifier]
+      if (alternatives) {
+        for (const altId of alternatives) {
+          element = document.getElementById(altId)
+          if (element) break
+
+          const altElements = document.getElementsByClassName(altId)
+          if (altElements.length > 0) {
+            element = altElements[0] as HTMLElement
+            break
+          }
+        }
+      }
+    }
+
+    return element
+  }
+
+  useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY + window.innerHeight / 3
 
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const section = sections[i]
-        if (!section) continue
+      // Special case for top of page
+      if (scrollPosition < 300) {
+        setActiveSection("top")
+        return
+      }
 
-        const sectionTop = section.offsetTop
+      // Check each section
+      for (let i = navItems.length - 1; i >= 0; i--) {
+        if (navItems[i].id === "top") continue
 
-        if (scrollPosition >= sectionTop) {
-          if (activeSection !== section.id) {
-            setActiveSection(section.id)
+        const element = findElement(navItems[i].id)
+        if (!element) continue
+
+        const elementTop = element.offsetTop
+
+        if (scrollPosition >= elementTop) {
+          if (activeSection !== navItems[i].id) {
+            setActiveSection(navItems[i].id)
           }
           break
         }
@@ -70,10 +119,19 @@ export default function FloatingNavigation() {
   }, [activeSection])
 
   const scrollToSection = (id: string) => {
-    const section = document.getElementById(id)
-    if (section) {
+    // Special case for top of page
+    if (id === "top") {
       window.scrollTo({
-        top: section.offsetTop,
+        top: 0,
+        behavior: "smooth",
+      })
+      return
+    }
+
+    const element = findElement(id)
+    if (element) {
+      window.scrollTo({
+        top: element.offsetTop,
         behavior: "smooth",
       })
     }
@@ -94,7 +152,7 @@ export default function FloatingNavigation() {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: -5 }}
                 exit={{ opacity: 0, x: -10 }}
-                className="absolute right-full mr-2 top-1/2 transform -translate-y-1/2 whitespace-nowrap bg-white dark:bg-gray-800 text-xs px-2 py-1 rounded shadow-md"
+                className="absolute right-full mr-2 top-1/2 transform -translate-y-1/2 whitespace-nowrap bg-white dark:bg-gray-800 text-gray-800 dark:text-white text-xs px-2 py-1 rounded shadow-md"
                 style={{ pointerEvents: "none" }}
               >
                 {item.label}
