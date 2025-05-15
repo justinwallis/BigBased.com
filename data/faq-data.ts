@@ -44,7 +44,7 @@ export const faqItems: FAQItem[] = [
   {
     question: "What resources does Big Based offer?",
     answer:
-      "Big Based offers a comprehensive digital library with over 6,000 meticulously researched pages covering topics from faith and freedom to digital sovereignty and cultural resistance. We also provide practical guides, video content, community forums, educational courses, and tools for building alternative systems.",
+      "Big Based offers a comprehensive digital library with over 10,000+ meticulously researched pages covering topics from faith and freedom to digital sovereignty and cultural resistance. We also provide practical guides, video content, community forums, educational courses, and tools for building alternative systems.",
     category: "resources",
   },
   {

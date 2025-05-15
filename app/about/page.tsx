@@ -52,8 +52,9 @@ export default function AboutPage() {
           </p>
 
           <p className="mb-8 dark:text-gray-200">
-            Founded on principles of truth, faith, and freedom, Big Based offers a comprehensive library of resources,
-            community connections, and practical solutions for navigating the challenges of our time.
+            Founded on principles of truth, faith, and freedom, Big Based offers a comprehensive library of 10,000+
+            meticulously researched pages, community connections, and practical solutions for navigating the challenges
+            of our time.
           </p>
 
           <Link
