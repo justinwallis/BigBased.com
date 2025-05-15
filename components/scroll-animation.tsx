@@ -42,7 +42,7 @@ export default function ScrollAnimation({
       },
       {
         threshold,
-        rootMargin: "0px 0px -100px 0px", // Trigger a bit before the element is fully in view
+        rootMargin: "0px", // Trigger a bit before the element is fully in view
       },
     )
 
