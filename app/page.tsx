@@ -501,18 +501,9 @@ export default function Home() {
         </ScrollAnimation>
       </section>
 
-      {/* Call to Action Section */}
-      <ScrollAnimation animation="fade-up" delay={700}>
-        <ErrorBoundary>
-          <CallToAction />
-        </ErrorBoundary>
-      </ScrollAnimation>
-
-      {/* Separator before Domain Collection - More visible version */}
-
       {/* Share & Connect on X */}
       <section id="x-share-widget">
-        <ScrollAnimation animation="fade-up" delay={800}>
+        <ScrollAnimation animation="fade-up" delay={700}>
           <ErrorBoundary>
             <XShareWidget />
           </ErrorBoundary>
@@ -521,7 +512,7 @@ export default function Home() {
 
       {/* Domain Scroller - Now positioned directly above the footer */}
       <section id="domains">
-        <ScrollAnimation animation="fade-up" delay={900}>
+        <ScrollAnimation animation="fade-up" delay={800}>
           <ErrorBoundary>
             <Suspense fallback={<DomainMarqueeSkeleton />}>
               <VerticalDomainScroller />
@@ -531,7 +522,7 @@ export default function Home() {
       </section>
 
       {/* Based Profile Tease Section */}
-      <ScrollAnimation animation="fade-up" delay={1000}>
+      <ScrollAnimation animation="fade-up" delay={900}>
         <ErrorBoundary>
           <BasedProfileTease />
         </ErrorBoundary>
@@ -539,7 +530,7 @@ export default function Home() {
 
       {/* Based Quiz Section */}
       <section id="based-quiz">
-        <ScrollAnimation animation="fade-up" delay={1050}>
+        <ScrollAnimation animation="fade-up" delay={1000}>
           <ErrorBoundary>
             <BasedQuiz />
           </ErrorBoundary>
@@ -553,7 +544,14 @@ export default function Home() {
         </ErrorBoundary>
       </ScrollAnimation>
 
-      {/* No separator after Domain Collection - Removed as requested */}
+      {/* Call to Action Section - Moved to the end, right above the footer */}
+      <section id="call-to-action">
+        <ScrollAnimation animation="fade-up" delay={1200}>
+          <ErrorBoundary>
+            <CallToAction />
+          </ErrorBoundary>
+        </ScrollAnimation>
+      </section>
 
       <ErrorBoundary>
         <Footer />
