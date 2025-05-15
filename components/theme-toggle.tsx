@@ -22,12 +22,12 @@ export function ThemeToggle({ variant = "icon", className = "" }: ThemeTogglePro
     >
       {theme === "dark" ? (
         <>
-          <Sun className="h-6 w-6 text-white" />
+          <Sun className="h-5 w-5 text-white" />
           {variant === "button" && <span>Light mode</span>}
         </>
       ) : (
         <>
-          <Moon className="h-6 w-6 text-gray-800" />
+          <Moon className="h-5 w-5 text-gray-800" />
           {variant === "button" && <span>Dark mode</span>}
         </>
       )}
