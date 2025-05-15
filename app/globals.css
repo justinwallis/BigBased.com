@@ -589,17 +589,7 @@ body {
 }
 
 .about-section::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 6px;
-  background: linear-gradient(90deg, transparent, #000, transparent);
-}
-
-.dark .about-section::before {
-  background: linear-gradient(90deg, transparent, #fff, transparent);
+  display: none;
 }
 
 /* Add a subtle background pattern for the about section */
