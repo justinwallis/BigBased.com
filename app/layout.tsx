@@ -16,6 +16,23 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Big Based",
   description: "Empowering freedom-minded individuals",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon0.svg", type: "image/svg+xml" },
+      { url: "/icon1.png", type: "image/png" },
+    ],
+    apple: { url: "/apple-icon.png", type: "image/png" },
+    other: [{ rel: "manifest", url: "/manifest.json" }],
+  },
+  manifest: "/manifest.json",
+  themeColor: "#ffffff",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Big Based",
+  },
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
     generator: 'v0.dev'
 }
 

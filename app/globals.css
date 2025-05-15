@@ -362,9 +362,9 @@ body {
 }
 
 .dark .logo-info-section {
-  background-color: #021f1d;
-  border-top: 1px solid #053330;
-  border-bottom: 1px solid #053330;
+  background-color: #1a1a1a; /* Dark gray instead of teal */
+  border-top: 1px solid #2a2a2a;
+  border-bottom: 1px solid #2a2a2a;
 }
 
 .digital-library-section {
@@ -374,8 +374,8 @@ body {
 }
 
 .dark .digital-library-section {
-  background-color: #021312;
-  border-top: 1px solid #053330;
+  background-color: #121212; /* Darker gray */
+  border-top: 1px solid #2a2a2a;
 }
 
 .digital-library-section::before {
