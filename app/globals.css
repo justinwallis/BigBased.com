@@ -6,7 +6,7 @@
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-rgb: 255, 255, 255;
-  --transition-speed: 200ms;
+  --transition-speed: 0.2s;
 }
 
 body {
@@ -105,14 +105,57 @@ body {
   }
 }
 
-/* Add theme transition for smooth mode switching */
+/* Add smooth transition for theme switching */
 html {
-  transition: color var(--transition-speed) ease, background-color var(--transition-speed) ease;
+  transition: color-scheme var(--transition-speed) ease;
 }
 
-html * {
-  transition: color var(--transition-speed) ease, background-color var(--transition-speed) ease, border-color
-    var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+body,
+.bg-background,
+.bg-card,
+.bg-popover,
+.bg-primary,
+.bg-secondary,
+.bg-muted,
+.bg-accent,
+.text-foreground,
+.text-card-foreground,
+.text-popover-foreground,
+.text-primary-foreground,
+.text-secondary-foreground,
+.text-muted-foreground,
+.text-accent-foreground,
+.border-border,
+.logo-info-section,
+.digital-library-section,
+.about-section,
+button,
+a,
+input,
+textarea,
+select {
+  transition:
+    background-color var(--transition-speed) ease,
+    border-color var(--transition-speed) ease,
+    color var(--transition-speed) ease,
+    box-shadow var(--transition-speed) ease,
+    opacity var(--transition-speed) ease;
+}
+
+/* Exclude certain animations from the transition */
+.animate-spin,
+.animate-pulse,
+.animate-ping,
+.animate-bounce,
+.animate-spin-slow,
+.binary-pulse,
+.domain-dot,
+.marquee-content,
+.progress-fill,
+.sparkle,
+.digital-cross-pulse,
+.logo-pulse {
+  transition: none;
 }
 
 @layer base {
@@ -919,11 +962,6 @@ html * {
   .scroll-animation {
     transition: none !important;
     animation: none !important;
-  }
-
-  html,
-  html * {
-    transition: none !important;
   }
 }
 
