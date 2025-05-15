@@ -491,13 +491,15 @@ export default function Home() {
       </ScrollAnimation>
 
       {/* Add the new Website Showcase section above the Domain Collection */}
-      <ScrollAnimation animation="fade-up" delay={600}>
-        <ErrorBoundary>
-          <Suspense fallback={<WebsiteShowcaseSkeleton />}>
-            <WebsiteShowcase />
-          </Suspense>
-        </ErrorBoundary>
-      </ScrollAnimation>
+      <section id="website-showcase">
+        <ScrollAnimation animation="fade-up" delay={600}>
+          <ErrorBoundary>
+            <Suspense fallback={<WebsiteShowcaseSkeleton />}>
+              <WebsiteShowcase />
+            </Suspense>
+          </ErrorBoundary>
+        </ScrollAnimation>
+      </section>
 
       {/* Call to Action Section */}
       <ScrollAnimation animation="fade-up" delay={700}>
@@ -509,11 +511,13 @@ export default function Home() {
       {/* Separator before Domain Collection - More visible version */}
 
       {/* Share & Connect on X */}
-      <ScrollAnimation animation="fade-up" delay={800}>
-        <ErrorBoundary>
-          <XShareWidget />
-        </ErrorBoundary>
-      </ScrollAnimation>
+      <section id="x-share-widget">
+        <ScrollAnimation animation="fade-up" delay={800}>
+          <ErrorBoundary>
+            <XShareWidget />
+          </ErrorBoundary>
+        </ScrollAnimation>
+      </section>
 
       {/* Domain Scroller - Now positioned directly above the footer */}
       <section id="domains">
@@ -534,11 +538,13 @@ export default function Home() {
       </ScrollAnimation>
 
       {/* Based Quiz Section */}
-      <ScrollAnimation animation="fade-up" delay={1050}>
-        <ErrorBoundary>
-          <BasedQuiz />
-        </ErrorBoundary>
-      </ScrollAnimation>
+      <section id="based-quiz">
+        <ScrollAnimation animation="fade-up" delay={1050}>
+          <ErrorBoundary>
+            <BasedQuiz />
+          </ErrorBoundary>
+        </ScrollAnimation>
+      </section>
 
       {/* Add the SitemapContainer component here */}
       <ScrollAnimation animation="fade-up" delay={1100}>
