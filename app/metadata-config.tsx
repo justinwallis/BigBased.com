@@ -94,7 +94,7 @@ export const baseMetadata: Metadata = {
     // Discord metadata
     "discord:title": "Big Based - Answer to Madness",
     "discord:description":
-      "Big Based isn't just a platform, it's a cultural revolution with 6000+ pages of truth, faith, and insight.",
+      "Big Based isn't just a platform, it's a cultural revolution with 10,000+ meticulously researched pages of truth, faith, and insight.",
     "discord:image": getAbsoluteUrl("/og-image.png"),
     // LinkedIn metadata
     "linkedin:title": "Big Based - Cultural Revolution Platform",
@@ -104,7 +104,7 @@ export const baseMetadata: Metadata = {
     // Slack metadata
     "slack-app-id": "A12345678",
     "slack:title": "Big Based - Answer to Madness",
-    "slack:description": "A cultural revolution platform with 6000+ pages of meticulously researched content.",
+    "slack:description": "A cultural revolution platform with 10,000+ pages of meticulously researched content.",
     "slack:image": getAbsoluteUrl("/og-image.png"),
   },
 }

@@ -14,7 +14,7 @@ const heroSections = [
     subtitle: "Big Based is not just a Project, but",
     title: "Answer to Madness.",
     description:
-      "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 6000 meticulously researched pages (and counting!) designed to educate, inspire, and transform.",
+      "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform.",
     ctaText: "How We Transform",
     ctaLink: "/transform",
     image: "/dove-cross.png",

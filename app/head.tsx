@@ -5,7 +5,7 @@ export default function Head() {
       <meta property="og:title" content="Big Based - Answer to Madness" />
       <meta
         property="og:description"
-        content="Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 6000 meticulously researched pages designed to educate, inspire, and transform."
+        content="Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform."
       />
       <meta
         property="og:image"
@@ -21,7 +21,7 @@ export default function Head() {
       <meta name="twitter:title" content="Big Based - Answer to Madness" />
       <meta
         name="twitter:description"
-        content="Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 6000 meticulously researched pages designed to educate, inspire, and transform."
+        content="Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform."
       />
       <meta
         name="twitter:image"

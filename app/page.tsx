@@ -11,12 +11,12 @@ export const metadata: Metadata = {
   ...baseMetadata,
   title: "Big Based - Answer to Madness",
   description:
-    "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 6000 meticulously researched pages designed to educate, inspire, and transform.",
+    "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform.",
   openGraph: {
     ...baseMetadata.openGraph,
     title: "Big Based - Answer to Madness",
     description:
-      "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 6000 meticulously researched pages designed to educate, inspire, and transform.",
+      "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform.",
     url: baseUrl,
     images: [
       {
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     ...baseMetadata.twitter,
     title: "Big Based - Answer to Madness",
     description:
-      "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 6000 meticulously researched pages designed to educate, inspire, and transform.",
+      "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform.",
     images: [`${baseUrl}/og-image.png`],
   },
 }
@@ -42,7 +42,7 @@ export default function Home() {
   // Structured data for the homepage
   const pageStructuredData = getWebPageData(
     "Big Based - Answer to Madness",
-    "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 6000 meticulously researched pages designed to educate, inspire, and transform.",
+    "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform.",
     "/",
     `${baseUrl}/og-image.png`,
   )
