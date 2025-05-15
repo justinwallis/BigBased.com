@@ -9,6 +9,7 @@ import PageTransition from "@/components/page-transition"
 import { ThemeProvider } from "@/components/theme-provider"
 import OneSignalProvider from "@/components/one-signal-provider"
 import AuthWrapper from "@/components/auth/auth-wrapper"
+import SectionPersistence from "@/components/section-persistence"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -484,6 +485,7 @@ export default function RootLayout({
             <OneSignalProvider>
               <ClientPreloaderContainer quotesToShow={5}>
                 <AuthWrapper>
+                  <SectionPersistence />
                   <PageTransition>{children}</PageTransition>
                 </AuthWrapper>
               </ClientPreloaderContainer>
