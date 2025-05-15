@@ -1,14 +1,10 @@
 import type { Metadata, Viewport } from "next/types"
-import { baseMetadata, viewportConfig } from "../metadata-config"
+import { viewportConfig, generateMetadata } from "../metadata-config"
+import ProfileClientPage from "./ProfileClientPage"
 
-export const metadata: Metadata = {
-  ...baseMetadata,
-  title: "Profile | Big Based",
-}
+export const metadata: Metadata = generateMetadata("Profile", "Manage your Big Based profile and account settings.")
 
 export const viewport: Viewport = viewportConfig
-
-import ProfileClientPage from "./ProfileClientPage"
 
 export default function ProfilePage() {
   return <ProfileClientPage />

@@ -11,6 +11,8 @@ import OneSignalProvider from "@/components/one-signal-provider"
 import AuthWrapper from "@/components/auth/auth-wrapper"
 import SectionPersistenceWrapper from "@/components/section-persistence-wrapper"
 import { baseMetadata, viewportConfig } from "./metadata-config"
+import { getOrganizationData, getWebsiteData } from "@/lib/structured-data"
+import StructuredData from "@/components/structured-data"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -23,6 +25,12 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  // Prepare structured data for the entire site
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [getOrganizationData(), getWebsiteData()],
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -495,6 +503,7 @@ export default function RootLayout({
             </OneSignalProvider>
           </ErrorBoundary>
         </ThemeProvider>
+        <StructuredData data={structuredData} />
       </body>
     </html>
   )
