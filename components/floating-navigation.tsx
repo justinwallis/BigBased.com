@@ -56,12 +56,23 @@ export default function FloatingNavigation() {
     }
 
     window.addEventListener("scroll", handleScroll, { passive: true })
-    handleScroll() // Set initial active section
+
+    // Set initial active section - ensure it's called after a small delay to work properly
+    setTimeout(() => {
+      handleScroll()
+    }, 100)
 
     return () => {
       window.removeEventListener("scroll", handleScroll)
     }
   }, [navItems, activeSection])
+
+  // Set top section as active on initial load
+  useEffect(() => {
+    if (window.scrollY < 300) {
+      setActiveSection("top")
+    }
+  }, [])
 
   // Trigger animation only when active section changes
   useEffect(() => {
