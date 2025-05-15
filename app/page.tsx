@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     url: baseUrl,
     images: [
       {
-        url: `${baseUrl}/og-image.png`,
+        url: `${baseUrl}/BigBasedPreview.png`,
         width: 1200,
         height: 630,
         alt: "Big Based - Answer to Madness",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     title: "Big Based - Answer to Madness",
     description:
       "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform.",
-    images: [`${baseUrl}/og-image.png`],
+    images: [`${baseUrl}/BigBasedPreview.png`],
   },
 }
 
@@ -44,7 +44,7 @@ export default function Home() {
     "Big Based - Answer to Madness",
     "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform.",
     "/",
-    `${baseUrl}/og-image.png`,
+    `${baseUrl}/BigBasedPreview.png`,
   )
 
   // Breadcrumb data for the homepage

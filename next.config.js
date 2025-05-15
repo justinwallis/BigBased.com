@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  swcMinify: true,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -8,29 +9,42 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: [
-      "v0.blob.com",
-      "placeholder.svg",
-      "www.w3.org",
-      "www.africau.edu",
-      "www.learningcontainer.com",
-      "www.orimi.com",
-      "www.clickdimensions.com",
-      "file-examples.com",
-      "unec.edu.az",
-      "smallpdf.com",
-    ],
+    domains: ["placeholder.com", "via.placeholder.com"],
     unoptimized: true,
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "**",
-      },
-    ],
   },
-  assetPrefix: process.env.NODE_ENV === "production" ? "/" : "",
-  basePath: "",
-  output: "standalone",
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "X-Frame-Options",
+            value: "DENY",
+          },
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
+        ],
+      },
+    ]
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/social-preview",
+        destination: "/static-meta.html",
+      },
+    ]
+  },
 }
 
 module.exports = nextConfig

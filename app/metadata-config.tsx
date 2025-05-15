@@ -66,7 +66,7 @@ export const baseMetadata: Metadata = {
       "Big Based is a cultural revolution platform dedicated to reclaiming digital sovereignty, preserving truth, and building a parallel economy based on freedom and responsibility.",
     images: [
       {
-        url: getAbsoluteUrl("/og-image.png"),
+        url: getAbsoluteUrl("/BigBasedPreview.png"),
         width: 1200,
         height: 630,
         alt: "Big Based - Answer to Madness",
@@ -80,7 +80,7 @@ export const baseMetadata: Metadata = {
     title: "Big Based - Cultural Revolution Platform",
     description:
       "Big Based is a cultural revolution platform dedicated to reclaiming digital sovereignty, preserving truth, and building a parallel economy based on freedom and responsibility.",
-    images: [getAbsoluteUrl("/og-image.png")],
+    images: [getAbsoluteUrl("/BigBasedPreview.png")],
   },
   other: {
     "msapplication-TileColor": "#000000",
@@ -95,23 +95,23 @@ export const baseMetadata: Metadata = {
     "discord:title": "Big Based - Answer to Madness",
     "discord:description":
       "Big Based isn't just a platform, it's a cultural revolution with 10,000+ meticulously researched pages of truth, faith, and insight.",
-    "discord:image": getAbsoluteUrl("/og-image.png"),
+    "discord:image": getAbsoluteUrl("/BigBasedPreview.png"),
     // LinkedIn metadata
     "linkedin:title": "Big Based - Cultural Revolution Platform",
     "linkedin:description":
       "Join the cultural revolution to reclaim digital sovereignty and build a parallel economy based on freedom.",
-    "linkedin:image": getAbsoluteUrl("/og-image.png"),
+    "linkedin:image": getAbsoluteUrl("/BigBasedPreview.png"),
     // Slack metadata
     "slack-app-id": "A12345678",
     "slack:title": "Big Based - Answer to Madness",
     "slack:description": "A cultural revolution platform with 10,000+ pages of meticulously researched content.",
-    "slack:image": getAbsoluteUrl("/og-image.png"),
+    "slack:image": getAbsoluteUrl("/BigBasedPreview.png"),
   },
 }
 
 // Helper function to generate metadata for specific pages
 export function generateMetadata(title: string, description: string, imagePath?: string): Metadata {
-  const imageUrl = imagePath ? getAbsoluteUrl(imagePath) : getAbsoluteUrl("/og-image.png")
+  const imageUrl = imagePath ? getAbsoluteUrl(imagePath) : getAbsoluteUrl("/BigBasedPreview.png")
 
   return {
     ...baseMetadata,

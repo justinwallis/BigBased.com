@@ -9,7 +9,7 @@ export default function Head() {
       />
       <meta
         property="og:image"
-        content={`${process.env.NEXT_PUBLIC_BASE_URL || "https://bigbased.com"}/og-image.png`}
+        content={`${process.env.NEXT_PUBLIC_BASE_URL || "https://bigbased.com"}/BigBasedPreview.png`}
       />
       <meta property="og:url" content={process.env.NEXT_PUBLIC_BASE_URL || "https://bigbased.com"} />
       <meta property="og:type" content="website" />
@@ -25,7 +25,7 @@ export default function Head() {
       />
       <meta
         name="twitter:image"
-        content={`${process.env.NEXT_PUBLIC_BASE_URL || "https://bigbased.com"}/og-image.png`}
+        content={`${process.env.NEXT_PUBLIC_BASE_URL || "https://bigbased.com"}/BigBasedPreview.png`}
       />
     </>
   )

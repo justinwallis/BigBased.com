@@ -13,11 +13,33 @@ import SectionPersistenceWrapper from "@/components/section-persistence-wrapper"
 import { baseMetadata, viewportConfig } from "./metadata-config"
 import { getOrganizationData, getWebsiteData } from "@/lib/structured-data"
 import StructuredData from "@/components/structured-data"
-import Head from "./head"
 
 const inter = Inter({ subsets: ["latin"] })
 
-export const metadata: Metadata = baseMetadata
+// Get the base URL for absolute URLs
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bigbased.com"
+
+export const metadata: Metadata = {
+  ...baseMetadata,
+  metadataBase: new URL(baseUrl),
+  openGraph: {
+    ...baseMetadata.openGraph,
+    url: baseUrl,
+    images: [
+      {
+        url: `${baseUrl}/BigBasedPreview.png`,
+        width: 1200,
+        height: 630,
+        alt: "Big Based - Answer to Madness",
+      },
+    ],
+  },
+  twitter: {
+    ...baseMetadata.twitter,
+    images: [`${baseUrl}/BigBasedPreview.png`],
+  },
+    generator: 'v0.dev'
+}
 
 export const viewport: Viewport = viewportConfig
 
@@ -35,7 +57,29 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <Head />
+        {/* Explicit OpenGraph tags to ensure they're detected */}
+        <meta property="og:title" content="Big Based - Answer to Madness" />
+        <meta
+          property="og:description"
+          content="Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={baseUrl} />
+        <meta property="og:image" content={`${baseUrl}/BigBasedPreview.png`} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:site_name" content="Big Based" />
+
+        {/* Twitter Card tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@bigbased" />
+        <meta name="twitter:title" content="Big Based - Answer to Madness" />
+        <meta
+          name="twitter:description"
+          content="Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform."
+        />
+        <meta name="twitter:image" content={`${baseUrl}/BigBasedPreview.png`} />
+
         {/* Resource preloading */}
         <link rel="preload" href="/bb-logo.png" as="image" />
         <link rel="preload" href="/american-flag.png" as="image" />
