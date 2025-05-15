@@ -52,6 +52,8 @@ import LiveBasedIndexModule from "@/components/live-based-index-module"
 import BasedProfileTease from "@/components/based-profile-tease"
 // Import the BBLogo component
 import BBLogo from "@/components/bb-logo"
+// Make sure to add the import at the top of the file:
+import BasedQuiz from "@/components/based-quiz"
 
 // Define dropdown menu content with images and interactive elements
 const aboutMenuItems = [
@@ -528,6 +530,13 @@ export default function Home() {
       <ScrollAnimation animation="fade-up" delay={1000}>
         <ErrorBoundary>
           <BasedProfileTease />
+        </ErrorBoundary>
+      </ScrollAnimation>
+
+      {/* Based Quiz Section */}
+      <ScrollAnimation animation="fade-up" delay={1050}>
+        <ErrorBoundary>
+          <BasedQuiz />
         </ErrorBoundary>
       </ScrollAnimation>
 
