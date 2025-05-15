@@ -433,36 +433,219 @@ export default function BasedQuiz() {
                   transition={{ duration: 0.3 }}
                   className="text-center"
                 >
-                  <div className="mb-6">
-                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-black dark:bg-white mb-4">
-                      <Award size={40} className="text-white dark:text-black" />
+                  <div className="mb-8">
+                    <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-black dark:bg-white mb-6">
+                      <Award size={48} className="text-white dark:text-black" />
                     </div>
-                    <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                    <h3 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3">
                       {result?.title}
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-2">
-                      Your score: {score} out of {quizQuestions.length * 4}
-                    </p>
-                    <div className="w-full h-4 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden mb-6">
+                    <div className="flex items-center justify-center mb-4">
+                      <div className="px-4 py-1.5 bg-black dark:bg-white text-white dark:text-black rounded-full font-medium">
+                        Score: {score}/{quizQuestions.length * 4}
+                      </div>
+                    </div>
+
+                    {/* Score visualization */}
+                    <div className="relative w-full h-6 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden mb-8">
                       <div
-                        className="h-full bg-black dark:bg-white"
+                        className="h-full bg-black dark:bg-white transition-all duration-1000 ease-out"
                         style={{ width: `${(score / (quizQuestions.length * 4)) * 100}%` }}
                       ></div>
+                      {/* Score markers */}
+                      {resultCategories.map((cat, index) => (
+                        <div
+                          key={index}
+                          className="absolute top-0 h-full w-px bg-gray-300 dark:bg-gray-500"
+                          style={{
+                            left: `${(cat.range[1] / (quizQuestions.length * 4)) * 100}%`,
+                            display: index < resultCategories.length - 1 ? "block" : "none",
+                          }}
+                        >
+                          <div className="absolute -top-6 -translate-x-1/2 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                            {cat.title}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <p className="text-gray-700 dark:text-gray-300 mb-6">{result?.description}</p>
+
+                    <div className="text-lg text-gray-700 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+                      {result?.description}
+                    </div>
                   </div>
 
-                  {/* Recommendations */}
-                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 mb-6 text-left">
-                    <h4 className="font-semibold text-lg mb-3 text-gray-900 dark:text-white">Recommended Next Steps</h4>
-                    <ul className="space-y-2">
-                      {result?.recommendations.map((rec, index) => (
-                        <li key={index} className="flex items-start">
-                          <Check size={18} className="text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                          <span className="text-gray-700 dark:text-gray-300">{rec}</span>
-                        </li>
-                      ))}
-                    </ul>
+                  {/* Detailed analysis */}
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 mb-8 text-left">
+                    <h4 className="font-bold text-xl mb-4 text-gray-900 dark:text-white">Your Detailed Analysis</h4>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div>
+                          <h5 className="font-semibold text-gray-900 dark:text-white mb-2">Strengths</h5>
+                          <ul className="space-y-2">
+                            {result?.range[1] > 14 ? (
+                              <>
+                                <li className="flex items-start">
+                                  <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-500 flex items-center justify-center mr-2 mt-0.5">
+                                    <Check size={12} className="text-white" />
+                                  </div>
+                                  <span className="text-gray-700 dark:text-gray-300">
+                                    Strong understanding of digital sovereignty
+                                  </span>
+                                </li>
+                                <li className="flex items-start">
+                                  <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-500 flex items-center justify-center mr-2 mt-0.5">
+                                    <Check size={12} className="text-white" />
+                                  </div>
+                                  <span className="text-gray-700 dark:text-gray-300">
+                                    Values personal freedom and responsibility
+                                  </span>
+                                </li>
+                              </>
+                            ) : (
+                              <>
+                                <li className="flex items-start">
+                                  <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-500 flex items-center justify-center mr-2 mt-0.5">
+                                    <Check size={12} className="text-white" />
+                                  </div>
+                                  <span className="text-gray-700 dark:text-gray-300">
+                                    Beginning to question mainstream narratives
+                                  </span>
+                                </li>
+                                <li className="flex items-start">
+                                  <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-500 flex items-center justify-center mr-2 mt-0.5">
+                                    <Check size={12} className="text-white" />
+                                  </div>
+                                  <span className="text-gray-700 dark:text-gray-300">
+                                    Open to exploring alternative perspectives
+                                  </span>
+                                </li>
+                              </>
+                            )}
+                            <li className="flex items-start">
+                              <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-500 flex items-center justify-center mr-2 mt-0.5">
+                                <Check size={12} className="text-white" />
+                              </div>
+                              <span className="text-gray-700 dark:text-gray-300">
+                                {score > 20
+                                  ? "Leading by example in your community"
+                                  : "Seeking truth beyond surface-level information"}
+                              </span>
+                            </li>
+                          </ul>
+                        </div>
+
+                        <div>
+                          <h5 className="font-semibold text-gray-900 dark:text-white mb-2">Areas for Growth</h5>
+                          <ul className="space-y-2">
+                            {score < 21 ? (
+                              <>
+                                <li className="flex items-start">
+                                  <div className="flex-shrink-0 w-5 h-5 rounded-full bg-yellow-500 flex items-center justify-center mr-2 mt-0.5">
+                                    <span className="text-white text-xs">!</span>
+                                  </div>
+                                  <span className="text-gray-700 dark:text-gray-300">
+                                    Deepen understanding of digital privacy tools
+                                  </span>
+                                </li>
+                                <li className="flex items-start">
+                                  <div className="flex-shrink-0 w-5 h-5 rounded-full bg-yellow-500 flex items-center justify-center mr-2 mt-0.5">
+                                    <span className="text-white text-xs">!</span>
+                                  </div>
+                                  <span className="text-gray-700 dark:text-gray-300">
+                                    Explore alternative platforms and services
+                                  </span>
+                                </li>
+                                <li className="flex items-start">
+                                  <div className="flex-shrink-0 w-5 h-5 rounded-full bg-yellow-500 flex items-center justify-center mr-2 mt-0.5">
+                                    <span className="text-white text-xs">!</span>
+                                  </div>
+                                  <span className="text-gray-700 dark:text-gray-300">
+                                    Consider the role of traditional values in modern society
+                                  </span>
+                                </li>
+                              </>
+                            ) : (
+                              <>
+                                <li className="flex items-start">
+                                  <div className="flex-shrink-0 w-5 h-5 rounded-full bg-yellow-500 flex items-center justify-center mr-2 mt-0.5">
+                                    <span className="text-white text-xs">!</span>
+                                  </div>
+                                  <span className="text-gray-700 dark:text-gray-300">
+                                    Help others understand digital sovereignty
+                                  </span>
+                                </li>
+                                <li className="flex items-start">
+                                  <div className="flex-shrink-0 w-5 h-5 rounded-full bg-yellow-500 flex items-center justify-center mr-2 mt-0.5">
+                                    <span className="text-white text-xs">!</span>
+                                  </div>
+                                  <span className="text-gray-700 dark:text-gray-300">
+                                    Build and support parallel economy initiatives
+                                  </span>
+                                </li>
+                                <li className="flex items-start">
+                                  <div className="flex-shrink-0 w-5 h-5 rounded-full bg-yellow-500 flex items-center justify-center mr-2 mt-0.5">
+                                    <span className="text-white text-xs">!</span>
+                                  </div>
+                                  <span className="text-gray-700 dark:text-gray-300">
+                                    Become a leader in your community
+                                  </span>
+                                </li>
+                              </>
+                            )}
+                          </ul>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <h5 className="font-semibold text-gray-900 dark:text-white mb-2">Recommended Resources</h5>
+                          <ul className="space-y-2">
+                            {result?.recommendations.map((rec, index) => (
+                              <li key={index} className="flex items-start">
+                                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center mr-2 mt-0.5">
+                                  <span className="text-white text-xs">{index + 1}</span>
+                                </div>
+                                <span className="text-gray-700 dark:text-gray-300">{rec}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        <div>
+                          <h5 className="font-semibold text-gray-900 dark:text-white mb-2">Next Steps</h5>
+                          <div className="p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                            <p className="text-gray-700 dark:text-gray-300 mb-2">
+                              {score < 14
+                                ? "Begin your journey by exploring our Digital Library and connecting with our community."
+                                : score < 21
+                                  ? "Deepen your knowledge and start implementing digital sovereignty practices in your daily life."
+                                  : "Share your knowledge with others and consider becoming a leader in the movement."}
+                            </p>
+                            <a href="#" className="text-blue-600 dark:text-blue-400 font-medium hover:underline">
+                              View personalized pathway →
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Full test call-to-action */}
+                  <div className="bg-black dark:bg-white text-white dark:text-black rounded-xl p-8 mb-6 text-center">
+                    <h4 className="font-bold text-xl mb-2">Want the Complete Assessment?</h4>
+                    <p className="mb-4 text-gray-300 dark:text-gray-700">
+                      This is just a preview. Take the full test to receive a comprehensive analysis of your Based
+                      profile.
+                    </p>
+                    <a
+                      href="https://HowBasedAreYou.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block px-8 py-3 bg-white dark:bg-black text-black dark:text-white rounded-lg font-bold hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      Take the Full Test at HowBasedAreYou.com
+                    </a>
                   </div>
 
                   {/* Action buttons */}
