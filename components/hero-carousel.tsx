@@ -428,7 +428,7 @@ export default function HeroCarousel() {
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-visible py-3 px-4 md:px-8 bg-white dark:bg-gray-900 transition-colors duration-300"
+      className="relative overflow-x-hidden py-3 px-4 md:px-8 bg-white dark:bg-gray-900 transition-colors duration-300"
       style={{
         height: windowWidth < 768 ? "auto" : "590px",
         minHeight: windowWidth < 768 ? "650px" : "590px",

@@ -910,3 +910,11 @@ body {
 .image-fade-in.loaded {
   opacity: 1;
 }
+
+/* Prevent horizontal overflow */
+html,
+body {
+  overflow-x: hidden;
+  position: relative;
+  width: 100%;
+}

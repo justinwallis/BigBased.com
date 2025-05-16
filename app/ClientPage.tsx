@@ -337,7 +337,7 @@ export default function ClientPage() {
   }
 
   return (
-    <main className="min-h-screen bg-white dark:bg-gray-900">
+    <main className="min-h-screen w-full overflow-x-hidden bg-white dark:bg-gray-900">
       {/* Side Menu */}
       <ErrorBoundary>
         <SideMenu isOpen={isSideMenuOpen} setIsOpen={setIsSideMenuOpen} openWithSearch={openWithSearch} />
