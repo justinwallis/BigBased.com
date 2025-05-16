@@ -474,11 +474,14 @@ export default function HeroCarousel() {
         }}
       ></div>
 
-      {/* Navigation Arrows */}
+      {/* Navigation Arrows - Adjusted positions */}
       <button
         onClick={goToPrevious}
-        className="absolute left-6 top-1/2 transform -translate-y-1/2 z-30 transition-transform duration-300 hover:scale-110 focus:outline-none p-3"
-        style={{ filter: "drop-shadow(0px 2px 3px rgba(0,0,0,0.2))" }}
+        className="absolute top-1/2 transform -translate-y-1/2 z-30 transition-transform duration-300 hover:scale-110 focus:outline-none p-3"
+        style={{
+          filter: "drop-shadow(0px 2px 3px rgba(0,0,0,0.2))",
+          left: "-3px", // 12px - 15px = -3px from left edge
+        }}
         aria-label="Previous slide"
       >
         <img
@@ -498,8 +501,11 @@ export default function HeroCarousel() {
       </button>
       <button
         onClick={goToNext}
-        className="absolute right-6 top-1/2 transform -translate-y-1/2 z-30 transition-transform duration-300 hover:scale-110 focus:outline-none p-3"
-        style={{ filter: "drop-shadow(0px 2px 3px rgba(0,0,0,0.2))" }}
+        className="absolute top-1/2 transform -translate-y-1/2 z-30 transition-transform duration-300 hover:scale-110 focus:outline-none p-3"
+        style={{
+          filter: "drop-shadow(0px 2px 3px rgba(0,0,0,0.2))",
+          right: "45px", // 30px + 15px = 45px from right edge
+        }}
         aria-label="Next slide"
       >
         <img
