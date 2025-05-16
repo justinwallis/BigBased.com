@@ -168,7 +168,7 @@ const LogoMarquee = ({ logos }) => {
 
   return (
     <>
-      <section className="py-2 border-t border-b border-gray-200 dark:border-gray-700 relative overflow-hidden">
+      <section className="py-2 relative overflow-hidden">
         <div className="absolute left-0 w-12 h-full bg-gradient-to-r from-white dark:from-gray-900 to-transparent z-10"></div>
         <div className="absolute right-0 w-12 h-full bg-gradient-to-l from-white dark:from-gray-900 to-transparent z-10"></div>
         <div className="marquee-container overflow-hidden w-full" style={{ height: "40px" }}>

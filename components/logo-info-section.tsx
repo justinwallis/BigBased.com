@@ -56,14 +56,17 @@ export default function LogoInfoSection({ selectedLogo, isHovering }: LogoInfoSe
   // If no logo is selected and we're not hovering, show empty state
   if (!displayedLogo) {
     return (
-      <div className="bg-gray-50 border-t border-gray-200 py-6 px-8 min-h-[180px] flex items-center justify-center">
+      <div className="bg-gray-50 py-6 px-8 min-h-[180px] flex items-center justify-center">
         <p className="text-gray-500 text-center">Loading partner information...</p>
       </div>
     )
   }
 
   return (
-    <div className="logo-info-section overflow-hidden bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+    <div
+      className="logo-info-section overflow-hidden bg-white dark:bg-gray-900"
+      style={{ borderTop: "none", borderBottom: "none" }}
+    >
       <AnimatePresence mode="wait">
         {displayedLogo && (
           <motion.div
