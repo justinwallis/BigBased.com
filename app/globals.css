@@ -8,6 +8,13 @@
   --background-rgb: 255, 255, 255;
 }
 
+html,
+body {
+  overflow-x: hidden;
+  position: relative;
+  width: 100%;
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
@@ -909,12 +916,4 @@ body {
 
 .image-fade-in.loaded {
   opacity: 1;
-}
-
-/* Prevent horizontal overflow */
-html,
-body {
-  overflow-x: hidden;
-  position: relative;
-  width: 100%;
 }
