@@ -557,7 +557,10 @@ export default function HeroCarousel() {
             >
               <div className="flex w-full h-full items-center flex-col md:flex-row">
                 {/* Text Section - 1/3 width on desktop, full width on mobile */}
-                <div className="w-full md:w-1/3 pr-0 md:pr-8 mb-6 md:mb-0 relative z-20">
+                <div
+                  className="w-full md:w-1/3 pr-0 md:pr-8 mb-6 md:mb-0 relative z-20"
+                  style={{ marginTop: windowWidth < 768 ? "-80px" : "-40px" }}
+                >
                   <p className="text-lg mb-2 text-gray-700 dark:text-gray-300">{hero.subtitle}</p>
                   <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">{hero.title}</h2>
                   <p className="text-sm mb-6 text-gray-600 dark:text-gray-400">{hero.description}</p>
