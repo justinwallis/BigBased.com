@@ -17,8 +17,9 @@ const heroSections = [
       "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform.",
     ctaText: "How We Transform",
     ctaLink: "/transform",
-    image: "/dove-cross.png",
+    image: "/dove-cross-new.png", // Updated to use the new image
     imageAlt: "Dove with spread wings against a cross background",
+    extendedImage: true, // Flag to indicate this image should extend beyond boundaries
   },
   {
     id: 2,
@@ -30,6 +31,7 @@ const heroSections = [
     ctaLink: "/big-cringe",
     image: "/placeholder.svg?key=vbrti",
     imageAlt: "Two doors showing cultural contrast",
+    extendedImage: false,
   },
   {
     id: 3,
@@ -41,6 +43,7 @@ const heroSections = [
     ctaLink: "/digital-freedom",
     image: "/placeholder.svg?key=uo2ww",
     imageAlt: "Breaking free from digital chains",
+    extendedImage: false,
   },
   {
     id: 4,
@@ -52,6 +55,7 @@ const heroSections = [
     ctaLink: "/archives",
     image: "/placeholder.svg?key=pjjug",
     imageAlt: "Archive of knowledge",
+    extendedImage: false,
   },
   {
     id: 5,
@@ -63,6 +67,7 @@ const heroSections = [
     ctaLink: "/network",
     image: "/placeholder.svg?key=rpllp",
     imageAlt: "Network of connected people",
+    extendedImage: false,
   },
 ]
 
@@ -72,6 +77,7 @@ export default function HeroCarousel() {
   const [badgeHovered, setBadgeHovered] = useState(false)
   const [autoplayPaused, setAutoplayPaused] = useState(false)
   const [windowWidth, setWindowWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 1200)
+  const [windowHeight, setWindowHeight] = useState(typeof window !== "undefined" ? window.innerHeight : 800)
   const carouselRef = useRef(null)
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
@@ -96,6 +102,7 @@ export default function HeroCarousel() {
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth)
+      setWindowHeight(window.innerHeight)
     }
 
     window.addEventListener("resize", handleResize)
@@ -386,7 +393,7 @@ export default function HeroCarousel() {
   }
 
   // Calculate optimal image display size based on container and image dimensions
-  const getOptimalImageSize = (imageId, containerWidth, containerHeight) => {
+  const getOptimalImageSize = (imageId, containerWidth, containerHeight, isExtended) => {
     const imageDimensions = imageRefs.current[imageId]
     if (!imageDimensions) return { width: "auto", height: "auto", maxHeight: "100%" }
 
@@ -396,10 +403,13 @@ export default function HeroCarousel() {
     // For mobile screens
     if (windowWidth < 768) {
       return {
-        width: "100%",
+        width: "auto",
         height: "auto",
-        maxHeight: "250px",
+        maxHeight: "300px", // Same height for all images
+        maxWidth: "100%",
         objectFit: "contain",
+        margin: isExtended ? "-40px 0 0 0" : "0", // Only negative top margin for extended images
+        objectPosition: isExtended ? "center bottom" : "center center", // Anchor extended images to the bottom
       }
     }
 
@@ -411,6 +421,8 @@ export default function HeroCarousel() {
         height: Math.min(containerHeight, height),
         maxWidth: "100%",
         objectFit: "contain",
+        margin: isExtended ? "-60px 0 0 0" : "0", // Only negative top margin for extended images
+        objectPosition: isExtended ? "center bottom" : "center center", // Anchor extended images to the bottom
       }
     } else {
       // Portrait image
@@ -419,15 +431,27 @@ export default function HeroCarousel() {
         width: "auto",
         maxWidth: "100%",
         objectFit: "contain",
+        margin: isExtended ? "-60px 0 0 0" : "0", // Only negative top margin for extended images
+        objectPosition: isExtended ? "center bottom" : "center center", // Anchor extended images to the bottom
       }
+    }
+  }
+
+  // Calculate the section height based on screen size
+  const getSectionHeight = () => {
+    if (windowWidth < 768) {
+      return { height: "auto", minHeight: "650px" }
+    } else {
+      // For larger screens, ensure enough height for extended images
+      return { height: "520px", minHeight: "520px" }
     }
   }
 
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden py-3 px-4 md:px-8 bg-white dark:bg-gray-900 transition-colors duration-300"
-      style={{ height: windowWidth < 768 ? "600px" : "520px" }}
+      className="relative py-3 px-4 md:px-8 bg-white dark:bg-gray-900 transition-colors duration-300"
+      style={{ ...getSectionHeight(), overflow: "visible" }} // Set overflow to visible to allow content to extend beyond
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -471,10 +495,11 @@ export default function HeroCarousel() {
       <div
         className={`absolute bottom-8 right-12 z-20 flex flex-col items-start transition-all duration-300 ${
           badgeHovered ? "scale-110" : ""
-        }`}
+        } shadow-lg rounded-md`}
         style={{
-          padding: "16px 12px 8px 12px", // Added more padding to the top
-          background: "radial-gradient(circle at center, rgba(255,255,255,0.05) 30%, rgba(255,255,255,0) 70%)",
+          padding: "16px 12px 8px 12px",
+          background: "radial-gradient(circle at center, rgba(0,0,0,0.03) 30%, rgba(0,0,0,0.01) 70%)",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
         }}
         data-theme-style="true"
         onMouseEnter={() => {
@@ -486,8 +511,10 @@ export default function HeroCarousel() {
             el.setAttribute(
               "style",
               `padding: 16px 12px 8px 12px; background: radial-gradient(circle at center, ${
-                isDark ? "rgba(30,41,59,0.05)" : "rgba(255,255,255,0.05)"
-              } 30%, ${isDark ? "rgba(30,41,59,0)" : "rgba(255,255,255,0)"} 70%);`,
+                isDark ? "rgba(30,41,59,0.1)" : "rgba(0,0,0,0.03)"
+              } 30%, ${isDark ? "rgba(30,41,59,0.05)" : "rgba(0,0,0,0.01)"} 70%); 
+        box-shadow: ${isDark ? "0 4px 12px rgba(0,0,0,0.2)" : "0 4px 12px rgba(0,0,0,0.08)"};
+        border-radius: 0.375rem;`,
             )
           }
         }}
@@ -500,8 +527,10 @@ export default function HeroCarousel() {
             el.setAttribute(
               "style",
               `padding: 16px 12px 8px 12px; background: radial-gradient(circle at center, ${
-                isDark ? "rgba(30,41,59,0.05)" : "rgba(255,255,255,0.05)"
-              } 30%, ${isDark ? "rgba(30,41,59,0)" : "rgba(255,255,255,0)"} 70%);`,
+                isDark ? "rgba(30,41,59,0.1)" : "rgba(0,0,0,0.03)"
+              } 30%, ${isDark ? "rgba(30,41,59,0.05)" : "rgba(0,0,0,0.01)"} 70%);
+        box-shadow: ${isDark ? "0 4px 12px rgba(0,0,0,0.2)" : "0 4px 12px rgba(0,0,0,0.08)"};
+        border-radius: 0.375rem;`,
             )
           }
         }}
@@ -521,10 +550,10 @@ export default function HeroCarousel() {
         </div>
       </div>
 
-      {/* Carousel Track */}
+      {/* Carousel Track - Set overflow to visible to allow content to extend beyond */}
       <div
         ref={carouselRef}
-        className="h-full w-full flex transition-transform duration-1800 ease-in-out"
+        className="h-full w-full flex transition-transform duration-1800 ease-in-out overflow-visible"
         style={{
           transform: `translateX(-${activeIndex * 100}%)`,
           transition: "transform 1.8s cubic-bezier(0.645, 0.045, 0.355, 1.000)", // Slower, more elegant easing
@@ -534,18 +563,20 @@ export default function HeroCarousel() {
         {/* Render all slides in a row, including cloned slides */}
         {extendedSections.map((hero, index) => {
           const slideId = `slide-${hero.id}-${index}`
+          const isExtendedImage = hero.extendedImage || false
+
           return (
             <div
               key={slideId}
-              className="h-full w-full flex-shrink-0 flex items-center px-4 md:px-8 bg-white dark:bg-gray-900 transition-colors duration-300"
+              className="h-full w-full flex-shrink-0 flex items-center px-4 md:px-8 bg-white dark:bg-gray-900 transition-colors duration-300 overflow-visible"
               aria-hidden={activeIndex !== index}
               role="group"
               aria-roledescription="slide"
               aria-label={`Slide ${index + 1} of ${totalSlides}`}
             >
-              <div className="flex w-full h-full items-center flex-col md:flex-row">
+              <div className="flex w-full h-full items-center flex-col md:flex-row overflow-visible">
                 {/* Text Section - 1/3 width on desktop, full width on mobile */}
-                <div className="w-full md:w-1/3 pr-0 md:pr-8 mb-6 md:mb-0">
+                <div className="w-full md:w-1/3 pr-0 md:pr-8 mb-6 md:mb-0 z-10">
                   <p className="text-lg mb-2 text-gray-700 dark:text-gray-300">{hero.subtitle}</p>
                   <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">{hero.title}</h2>
                   <p className="text-sm mb-6 text-gray-600 dark:text-gray-400">{hero.description}</p>
@@ -558,18 +589,43 @@ export default function HeroCarousel() {
                 </div>
 
                 {/* Image Section - 2/3 width on desktop, full width on mobile */}
-                <div className="w-full md:w-2/3 h-full flex items-center justify-center">
-                  <div className="relative h-full w-full flex items-center justify-center">
+                <div className="w-full md:w-2/3 h-full flex items-center justify-center py-4 md:py-0 overflow-visible">
+                  <div
+                    className="relative w-full flex items-center justify-center overflow-visible"
+                    style={{
+                      minHeight: windowWidth < 768 ? "300px" : "auto",
+                      // For extended images, create a container that allows overflow only at the top
+                      overflow: isExtendedImage ? "visible" : "hidden",
+                      position: "relative",
+                      zIndex: isExtendedImage ? "5" : "auto",
+                      display: "flex",
+                      alignItems: isExtendedImage ? "flex-end" : "center", // Align extended images to the bottom
+                    }}
+                  >
+                    {/* Extended image container with fade effect for top portion */}
+                    {isExtendedImage && (
+                      <div
+                        className="absolute top-0 left-0 right-0 pointer-events-none"
+                        style={{
+                          height: "80px",
+                          transform: "translateY(-100%)",
+                          background: "linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0))",
+                          zIndex: 1,
+                        }}
+                      ></div>
+                    )}
+
                     <OptimizedImage
                       src={hero.image}
                       alt={hero.imageAlt}
                       width={800}
                       height={500}
-                      className="object-contain transition-all duration-300"
+                      className={`object-contain transition-all duration-300 ${isExtendedImage ? "extended-image bottom-aligned" : ""}`}
                       style={getOptimalImageSize(
                         slideId,
                         windowWidth < 768 ? windowWidth : windowWidth * 0.66,
-                        windowWidth < 768 ? 250 : 450,
+                        windowWidth < 768 ? 300 : 450,
+                        isExtendedImage,
                       )}
                       priority={index === activeIndex} // Prioritize loading the active slide
                       onLoad={(e) => handleImageLoad(slideId, e)}

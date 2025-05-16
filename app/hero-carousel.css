@@ -1,0 +1,53 @@
+/* Update the extended image styles to only extend upward */
+.extended-image {
+  transform: translateY(-40px);
+  position: relative;
+  z-index: 5;
+  object-position: center bottom !important; /* Force alignment to bottom */
+}
+
+/* Create a fade effect for the extended portion */
+.extended-image::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(to top, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+  z-index: 2;
+  pointer-events: none;
+  transform: translateY(-100%);
+}
+
+/* Dark mode version of the fade effect */
+.dark .extended-image::before {
+  background: linear-gradient(to top, rgba(17, 24, 39, 1), rgba(17, 24, 39, 0));
+}
+
+/* Ensure the carousel container allows overflow */
+.overflow-visible {
+  overflow: visible !important;
+}
+
+/* Add a class to ensure bottom alignment */
+.bottom-aligned {
+  align-self: flex-end;
+  margin-top: auto;
+}
+
+/* Media query for mobile devices */
+@media (max-width: 767px) {
+  .extended-image {
+    transform: translateY(-30px);
+    margin-bottom: 0 !important; /* Ensure no bottom margin */
+  }
+}
+
+/* Media query for larger screens */
+@media (min-width: 1200px) {
+  .extended-image {
+    transform: translateY(-60px);
+    margin-bottom: 0 !important; /* Ensure no bottom margin */
+  }
+}
