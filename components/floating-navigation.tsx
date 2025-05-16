@@ -53,6 +53,11 @@ export default function FloatingNavigation() {
           break
         }
       }
+
+      // If we've scrolled up and no section was matched, check if we're near the top
+      if (window.scrollY < 300) {
+        setActiveSection("top")
+      }
     }
 
     window.addEventListener("scroll", handleScroll, { passive: true })

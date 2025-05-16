@@ -17,7 +17,7 @@ const heroSections = [
       "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform.",
     ctaText: "How We Transform",
     ctaLink: "/transform",
-    image: "/DoveCross590h.png",
+    image: "/DoveCross610h.png",
     imageAlt: "Dove with spread wings against a cross background",
   },
   {
@@ -388,7 +388,7 @@ export default function HeroCarousel() {
   // Calculate optimal image display size based on container and image dimensions
   const getOptimalImageSize = (imageId, containerWidth, containerHeight) => {
     const imageDimensions = imageRefs.current[imageId]
-    if (!imageDimensions) return { width: "auto", height: "auto", maxHeight: "590px" }
+    if (!imageDimensions) return { width: "auto", height: "auto", maxHeight: "610px" }
 
     const { width, height } = imageDimensions
     const aspectRatio = width / height
@@ -410,14 +410,14 @@ export default function HeroCarousel() {
       // Landscape image
       return {
         width: "auto",
-        height: Math.min(590, height),
+        height: Math.min(610, height),
         maxWidth: "100%",
         objectFit: "contain",
       }
     } else {
       // Portrait image
       return {
-        height: Math.min(590, height),
+        height: Math.min(610, height),
         width: "auto",
         maxWidth: "100%",
         objectFit: "contain",
@@ -430,8 +430,8 @@ export default function HeroCarousel() {
       ref={sectionRef}
       className="relative overflow-visible py-3 px-4 md:px-8 bg-white dark:bg-gray-900 transition-colors duration-300"
       style={{
-        height: windowWidth < 768 ? "auto" : "590px",
-        minHeight: windowWidth < 768 ? "650px" : "590px",
+        height: windowWidth < 768 ? "auto" : "610px",
+        minHeight: windowWidth < 768 ? "650px" : "610px",
         marginTop: "0", // Remove negative margin
         paddingTop: "80px", // Add padding to create space for the header
       }}
@@ -577,8 +577,8 @@ export default function HeroCarousel() {
                   <div
                     className="relative w-full flex items-center justify-center"
                     style={{
-                      minHeight: windowWidth < 768 ? "300px" : "590px",
-                      height: "590px",
+                      minHeight: windowWidth < 768 ? "300px" : "610px",
+                      height: "610px",
                       marginTop: "-80px", // Move images up to create "jumping off" effect
                     }}
                   >
@@ -586,22 +586,22 @@ export default function HeroCarousel() {
                       src={hero.image}
                       alt={hero.imageAlt}
                       width={800}
-                      height={590}
+                      height={610}
                       className="object-contain transition-all duration-300"
                       style={{
                         ...getOptimalImageSize(
                           slideId,
                           windowWidth < 768 ? windowWidth : windowWidth * 0.66,
-                          windowWidth < 768 ? 300 : 590,
+                          windowWidth < 768 ? 300 : 610,
                         ),
-                        maxHeight: "590px", // Ensure consistent height
-                        position: hero.image === "/DoveCross590h.png" ? "relative" : "static",
-                        zIndex: hero.image === "/DoveCross590h.png" ? "1" : "auto",
-                        transform: hero.image === "/DoveCross590h.png" ? "scale(1.15)" : "none", // Make the dove image slightly larger
+                        maxHeight: "610px", // Ensure consistent height
+                        position: hero.image === "/DoveCross610h.png" ? "relative" : "static",
+                        zIndex: hero.image === "/DoveCross610h.png" ? "1" : "auto",
+                        transform: hero.image === "/DoveCross610h.png" ? "scale(1.15)" : "none", // Make the dove image slightly larger
                       }}
                       priority={index === activeIndex}
                       onLoad={(e) => handleImageLoad(slideId, e)}
-                      fallbackSrc={`/placeholder.svg?height=590&width=800&query=${encodeURIComponent(hero.imageAlt || "hero")}`}
+                      fallbackSrc={`/placeholder.svg?height=610&width=800&query=${encodeURIComponent(hero.imageAlt || "hero")}`}
                     />
                   </div>
                 </div>
