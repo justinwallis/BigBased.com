@@ -474,6 +474,26 @@ export default function HeroCarousel() {
         }}
       ></div>
 
+      {/* Navigation Arrows */}
+      <button
+        onClick={goToPrevious}
+        className="absolute left-6 top-1/2 transform -translate-y-1/2 z-30 transition-transform duration-300 hover:scale-110 focus:outline-none"
+        style={{ filter: "drop-shadow(0px 2px 3px rgba(0,0,0,0.2))" }}
+        aria-label="Previous slide"
+      >
+        <img src="/leftarrow.png" alt="Previous" width="40" height="40" className="block dark:hidden" />
+        <img src="/leftarrowwhite.png" alt="Previous" width="40" height="40" className="hidden dark:block" />
+      </button>
+      <button
+        onClick={goToNext}
+        className="absolute right-6 top-1/2 transform -translate-y-1/2 z-30 transition-transform duration-300 hover:scale-110 focus:outline-none"
+        style={{ filter: "drop-shadow(0px 2px 3px rgba(0,0,0,0.2))" }}
+        aria-label="Next slide"
+      >
+        <img src="/rightarrow.png" alt="Next" width="40" height="40" className="block dark:hidden" />
+        <img src="/rightarrowwhite.png" alt="Next" width="40" height="40" className="hidden dark:block" />
+      </button>
+
       {/* America First Badge */}
       <div
         className={`absolute bottom-8 right-12 z-20 flex flex-col items-start transition-all duration-300 ${

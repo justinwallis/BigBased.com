@@ -22,6 +22,18 @@ const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bigbased.com"
 export const metadata: Metadata = {
   ...baseMetadata,
   metadataBase: new URL(baseUrl),
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    other: [
+      { url: "/android-chrome-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/android-chrome-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+  },
   openGraph: {
     ...baseMetadata.openGraph,
     url: baseUrl,
@@ -80,11 +92,15 @@ export default function RootLayout({
         />
         <meta name="twitter:image" content={`${baseUrl}/BigBasedPreview.png`} />
 
-        {/* Favicon */}
+        {/* Explicit favicon links for maximum compatibility */}
         <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-        <link rel="apple-touch-icon" href="/apple-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <link rel="mask-icon" href="/safari-pinned-tab.png" color="#000000" />
+        <meta name="msapplication-TileColor" content="#ffffff" />
+        <meta name="theme-color" content="#ffffff" />
 
         {/* Resource preloading */}
         <link rel="preload" href="/bb-logo.png" as="image" />
