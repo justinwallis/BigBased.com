@@ -347,7 +347,7 @@ export default function ClientPage() {
       <FloatingNavigation />
 
       {/* Navigation */}
-      <nav className="flex items-center justify-between px-8 py-4 md:px-16 relative z-50 before:content-[''] before:absolute before:inset-0 before:bg-gradient-to-b before:from-black/40 before:to-transparent before:-z-10 dark:text-white">
+      <nav className="flex items-center justify-between px-8 py-4 md:px-16 relative z-50 dark:text-white">
         <div className="flex items-center space-x-8">
           <Link
             href="/"
