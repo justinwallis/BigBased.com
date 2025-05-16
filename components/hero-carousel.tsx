@@ -477,21 +477,45 @@ export default function HeroCarousel() {
       {/* Navigation Arrows */}
       <button
         onClick={goToPrevious}
-        className="absolute left-6 top-1/2 transform -translate-y-1/2 z-30 transition-transform duration-300 hover:scale-110 focus:outline-none"
+        className="absolute left-6 top-1/2 transform -translate-y-1/2 z-30 transition-transform duration-300 hover:scale-110 focus:outline-none p-3"
         style={{ filter: "drop-shadow(0px 2px 3px rgba(0,0,0,0.2))" }}
         aria-label="Previous slide"
       >
-        <img src="/leftarrow.png" alt="Previous" width="40" height="40" className="block dark:hidden" />
-        <img src="/leftarrowwhite.png" alt="Previous" width="40" height="40" className="hidden dark:block" />
+        <img
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/leftarrow-cZusycTk5U0qpLdTilVQ4PmMac7R9k.png"
+          alt="Previous"
+          width="8"
+          height="8"
+          className="block dark:hidden"
+        />
+        <img
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/leftarrowwhite-3iCFk4QxkyUcDWYzwZDCy6avFMGXHZ.png"
+          alt="Previous"
+          width="8"
+          height="8"
+          className="hidden dark:block"
+        />
       </button>
       <button
         onClick={goToNext}
-        className="absolute right-6 top-1/2 transform -translate-y-1/2 z-30 transition-transform duration-300 hover:scale-110 focus:outline-none"
+        className="absolute right-6 top-1/2 transform -translate-y-1/2 z-30 transition-transform duration-300 hover:scale-110 focus:outline-none p-3"
         style={{ filter: "drop-shadow(0px 2px 3px rgba(0,0,0,0.2))" }}
         aria-label="Next slide"
       >
-        <img src="/rightarrow.png" alt="Next" width="40" height="40" className="block dark:hidden" />
-        <img src="/rightarrowwhite.png" alt="Next" width="40" height="40" className="hidden dark:block" />
+        <img
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/rightarrow-lh3ALnXSTKUAzHVWPUW6RXicZyaB84.png"
+          alt="Next"
+          width="8"
+          height="8"
+          className="block dark:hidden"
+        />
+        <img
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/rightarrowwhite-KFDD9v6NMb8xQaVTDUhbHCBf6c0gTH.png"
+          alt="Next"
+          width="8"
+          height="8"
+          className="hidden dark:block"
+        />
       </button>
 
       {/* America First Badge */}
