@@ -1,29 +1,11 @@
-/* Update the extended image styles to only extend upward */
+/* Update the extended image styles to only extend upward without fade effect */
 .extended-image {
   transform: translateY(-40px);
   position: relative;
-  z-index: 5;
-  object-position: center bottom !important; /* Force alignment to bottom */
+  z-index: 1; /* Lower z-index to ensure it's below the header */
 }
 
-/* Create a fade effect for the extended portion */
-.extended-image::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 60px;
-  background: linear-gradient(to top, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
-  z-index: 2;
-  pointer-events: none;
-  transform: translateY(-100%);
-}
-
-/* Dark mode version of the fade effect */
-.dark .extended-image::before {
-  background: linear-gradient(to top, rgba(17, 24, 39, 1), rgba(17, 24, 39, 0));
-}
+/* Remove the ::before pseudo-element that was creating the fade effect */
 
 /* Ensure the carousel container allows overflow */
 .overflow-visible {
@@ -34,6 +16,7 @@
 .bottom-aligned {
   align-self: flex-end;
   margin-top: auto;
+  margin-bottom: 0 !important; /* Ensure no bottom margin */
 }
 
 /* Media query for mobile devices */

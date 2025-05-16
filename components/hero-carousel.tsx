@@ -17,7 +17,7 @@ const heroSections = [
       "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform.",
     ctaText: "How We Transform",
     ctaLink: "/transform",
-    image: "/dove-cross-new.png", // Updated to use the new image
+    image: "/dove-cross-new.png",
     imageAlt: "Dove with spread wings against a cross background",
     extendedImage: true, // Flag to indicate this image should extend beyond boundaries
   },
@@ -451,7 +451,12 @@ export default function HeroCarousel() {
     <section
       ref={sectionRef}
       className="relative py-3 px-4 md:px-8 bg-white dark:bg-gray-900 transition-colors duration-300"
-      style={{ ...getSectionHeight(), overflow: "visible" }} // Set overflow to visible to allow content to extend beyond
+      style={{
+        ...getSectionHeight(),
+        overflow: "visible",
+        // Ensure the section has a lower z-index than the header
+        zIndex: 1,
+      }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -597,30 +602,19 @@ export default function HeroCarousel() {
                       // For extended images, create a container that allows overflow only at the top
                       overflow: isExtendedImage ? "visible" : "hidden",
                       position: "relative",
-                      zIndex: isExtendedImage ? "5" : "auto",
+                      zIndex: "1", // Lower z-index to ensure it's below the header
                       display: "flex",
                       alignItems: isExtendedImage ? "flex-end" : "center", // Align extended images to the bottom
                     }}
                   >
-                    {/* Extended image container with fade effect for top portion */}
-                    {isExtendedImage && (
-                      <div
-                        className="absolute top-0 left-0 right-0 pointer-events-none"
-                        style={{
-                          height: "80px",
-                          transform: "translateY(-100%)",
-                          background: "linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0))",
-                          zIndex: 1,
-                        }}
-                      ></div>
-                    )}
+                    {/* Remove the fade effect div that was here previously */}
 
                     <OptimizedImage
                       src={hero.image}
                       alt={hero.imageAlt}
                       width={800}
                       height={500}
-                      className={`object-contain transition-all duration-300 ${isExtendedImage ? "extended-image bottom-aligned" : ""}`}
+                      className={`object-contain transition-all duration-300 ${isExtendedImage ? "bottom-aligned" : ""}`}
                       style={getOptimalImageSize(
                         slideId,
                         windowWidth < 768 ? windowWidth : windowWidth * 0.66,

@@ -48,7 +48,14 @@ export function SiteHeader() {
           ? "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-md"
           : "bg-background",
       )}
-      style={{ position: "fixed", top: 0, left: 0, right: 0, width: "100%" }}
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        width: "100%",
+        zIndex: 100, // Ensure header has a high z-index
+      }}
     >
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
