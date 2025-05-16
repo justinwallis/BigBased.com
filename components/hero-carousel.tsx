@@ -17,9 +17,8 @@ const heroSections = [
       "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform.",
     ctaText: "How We Transform",
     ctaLink: "/transform",
-    image: "/dove-cross-new.png",
+    image: "/DoveCross590h.png",
     imageAlt: "Dove with spread wings against a cross background",
-    extendedImage: true, // Flag to indicate this image should extend beyond boundaries
   },
   {
     id: 2,
@@ -31,7 +30,6 @@ const heroSections = [
     ctaLink: "/big-cringe",
     image: "/placeholder.svg?key=vbrti",
     imageAlt: "Two doors showing cultural contrast",
-    extendedImage: false,
   },
   {
     id: 3,
@@ -43,7 +41,6 @@ const heroSections = [
     ctaLink: "/digital-freedom",
     image: "/placeholder.svg?key=uo2ww",
     imageAlt: "Breaking free from digital chains",
-    extendedImage: false,
   },
   {
     id: 4,
@@ -55,7 +52,6 @@ const heroSections = [
     ctaLink: "/archives",
     image: "/placeholder.svg?key=pjjug",
     imageAlt: "Archive of knowledge",
-    extendedImage: false,
   },
   {
     id: 5,
@@ -67,7 +63,6 @@ const heroSections = [
     ctaLink: "/network",
     image: "/placeholder.svg?key=rpllp",
     imageAlt: "Network of connected people",
-    extendedImage: false,
   },
 ]
 
@@ -77,7 +72,6 @@ export default function HeroCarousel() {
   const [badgeHovered, setBadgeHovered] = useState(false)
   const [autoplayPaused, setAutoplayPaused] = useState(false)
   const [windowWidth, setWindowWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 1200)
-  const [windowHeight, setWindowHeight] = useState(typeof window !== "undefined" ? window.innerHeight : 800)
   const carouselRef = useRef(null)
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
@@ -102,7 +96,6 @@ export default function HeroCarousel() {
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth)
-      setWindowHeight(window.innerHeight)
     }
 
     window.addEventListener("resize", handleResize)
@@ -393,9 +386,9 @@ export default function HeroCarousel() {
   }
 
   // Calculate optimal image display size based on container and image dimensions
-  const getOptimalImageSize = (imageId, containerWidth, containerHeight, isExtended) => {
+  const getOptimalImageSize = (imageId, containerWidth, containerHeight) => {
     const imageDimensions = imageRefs.current[imageId]
-    if (!imageDimensions) return { width: "auto", height: "auto", maxHeight: "100%" }
+    if (!imageDimensions) return { width: "auto", height: "auto", maxHeight: "590px" }
 
     const { width, height } = imageDimensions
     const aspectRatio = width / height
@@ -405,11 +398,10 @@ export default function HeroCarousel() {
       return {
         width: "auto",
         height: "auto",
-        maxHeight: "300px", // Same height for all images
+        maxHeight: "300px",
         maxWidth: "100%",
         objectFit: "contain",
-        margin: isExtended ? "-40px 0 0 0" : "0", // Only negative top margin for extended images
-        objectPosition: isExtended ? "center bottom" : "center center", // Anchor extended images to the bottom
+        margin: "20px 0",
       }
     }
 
@@ -418,44 +410,30 @@ export default function HeroCarousel() {
       // Landscape image
       return {
         width: "auto",
-        height: Math.min(containerHeight, height),
+        height: Math.min(590, height),
         maxWidth: "100%",
         objectFit: "contain",
-        margin: isExtended ? "-60px 0 0 0" : "0", // Only negative top margin for extended images
-        objectPosition: isExtended ? "center bottom" : "center center", // Anchor extended images to the bottom
       }
     } else {
       // Portrait image
       return {
-        height: Math.min(containerHeight, height),
+        height: Math.min(590, height),
         width: "auto",
         maxWidth: "100%",
         objectFit: "contain",
-        margin: isExtended ? "-60px 0 0 0" : "0", // Only negative top margin for extended images
-        objectPosition: isExtended ? "center bottom" : "center center", // Anchor extended images to the bottom
       }
-    }
-  }
-
-  // Calculate the section height based on screen size
-  const getSectionHeight = () => {
-    if (windowWidth < 768) {
-      return { height: "auto", minHeight: "650px" }
-    } else {
-      // For larger screens, ensure enough height for extended images
-      return { height: "520px", minHeight: "520px" }
     }
   }
 
   return (
     <section
       ref={sectionRef}
-      className="relative py-3 px-4 md:px-8 bg-white dark:bg-gray-900 transition-colors duration-300"
+      className="relative overflow-visible py-3 px-4 md:px-8 bg-white dark:bg-gray-900 transition-colors duration-300"
       style={{
-        ...getSectionHeight(),
-        overflow: "visible",
-        // Ensure the section has a lower z-index than the header
-        zIndex: 1,
+        height: windowWidth < 768 ? "auto" : "590px",
+        minHeight: windowWidth < 768 ? "650px" : "590px",
+        marginTop: "0", // Remove negative margin
+        paddingTop: "80px", // Add padding to create space for the header
       }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
@@ -555,10 +533,10 @@ export default function HeroCarousel() {
         </div>
       </div>
 
-      {/* Carousel Track - Set overflow to visible to allow content to extend beyond */}
+      {/* Carousel Track */}
       <div
         ref={carouselRef}
-        className="h-full w-full flex transition-transform duration-1800 ease-in-out overflow-visible"
+        className="h-full w-full flex transition-transform duration-1800 ease-in-out"
         style={{
           transform: `translateX(-${activeIndex * 100}%)`,
           transition: "transform 1.8s cubic-bezier(0.645, 0.045, 0.355, 1.000)", // Slower, more elegant easing
@@ -568,20 +546,18 @@ export default function HeroCarousel() {
         {/* Render all slides in a row, including cloned slides */}
         {extendedSections.map((hero, index) => {
           const slideId = `slide-${hero.id}-${index}`
-          const isExtendedImage = hero.extendedImage || false
-
           return (
             <div
               key={slideId}
-              className="h-full w-full flex-shrink-0 flex items-center px-4 md:px-8 bg-white dark:bg-gray-900 transition-colors duration-300 overflow-visible"
+              className="h-full w-full flex-shrink-0 flex items-center px-4 md:px-8 bg-white dark:bg-gray-900 transition-colors duration-300"
               aria-hidden={activeIndex !== index}
               role="group"
               aria-roledescription="slide"
               aria-label={`Slide ${index + 1} of ${totalSlides}`}
             >
-              <div className="flex w-full h-full items-center flex-col md:flex-row overflow-visible">
+              <div className="flex w-full h-full items-center flex-col md:flex-row">
                 {/* Text Section - 1/3 width on desktop, full width on mobile */}
-                <div className="w-full md:w-1/3 pr-0 md:pr-8 mb-6 md:mb-0 z-10">
+                <div className="w-full md:w-1/3 pr-0 md:pr-8 mb-6 md:mb-0">
                   <p className="text-lg mb-2 text-gray-700 dark:text-gray-300">{hero.subtitle}</p>
                   <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">{hero.title}</h2>
                   <p className="text-sm mb-6 text-gray-600 dark:text-gray-400">{hero.description}</p>
@@ -594,36 +570,35 @@ export default function HeroCarousel() {
                 </div>
 
                 {/* Image Section - 2/3 width on desktop, full width on mobile */}
-                <div className="w-full md:w-2/3 h-full flex items-center justify-center py-4 md:py-0 overflow-visible">
+                <div className="w-full md:w-2/3 h-full flex items-center justify-center py-4 md:py-0 relative">
                   <div
-                    className="relative w-full flex items-center justify-center overflow-visible"
+                    className="relative w-full flex items-center justify-center"
                     style={{
-                      minHeight: windowWidth < 768 ? "300px" : "auto",
-                      // For extended images, create a container that allows overflow only at the top
-                      overflow: isExtendedImage ? "visible" : "hidden",
-                      position: "relative",
-                      zIndex: "1", // Lower z-index to ensure it's below the header
-                      display: "flex",
-                      alignItems: isExtendedImage ? "flex-end" : "center", // Align extended images to the bottom
+                      minHeight: windowWidth < 768 ? "300px" : "590px",
+                      height: "590px",
+                      marginTop: "-80px", // Move images up to create "jumping off" effect
                     }}
                   >
-                    {/* Remove the fade effect div that was here previously */}
-
                     <OptimizedImage
                       src={hero.image}
                       alt={hero.imageAlt}
                       width={800}
-                      height={500}
-                      className={`object-contain transition-all duration-300 ${isExtendedImage ? "bottom-aligned" : ""}`}
-                      style={getOptimalImageSize(
-                        slideId,
-                        windowWidth < 768 ? windowWidth : windowWidth * 0.66,
-                        windowWidth < 768 ? 300 : 450,
-                        isExtendedImage,
-                      )}
-                      priority={index === activeIndex} // Prioritize loading the active slide
+                      height={590}
+                      className="object-contain transition-all duration-300"
+                      style={{
+                        ...getOptimalImageSize(
+                          slideId,
+                          windowWidth < 768 ? windowWidth : windowWidth * 0.66,
+                          windowWidth < 768 ? 300 : 590,
+                        ),
+                        maxHeight: "590px", // Ensure consistent height
+                        position: hero.image === "/DoveCross590h.png" ? "relative" : "static",
+                        zIndex: hero.image === "/DoveCross590h.png" ? "1" : "auto",
+                        transform: hero.image === "/DoveCross590h.png" ? "scale(1.15)" : "none", // Make the dove image slightly larger
+                      }}
+                      priority={index === activeIndex}
                       onLoad={(e) => handleImageLoad(slideId, e)}
-                      fallbackSrc={`/placeholder.svg?height=500&width=800&query=${encodeURIComponent(hero.imageAlt || "hero")}`}
+                      fallbackSrc={`/placeholder.svg?height=590&width=800&query=${encodeURIComponent(hero.imageAlt || "hero")}`}
                     />
                   </div>
                 </div>
