@@ -237,14 +237,14 @@ export default function SideMenu({
       {/* Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black dark:bg-white bg-opacity-50 dark:bg-opacity-20 z-40 transition-opacity duration-300"
+          className="fixed inset-0 bg-black dark:bg-white bg-opacity-50 dark:bg-opacity-20 z-[150] transition-opacity duration-300"
           onClick={() => setIsOpen(false)}
         ></div>
       )}
 
       {/* Side Menu */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-900 shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-900 shadow-xl z-[200] transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0"
         } flex flex-col`}
       >

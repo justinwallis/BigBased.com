@@ -557,7 +557,7 @@ export default function HeroCarousel() {
             >
               <div className="flex w-full h-full items-center flex-col md:flex-row">
                 {/* Text Section - 1/3 width on desktop, full width on mobile */}
-                <div className="w-full md:w-1/3 pr-0 md:pr-8 mb-6 md:mb-0">
+                <div className="w-full md:w-1/3 pr-0 md:pr-8 mb-6 md:mb-0 relative z-20">
                   <p className="text-lg mb-2 text-gray-700 dark:text-gray-300">{hero.subtitle}</p>
                   <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">{hero.title}</h2>
                   <p className="text-sm mb-6 text-gray-600 dark:text-gray-400">{hero.description}</p>
@@ -570,7 +570,7 @@ export default function HeroCarousel() {
                 </div>
 
                 {/* Image Section - 2/3 width on desktop, full width on mobile */}
-                <div className="w-full md:w-2/3 h-full flex items-center justify-center py-4 md:py-0 relative">
+                <div className="w-full md:w-2/3 h-full flex items-center justify-center py-4 md:py-0 relative z-10">
                   <div
                     className="relative w-full flex items-center justify-center"
                     style={{
