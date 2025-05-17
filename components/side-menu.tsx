@@ -248,15 +248,19 @@ export default function SideMenu({
           isOpen ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0"
         } flex flex-col`}
       >
-        {/* Drag Handle for Mobile */}
+        {/* Drag Handle for Mobile / Close Button for All Viewports */}
         <div
-          className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-24 bg-gray-200 dark:bg-gray-700 rounded-l-md flex items-center justify-center cursor-move touch-manipulation md:hidden"
+          className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-24 bg-gray-200 dark:bg-gray-700 rounded-l-md flex items-center justify-center cursor-pointer touch-manipulation hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
           onTouchStart={handleDragStart}
           onTouchMove={handleDragMove}
           onTouchEnd={handleDragEnd}
           onMouseDown={handleDragStart}
+          onClick={() => setIsOpen(false)}
         >
           <div className="w-1 h-10 bg-gray-400 dark:bg-gray-500 rounded-full"></div>
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+            <X size={16} className="text-gray-600 dark:text-gray-400" />
+          </div>
         </div>
 
         <div className="flex-none p-6 border-b border-gray-200 dark:border-gray-700">
