@@ -48,16 +48,20 @@ export default function MasterDebugger() {
   const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
-    setIsClient(true)
+    try {
+      setIsClient(true)
 
-    // In a real app, you might fetch this from an API endpoint
-    setSystemInfo({
-      nextVersion: "14.0.0",
-      nodeVersion: process.env.NODE_VERSION || "Unknown",
-      environment: process.env.NODE_ENV,
-      buildTime: "2023-05-17T12:00:00Z", // This would be set at build time
-      deploymentId: "v1.2.3", // This would be set at deployment
-    })
+      // In a real app, you might fetch this from an API endpoint
+      setSystemInfo({
+        nextVersion: "14.0.0",
+        nodeVersion: process.env.NODE_VERSION || "Unknown",
+        environment: process.env.NODE_ENV,
+        buildTime: "2023-05-17T12:00:00Z", // This would be set at build time
+        deploymentId: "v1.2.3", // This would be set at deployment
+      })
+    } catch (error) {
+      console.error("Error in useEffect:", error)
+    }
   }, [])
 
   const debugSections: DebugSection[] = [
@@ -192,80 +196,58 @@ export default function MasterDebugger() {
     alert("Running diagnostics... This would trigger a comprehensive site check in a real implementation.")
   }
 
-  return (
-    <div className="space-y-8">
-      <Card>
-        <CardHeader>
-          <CardTitle>System Information</CardTitle>
-          <CardDescription>Current environment and build information</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="p-4 bg-gray-50 rounded-md">
-              <div className="text-sm text-gray-500">Next.js Version</div>
-              <div className="font-medium">{systemInfo.nextVersion || "Unknown"}</div>
+  try {
+    return (
+      <div className="space-y-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>System Information</CardTitle>
+            <CardDescription>Current environment and build information</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="p-4 bg-gray-50 rounded-md">
+                <div className="text-sm text-gray-500">Next.js Version</div>
+                <div className="font-medium">{systemInfo.nextVersion || "Unknown"}</div>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-md">
+                <div className="text-sm text-gray-500">Node Version</div>
+                <div className="font-medium">{systemInfo.nodeVersion || "Unknown"}</div>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-md">
+                <div className="text-sm text-gray-500">Environment</div>
+                <div className="font-medium">{systemInfo.environment || "Unknown"}</div>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-md">
+                <div className="text-sm text-gray-500">Build Time</div>
+                <div className="font-medium">{systemInfo.buildTime || "Unknown"}</div>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-md">
+                <div className="text-sm text-gray-500">Deployment ID</div>
+                <div className="font-medium">{systemInfo.deploymentId || "Unknown"}</div>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-md">
+                <div className="text-sm text-gray-500">Rendering</div>
+                <div className="font-medium">{isClient ? "Client-side" : "Server-side"}</div>
+              </div>
             </div>
-            <div className="p-4 bg-gray-50 rounded-md">
-              <div className="text-sm text-gray-500">Node Version</div>
-              <div className="font-medium">{systemInfo.nodeVersion || "Unknown"}</div>
-            </div>
-            <div className="p-4 bg-gray-50 rounded-md">
-              <div className="text-sm text-gray-500">Environment</div>
-              <div className="font-medium">{systemInfo.environment || "Unknown"}</div>
-            </div>
-            <div className="p-4 bg-gray-50 rounded-md">
-              <div className="text-sm text-gray-500">Build Time</div>
-              <div className="font-medium">{systemInfo.buildTime || "Unknown"}</div>
-            </div>
-            <div className="p-4 bg-gray-50 rounded-md">
-              <div className="text-sm text-gray-500">Deployment ID</div>
-              <div className="font-medium">{systemInfo.deploymentId || "Unknown"}</div>
-            </div>
-            <div className="p-4 bg-gray-50 rounded-md">
-              <div className="text-sm text-gray-500">Rendering</div>
-              <div className="font-medium">{isClient ? "Client-side" : "Server-side"}</div>
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button onClick={runDiagnostics}>Run Diagnostics</Button>
-        </CardFooter>
-      </Card>
+          </CardContent>
+          <CardFooter>
+            <Button onClick={runDiagnostics}>Run Diagnostics</Button>
+          </CardFooter>
+        </Card>
 
-      <Tabs defaultValue="all">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="all">All Tools</TabsTrigger>
-          <TabsTrigger value="frontend">Frontend</TabsTrigger>
-          <TabsTrigger value="backend">Backend</TabsTrigger>
-          <TabsTrigger value="system">System</TabsTrigger>
-        </TabsList>
+        <Tabs defaultValue="all">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="all">All Tools</TabsTrigger>
+            <TabsTrigger value="frontend">Frontend</TabsTrigger>
+            <TabsTrigger value="backend">Backend</TabsTrigger>
+            <TabsTrigger value="system">System</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="all">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {debugSections.map((section) => (
-              <Link href={section.path} key={section.id}>
-                <Card className="h-full hover:shadow-md transition-shadow cursor-pointer">
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="p-2 bg-gray-100 rounded-md">{section.icon}</div>
-                        <span>{section.title}</span>
-                      </div>
-                      {getStatusBadge(section.status)}
-                    </CardTitle>
-                    <CardDescription>{section.description}</CardDescription>
-                  </CardHeader>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="frontend">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {debugSections
-              .filter((s) => ["favicon", "performance", "seo", "accessibility", "components"].includes(s.id))
-              .map((section) => (
+          <TabsContent value="all">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {debugSections.map((section) => (
                 <Link href={section.path} key={section.id}>
                   <Card className="h-full hover:shadow-md transition-shadow cursor-pointer">
                     <CardHeader>
@@ -281,90 +263,130 @@ export default function MasterDebugger() {
                   </Card>
                 </Link>
               ))}
-          </div>
-        </TabsContent>
+            </div>
+          </TabsContent>
 
-        <TabsContent value="backend">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {debugSections
-              .filter((s) => ["api", "database", "auth", "logs"].includes(s.id))
-              .map((section) => (
-                <Link href={section.path} key={section.id}>
-                  <Card className="h-full hover:shadow-md transition-shadow cursor-pointer">
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="p-2 bg-gray-100 rounded-md">{section.icon}</div>
-                          <span>{section.title}</span>
-                        </div>
-                        {getStatusBadge(section.status)}
-                      </CardTitle>
-                      <CardDescription>{section.description}</CardDescription>
-                    </CardHeader>
-                  </Card>
-                </Link>
-              ))}
-          </div>
-        </TabsContent>
+          <TabsContent value="frontend">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {debugSections
+                .filter((s) => ["favicon", "performance", "seo", "accessibility", "components"].includes(s.id))
+                .map((section) => (
+                  <Link href={section.path} key={section.id}>
+                    <Card className="h-full hover:shadow-md transition-shadow cursor-pointer">
+                      <CardHeader>
+                        <CardTitle className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="p-2 bg-gray-100 rounded-md">{section.icon}</div>
+                            <span>{section.title}</span>
+                          </div>
+                          {getStatusBadge(section.status)}
+                        </CardTitle>
+                        <CardDescription>{section.description}</CardDescription>
+                      </CardHeader>
+                    </Card>
+                  </Link>
+                ))}
+            </div>
+          </TabsContent>
 
-        <TabsContent value="system">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {debugSections
-              .filter((s) => ["routes", "config", "tools"].includes(s.id))
-              .map((section) => (
-                <Link href={section.path} key={section.id}>
-                  <Card className="h-full hover:shadow-md transition-shadow cursor-pointer">
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="p-2 bg-gray-100 rounded-md">{section.icon}</div>
-                          <span>{section.title}</span>
-                        </div>
-                        {getStatusBadge(section.status)}
-                      </CardTitle>
-                      <CardDescription>{section.description}</CardDescription>
-                    </CardHeader>
-                  </Card>
-                </Link>
-              ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="backend">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {debugSections
+                .filter((s) => ["api", "database", "auth", "logs"].includes(s.id))
+                .map((section) => (
+                  <Link href={section.path} key={section.id}>
+                    <Card className="h-full hover:shadow-md transition-shadow cursor-pointer">
+                      <CardHeader>
+                        <CardTitle className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="p-2 bg-gray-100 rounded-md">{section.icon}</div>
+                            <span>{section.title}</span>
+                          </div>
+                          {getStatusBadge(section.status)}
+                        </CardTitle>
+                        <CardDescription>{section.description}</CardDescription>
+                      </CardHeader>
+                    </Card>
+                  </Link>
+                ))}
+            </div>
+          </TabsContent>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Common debugging actions</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm">
-              Clear Cache
-            </Button>
-            <Button variant="outline" size="sm">
-              Reset Local Storage
-            </Button>
-            <Button variant="outline" size="sm">
-              Test API Connection
-            </Button>
-            <Button variant="outline" size="sm">
-              Check Auth Status
-            </Button>
-            <Button variant="outline" size="sm">
-              Verify Assets
-            </Button>
-            <Button variant="outline" size="sm">
-              Test PWA Install
-            </Button>
-            <Button variant="outline" size="sm">
-              Check SEO
-            </Button>
-            <Button variant="outline" size="sm">
-              Validate HTML
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
+          <TabsContent value="system">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {debugSections
+                .filter((s) => ["routes", "config", "tools"].includes(s.id))
+                .map((section) => (
+                  <Link href={section.path} key={section.id}>
+                    <Card className="h-full hover:shadow-md transition-shadow cursor-pointer">
+                      <CardHeader>
+                        <CardTitle className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="p-2 bg-gray-100 rounded-md">{section.icon}</div>
+                            <span>{section.title}</span>
+                          </div>
+                          {getStatusBadge(section.status)}
+                        </CardTitle>
+                        <CardDescription>{section.description}</CardDescription>
+                      </CardHeader>
+                    </Card>
+                  </Link>
+                ))}
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+            <CardDescription>Common debugging actions</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm">
+                Clear Cache
+              </Button>
+              <Button variant="outline" size="sm">
+                Reset Local Storage
+              </Button>
+              <Button variant="outline" size="sm">
+                Test API Connection
+              </Button>
+              <Button variant="outline" size="sm">
+                Check Auth Status
+              </Button>
+              <Button variant="outline" size="sm">
+                Verify Assets
+              </Button>
+              <Button variant="outline" size="sm">
+                Test PWA Install
+              </Button>
+              <Button variant="outline" size="sm">
+                Check SEO
+              </Button>
+              <Button variant="outline" size="sm">
+                Validate HTML
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  } catch (error) {
+    console.error("Error in MasterDebugger:", error)
+    return (
+      <div className="p-8 bg-red-50 rounded-lg border border-red-200">
+        <h2 className="text-xl font-bold text-red-700 mb-4">Error in Debug Component</h2>
+        <p className="text-red-600 mb-4">There was an error loading the debug interface.</p>
+        <pre className="bg-white p-4 rounded overflow-auto max-h-[300px] text-sm">
+          {error instanceof Error ? error.message : String(error)}
+        </pre>
+        <div className="mt-4">
+          <Link href="/" className="text-blue-600 hover:underline">
+            Return to homepage
+          </Link>
+        </div>
+      </div>
+    )
+  }
 }

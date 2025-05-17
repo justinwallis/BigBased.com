@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import MasterDebugger from "@/components/debug/master-debugger"
+import { DebugErrorBoundary } from "@/components/debug/debug-error-boundary"
 
 export const metadata: Metadata = {
   title: "Master Debug | Big Based",
@@ -14,7 +15,9 @@ export default function DebugPage() {
         This page provides access to all debugging tools and system information for the Big Based website.
       </p>
 
-      <MasterDebugger />
+      <DebugErrorBoundary>
+        <MasterDebugger />
+      </DebugErrorBoundary>
     </div>
   )
 }
