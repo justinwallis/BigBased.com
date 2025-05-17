@@ -1,3 +1,5 @@
+import Image from "next/image"
+
 export default function FaviconDebugPage() {
   const faviconAssets = [
     { name: "favicon.ico", path: "/favicon.ico", size: "16x16, 32x32" },
@@ -6,11 +8,6 @@ export default function FaviconDebugPage() {
     { name: "icon0.svg", path: "/icon0.svg", size: "Vector" },
     { name: "icon1.png", path: "/icon1.png", size: "Variable" },
     { name: "apple-icon.png", path: "/apple-icon.png", size: "180x180" },
-    { name: "apple-touch-icon.png", path: "/apple-touch-icon.png", size: "180x180" },
-    { name: "android-chrome-192x192.png", path: "/android-chrome-192x192.png", size: "192x192" },
-    { name: "android-chrome-512x512.png", path: "/android-chrome-512x512.png", size: "512x512" },
-    { name: "safari-pinned-tab.png", path: "/safari-pinned-tab.png", size: "Variable" },
-    { name: "mstile-150x150.png", path: "/mstile-150x150.png", size: "150x150" },
   ]
 
   return (
@@ -72,21 +69,6 @@ export default function FaviconDebugPage() {
 }`}
             </pre>
           </div>
-
-          <div className="bg-white p-4 rounded shadow">
-            <h3 className="font-medium">browserconfig.xml</h3>
-            <pre className="bg-gray-100 p-2 mt-2 overflow-auto text-xs rounded">
-              {`<?xml version="1.0" encoding="utf-8"?>
-<browserconfig>
-    <msapplication>
-        <tile>
-            <square150x150logo src="/mstile-150x150.png"/>
-            <TileColor>#000000</TileColor>
-        </tile>
-    </msapplication>
-</browserconfig>`}
-            </pre>
-          </div>
         </div>
       </section>
 
@@ -99,40 +81,22 @@ export default function FaviconDebugPage() {
               <p className="text-sm text-gray-500">Size: {asset.size}</p>
               <p className="text-sm text-gray-500 mb-2">Path: {asset.path}</p>
               <div className="h-32 flex items-center justify-center bg-gray-100 rounded">
-                {asset.name.endsWith(".ico") ? (
-                  <div className="text-center">
-                    <img
+                <div className="text-center">
+                  {/* Use next/image for better handling */}
+                  <div className="relative w-16 h-16 mx-auto">
+                    <Image
                       src={asset.path || "/placeholder.svg"}
                       alt={asset.name}
-                      className="mx-auto"
-                      style={{ width: "32px", height: "32px" }}
-                    />
-                    <span className="block mt-2 text-xs text-gray-500">.ico format</span>
-                  </div>
-                ) : asset.name.endsWith(".svg") ? (
-                  <div className="text-center">
-                    <img
-                      src={asset.path || "/placeholder.svg"}
-                      alt={asset.name}
-                      className="mx-auto"
-                      style={{ width: "64px", height: "64px" }}
-                    />
-                    <span className="block mt-2 text-xs text-gray-500">SVG format</span>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <img
-                      src={asset.path || "/placeholder.svg"}
-                      alt={asset.name}
-                      className="mx-auto max-h-24 max-w-full"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement
-                        target.src = "/abstract-geometric-shapes.png"
-                        target.alt = "Image not found"
-                      }}
+                      fill
+                      sizes="64px"
+                      style={{ objectFit: "contain" }}
+                      unoptimized
                     />
                   </div>
-                )}
+                  <span className="block mt-2 text-xs text-gray-500">
+                    {asset.name.split(".").pop()?.toUpperCase()} format
+                  </span>
+                </div>
               </div>
               <div className="mt-2 text-xs">
                 <a
@@ -153,13 +117,11 @@ export default function FaviconDebugPage() {
         <h2 className="text-xl font-semibold mb-4">HTML Head Tags</h2>
         <div className="bg-white p-4 rounded shadow">
           <pre className="bg-gray-100 p-2 overflow-auto text-xs rounded">
-            {`<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="manifest" href="/site.webmanifest">
-<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#000000">
-<meta name="msapplication-TileColor" content="#000000">
-<meta name="theme-color" content="#ffffff">`}
+            {`<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="icon" type="image/svg+xml" href="/icon0.svg" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-icon.png" />
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#000000" />`}
           </pre>
         </div>
       </section>
