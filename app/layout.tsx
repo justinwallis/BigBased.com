@@ -94,6 +94,38 @@ export default function RootLayout({
         <meta name="twitter:image" content={`${baseUrl}/BigBasedPreview.png`} />
 
         {/* Explicit favicon links with absolute URLs for maximum compatibility */}
+        {/* Add direct favicon links */}
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <meta name="msapplication-TileColor" content="#da532c" />
+        <meta name="theme-color" content="#ffffff" />
+
+        {/* Add a script to check if favicons are loading */}
+        <Script id="check-favicons" strategy="afterInteractive">
+          {`
+            console.log("Checking favicon loading...");
+            const checkImage = (url) => {
+              return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve({ url, status: 'loaded' });
+                img.onerror = () => resolve({ url, status: 'failed' });
+                img.src = url;
+              });
+            };
+            
+            Promise.all([
+              checkImage('/favicon.ico'),
+              checkImage('/apple-touch-icon.png'),
+              checkImage('/favicon-16x16.png'),
+              checkImage('/favicon-32x32.png')
+            ]).then(results => {
+              console.log('Favicon loading results:', results);
+            });
+          `}
+        </Script>
         <link rel="icon" href={getAssetUrl("/favicon.ico")} sizes="any" />
         <link rel="icon" href={getAssetUrl("/icon0.svg")} type="image/svg+xml" />
         <link rel="icon" href={getAssetUrl("/icon1.png")} type="image/png" />

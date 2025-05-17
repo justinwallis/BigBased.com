@@ -16,13 +16,35 @@ const nextConfig = {
       },
     ],
   },
-  // Ensure static files are properly copied
-  output: "export", // Use export for static site generation
-  distDir: "out", // Output to the 'out' directory
-  trailingSlash: true, // Add trailing slashes to all routes
+  // Use standalone output for Vercel deployment
+  output: "standalone",
 
-  // We can't use async headers with output: 'export'
-  // So we'll remove the headers configuration
+  // Add specific asset prefix for production builds
+  assetPrefix: process.env.NODE_ENV === "production" ? undefined : undefined,
+
+  // Configure headers for better caching
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=3600, must-revalidate",
+          },
+        ],
+      },
+      {
+        source: "/favicon.ico",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400",
+          },
+        ],
+      },
+    ]
+  },
 }
 
 module.exports = nextConfig
