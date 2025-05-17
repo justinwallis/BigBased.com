@@ -46,7 +46,7 @@ export default function SideMenu({
   isSubscribed = false,
 }: SideMenuProps) {
   const [scrollY, setScrollY] = useState(0)
-  const [menuPosition, setMenuPosition] = useState({ top: 0, startY: 0, isDragging: false })
+  const [menuPosition, setMenuPosition] = useState({ top: 0, startX: 0, isDragging: false })
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState([])
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -107,12 +107,12 @@ export default function SideMenu({
 
   const handleDragStart = (e) => {
     try {
-      // Safely access clientY from either touch or mouse event
-      const clientY = e?.touches?.[0]?.clientY || e?.clientY || 0
+      // Safely access clientX from either touch or mouse event
+      const clientX = e?.touches?.[0]?.clientX || e?.clientX || 0
 
       setMenuPosition({
         ...menuPosition,
-        startY: clientY,
+        startX: clientX,
         isDragging: true,
       })
     } catch (error) {
@@ -129,31 +129,32 @@ export default function SideMenu({
     try {
       if (!menuPosition.isDragging) return
 
-      // Safely access clientY from either touch or mouse event
-      const clientY = e?.touches?.[0]?.clientY || e?.clientY || 0
+      // Safely access clientX from either touch or mouse event
+      const clientX = e?.touches?.[0]?.clientX || e?.clientX || 0
 
-      if (isNaN(clientY)) {
-        console.warn("Invalid clientY value in handleDragMove")
+      if (isNaN(clientX)) {
+        console.warn("Invalid clientX value in handleDragMove")
         return
       }
 
-      const deltaY = clientY - menuPosition.startY
+      const deltaX = clientX - menuPosition.startX
 
-      // Calculate new top position, constrained to viewport
-      const newTop = Math.max(0, Math.min(window.innerHeight - 300, menuPosition.top + deltaY))
+      // If dragged more than 100px to the left, close the menu
+      if (deltaX < -100) {
+        setIsOpen(false)
+        setMenuPosition({
+          ...menuPosition,
+          isDragging: false,
+        })
+        return
+      }
 
-      // Update menu position
-      setMenuPosition({
-        ...menuPosition,
-        top: newTop,
-        startY: clientY,
-      })
-
-      // Apply the new position
+      // Apply drag effect to the menu (slight movement following finger)
       const sideMenu = e?.currentTarget?.parentElement
       if (sideMenu) {
-        sideMenu.style.top = `${newTop}px`
-        sideMenu.style.height = `${window.innerHeight - newTop}px`
+        // Only allow dragging to the left (negative values)
+        const dragOffset = Math.min(0, deltaX)
+        sideMenu.style.transform = `translateX(${dragOffset}px)`
       }
     } catch (error) {
       console.error("Error in handleDragMove:", error)
@@ -161,6 +162,12 @@ export default function SideMenu({
   }
 
   const handleDragEnd = () => {
+    // Reset any drag transformation
+    const sideMenu = document.querySelector('[data-side-menu="true"]')
+    if (sideMenu) {
+      sideMenu.style.transform = ""
+    }
+
     setMenuPosition({
       ...menuPosition,
       isDragging: false,
@@ -244,6 +251,7 @@ export default function SideMenu({
 
       {/* Side Menu */}
       <div
+        data-side-menu="true"
         className={`fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-900 shadow-xl z-[200] transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0"
         } flex flex-col`}
@@ -256,6 +264,7 @@ export default function SideMenu({
           onTouchEnd={handleDragEnd}
           onMouseDown={handleDragStart}
           onClick={() => setIsOpen(false)}
+          aria-label="Drag to close menu or click to close"
         >
           <div className="w-1 h-10 bg-gray-400 dark:bg-gray-500 rounded-full"></div>
           <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
