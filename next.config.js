@@ -8,42 +8,42 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ["placeholder.com", "via.placeholder.com"],
+    domains: ["localhost"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ],
     unoptimized: true,
   },
+  // Ensure static files are properly copied
   async headers() {
     return [
       {
-        source: "/(.*)",
+        // Apply these headers to all routes
+        source: "/:path*",
         headers: [
           {
-            key: "X-Frame-Options",
-            value: "DENY",
+            key: "Cache-Control",
+            value: "public, max-age=3600, must-revalidate",
           },
+        ],
+      },
+      {
+        // Special headers for favicon files to ensure they're properly served
+        source: "/:favicon*",
+        headers: [
           {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
-          },
-          {
-            key: "Referrer-Policy",
-            value: "strict-origin-when-cross-origin",
-          },
-          {
-            key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=()",
+            key: "Cache-Control",
+            value: "public, max-age=86400",
           },
         ],
       },
     ]
   },
-  async rewrites() {
-    return [
-      {
-        source: "/social-preview",
-        destination: "/static-meta.html",
-      },
-    ]
-  },
+  // Output as a static site for better file handling
+  output: "standalone",
 }
 
 module.exports = nextConfig

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Favicon Test</title>
+  <!-- Direct favicon references -->
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/icon0.svg" type="image/svg+xml">
+  <link rel="icon" href="/icon1.png" type="image/png">
+  <link rel="apple-touch-icon" href="/apple-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .file-test {
+      margin-bottom: 20px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    .file-test img {
+      max-width: 64px;
+      max-height: 64px;
+      border: 1px solid #eee;
+      margin-right: 10px;
+    }
+    .file-info {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .status {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-size: 14px;
+      margin-left: 10px;
+    }
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    h1 {
+      margin-bottom: 30px;
+    }
+    .instructions {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+    }
+    .troubleshooting {
+      margin-top: 30px;
+      background-color: #e9ecef;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #0069d9;
+    }
+    code {
+      background-color: #f8f9fa;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>Favicon Test Page</h1>
+  
+  <div class="instructions">
+    <p>This page tests if your favicon files are properly accessible. Check the status of each file below.</p>
+    <p>If any file shows as "Not Found", make sure the file exists in your public directory and has the correct permissions.</p>
+    <button onclick="location.reload()">Refresh Tests</button>
+  </div>
+  
+  <div id="results">
+    <p>Loading tests...</p>
+  </div>
+
+  <div class="troubleshooting">
+    <h2>Troubleshooting Steps</h2>
+    <ol>
+      <li>Make sure all favicon files are in the <code>public</code> directory of your project</li>
+      <li>Check that the filenames match exactly (case-sensitive)</li>
+      <li>Verify that the files are included in your deployment</li>
+      <li>Clear your browser cache (Ctrl+F5 or Cmd+Shift+R)</li>
+      <li>Check your deployment logs for any errors</li>
+      <li>If using a CDN, purge the cache for these files</li>
+    </ol>
+    <p>For Next.js projects, make sure your <code>next.config.js</code> doesn't have any settings that might affect static file serving.</p>
+  </div>
+
+  <script>
+    // Function to check if a file exists
+    async function checkFileExists(url) {
+      try {
+        const response = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+        return response.ok;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    // Function to check image loading
+    function checkImageLoads(url) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        // Prevent caching
+        img.src = url + '?t=' + new Date().getTime();
+      });
+    }
+
+    // Files to check
+    const files = [
+      { name: 'favicon.ico', path: '/favicon.ico', type: 'image' },
+      { name: 'icon0.svg', path: '/icon0.svg', type: 'image' },
+      { name: 'icon1.png', path: '/icon1.png', type: 'image' },
+      { name: 'apple-icon.png', path: '/apple-icon.png', type: 'image' },
+      { name: 'manifest.json', path: '/manifest.json', type: 'json' },
+      { name: 'web-app-manifest-192x192.png', path: '/web-app-manifest-192x192.png', type: 'image' },
+      { name: 'web-app-manifest-512x512.png', path: '/web-app-manifest-512x512.png', type: 'image' }
+    ];
+
+    // Check all files and display results
+    async function checkAllFiles() {
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '';
+
+      for (const file of files) {
+        const fileDiv = document.createElement('div');
+        fileDiv.className = 'file-test';
+        
+        // Create header with file name
+        const header = document.createElement('h3');
+        header.textContent = file.name;
+        fileDiv.appendChild(header);
+        
+        // Check if file exists
+        const exists = await checkFileExists(file.path);
+        
+        // For images, also check if they load properly
+        let loads = false;
+        if (file.type === 'image' && exists) {
+          loads = await checkImageLoads(file.path);
+        }
+        
+        // Create content
+        const content = document.createElement('div');
+        content.className = 'file-info';
+        
+        // For images, show preview
+        if (file.type === 'image' && exists && loads) {
+          const img = document.createElement('img');
+          img.src = file.path + '?t=' + new Date().getTime(); // Prevent caching
+          img.alt = file.name;
+          content.appendChild(img);
+        }
+        
+        // Show status
+        const status = document.createElement('div');
+        
+        if (exists) {
+          if (file.type === 'image') {
+            if (loads) {
+              status.innerHTML = `Path: ${file.path} <span class="status success">Found & Loads</span>`;
+            } else {
+              status.innerHTML = `Path: ${file.path} <span class="status error">Found but Doesn't Load</span>`;
+            }
+          } else {
+            status.innerHTML = `Path: ${file.path} <span class="status success">Found</span>`;
+          }
+        } else {
+          status.innerHTML = `Path: ${file.path} <span class="status error">Not Found</span>`;
+        }
+        
+        content.appendChild(status);
+        fileDiv.appendChild(content);
+        resultsDiv.appendChild(fileDiv);
+      }
+
+      // Add direct URL test links
+      const directLinks = document.createElement('div');
+      directLinks.className = 'file-test';
+      directLinks.innerHTML = `
+        <h3>Direct URL Tests</h3>
+        <p>Click these links to test direct access to each file:</p>
+        <ul>
+          ${files.map(file => `<li><a href="${file.path}" target="_blank">${file.name}</a></li>`).join('')}
+        </ul>
+      `;
+      resultsDiv.appendChild(directLinks);
+    }
+
+    // Run the checks
+    checkAllFiles();
+  </script>
+  
+  <!-- Load the favicon checker script -->
+  <script src="/check-favicons.js"></script>
+</body>
+</html>
