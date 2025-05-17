@@ -20,20 +20,27 @@ const inter = Inter({ subsets: ["latin"] })
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bigbased.com"
 
 export const metadata: Metadata = {
-  ...baseMetadata,
-  metadataBase: new URL(baseUrl),
+  title: "Big Based",
+  description: "Big Based is a cultural revolution platform with a living library of truth, faith, and insight.",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon0.svg", type: "image/svg+xml" },
+      { url: "/icon1.png", type: "image/png" },
     ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
-    other: [
-      { url: "/android-chrome-192x192.png", sizes: "192x192", type: "image/png" },
-      { url: "/android-chrome-512x512.png", sizes: "512x512", type: "image/png" },
-    ],
+    apple: {
+      url: "/apple-icon.png",
+      sizes: "180x180",
+      type: "image/png",
+    },
   },
+  manifest: "/manifest.json",
+  themeColor: "#ffffff",
+  appleWebApp: {
+    title: "Big Based",
+    statusBarStyle: "default",
+  },
+  metadataBase: new URL(baseUrl),
   openGraph: {
     ...baseMetadata.openGraph,
     url: baseUrl,

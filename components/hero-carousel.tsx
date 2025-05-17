@@ -480,7 +480,7 @@ export default function HeroCarousel() {
         className="absolute top-1/2 transform -translate-y-1/2 z-30 transition-transform duration-300 hover:scale-110 focus:outline-none p-3"
         style={{
           filter: "drop-shadow(0px 2px 3px rgba(0,0,0,0.2))",
-          left: "-3px", // 12px - 15px = -3px from left edge
+          left: "2px", // -3px + 5px = 2px from left edge
         }}
         aria-label="Previous slide"
       >
@@ -504,7 +504,7 @@ export default function HeroCarousel() {
         className="absolute top-1/2 transform -translate-y-1/2 z-30 transition-transform duration-300 hover:scale-110 focus:outline-none p-3"
         style={{
           filter: "drop-shadow(0px 2px 3px rgba(0,0,0,0.2))",
-          right: "45px", // 30px + 15px = 45px from right edge
+          right: "37px", // 45px - 8px = 37px from right edge
         }}
         aria-label="Next slide"
       >
