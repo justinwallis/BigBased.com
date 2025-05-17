@@ -450,6 +450,9 @@ export default function HeroCarousel() {
         style={{
           background:
             "linear-gradient(to right, rgba(255,255,255,1) 0%, rgba(255,255,255,0.8) 40%, rgba(255,255,255,0) 100%)",
+          height: "130%", // Reduced from 150% to 130%
+          top: "-25%", // Keep the same top position to maintain upward extension
+          bottom: "auto", // Override the bottom: 0 from the className
         }}
       ></div>
       <div
@@ -457,6 +460,9 @@ export default function HeroCarousel() {
         style={{
           background:
             "linear-gradient(to left, rgba(255,255,255,1) 0%, rgba(255,255,255,0.8) 40%, rgba(255,255,255,0) 100%)",
+          height: "130%", // Reduced from 150% to 130%
+          top: "-25%", // Keep the same top position to maintain upward extension
+          bottom: "auto", // Override the bottom: 0 from the className
         }}
       ></div>
 
@@ -465,12 +471,18 @@ export default function HeroCarousel() {
         className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none hidden dark:block"
         style={{
           background: "linear-gradient(to right, rgba(17,24,39,1) 0%, rgba(17,24,39,0.8) 40%, rgba(17,24,39,0) 100%)",
+          height: "130%", // Reduced from 150% to 130%
+          top: "-25%", // Keep the same top position to maintain upward extension
+          bottom: "auto", // Override the bottom: 0 from the className
         }}
       ></div>
       <div
         className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none hidden dark:block"
         style={{
           background: "linear-gradient(to left, rgba(17,24,39,1) 0%, rgba(17,24,39,0.8) 40%, rgba(17,24,39,0) 100%)",
+          height: "130%", // Reduced from 150% to 130%
+          top: "-25%", // Keep the same top position to maintain upward extension
+          bottom: "auto", // Override the bottom: 0 from the className
         }}
       ></div>
 
