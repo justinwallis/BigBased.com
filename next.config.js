@@ -8,24 +8,20 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    unoptimized: true,
+    domains: ["localhost"],
     remotePatterns: [
       {
         protocol: "https",
         hostname: "**",
       },
     ],
+    unoptimized: true,
   },
-  // Use standalone output for Vercel deployment
-  output: "standalone",
-
-  // Add specific asset prefix for production builds
-  assetPrefix: process.env.NODE_ENV === "production" ? undefined : undefined,
-
-  // Configure headers for better caching
+  // Ensure static files are properly copied
   async headers() {
     return [
       {
+        // Apply these headers to all routes
         source: "/:path*",
         headers: [
           {
@@ -35,7 +31,8 @@ const nextConfig = {
         ],
       },
       {
-        source: "/favicon.ico",
+        // Special headers for favicon files to ensure they're properly served
+        source: "/:favicon*",
         headers: [
           {
             key: "Cache-Control",
@@ -45,6 +42,8 @@ const nextConfig = {
       },
     ]
   },
+  // Output as a static site for better file handling
+  output: "standalone",
 }
 
 module.exports = nextConfig
