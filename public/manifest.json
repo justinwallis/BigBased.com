@@ -1,6 +1,6 @@
 {
-  "name": "MyWebSite",
-  "short_name": "MySite",
+  "name": "Big Based",
+  "short_name": "BB",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
