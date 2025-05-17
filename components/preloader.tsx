@@ -116,9 +116,67 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
   const messageIndexRef = useRef(0)
   const startTimeRef = useRef(Date.now())
   const hasCalledOnCompleteRef = useRef(false)
+  const initialPreloaderRemovedRef = useRef(false)
+
+  // Check if we should use this preloader or defer to the initial one
+  const [shouldRender, setShouldRender] = useState(false)
+
+  // Check for initial preloader on mount
+  useEffect(() => {
+    // Check if we're in the browser
+    if (typeof window === "undefined") return
+
+    // Check if there's already an initial preloader
+    const initialPreloader = window.initialPreloader
+
+    if (initialPreloader) {
+      console.log("Initial preloader found, deferring to it")
+
+      // Set up a listener to know when the initial preloader is removed
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === "childList" && mutation.removedNodes.length > 0) {
+            for (let i = 0; i < mutation.removedNodes.length; i++) {
+              const node = mutation.removedNodes[i]
+              if (node === initialPreloader) {
+                console.log("Initial preloader removed, activating React preloader")
+                initialPreloaderRemovedRef.current = true
+                setShouldRender(true)
+                observer.disconnect()
+                break
+              }
+            }
+          }
+        })
+      })
+
+      // Start observing the document body
+      observer.observe(document.body, { childList: true })
+
+      // Safety timeout - if the initial preloader isn't removed after 10 seconds, use this one
+      const timeout = setTimeout(() => {
+        if (!initialPreloaderRemovedRef.current) {
+          console.log("Initial preloader timeout, activating React preloader")
+          setShouldRender(true)
+          observer.disconnect()
+        }
+      }, 10000)
+
+      return () => {
+        observer.disconnect()
+        clearTimeout(timeout)
+      }
+    } else {
+      // No initial preloader, use this one
+      console.log("No initial preloader found, using React preloader")
+      setShouldRender(true)
+    }
+  }, [])
 
   // Select random animation and messages on mount
   useEffect(() => {
+    if (!shouldRender) return
+
     try {
       // Select random animation
       const randomAnimationIndex = Math.floor(Math.random() * animationVariants.length)
@@ -166,10 +224,12 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
       // Ensure we still set animation complete to not block loading
       setAnimationComplete(true)
     }
-  }, [minimumLoadingTime, quotesToShow])
+  }, [minimumLoadingTime, quotesToShow, shouldRender])
 
   // Handle message rotation
   useEffect(() => {
+    if (!shouldRender) return
+
     // Skip if no messages or only one message
     if (selectedMessages.length <= 1) return
 
@@ -201,10 +261,12 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
         function: "messageRotation",
       })
     }
-  }, [selectedMessages])
+  }, [selectedMessages, shouldRender])
 
   // Preload key images safely
   useEffect(() => {
+    if (!shouldRender) return
+
     const preloadKeyImages = async () => {
       try {
         loadingManager.registerResource("key-images", 2)
@@ -239,10 +301,12 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
     }
 
     preloadKeyImages()
-  }, [])
+  }, [shouldRender])
 
   // Listen to loading manager progress
   useEffect(() => {
+    if (!shouldRender) return
+
     try {
       const unsubscribe = loadingManager.onProgress((managerProgress) => {
         setProgress(managerProgress)
@@ -264,10 +328,12 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
       // Ensure we don't block loading
       setResourcesLoaded(true)
     }
-  }, [])
+  }, [shouldRender])
 
   // Determine when to hide the preloader
   useEffect(() => {
+    if (!shouldRender) return
+
     if (resourcesLoaded && animationComplete) {
       try {
         // Both actual resources and animation are complete
@@ -303,10 +369,15 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
         }
       }
     }
-  }, [resourcesLoaded, animationComplete, onComplete])
+  }, [resourcesLoaded, animationComplete, onComplete, shouldRender])
 
   // Get the selected animation variant
   const selectedVariant = animationVariants[selectedAnimation]
+
+  // Don't render anything if we shouldn't render
+  if (!shouldRender) {
+    return null
+  }
 
   return (
     <AnimatePresence mode="wait">
