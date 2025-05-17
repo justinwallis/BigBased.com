@@ -22,20 +22,6 @@ const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bigbased.com"
 export const metadata: Metadata = {
   title: "Big Based",
   description: "Big Based is a cultural revolution platform with a living library of truth, faith, and insight.",
-  icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/icon0.svg", type: "image/svg+xml" },
-      { url: "/icon1.png", type: "image/png" },
-    ],
-    apple: { url: "/apple-icon.png", type: "image/png" },
-  },
-  manifest: "/manifest.json",
-  themeColor: "#ffffff",
-  appleWebApp: {
-    title: "Big Based",
-    statusBarStyle: "default",
-  },
   metadataBase: new URL(baseUrl),
   openGraph: {
     ...baseMetadata.openGraph,
@@ -69,6 +55,18 @@ export default function RootLayout({
     "@graph": [getOrganizationData(), getWebsiteData()],
   }
 
+  // Get absolute base URL for assets
+  const getAssetUrl = (path: string) => {
+    // If path already starts with http, return as is
+    if (path.startsWith("http")) return path
+
+    // If we're in development, use relative path
+    if (process.env.NODE_ENV === "development") return path
+
+    // Otherwise, use absolute path with base URL
+    return `${baseUrl}${path.startsWith("/") ? path : `/${path}`}`
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -95,27 +93,20 @@ export default function RootLayout({
         />
         <meta name="twitter:image" content={`${baseUrl}/BigBasedPreview.png`} />
 
-        {/* Explicit favicon links for maximum compatibility */}
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" href="/icon0.svg" type="image/svg+xml" />
-        <link rel="icon" href="/icon1.png" type="image/png" />
-        <link rel="apple-touch-icon" href="/apple-icon.png" />
-        <link rel="manifest" href="/manifest.json" />
-
-        {/* Web app manifest */}
-        <link rel="manifest" href="/manifest.json" />
+        {/* Explicit favicon links with absolute URLs for maximum compatibility */}
+        <link rel="icon" href={getAssetUrl("/favicon.ico")} sizes="any" />
+        <link rel="icon" href={getAssetUrl("/icon0.svg")} type="image/svg+xml" />
+        <link rel="icon" href={getAssetUrl("/icon1.png")} type="image/png" />
+        <link rel="apple-touch-icon" href={getAssetUrl("/apple-icon.png")} />
+        <link rel="manifest" href={getAssetUrl("/manifest.json")} />
 
         {/* Theme color */}
         <meta name="theme-color" content="#ffffff" />
         <meta name="msapplication-TileColor" content="#ffffff" />
 
-        {/* Resource preloading */}
-        <link rel="preload" href="/favicon.ico" as="image" />
-        <link rel="preload" href="/icon0.svg" as="image" />
-        <link rel="preload" href="/icon1.png" as="image" />
-        <link rel="preload" href="/apple-icon.png" as="image" />
-        <link rel="preload" href="/bb-logo.png" as="image" />
-        <link rel="preload" href="/american-flag.png" as="image" />
+        {/* Resource preloading with absolute URLs */}
+        <link rel="preload" href={getAssetUrl("/bb-logo.png")} as="image" />
+        <link rel="preload" href={getAssetUrl("/american-flag.png")} as="image" />
 
         {/* Preconnect to external domains */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />

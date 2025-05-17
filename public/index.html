@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Favicon Test</title>
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1 {
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    .test-item {
+      margin-bottom: 20px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .test-item h3 {
+      margin-top: 0;
+    }
+    .status {
+      font-weight: bold;
+    }
+    .success {
+      color: green;
+    }
+    .failure {
+      color: red;
+    }
+    img {
+      max-width: 100px;
+      max-height: 100px;
+      display: block;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Static File Test Page</h1>
+  <p>This page tests if your static files are properly accessible.</p>
+  
+  <div class="test-item">
+    <h3>favicon.ico</h3>
+    <img src="favicon.ico" alt="Favicon" onerror="this.parentNode.querySelector('.status').innerHTML='Not Found'; this.parentNode.querySelector('.status').className='status failure';">
+    <p>Status: <span class="status success">Found</span></p>
+    <p>Direct link: <a href="favicon.ico" target="_blank">favicon.ico</a></p>
+  </div>
+
+  <div class="test-item">
+    <h3>icon0.svg</h3>
+    <img src="icon0.svg" alt="SVG Icon" onerror="this.parentNode.querySelector('.status').innerHTML='Not Found'; this.parentNode.querySelector('.status').className='status failure';">
+    <p>Status: <span class="status success">Found</span></p>
+    <p>Direct link: <a href="icon0.svg" target="_blank">icon0.svg</a></p>
+  </div>
+
+  <div class="test-item">
+    <h3>icon1.png</h3>
+    <img src="icon1.png" alt="PNG Icon" onerror="this.parentNode.querySelector('.status').innerHTML='Not Found'; this.parentNode.querySelector('.status').className='status failure';">
+    <p>Status: <span class="status success">Found</span></p>
+    <p>Direct link: <a href="icon1.png" target="_blank">icon1.png</a></p>
+  </div>
+
+  <div class="test-item">
+    <h3>apple-icon.png</h3>
+    <img src="apple-icon.png" alt="Apple Icon" onerror="this.parentNode.querySelector('.status').innerHTML='Not Found'; this.parentNode.querySelector('.status').className='status failure';">
+    <p>Status: <span class="status success">Found</span></p>
+    <p>Direct link: <a href="apple-icon.png" target="_blank">apple-icon.png</a></p>
+  </div>
+
+  <div class="test-item">
+    <h3>manifest.json</h3>
+    <p>Status: <span class="status" id="manifest-status">Checking...</span></p>
+    <p>Direct link: <a href="manifest.json" target="_blank">manifest.json</a></p>
+  </div>
+
+  <script>
+    // Check manifest.json
+    fetch('manifest.json')
+      .then(response => {
+        const statusEl = document.getElementById('manifest-status');
+        if (response.ok) {
+          statusEl.textContent = 'Found';
+          statusEl.className = 'status success';
+        } else {
+          statusEl.textContent = 'Not Found';
+          statusEl.className = 'status failure';
+        }
+      })
+      .catch(error => {
+        const statusEl = document.getElementById('manifest-status');
+        statusEl.textContent = 'Error: ' + error.message;
+        statusEl.className = 'status failure';
+      });
+  </script>
+</body>
+</html>

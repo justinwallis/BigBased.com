@@ -8,42 +8,21 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ["localhost"],
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
         hostname: "**",
       },
     ],
-    unoptimized: true,
   },
   // Ensure static files are properly copied
-  async headers() {
-    return [
-      {
-        // Apply these headers to all routes
-        source: "/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=3600, must-revalidate",
-          },
-        ],
-      },
-      {
-        // Special headers for favicon files to ensure they're properly served
-        source: "/:favicon*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=86400",
-          },
-        ],
-      },
-    ]
-  },
-  // Output as a static site for better file handling
-  output: "standalone",
+  output: "export", // Use export for static site generation
+  distDir: "out", // Output to the 'out' directory
+  trailingSlash: true, // Add trailing slashes to all routes
+
+  // We can't use async headers with output: 'export'
+  // So we'll remove the headers configuration
 }
 
 module.exports = nextConfig
