@@ -9,11 +9,12 @@ export function middleware(request: NextRequest) {
   requestHeaders.set("x-url", request.url)
 
   // Check if the request is for a debug page
-  if (request.nextUrl.pathname === "/debug" || request.nextUrl.pathname.startsWith("/debug/")) {
-    // The debug pages are now in the (debug) route group
-    // but we want to keep the same URL structure for users
-    // So we don't need to redirect, Next.js will handle this automatically
-
+  if (
+    request.nextUrl.pathname === "/debug" ||
+    request.nextUrl.pathname.startsWith("/debug/") ||
+    request.nextUrl.pathname === "/debug-static" ||
+    request.nextUrl.pathname.startsWith("/debug-static/")
+  ) {
     // We can add special headers for debug pages if needed
     const headers = new Headers(requestHeaders)
     headers.set("x-debug-mode", "true")
@@ -45,5 +46,7 @@ export const config = {
     "/((?!api|_next/static|_next/image|favicon.ico).*)",
     "/debug",
     "/debug/:path*",
+    "/debug-static",
+    "/debug-static/:path*",
   ],
 }
