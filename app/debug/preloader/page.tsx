@@ -1,17 +1,27 @@
 import DebugClient from "../components/debug-client"
+import LoadingManagerOverride from "../components/loading-manager-override"
 
 export default function PreloaderDebugPage() {
   return (
     <div style={{ color: "white" }}>
       <h1 className="text-2xl font-bold mb-6">Preloader Debug</h1>
 
+      {/* Include both client components */}
       <DebugClient />
+      <LoadingManagerOverride />
 
       <div className="bg-black bg-opacity-30 p-4 rounded shadow mb-8">
         <h2 className="text-xl font-semibold mb-4">Preloader Status</h2>
         <p className="mb-4">
           If you're seeing this page with a bright magenta background, the preloader has been successfully disabled for
           debug pages.
+        </p>
+        <p className="mb-4">
+          If the preloader is stuck at 67%, try the{" "}
+          <a href="/debug/loading-manager" className="underline">
+            Loading Manager Debug
+          </a>{" "}
+          page.
         </p>
         <p>
           If you're still seeing a white screen or the preloader, try the static debug page at{" "}
@@ -39,6 +49,11 @@ export default function PreloaderDebugPage() {
           <li>
             <a href="/debug" className="text-white underline">
               Back to Debug Home
+            </a>
+          </li>
+          <li>
+            <a href="/debug/loading-manager" className="text-white underline">
+              Loading Manager Debug
             </a>
           </li>
           <li>
