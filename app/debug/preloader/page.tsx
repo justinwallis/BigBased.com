@@ -1,41 +1,53 @@
 export default function PreloaderDebugPage() {
   return (
-    <div>
+    <div style={{ color: "white" }}>
       <h1 className="text-2xl font-bold mb-6">Preloader Debug</h1>
 
-      <div className="bg-gray-100 p-4 rounded shadow mb-8">
-        <h2 className="text-xl font-semibold mb-4">Preloader Components</h2>
-        <p className="mb-4">The Big Based website uses a React-based preloader component.</p>
-
-        <ol className="list-decimal pl-5 space-y-2">
-          <li>
-            <strong>React Preloader Component</strong>
-            <p className="text-gray-600 mt-1">
-              This is a React component that provides a loading animation and tracks resource loading.
-            </p>
-          </li>
-        </ol>
+      <div className="bg-black bg-opacity-30 p-4 rounded shadow mb-8">
+        <h2 className="text-xl font-semibold mb-4">Preloader Status</h2>
+        <p className="mb-4">
+          If you're seeing this page with a bright magenta background, the preloader has been successfully disabled for
+          debug pages.
+        </p>
+        <p>
+          If you're still seeing a white screen or the preloader, try the static debug page at{" "}
+          <a href="/debug-static.html" className="underline">
+            /debug-static.html
+          </a>
+        </p>
       </div>
 
-      <div className="bg-gray-100 p-4 rounded shadow">
-        <h2 className="text-xl font-semibold mb-4">Troubleshooting</h2>
-        <div className="space-y-4">
-          <div>
-            <h3 className="font-medium">Stuck Preloader</h3>
-            <p className="text-gray-600">
-              This happens when a resource isn't properly marked as loaded. Check the console for errors and ensure all
-              resources are properly tracked.
-            </p>
-          </div>
+      <div className="bg-black bg-opacity-30 p-4 rounded shadow mb-8">
+        <h2 className="text-xl font-semibold mb-4">Preloader Removal Script</h2>
+        <p className="mb-4">
+          The debug pages include an aggressive script that attempts to remove any preloader elements as early as
+          possible. This script runs in the head, on DOMContentLoaded, and after window load.
+        </p>
+        <p>
+          Check the browser console for messages from this script to see if it's finding and removing any preloader
+          elements.
+        </p>
+      </div>
 
-          <div>
-            <h3 className="font-medium">White Flash</h3>
-            <p className="text-gray-600">
-              This happens when there's a gap between the preloader being removed and the content being rendered. Ensure
-              smooth transitions between preloader and content.
-            </p>
-          </div>
-        </div>
+      <div className="bg-black bg-opacity-30 p-4 rounded shadow">
+        <h2 className="text-xl font-semibold mb-4">Navigation</h2>
+        <ul className="space-y-2">
+          <li>
+            <a href="/debug" className="text-white underline">
+              Back to Debug Home
+            </a>
+          </li>
+          <li>
+            <a href="/debug-static.html" className="text-white underline">
+              View Static Debug Page
+            </a>
+          </li>
+          <li>
+            <a href="/" className="text-white underline">
+              Return to Main Site
+            </a>
+          </li>
+        </ul>
       </div>
     </div>
   )

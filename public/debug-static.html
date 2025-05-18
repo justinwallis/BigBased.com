@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Static Debug Page</title>
+  <style>
+    body {
+      background-color: #ff00ff;
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: black;
+      padding: 1rem;
+    }
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    main {
+      padding: 2rem 0;
+    }
+    footer {
+      background-color: black;
+      padding: 1rem;
+      text-align: center;
+    }
+    .card {
+      background-color: rgba(0, 0, 0, 0.3);
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    h1 {
+      margin-top: 0;
+    }
+    a {
+      color: white;
+      text-decoration: underline;
+    }
+    a:hover {
+      text-decoration: none;
+    }
+    .nav {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .button {
+      background-color: #ff3333;
+      padding: 0.5rem 1rem;
+      border-radius: 0.25rem;
+      text-decoration: none;
+    }
+  </style>
+  <script>
+    // Immediately remove any preloader elements
+    (function() {
+      console.log("Static Debug page - Executing early preloader removal");
+      
+      // Function to remove preloader elements
+      function removePreloaders() {
+        console.log("Attempting to remove preloaders");
+        
+        // Remove any element with 'preloader' in its ID or class
+        var preloaders = document.querySelectorAll('[id*="preloader"], [class*="preloader"]');
+        console.log("Found " + preloaders.length + " preloader elements");
+        
+        preloaders.forEach(function(el) {
+          if (el && el.parentNode) {
+            console.log("Removing preloader element:", el);
+            el.parentNode.removeChild(el);
+          }
+        });
+        
+        // Remove any inline preloader
+        var initialPreloader = document.getElementById('initial-preloader');
+        if (initialPreloader && initialPreloader.parentNode) {
+          console.log("Removing initial preloader");
+          initialPreloader.parentNode.removeChild(initialPreloader);
+        }
+        
+        // Clear any preloader-related intervals
+        for (var i = 1; i < 10000; i++) {
+          clearInterval(i);
+        }
+        
+        // Remove any fixed or absolute positioned elements that might be preloaders
+        var possiblePreloaders = document.querySelectorAll('div[style*="position: fixed"], div[style*="position:fixed"], div[style*="position: absolute"], div[style*="position:absolute"]');
+        possiblePreloaders.forEach(function(el) {
+          if (el && el.parentNode && (el.style.zIndex > 100 || el.style.zIndex === '')) {
+            console.log("Removing possible preloader element:", el);
+            el.style.display = 'none';
+          }
+        });
+      }
+      
+      // Run immediately
+      removePreloaders();
+      
+      // Run again when DOM is ready
+      document.addEventListener('DOMContentLoaded', removePreloaders);
+      
+      // Run again after a short delay
+      setTimeout(removePreloaders, 100);
+      setTimeout(removePreloaders, 500);
+      setTimeout(removePreloaders, 1000);
+    })();
+  </script>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>Static Debug Page</h1>
+        <nav class="nav">
+          <a href="/debug">Debug Home</a>
+          <a href="/" class="button">Main Site</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <div class="card">
+        <h2>This is a static HTML page</h2>
+        <p>This page is a completely static HTML file that doesn't use Next.js at all. If you can see this page with its bright magenta background, but not the Next.js debug pages, then the issue is likely with Next.js and not with your HTML/CSS.</p>
+      </div>
+
+      <div class="card">
+        <h2>Browser Information</h2>
+        <div id="browser-info">Loading browser information...</div>
+      </div>
+
+      <div class="card">
+        <h2>Debug Links</h2>
+        <ul>
+          <li><a href="/debug">Next.js Debug Home</a></li>
+          <li><a href="/debug/preloader">Next.js Preloader Debug</a></li>
+          <li><a href="/">Main Site</a></li>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>Big Based Debug Tools - For Development Use Only</p>
+    </div>
+  </footer>
+
+  <script>
+    // Display browser information
+    document.addEventListener('DOMContentLoaded', function() {
+      var browserInfoElement = document.getElementById('browser-info');
+      if (browserInfoElement) {
+        browserInfoElement.innerHTML = `
+          <ul>
+            <li><strong>User Agent:</strong> ${navigator.userAgent}</li>
+            <li><strong>Platform:</strong> ${navigator.platform}</li>
+            <li><strong>Screen Size:</strong> ${window.screen.width} x ${window.screen.height}</li>
+            <li><strong>Window Size:</strong> ${window.innerWidth} x ${window.innerHeight}</li>
+            <li><strong>Device Pixel Ratio:</strong> ${window.devicePixelRatio}</li>
+            <li><strong>Color Depth:</strong> ${window.screen.colorDepth}</li>
+          </ul>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>
