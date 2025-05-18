@@ -119,9 +119,13 @@ export default function MegaMenu({ label, sections, sideSections, promoItem, cla
         <div
           className={cn(
             "absolute left-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden z-50",
-            isVerticalLayout ? "flex flex-col" : "flex",
+            isVerticalLayout ? "flex flex-col pr-3" : "flex", // Added right padding (pr-3) when in vertical layout
           )}
-          style={{ width: `${menuWidth}px`, maxWidth: "calc(100vw - 40px)" }}
+          style={{
+            width: `${menuWidth}px`,
+            maxWidth: "calc(100vw - 40px)",
+            marginRight: isVerticalLayout ? "16px" : "0", // Additional margin to ensure spacing from screen edge
+          }}
           onMouseLeave={() => !isMobile && setIsOpen(false)}
           role="menu"
         >
