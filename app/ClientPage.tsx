@@ -8,7 +8,6 @@ import Link from "next/link"
 import Footer from "@/components/footer"
 import SideMenu from "@/components/side-menu"
 import HeroCarousel from "@/components/hero-carousel"
-import EnhancedDropdownMenu from "@/components/enhanced-dropdown-menu"
 import { useResourceLoading } from "@/hooks/use-resource-loading"
 import loadingManager from "@/utils/loading-manager"
 import { ErrorBoundary } from "@/components/error-boundary"
@@ -25,6 +24,8 @@ import OptimizedImage from "@/components/optimized-image"
 import FloatingNavigation from "@/components/floating-navigation"
 import ScrollAnimation from "@/components/scroll-animation"
 import { useTheme } from "@/components/theme-provider"
+import MegaMenu from "@/components/mega-menu"
+import { MenuIcons } from "@/components/menu-icons"
 
 // Add the import for LogoInfoSection at the top of the file with the other imports
 import LogoInfoSection from "@/components/logo-info-section"
@@ -80,6 +81,129 @@ const aboutMenuItems = [
     description: "Our journey from inception to today",
   },
 ]
+
+// Define the features mega menu content
+const featuresMegaMenu = {
+  sections: [
+    {
+      title: "UX/UI",
+      items: [
+        {
+          icon: MenuIcons.FramerTemplates,
+          label: "Framer Templates",
+          href: "/features/framer-templates",
+        },
+        {
+          icon: MenuIcons.WebUIKits,
+          label: "Web UI Kits",
+          href: "/features/web-ui-kits",
+        },
+        {
+          icon: MenuIcons.Wireframes,
+          label: "Wireframes",
+          href: "/features/wireframes",
+        },
+        {
+          icon: MenuIcons.MobileUIKits,
+          label: "Mobile UI Kits",
+          href: "/features/mobile-ui-kits",
+        },
+        {
+          icon: MenuIcons.CodedTemplates,
+          label: "Coded Templates",
+          href: "/features/coded-templates",
+        },
+        {
+          icon: MenuIcons.NotionTemplates,
+          label: "Notion Templates",
+          href: "/features/notion-templates",
+        },
+      ],
+    },
+    {
+      title: "GRAPHICS",
+      items: [
+        {
+          icon: MenuIcons.Mockups,
+          label: "Mockups",
+          href: "/features/mockups",
+        },
+        {
+          icon: MenuIcons.Presentations,
+          label: "Presentations",
+          href: "/features/presentations",
+        },
+        {
+          icon: MenuIcons.Fonts,
+          label: "Fonts",
+          href: "/features/fonts",
+        },
+        {
+          icon: MenuIcons.Icons,
+          label: "Icons",
+          href: "/features/icons",
+        },
+        {
+          icon: MenuIcons.Objects,
+          label: "Objects",
+          href: "/features/objects",
+        },
+      ],
+    },
+    {
+      title: "ILLUSTRATIONS",
+      items: [
+        {
+          icon: MenuIcons.Vector,
+          label: "Vector",
+          href: "/features/vector",
+        },
+        {
+          icon: MenuIcons.Assets3D,
+          label: "3D Assets",
+          href: "/features/3d-assets",
+        },
+      ],
+    },
+  ],
+  sideSections: [
+    {
+      title: "WORK WITH US",
+      items: [
+        {
+          icon: MenuIcons.OpenShop,
+          label: "Open a shop",
+          href: "/features/open-shop",
+        },
+        {
+          icon: MenuIcons.BecomeAffiliate,
+          label: "Become an affiliate",
+          href: "/features/become-affiliate",
+        },
+      ],
+    },
+    {
+      title: "NEED HELP?",
+      items: [
+        {
+          icon: MenuIcons.Contacts,
+          label: "Contacts",
+          href: "/contact",
+        },
+        {
+          icon: MenuIcons.FAQ,
+          label: "F.A.Q.",
+          href: "/faq",
+        },
+      ],
+    },
+  ],
+  promoItem: {
+    icon: MenuIcons.Magic,
+    title: "Magic launch",
+    subtitle: "Spring 2024",
+  },
+}
 
 const revolutionMenuItems = [
   {
@@ -366,9 +490,12 @@ export default function ClientPage() {
             >
               About
             </Link>
-            <EnhancedDropdownMenu label="Revolution" items={revolutionMenuItems} />
-            <EnhancedDropdownMenu label="Features" items={featuresMenuItems} />
-            <EnhancedDropdownMenu label="Partners" items={partnersMenuItems} />
+            <MegaMenu
+              label="Features"
+              sections={featuresMegaMenu.sections}
+              sideSections={featuresMegaMenu.sideSections}
+              promoItem={featuresMegaMenu.promoItem}
+            />
             <Link
               href="/contact"
               className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
