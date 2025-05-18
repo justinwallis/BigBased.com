@@ -26,6 +26,7 @@ import ScrollAnimation from "@/components/scroll-animation"
 import { useTheme } from "@/components/theme-provider"
 import MegaMenu from "@/components/mega-menu"
 import { MenuIcons } from "@/components/menu-icons"
+import SearchPopup from "@/components/search-popup"
 
 // Add the import for LogoInfoSection at the top of the file with the other imports
 import LogoInfoSection from "@/components/logo-info-section"
@@ -381,6 +382,7 @@ export default function ClientPage() {
   const [logosLoaded, setLogosLoaded] = useState(false)
   const [hoveredLogo, setHoveredLogo] = useState(null)
   const [isHovering, setIsHovering] = useState(false)
+  const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false)
   const { theme } = useTheme()
 
   // Register main page component with loading manager
@@ -451,8 +453,7 @@ export default function ClientPage() {
   }, [])
 
   const handleSearchClick = () => {
-    setOpenWithSearch(true)
-    setIsSideMenuOpen(true)
+    setIsSearchPopupOpen(true)
   }
 
   // Hide content until loaded to prevent flash
@@ -466,6 +467,9 @@ export default function ClientPage() {
       <ErrorBoundary>
         <SideMenu isOpen={isSideMenuOpen} setIsOpen={setIsSideMenuOpen} openWithSearch={openWithSearch} />
       </ErrorBoundary>
+
+      {/* Search Popup */}
+      <SearchPopup isOpen={isSearchPopupOpen} onClose={() => setIsSearchPopupOpen(false)} />
 
       {/* Floating Dot Navigation */}
       <FloatingNavigation />
