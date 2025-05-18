@@ -2,12 +2,15 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef } from "react"
-import { Search, X, TrendingUp, Layout, FileText, Layers, GitBranch, Info } from "lucide-react"
+import { useState, useEffect, useRef, useMemo } from "react"
+import { Search, X, TrendingUp, Layout, FileText, Layers, GitBranch, Info, Loader2 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { useTheme } from "@/components/theme-provider"
+import { allSearchableItems, getFeaturedItems, type SearchableItem } from "@/data/search-data"
+import { searchItems, groupSearchResults, highlightMatch } from "@/utils/search-utils"
+import { useDebounce } from "@/hooks/use-debounce"
 
 type SearchPopupProps = {
   isOpen: boolean
@@ -20,60 +23,46 @@ type CategoryType = {
   icon: React.ReactNode
 }
 
-type AppType = {
-  id: string
-  name: string
-  icon: string
-  href: string
-}
-
-type ScreenType = {
-  id: string
-  name: string
-  image: string
-  href: string
-}
-
 const categories: CategoryType[] = [
   { id: "trending", name: "Trending", icon: <TrendingUp className="h-5 w-5" /> },
   { id: "screens", name: "Screens", icon: <Layout className="h-5 w-5" /> },
   { id: "pages", name: "Content Pages", icon: <FileText className="h-5 w-5" /> },
-  { id: "ui", name: "UI Elements", icon: <Layers className="h-5 w-5" /> },
-  { id: "flows", name: "User Flows", icon: <GitBranch className="h-5 w-5" /> },
-  { id: "about", name: "About Big Based", icon: <Info className="h-5 w-5" /> },
-]
-
-const apps: AppType[] = [
-  { id: "1", name: "Digital Library", icon: "/digital-library.png", href: "/features/library" },
-  { id: "2", name: "Community", icon: "/diverse-community-gathering.png", href: "/features/community" },
-  { id: "3", name: "Resources", icon: "/resource-toolkit.png", href: "/features/resources" },
-  { id: "4", name: "Revolution", icon: "/revolution-background.png", href: "/revolution" },
-  { id: "5", name: "Partners", icon: "/partnership-hands.png", href: "/partners" },
-  { id: "6", name: "Transform", icon: "/abstract-digital-landscape.png", href: "/transform" },
-]
-
-const screens: ScreenType[] = [
-  { id: "1", name: "Home", image: "/website-preview.png", href: "/" },
-  { id: "2", name: "About", image: "/mission-statement-document.png", href: "/about" },
-  { id: "3", name: "Features", image: "/digital-library.png", href: "/features" },
-  { id: "4", name: "Contact", image: "/diverse-group.png", href: "/contact" },
-  { id: "5", name: "Profile", image: "/abstract-profile.png", href: "/profile" },
-  { id: "6", name: "FAQ", image: "/resource-toolkit.png", href: "/faq" },
-]
-
-const pages: ScreenType[] = [
-  { id: "1", name: "Mission", image: "/mission-statement-document.png", href: "/about/mission" },
-  { id: "2", name: "Team", image: "/team-of-professionals.png", href: "/about/team" },
-  { id: "3", name: "History", image: "/historical-timeline.png", href: "/about/history" },
-  { id: "4", name: "Manifesto", image: "/manifesto-document.png", href: "/revolution/manifesto" },
+  { id: "resources", name: "Resources", icon: <Layers className="h-5 w-5" /> },
+  { id: "features", name: "Features", icon: <GitBranch className="h-5 w-5" /> },
 ]
 
 export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("trending")
+  const [isSearching, setIsSearching] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const { theme } = useTheme()
   const isDarkMode = theme === "dark"
+
+  // Debounce search term to prevent excessive filtering
+  const debouncedSearchTerm = useDebounce(searchTerm, 300)
+
+  // Get featured items for initial display
+  const featuredItems = useMemo(() => getFeaturedItems(), [])
+
+  // Search results
+  const searchResults = useMemo(() => {
+    if (!debouncedSearchTerm.trim()) {
+      return {}
+    }
+
+    setIsSearching(true)
+    const results = searchItems(allSearchableItems, debouncedSearchTerm)
+    const grouped = groupSearchResults(results)
+    setIsSearching(false)
+
+    return grouped
+  }, [debouncedSearchTerm])
+
+  // Determine what to display based on search term
+  const hasSearchResults = Object.keys(searchResults).length > 0
+  const hasNoResults = debouncedSearchTerm.trim() !== "" && !hasSearchResults
+  const shouldShowFeatured = !debouncedSearchTerm.trim()
 
   // Focus the search input when the popup opens
   useEffect(() => {
@@ -81,6 +70,13 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
       setTimeout(() => {
         searchInputRef.current?.focus()
       }, 100)
+    }
+  }, [isOpen])
+
+  // Reset search when popup closes
+  useEffect(() => {
+    if (!isOpen) {
+      setSearchTerm("")
     }
   }, [isOpen])
 
@@ -95,6 +91,55 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
   }, [onClose])
 
   if (!isOpen) return null
+
+  // Render search result item
+  const renderSearchItem = (item: SearchableItem) => {
+    const hasImage = !!item.image
+    const hasIcon = !!item.icon
+
+    return (
+      <Link
+        key={item.id}
+        href={item.href}
+        className={cn(
+          "flex items-center p-3 rounded-lg transition-colors",
+          isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100",
+        )}
+        onClick={onClose}
+      >
+        {hasImage && (
+          <div className="relative w-12 h-12 mr-4 rounded-lg overflow-hidden flex-shrink-0">
+            <Image src={item.image! || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
+          </div>
+        )}
+        {hasIcon && !hasImage && (
+          <div className="relative w-10 h-10 mr-4 rounded-lg overflow-hidden flex-shrink-0">
+            <Image src={item.icon! || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
+          </div>
+        )}
+        {!hasImage && !hasIcon && (
+          <div
+            className={cn(
+              "w-10 h-10 mr-4 rounded-lg flex items-center justify-center flex-shrink-0",
+              isDarkMode ? "bg-gray-800" : "bg-gray-100",
+            )}
+          >
+            <span className="text-lg font-bold">{item.name.charAt(0)}</span>
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <h4 className={cn("font-medium truncate", isDarkMode ? "text-white" : "text-gray-900")}>
+            {highlightMatch(item.name, debouncedSearchTerm)}
+          </h4>
+          {item.description && (
+            <p className={cn("text-sm truncate", isDarkMode ? "text-gray-400" : "text-gray-500")}>
+              {highlightMatch(item.description, debouncedSearchTerm)}
+            </p>
+          )}
+        </div>
+      </Link>
+    )
+  }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
@@ -153,12 +198,21 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
               )}
             >
               <div className="relative">
-                <Search
-                  className={cn(
-                    "absolute left-3 top-1/2 transform -translate-y-1/2",
-                    isDarkMode ? "text-gray-400" : "text-gray-500",
-                  )}
-                />
+                {isSearching ? (
+                  <Loader2
+                    className={cn(
+                      "absolute left-3 top-1/2 transform -translate-y-1/2 animate-spin",
+                      isDarkMode ? "text-gray-400" : "text-gray-500",
+                    )}
+                  />
+                ) : (
+                  <Search
+                    className={cn(
+                      "absolute left-3 top-1/2 transform -translate-y-1/2",
+                      isDarkMode ? "text-gray-400" : "text-gray-500",
+                    )}
+                  />
+                )}
                 <input
                   ref={searchInputRef}
                   type="text"
@@ -172,95 +226,152 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                <button
-                  className={cn(
-                    "absolute right-3 top-1/2 transform -translate-y-1/2",
-                    isDarkMode ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-900",
-                  )}
-                  onClick={onClose}
-                >
-                  <X className="h-5 w-5" />
-                </button>
+                {searchTerm && (
+                  <button
+                    className={cn(
+                      "absolute right-3 top-1/2 transform -translate-y-1/2",
+                      isDarkMode ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-900",
+                    )}
+                    onClick={() => setSearchTerm("")}
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                )}
               </div>
             </div>
 
             {/* Content Sections */}
             <div className={cn("p-6", isDarkMode ? "bg-gray-900" : "bg-white")}>
-              {/* Apps Section */}
-              <div className="mb-8">
-                <h3 className={cn("text-sm font-medium mb-4", isDarkMode ? "text-gray-400" : "text-gray-500")}>
-                  Features
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-                  {apps.map((app) => (
-                    <Link
-                      key={app.id}
-                      href={app.href}
-                      className={cn(
-                        "flex flex-col items-center justify-center p-3 rounded-lg transition-colors",
-                        isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100",
-                      )}
-                      onClick={onClose}
-                    >
-                      <div className="relative w-12 h-12 mb-2 rounded-lg overflow-hidden">
-                        <Image src={app.icon || "/placeholder.svg"} alt={app.name} fill className="object-cover" />
-                      </div>
-                      <span className={cn("text-xs text-center", isDarkMode ? "text-white" : "text-gray-900")}>
-                        {app.name}
-                      </span>
-                    </Link>
-                  ))}
+              {/* No Results State */}
+              {hasNoResults && (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className={cn("text-center", isDarkMode ? "text-gray-400" : "text-gray-500")}>
+                    <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <h3 className="text-lg font-medium mb-2">No results found</h3>
+                    <p>We couldn't find anything matching "{debouncedSearchTerm}"</p>
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* Screens Section */}
-              <div className="mb-8">
-                <h3 className={cn("text-sm font-medium mb-4", isDarkMode ? "text-gray-400" : "text-gray-500")}>
-                  Screens
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                  {screens.map((screen) => (
-                    <Link key={screen.id} href={screen.href} className="group" onClick={onClose}>
-                      <div
+              {/* Search Results */}
+              {hasSearchResults && (
+                <div className="space-y-8">
+                  {Object.entries(searchResults).map(([category, items]) => (
+                    <div key={category} className="mb-8">
+                      <h3
                         className={cn(
-                          "relative aspect-[4/3] rounded-lg overflow-hidden mb-2 border group-hover:border-blue-500 transition-colors",
-                          isDarkMode ? "border-gray-800" : "border-gray-200",
+                          "text-sm font-medium mb-4 capitalize",
+                          isDarkMode ? "text-gray-400" : "text-gray-500",
                         )}
                       >
-                        <Image
-                          src={screen.image || "/placeholder.svg"}
-                          alt={screen.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <span className={cn("text-sm", isDarkMode ? "text-white" : "text-gray-900")}>{screen.name}</span>
-                    </Link>
+                        {category} ({items.length})
+                      </h3>
+                      <div className="space-y-2">{items.map((item) => renderSearchItem(item))}</div>
+                    </div>
                   ))}
                 </div>
-              </div>
+              )}
 
-              {/* Content Pages Section */}
-              <div>
-                <h3 className={cn("text-sm font-medium mb-4", isDarkMode ? "text-gray-400" : "text-gray-500")}>
-                  Content Pages
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                  {pages.map((page) => (
-                    <Link key={page.id} href={page.href} className="group" onClick={onClose}>
-                      <div
-                        className={cn(
-                          "relative aspect-[4/3] rounded-lg overflow-hidden mb-2 border group-hover:border-blue-500 transition-colors",
-                          isDarkMode ? "border-gray-800" : "border-gray-200",
-                        )}
-                      >
-                        <Image src={page.image || "/placeholder.svg"} alt={page.name} fill className="object-cover" />
+              {/* Featured Content (when no search) */}
+              {shouldShowFeatured && (
+                <div className="space-y-8">
+                  {/* Features Section */}
+                  {featuredItems.features && featuredItems.features.length > 0 && (
+                    <div className="mb-8">
+                      <h3 className={cn("text-sm font-medium mb-4", isDarkMode ? "text-gray-400" : "text-gray-500")}>
+                        Features
+                      </h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+                        {featuredItems.features.map((feature) => (
+                          <Link
+                            key={feature.id}
+                            href={feature.href}
+                            className={cn(
+                              "flex flex-col items-center justify-center p-3 rounded-lg transition-colors",
+                              isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100",
+                            )}
+                            onClick={onClose}
+                          >
+                            <div className="relative w-12 h-12 mb-2 rounded-lg overflow-hidden">
+                              <Image
+                                src={feature.icon || "/placeholder.svg"}
+                                alt={feature.name}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                            <span className={cn("text-xs text-center", isDarkMode ? "text-white" : "text-gray-900")}>
+                              {feature.name}
+                            </span>
+                          </Link>
+                        ))}
                       </div>
-                      <span className={cn("text-sm", isDarkMode ? "text-white" : "text-gray-900")}>{page.name}</span>
-                    </Link>
-                  ))}
+                    </div>
+                  )}
+
+                  {/* Screens Section */}
+                  {featuredItems.screens && featuredItems.screens.length > 0 && (
+                    <div className="mb-8">
+                      <h3 className={cn("text-sm font-medium mb-4", isDarkMode ? "text-gray-400" : "text-gray-500")}>
+                        Screens
+                      </h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        {featuredItems.screens.map((screen) => (
+                          <Link key={screen.id} href={screen.href} className="group" onClick={onClose}>
+                            <div
+                              className={cn(
+                                "relative aspect-[4/3] rounded-lg overflow-hidden mb-2 border group-hover:border-blue-500 transition-colors",
+                                isDarkMode ? "border-gray-800" : "border-gray-200",
+                              )}
+                            >
+                              <Image
+                                src={screen.image || "/placeholder.svg"}
+                                alt={screen.name}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                            <span className={cn("text-sm", isDarkMode ? "text-white" : "text-gray-900")}>
+                              {screen.name}
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Content Pages Section */}
+                  {featuredItems.pages && featuredItems.pages.length > 0 && (
+                    <div>
+                      <h3 className={cn("text-sm font-medium mb-4", isDarkMode ? "text-gray-400" : "text-gray-500")}>
+                        Content Pages
+                      </h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        {featuredItems.pages.map((page) => (
+                          <Link key={page.id} href={page.href} className="group" onClick={onClose}>
+                            <div
+                              className={cn(
+                                "relative aspect-[4/3] rounded-lg overflow-hidden mb-2 border group-hover:border-blue-500 transition-colors",
+                                isDarkMode ? "border-gray-800" : "border-gray-200",
+                              )}
+                            >
+                              <Image
+                                src={page.image || "/placeholder.svg"}
+                                alt={page.name}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                            <span className={cn("text-sm", isDarkMode ? "text-white" : "text-gray-900")}>
+                              {page.name}
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
