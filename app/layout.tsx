@@ -120,8 +120,6 @@ export default function RootLayout({
           rel="stylesheet"
         />
         <link rel="preconnect" href="https://cdn.onesignal.com" />
-
-        {/* Removed the inline script preloader */}
       </head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
