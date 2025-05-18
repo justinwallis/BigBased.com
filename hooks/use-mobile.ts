@@ -35,3 +35,14 @@ export function useMediaQuery(query: string): boolean {
 
   return matches
 }
+
+/**
+ * Hook to determine if the screen size is mobile or tablet
+ * @returns Object with isMobile and isTablet properties
+ */
+export function useMobile() {
+  const isMobile = useMediaQuery("(max-width: 768px)")
+  const isTablet = useMediaQuery("(max-width: 1023px)")
+
+  return { isMobile, isTablet }
+}
