@@ -36,6 +36,7 @@ interface SideMenuProps {
   openWithSearch?: boolean
   onNotificationBellClick?: () => void
   isSubscribed?: boolean
+  setIsSearchPopupOpen?: (isOpen: boolean) => void
 }
 
 export default function SideMenu({
@@ -44,12 +45,10 @@ export default function SideMenu({
   openWithSearch = false,
   onNotificationBellClick = () => {},
   isSubscribed = false,
+  setIsSearchPopupOpen = () => {},
 }: SideMenuProps) {
   const [scrollY, setScrollY] = useState(0)
   const [menuPosition, setMenuPosition] = useState({ top: 0, startX: 0, isDragging: false })
-  const [searchQuery, setSearchQuery] = useState("")
-  const [searchResults, setSearchResults] = useState([])
-  const searchInputRef = useRef<HTMLInputElement>(null)
   const initialRenderRef = useRef(true)
 
   // Check localStorage for saved menu state on initial render
@@ -84,26 +83,8 @@ export default function SideMenu({
   }, [isOpen])
 
   // Focus search input when openWithSearch is true
-  useEffect(() => {
-    if (isOpen && openWithSearch && searchInputRef.current) {
-      setTimeout(() => {
-        searchInputRef.current?.focus()
-      }, 300) // Delay to allow animation to complete
-    }
-  }, [isOpen, openWithSearch])
 
   // Handle search functionality
-  useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setSearchResults([])
-      return
-    }
-
-    const filteredResults = searchableItems.filter((item) =>
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()),
-    )
-    setSearchResults(filteredResults)
-  }, [searchQuery])
 
   const handleDragStart = (e) => {
     try {
@@ -277,7 +258,31 @@ export default function SideMenu({
             <Link href="/" className="font-bold text-2xl">
               <BBLogo size="md" />
             </Link>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1">
+              {/* Search Icon */}
+              <button
+                onClick={() => {
+                  // Close the side menu
+                  setIsOpen(false)
+                  // Try to open search popup with a slight delay to ensure menu closes first
+                  setTimeout(() => {
+                    if (typeof setIsSearchPopupOpen === "function") {
+                      setIsSearchPopupOpen(true)
+                    } else if (typeof window !== "undefined" && window.openSearchPopup) {
+                      // Fallback to global function if available
+                      window.openSearchPopup()
+                    } else {
+                      // Fallback to navigating to search page
+                      window.location.href = "/search"
+                    }
+                  }, 100)
+                }}
+                className="text-gray-500 dark:text-gray-300 hover:text-black dark:hover:text-white p-1"
+                aria-label="Search"
+              >
+                <Search size={20} />
+              </button>
+
               {/* Notification Bell */}
               <button
                 onClick={onNotificationBellClick}
@@ -303,40 +308,6 @@ export default function SideMenu({
               </button>
             </div>
           </div>
-        </div>
-
-        {/* Search Bar */}
-        <div className="flex-none p-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="relative">
-            <input
-              ref={searchInputRef}
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full py-2 pl-10 pr-4 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent bg-white dark:bg-gray-800 text-black dark:text-white"
-            />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-          </div>
-
-          {/* Search Results */}
-          {searchResults.length > 0 && (
-            <div className="mt-2 bg-white dark:bg-gray-800 rounded-md shadow-md max-h-60 overflow-y-auto">
-              {searchResults.map((result, index) => (
-                <Link
-                  key={index}
-                  href={result.url}
-                  className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm dark:text-white"
-                  onClick={() => {
-                    setSearchQuery("")
-                    setIsOpen(false)
-                  }}
-                >
-                  {result.title}
-                </Link>
-              ))}
-            </div>
-          )}
         </div>
 
         <div className="flex-grow overflow-y-auto custom-scrollbar p-6">
