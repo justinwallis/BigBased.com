@@ -8,6 +8,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { useTheme } from "@/components/theme-provider"
+import { useMobile } from "@/hooks/use-mobile"
 
 type SearchPopupProps = {
   isOpen: boolean
@@ -193,11 +194,50 @@ const searchableItems: SearchableItem[] = [
   },
 ]
 
+// Tooltip component for category icons
+function CategoryTooltip({
+  show,
+  children,
+  isDarkMode,
+}: {
+  show: boolean
+  children: React.ReactNode
+  isDarkMode: boolean
+}) {
+  if (!show) return null
+
+  return (
+    <div
+      className={cn(
+        "absolute left-full ml-2 px-3 py-1.5 rounded-md text-sm whitespace-nowrap z-50",
+        "transform transition-opacity duration-200",
+        "shadow-lg",
+        isDarkMode ? "bg-gray-800 text-white border border-gray-700" : "bg-white text-gray-900 border border-gray-200",
+        show ? "opacity-100" : "opacity-0 pointer-events-none",
+      )}
+      style={{ top: "50%", transform: "translateY(-50%)" }}
+    >
+      {children}
+      {/* Triangle pointer */}
+      <div
+        className={cn(
+          "absolute w-2 h-2 transform rotate-45 -left-1",
+          isDarkMode ? "bg-gray-800 border-l border-b border-gray-700" : "bg-white border-l border-b border-gray-200",
+        )}
+        style={{ top: "50%", marginTop: "-4px" }}
+      />
+    </div>
+  )
+}
+
 export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
+  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const resultsContainerRef = useRef<HTMLDivElement>(null)
   const { theme } = useTheme()
+  const { isMobile } = useMobile()
   const isDarkMode = theme === "dark"
 
   // Focus the search input when the popup opens
@@ -281,45 +321,56 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
       {/* Search Popup */}
       <div
         className={cn(
-          "relative w-full max-w-4xl max-h-[85vh] rounded-lg shadow-2xl overflow-hidden",
+          "relative w-full max-w-4xl h-[85vh] rounded-lg shadow-2xl overflow-hidden flex flex-col",
           isDarkMode ? "bg-gray-900" : "bg-white",
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex h-full">
-          {/* Sidebar */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* Sidebar - Responsive: icons only on mobile */}
           <div
             className={cn(
-              "w-64 p-4 border-r",
+              "border-r flex-shrink-0",
               isDarkMode ? "bg-gray-900 border-gray-800" : "bg-gray-50 border-gray-200",
+              isMobile ? "w-16" : "w-64",
             )}
           >
-            <div className="space-y-2">
+            <div className="space-y-2 p-4">
               {categories.map((category) => (
-                <button
-                  key={category.id}
-                  className={cn(
-                    "flex items-center w-full px-4 py-2 rounded-md text-left transition-colors",
-                    selectedCategory === category.id
-                      ? isDarkMode
-                        ? "bg-gray-800 text-white"
-                        : "bg-gray-200 text-gray-900"
-                      : isDarkMode
-                        ? "text-gray-400 hover:bg-gray-800 hover:text-white"
-                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
+                <div key={category.id} className="relative">
+                  <button
+                    className={cn(
+                      "flex items-center w-full px-4 py-2 rounded-md text-left transition-colors",
+                      selectedCategory === category.id
+                        ? isDarkMode
+                          ? "bg-gray-800 text-white"
+                          : "bg-gray-200 text-gray-900"
+                        : isDarkMode
+                          ? "text-gray-400 hover:bg-gray-800 hover:text-white"
+                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
+                    )}
+                    onClick={() => setSelectedCategory(category.id)}
+                    onMouseEnter={() => isMobile && setHoveredCategory(category.id)}
+                    onMouseLeave={() => isMobile && setHoveredCategory(null)}
+                  >
+                    <span className={cn("flex-shrink-0", isMobile ? "mr-0" : "mr-3")}>{category.icon}</span>
+                    {!isMobile && <span className="truncate">{category.name}</span>}
+                  </button>
+
+                  {/* Tooltip that appears on hover in mobile mode */}
+                  {isMobile && (
+                    <CategoryTooltip show={hoveredCategory === category.id} isDarkMode={isDarkMode}>
+                      {category.name}
+                    </CategoryTooltip>
                   )}
-                  onClick={() => setSelectedCategory(category.id)}
-                >
-                  <span className="mr-3">{category.icon}</span>
-                  <span>{category.name}</span>
-                </button>
+                </div>
               ))}
             </div>
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 overflow-y-auto">
-            {/* Search Bar */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Search Bar - Fixed at top */}
             <div
               className={cn(
                 "p-4 border-b sticky top-0 z-10",
@@ -358,8 +409,11 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
               </div>
             </div>
 
-            {/* Content Sections */}
-            <div className={cn("p-6", isDarkMode ? "bg-gray-900" : "bg-white")}>
+            {/* Scrollable Results Area */}
+            <div
+              ref={resultsContainerRef}
+              className={cn("flex-1 overflow-y-auto p-6", isDarkMode ? "bg-gray-900" : "bg-white")}
+            >
               {/* Search Results */}
               {searchTerm && (
                 <div className="mb-6">
@@ -420,7 +474,7 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
                   <h3 className={cn("text-sm font-medium mb-4", isDarkMode ? "text-gray-400" : "text-gray-500")}>
                     Screens
                   </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {(searchTerm ? groupedItems.screens : filteredItems.filter((item) => item.type === "screen")).map(
                       (item) => (
                         <Link key={item.id} href={item.href} className="group" onClick={onClose}>
@@ -454,11 +508,11 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
 
               {/* Content Pages Section */}
               {(!searchTerm || groupedItems.pages.length > 0) && (
-                <div>
+                <div className="mb-8">
                   <h3 className={cn("text-sm font-medium mb-4", isDarkMode ? "text-gray-400" : "text-gray-500")}>
                     Content Pages
                   </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {(searchTerm ? groupedItems.pages : filteredItems.filter((item) => item.type === "page")).map(
                       (item) => (
                         <Link key={item.id} href={item.href} className="group" onClick={onClose}>
@@ -496,7 +550,7 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
         {/* Footer */}
         <div
           className={cn(
-            "absolute bottom-0 left-0 w-full border-t p-3 text-xs flex items-center",
+            "border-t p-3 text-xs flex items-center",
             isDarkMode ? "border-gray-800 bg-gray-900 text-gray-400" : "border-gray-200 bg-gray-50 text-gray-500",
           )}
         >
