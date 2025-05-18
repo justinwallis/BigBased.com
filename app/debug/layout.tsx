@@ -17,68 +17,7 @@ export default function DebugLayout({
 }) {
   return (
     <html lang="en">
-      {/* Add inline script in head to remove preloader as early as possible */}
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-            // Immediately remove any preloader elements
-            (function() {
-              console.log("Debug page - Executing early preloader removal");
-              
-              // Function to remove preloader elements
-              function removePreloaders() {
-                console.log("Attempting to remove preloaders");
-                
-                // Remove any element with 'preloader' in its ID or class
-                var preloaders = document.querySelectorAll('[id*="preloader"], [class*="preloader"]');
-                console.log("Found " + preloaders.length + " preloader elements");
-                
-                preloaders.forEach(function(el) {
-                  if (el && el.parentNode) {
-                    console.log("Removing preloader element:", el);
-                    el.parentNode.removeChild(el);
-                  }
-                });
-                
-                // Remove any inline preloader
-                var initialPreloader = document.getElementById('initial-preloader');
-                if (initialPreloader && initialPreloader.parentNode) {
-                  console.log("Removing initial preloader");
-                  initialPreloader.parentNode.removeChild(initialPreloader);
-                }
-                
-                // Clear any preloader-related intervals
-                for (var i = 1; i < 10000; i++) {
-                  clearInterval(i);
-                }
-                
-                // Remove any fixed or absolute positioned elements that might be preloaders
-                var possiblePreloaders = document.querySelectorAll('div[style*="position: fixed"], div[style*="position:fixed"], div[style*="position: absolute"], div[style*="position:absolute"]');
-                possiblePreloaders.forEach(function(el) {
-                  if (el && el.parentNode && (el.style.zIndex > 100 || el.style.zIndex === '')) {
-                    console.log("Removing possible preloader element:", el);
-                    el.style.display = 'none';
-                  }
-                });
-              }
-              
-              // Run immediately
-              removePreloaders();
-              
-              // Run again when DOM is ready
-              document.addEventListener('DOMContentLoaded', removePreloaders);
-              
-              // Run again after a short delay
-              setTimeout(removePreloaders, 100);
-              setTimeout(removePreloaders, 500);
-              setTimeout(removePreloaders, 1000);
-            })();
-          `,
-          }}
-        />
-      </head>
-      {/* Add a very distinctive background color to the body */}
+      {/* No manual head tag */}
       <body style={{ backgroundColor: "#ff00ff", color: "white" }}>
         <div className="min-h-screen" style={{ backgroundColor: "#ff00ff" }}>
           <header className="bg-black text-white p-4">
@@ -122,18 +61,20 @@ export default function DebugLayout({
           </footer>
         </div>
 
-        {/* Add a script to remove any preloader elements again after the page loads */}
+        {/* Add a script to remove any preloader elements after the page loads */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
-            console.log("Debug page - Executing late preloader removal");
+            console.log("Debug page - Executing preloader removal");
             
-            // Remove any preloader elements
-            document.addEventListener('DOMContentLoaded', function() {
-              console.log("DOM Content Loaded - removing preloaders again");
+            // Function to remove preloader elements
+            function removePreloaders() {
+              console.log("Attempting to remove preloaders");
               
               // Remove any element with 'preloader' in its ID or class
               var preloaders = document.querySelectorAll('[id*="preloader"], [class*="preloader"]');
+              console.log("Found " + preloaders.length + " preloader elements");
+              
               preloaders.forEach(function(el) {
                 if (el && el.parentNode) {
                   console.log("Removing preloader element:", el);
@@ -166,26 +107,21 @@ export default function DebugLayout({
               document.body.style.display = 'block';
               document.body.style.visibility = 'visible';
               document.body.style.opacity = '1';
-            });
+            }
+            
+            // Run immediately
+            removePreloaders();
+            
+            // Run again when DOM is ready
+            document.addEventListener('DOMContentLoaded', removePreloaders);
+            
+            // Run again after a short delay
+            setTimeout(removePreloaders, 100);
+            setTimeout(removePreloaders, 500);
+            setTimeout(removePreloaders, 1000);
             
             // Run again after window load
-            window.addEventListener('load', function() {
-              console.log("Window loaded - removing preloaders again");
-              
-              // Remove any element with 'preloader' in its ID or class
-              var preloaders = document.querySelectorAll('[id*="preloader"], [class*="preloader"]');
-              preloaders.forEach(function(el) {
-                if (el && el.parentNode) {
-                  console.log("Removing preloader element:", el);
-                  el.parentNode.removeChild(el);
-                }
-              });
-              
-              // Force body to be visible
-              document.body.style.display = 'block';
-              document.body.style.visibility = 'visible';
-              document.body.style.opacity = '1';
-            });
+            window.addEventListener('load', removePreloaders);
           `,
           }}
         />

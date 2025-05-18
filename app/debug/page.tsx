@@ -1,7 +1,11 @@
+import DebugClient from "./components/debug-client"
+
 export default function DebugPage() {
   return (
     <div style={{ color: "white" }}>
       <h1 className="text-2xl font-bold mb-6">Debug Tools</h1>
+
+      <DebugClient />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <a href="/debug/favicon" className="block bg-black bg-opacity-30 p-6 rounded shadow hover:shadow-md">

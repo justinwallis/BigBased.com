@@ -1,7 +1,11 @@
+import DebugClient from "../components/debug-client"
+
 export default function FaviconDebugPage() {
   return (
     <div style={{ color: "white" }}>
       <h1 className="text-2xl font-bold mb-6">Favicon Debug</h1>
+
+      <DebugClient />
 
       <div className="bg-black bg-opacity-30 p-4 rounded shadow mb-8">
         <h2 className="text-xl font-semibold mb-4">Favicon Files</h2>
