@@ -1,5 +1,15 @@
-import type React from "react"
+import { Inter } from 'next/font/google'
 import Link from "next/link"
+import "../globals.css"
+import RemovePreloader from "./remove-preloader"
+
+// Use the Inter font
+const inter = Inter({ subsets: ["latin"] })
+
+export const metadata = {
+  title: "Big Based - Debug Tools",
+  description: "Debugging tools for Big Based website",
+}
 
 export default function DebugLayout({
   children,
@@ -7,30 +17,42 @@ export default function DebugLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <header className="mb-6 border-b pb-4">
-        <h1 className="text-2xl font-bold">Big Based Debug Tools</h1>
-        <nav className="mt-2">
-          <ul className="flex flex-wrap gap-4 text-sm">
-            <li>
-              <Link href="/debug" className="text-blue-600 hover:underline">
-                Master Debug
-              </Link>
-            </li>
-            <li>
-              <Link href="/debug/favicon" className="text-blue-600 hover:underline">
-                Favicon Debug
-              </Link>
-            </li>
-            <li>
-              <Link href="/" className="text-red-600 hover:underline">
-                Back to Site
-              </Link>
-            </li>
-          </ul>
-        </nav>
-      </header>
-      <main>{children}</main>
-    </div>
+    <html lang="en">
+      <body className={inter.className}>
+        {/* Component to ensure no preloader is active */}
+        <RemovePreloader />
+        
+        <div className="min-h-screen bg-gray-50">
+          <header className="bg-black text-white p-4 shadow-md">
+            <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center">
+              <div className="flex items-center mb-4 sm:mb-0">
+                <span className="text-2xl font-bold mr-2">BB</span>
+                <h1 className="text-xl">Debug Tools</h1>
+              </div>
+              <nav className="flex flex-wrap gap-4">
+                <Link href="/debug" className="text-white hover:text-gray-300">
+                  Debug Home
+                </Link>
+                <Link href="/debug/favicon" className="text-white hover:text-gray-300">
+                  Favicon
+                </Link>
+                <Link href="/debug/preloader" className="text-white hover:text-gray-300">
+                  Preloader
+                </Link>
+                <Link href="/" className="text-white hover:text-gray-300 bg-red-600 px-3 py-1 rounded">
+                  Exit Debug
+                </Link>
+              </nav>
+            </div>
+          </header>
+
+          <main className="container mx-auto p-4 md:p-6">{children}</main>
+
+          <footer className="bg-gray-200 p-4 text-center text-sm text-gray-600">
+            <p>Big Based Debug Tools - For Development Use Only</p>
+          </footer>
+        </div>
+      </body>
+    </html>
   )
 }

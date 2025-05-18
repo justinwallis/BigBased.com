@@ -1,24 +1,31 @@
 import Link from "next/link"
 
-export default function MasterDebugPage() {
+export default function DebugPage() {
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Master Debug</h1>
+      <h1 className="text-2xl font-bold mb-6">Debug Tools</h1>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Debug Tools</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Link href="/debug/favicon" className="block bg-white p-6 rounded shadow hover:shadow-md transition-shadow">
+          <Link 
+            href="/debug/favicon" 
+            className="block bg-white p-6 rounded shadow hover:shadow-md transition-shadow"
+          >
             <h3 className="font-bold text-lg mb-2">Favicon Debug</h3>
             <p className="text-gray-600 text-sm">Inspect all favicon assets and manifest files</p>
           </Link>
+
+          <Link 
+            href="/debug/preloader" 
+            className="block bg-white p-6 rounded shadow hover:shadow-md transition-shadow"
+          >
+            <h3 className="font-bold text-lg mb-2">Preloader Debug</h3>
+            <p className="text-gray-600 text-sm">Analyze and fix preloader issues</p>
+          </Link>
+
           <div className="block bg-white p-6 rounded shadow">
-            <h3 className="font-bold text-lg mb-2">Image Debug</h3>
-            <p className="text-gray-600 text-sm">Analyze image usage and optimization</p>
-          </div>
-          <div className="block bg-white p-6 rounded shadow">
-            <h3 className="font-bold text-lg mb-2">Performance</h3>
-            <p className="text-gray-600 text-sm">View detailed performance metrics</p>
+            <h3 className="font-bold text-lg mb-2">System Info</h3>
+            <p className="text-gray-600 text-sm">View system and browser information</p>
           </div>
         </div>
       </section>
@@ -59,17 +66,6 @@ export default function MasterDebugPage() {
               `,
             }}
           />
-        </div>
-      </section>
-
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Environment Variables</h2>
-        <div className="bg-white p-4 rounded shadow">
-          <p className="text-sm mb-2">Public environment variables:</p>
-          <pre className="bg-gray-100 p-2 overflow-auto text-xs rounded">
-            {`NEXT_PUBLIC_SUPABASE_URL: ${process.env.NEXT_PUBLIC_SUPABASE_URL || "Not set"}
-NEXT_PUBLIC_BASE_URL: ${process.env.NEXT_PUBLIC_BASE_URL || "Not set"}`}
-          </pre>
         </div>
       </section>
 

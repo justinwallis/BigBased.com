@@ -274,6 +274,11 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
         const totalLoadTime = Date.now() - startTimeRef.current
         console.log(`Total load time: ${totalLoadTime}ms`)
 
+        // Remove the initial preloader if it exists
+        if (typeof window !== "undefined" && window.removeInitialPreloader) {
+          window.removeInitialPreloader()
+        }
+
         // Add a small delay for a smooth transition
         setTimeout(() => {
           setLoading(false)
