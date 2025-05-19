@@ -19,6 +19,18 @@ const announcements: Announcement[] = [
 export function AnnouncementBar() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
+  const [isLoaded, setIsLoaded] = useState(false)
+
+  // Wait for preloader to finish before showing
+  useEffect(() => {
+    // Check if document is fully loaded
+    if (document.readyState === "complete") {
+      setIsLoaded(true)
+    } else {
+      window.addEventListener("load", () => setIsLoaded(true))
+      return () => window.removeEventListener("load", () => setIsLoaded(true))
+    }
+  }, [])
 
   // Auto-rotate announcements every 5 seconds
   useEffect(() => {
@@ -38,61 +50,45 @@ export function AnnouncementBar() {
     setCurrentIndex((prev) => (prev + 1) % announcements.length)
   }
 
-  if (announcements.length === 0) return null
+  if (announcements.length === 0 || !isLoaded) return null
 
   const currentAnnouncement = announcements[currentIndex]
 
   return (
-    <div className="w-full bg-black dark:bg-gray-900 text-white py-1 px-4">
+    <div className="w-full bg-gradient-to-r from-black via-gray-900 to-black dark:bg-black text-white py-1 px-4">
       <div className="container mx-auto flex items-center justify-between">
-        <div className="flex-1 flex justify-center items-center">
-          {announcements.length > 1 && (
-            <button
-              onClick={goToPrev}
-              className="mr-2 p-0.5 rounded-full hover:bg-gray-800 transition-colors"
-              aria-label="Previous announcement"
-            >
-              <ChevronLeft size={12} />
-            </button>
-          )}
-
-          <div
-            className="text-xs text-center flex-1"
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
+        {announcements.length > 1 && (
+          <button
+            onClick={goToPrev}
+            className="p-0.5 rounded-full hover:bg-gray-800 transition-colors"
+            aria-label="Previous announcement"
           >
-            {currentAnnouncement.link ? (
-              <a href={currentAnnouncement.link} className="hover:underline">
-                {currentAnnouncement.text}
-              </a>
-            ) : (
-              <span>{currentAnnouncement.text}</span>
-            )}
-          </div>
+            <ChevronLeft size={12} />
+          </button>
+        )}
 
-          {announcements.length > 1 && (
-            <button
-              onClick={goToNext}
-              className="ml-2 p-0.5 rounded-full hover:bg-gray-800 transition-colors"
-              aria-label="Next announcement"
-            >
-              <ChevronRight size={12} />
-            </button>
+        <div
+          className="text-xs text-center flex-1 mx-2"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
+          {currentAnnouncement.link ? (
+            <a href={currentAnnouncement.link} className="hover:underline">
+              {currentAnnouncement.text}
+            </a>
+          ) : (
+            <span>{currentAnnouncement.text}</span>
           )}
         </div>
 
-        {/* Optional: Dots indicator for multiple announcements */}
         {announcements.length > 1 && (
-          <div className="hidden sm:flex items-center space-x-1 ml-2">
-            {announcements.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`h-1 w-1 rounded-full ${index === currentIndex ? "bg-white" : "bg-gray-600"}`}
-                aria-label={`Go to announcement ${index + 1}`}
-              />
-            ))}
-          </div>
+          <button
+            onClick={goToNext}
+            className="p-0.5 rounded-full hover:bg-gray-800 transition-colors"
+            aria-label="Next announcement"
+          >
+            <ChevronRight size={12} />
+          </button>
         )}
       </div>
     </div>
