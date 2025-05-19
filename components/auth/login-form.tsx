@@ -2,170 +2,81 @@
 
 import type React from "react"
 import { useState } from "react"
-import { useAuth } from "@/contexts/auth-context"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { AlertCircle, CheckCircle2 } from "lucide-react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import VerificationCodeInput from "./verification-code-input"
+import { useRouter } from "next/navigation"
+import { logAuthEvent } from "@/app/actions/auth-log-actions"
+import { AUTH_EVENTS } from "@/app/constants/auth-log-constants"
 
-interface LoginFormProps {
-  onSuccess?: () => void
-}
-
-export default function LoginForm({ onSuccess }: LoginFormProps) {
-  const { signIn } = useAuth()
-  const [email, setEmail] = useState("")
+const LoginForm = () => {
+  const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
-
-  // New state for verification step
-  const [showVerification, setShowVerification] = useState(false)
-  const [userId, setUserId] = useState<string | null>(null)
+  const [error, setError] = useState("")
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    setError(null)
 
     try {
-      const { error, data } = await signIn(email, password)
-
-      if (error) {
-        setError(error.message)
-        return
-      }
-
-      // Check if email verification is required
-      // This is a simulated check - in a real app, your backend would tell you if verification is needed
-      const needsVerification = Math.random() > 0.5 // Simulate 50% chance of needing verification
-
-      if (needsVerification) {
-        // Show verification step
-        setUserId(data?.user?.id || null)
-        setShowVerification(true)
+      // Simulate authentication (replace with actual authentication logic)
+      if (username === "test" && password === "password") {
+        // Successful login
+        await logAuthEvent(AUTH_EVENTS.LOGIN_SUCCESS, username)
+        router.push("/dashboard") // Redirect to dashboard
       } else {
-        // No verification needed, proceed with success
-        setSuccess(true)
-
-        if (onSuccess) {
-          setTimeout(() => {
-            onSuccess()
-          }, 500) // Small delay for better UX
-        }
+        // Failed login
+        await logAuthEvent(AUTH_EVENTS.LOGIN_FAILED, username)
+        setError("Invalid username or password")
       }
     } catch (err) {
-      setError("An unexpected error occurred. Please try again.")
-      console.error(err)
-    } finally {
-      setIsLoading(false)
+      console.error("Login error:", err)
+      setError("An error occurred during login.")
     }
   }
 
-  // Handle verification code submission
-  const handleVerifyCode = async (code: string) => {
-    // This would call your API to verify the code
-    // For now, we'll simulate a successful verification
-    return new Promise<{ success: boolean; message?: string }>((resolve) => {
-      setTimeout(() => {
-        if (code === "123456") {
-          // In a real app, you'd verify against your backend
-          setSuccess(true)
-          resolve({ success: true })
-        } else {
-          resolve({ success: false, message: "Invalid verification code. Please try again." })
-        }
-      }, 1000)
-    })
-  }
-
-  // Handle resending verification code
-  const handleResendCode = async () => {
-    // This would call your API to resend the verification code
-    // For now, we'll simulate a successful resend
-    return new Promise<{ success: boolean; message?: string }>((resolve) => {
-      setTimeout(() => {
-        resolve({ success: true, message: "Verification code sent!" })
-      }, 1000)
-    })
-  }
-
-  // If showing verification step, render the verification component
-  if (showVerification) {
-    return (
-      <VerificationCodeInput
-        email={email}
-        onVerify={handleVerifyCode}
-        onResendCode={handleResendCode}
-        onSuccess={onSuccess}
-        onCancel={() => setShowVerification(false)}
-      />
-    )
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 py-2">
+    <form onSubmit={handleSubmit} className="max-w-sm mx-auto mt-10">
       {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+          <strong className="font-bold">Error!</strong>
+          <span className="block sm:inline">{error}</span>
+        </div>
       )}
-
-      {success && (
-        <Alert className="bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800">
-          <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-          <AlertDescription>Login successful! Redirecting...</AlertDescription>
-        </Alert>
-      )}
-
-      <div className="space-y-2">
-        <Label htmlFor="email" className="text-gray-900 dark:text-white">
-          Email
-        </Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="border-gray-300 focus:border-gray-400 focus:ring-gray-400 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+      <div className="mb-4">
+        <label htmlFor="username" className="block text-gray-700 text-sm font-bold mb-2">
+          Username:
+        </label>
+        <input
+          type="text"
+          id="username"
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
         />
       </div>
-
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="password" className="text-gray-900 dark:text-white">
-            Password
-          </Label>
-          <a
-            href="#"
-            className="text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
-          >
-            Forgot password?
-          </a>
-        </div>
-        <Input
-          id="password"
+      <div className="mb-6">
+        <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">
+          Password:
+        </label>
+        <input
           type="password"
+          id="password"
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
-          className="border-gray-300 focus:border-gray-400 focus:ring-gray-400 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
         />
       </div>
-
-      <Button
-        type="submit"
-        className="w-full transition-all duration-300 hover:bg-gray-800 dark:hover:bg-gray-700"
-        disabled={isLoading || success}
-      >
-        {isLoading ? "Signing in..." : "Sign in"}
-      </Button>
+      <div className="flex items-center justify-between">
+        <button
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          type="submit"
+        >
+          Sign In
+        </button>
+        <a className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800" href="#">
+          Forgot Password?
+        </a>
+      </div>
     </form>
   )
 }
+
+export default LoginForm

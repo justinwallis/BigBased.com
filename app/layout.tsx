@@ -14,6 +14,7 @@ import { getOrganizationData, getWebsiteData } from "@/lib/structured-data"
 import StructuredData from "@/components/structured-data"
 import { CookieConsent } from "@/components/cookie-consent"
 import { AnnouncementBar } from "@/components/announcement-bar"
+import { NextAuthProvider } from "@/contexts/next-auth-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -129,10 +130,12 @@ export default function RootLayout({
           <ErrorBoundary>
             <OneSignalProvider>
               <ClientPreloaderContainer quotesToShow={5}>
-                <AuthWrapper>
-                  <SectionPersistenceWrapper />
-                  <PageTransition>{children}</PageTransition>
-                </AuthWrapper>
+                <NextAuthProvider>
+                  <AuthWrapper>
+                    <SectionPersistenceWrapper />
+                    <PageTransition>{children}</PageTransition>
+                  </AuthWrapper>
+                </NextAuthProvider>
               </ClientPreloaderContainer>
             </OneSignalProvider>
           </ErrorBoundary>
