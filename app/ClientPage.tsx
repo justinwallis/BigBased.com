@@ -58,6 +58,7 @@ import BasedProfileTease from "@/components/based-profile-tease"
 import BBLogo from "@/components/bb-logo"
 // Make sure to add the import at the top of the file:
 import BasedQuiz from "@/components/based-quiz"
+import { AnnouncementBar } from "@/components/announcement-bar"
 
 export const viewport: Viewport = viewportConfig
 
@@ -462,235 +463,238 @@ export default function ClientPage() {
   }
 
   return (
-    <main className="min-h-screen bg-white dark:bg-gray-900">
-      {/* Side Menu */}
-      <ErrorBoundary>
-        <SideMenu isOpen={isSideMenuOpen} setIsOpen={setIsSideMenuOpen} openWithSearch={openWithSearch} />
-      </ErrorBoundary>
+    <>
+      <AnnouncementBar />
+      <main className="min-h-screen bg-white dark:bg-gray-900">
+        {/* Side Menu */}
+        <ErrorBoundary>
+          <SideMenu isOpen={isSideMenuOpen} setIsOpen={setIsSideMenuOpen} openWithSearch={openWithSearch} />
+        </ErrorBoundary>
 
-      {/* Search Popup */}
-      <SearchPopup isOpen={isSearchPopupOpen} onClose={() => setIsSearchPopupOpen(false)} />
+        {/* Search Popup */}
+        <SearchPopup isOpen={isSearchPopupOpen} onClose={() => setIsSearchPopupOpen(false)} />
 
-      {/* Floating Dot Navigation */}
-      <FloatingNavigation />
+        {/* Floating Dot Navigation */}
+        <FloatingNavigation />
 
-      {/* Navigation */}
-      <nav className="flex items-center justify-between px-8 py-4 md:px-16 relative z-50 dark:text-white">
-        <div className="flex items-center space-x-8">
-          <Link
-            href="/"
-            className={`font-bold text-2xl transition-transform duration-300 ${logoHovered ? "scale-110" : ""} flex items-center`}
-            onMouseEnter={() => setLogoHovered(true)}
-            onMouseLeave={() => setLogoHovered(false)}
-          >
-            <div className="relative w-16 h-16 transition-all duration-300 flex items-center justify-center">
-              <BBLogo size="lg" />
+        {/* Navigation */}
+        <nav className="flex items-center justify-between px-8 py-4 md:px-16 relative z-50 dark:text-white">
+          <div className="flex items-center space-x-8">
+            <Link
+              href="/"
+              className={`font-bold text-2xl transition-transform duration-300 ${logoHovered ? "scale-110" : ""} flex items-center`}
+              onMouseEnter={() => setLogoHovered(true)}
+              onMouseLeave={() => setLogoHovered(false)}
+            >
+              <div className="relative w-16 h-16 transition-all duration-300 flex items-center justify-center">
+                <BBLogo size="lg" />
+              </div>
+            </Link>
+            <div className="hidden md:flex items-center space-x-6">
+              <Link
+                href="/about"
+                className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
+              >
+                About
+              </Link>
+              <MegaMenu
+                label="Features"
+                sections={featuresMegaMenu.sections}
+                sideSections={featuresMegaMenu.sideSections}
+                promoItem={featuresMegaMenu.promoItem}
+              />
+              <Link
+                href="/contact"
+                className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
+              >
+                Contact
+              </Link>
             </div>
-          </Link>
-          <div className="hidden md:flex items-center space-x-6">
-            <Link
-              href="/about"
-              className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
-            >
-              About
-            </Link>
-            <MegaMenu
-              label="Features"
-              sections={featuresMegaMenu.sections}
-              sideSections={featuresMegaMenu.sideSections}
-              promoItem={featuresMegaMenu.promoItem}
-            />
-            <Link
-              href="/contact"
-              className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
-            >
-              Contact
-            </Link>
           </div>
-        </div>
-        <div className="flex items-center space-x-4">
-          <ThemeToggle />
-          <button
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors duration-200"
-            onClick={handleSearchClick}
-          >
-            <Search className="h-5 w-5 dark:text-white" />
-          </button>
-          <button className="bg-black dark:bg-white text-white dark:text-black px-6 py-2 rounded-full font-medium transition-all duration-300 hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 hover:shadow-md">
-            Join
-          </button>
-        </div>
-      </nav>
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
+            <button
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors duration-200"
+              onClick={handleSearchClick}
+            >
+              <Search className="h-5 w-5 dark:text-white" />
+            </button>
+            <button className="bg-black dark:bg-white text-white dark:text-black px-6 py-2 rounded-full font-medium transition-all duration-300 hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 hover:shadow-md">
+              Join
+            </button>
+          </div>
+        </nav>
 
-      {/* Hero Carousel */}
-      <section id="hero">
-        <LazyHeroCarousel />
-      </section>
+        {/* Hero Carousel */}
+        <section id="hero">
+          <LazyHeroCarousel />
+        </section>
 
-      {/* Enhanced Logos Marquee Section with Detailed Tooltips and Links */}
-      <section id="partners-marquee">
-        <ScrollAnimation animation="fade-up">
-          <ErrorBoundary>
-            <Suspense fallback={<LogoMarqueeSkeleton />}>
-              {logosLoaded ? <LogoMarquee logos={logos} /> : <LogoMarqueeSkeleton />}
-            </Suspense>
-          </ErrorBoundary>
-        </ScrollAnimation>
-      </section>
+        {/* Enhanced Logos Marquee Section with Detailed Tooltips and Links */}
+        <section id="partners-marquee">
+          <ScrollAnimation animation="fade-up">
+            <ErrorBoundary>
+              <Suspense fallback={<LogoMarqueeSkeleton />}>
+                {logosLoaded ? <LogoMarquee logos={logos} /> : <LogoMarqueeSkeleton />}
+              </Suspense>
+            </ErrorBoundary>
+          </ScrollAnimation>
+        </section>
 
-      {/* Add the new FundraisingAndPrayerSection component */}
-      <section id="fundraising">
-        <ScrollAnimation animation="fade-up">
-          <ErrorBoundary>
-            <FundraisingAndPrayerSection />
-          </ErrorBoundary>
-        </ScrollAnimation>
-      </section>
+        {/* Add the new FundraisingAndPrayerSection component */}
+        <section id="fundraising">
+          <ScrollAnimation animation="fade-up">
+            <ErrorBoundary>
+              <FundraisingAndPrayerSection />
+            </ErrorBoundary>
+          </ScrollAnimation>
+        </section>
 
-      {/* Add the new DigitalLibrarySection component */}
-      <section id="library">
-        <ScrollAnimation animation="fade-up" delay={100}>
+        {/* Add the new DigitalLibrarySection component */}
+        <section id="library">
+          <ScrollAnimation animation="fade-up" delay={100}>
+            <ErrorBoundary>
+              <Suspense fallback={<ContentSectionSkeleton />}>
+                <DigitalLibrarySection />
+              </Suspense>
+            </ErrorBoundary>
+          </ScrollAnimation>
+        </section>
+
+        {/* Revolution Section - Extremely simplified */}
+        <section id="revolution">
+          <ScrollAnimation animation="fade-up" delay={200}>
+            <ErrorBoundary>
+              <Suspense fallback={<ContentSectionSkeleton />}>
+                <section className="py-24 px-8 md:px-16 bg-black text-white text-center relative">
+                  {/* Background Image with 10% opacity */}
+                  <div
+                    className="absolute inset-0 w-full h-full"
+                    style={{
+                      backgroundImage: "url('/BckgTech.png')",
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      opacity: 0.1,
+                    }}
+                  ></div>
+
+                  {/* Content with relative positioning to appear above the background */}
+                  <div className="relative z-10">
+                    <p className="mb-8">The Revolution</p>
+                    <h2 className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto leading-tight mb-12">
+                      Convergence of Political, Religious, and Technological Transformation Shaping our Future.
+                    </h2>
+                    <p className="max-w-2xl mx-auto">
+                      Big Based represents the convergence of Political, Religious, and Technological transformation
+                      shaping our future. It's a bold initiative to reclaim control, decentralize power, and align
+                      technology with faith and freedom. As the world reaches a tipping point, Big Based offers the
+                      tools and vision to lead this cultural and digital renaissance
+                    </p>
+                  </div>
+                </section>
+              </Suspense>
+            </ErrorBoundary>
+          </ScrollAnimation>
+        </section>
+
+        {/* About Big Based Section */}
+        <section id="about">
+          <ScrollAnimation animation="fade-up" delay={300}>
+            <ErrorBoundary>
+              <Suspense fallback={<ContentSectionSkeleton />}>
+                <AboutSection />
+              </Suspense>
+            </ErrorBoundary>
+          </ScrollAnimation>
+        </section>
+
+        {/* Add the new Media Voting Platform component */}
+        <section id="media">
+          <ScrollAnimation animation="fade-up" delay={400}>
+            <ErrorBoundary>
+              <Suspense fallback={<ContentSectionSkeleton />}>
+                <MediaVotingPlatform />
+              </Suspense>
+            </ErrorBoundary>
+          </ScrollAnimation>
+        </section>
+
+        {/* Add the new Live Based Index Module component */}
+        <ScrollAnimation animation="fade-up" delay={500}>
           <ErrorBoundary>
             <Suspense fallback={<ContentSectionSkeleton />}>
-              <DigitalLibrarySection />
+              <LiveBasedIndexModule />
             </Suspense>
           </ErrorBoundary>
         </ScrollAnimation>
-      </section>
 
-      {/* Revolution Section - Extremely simplified */}
-      <section id="revolution">
-        <ScrollAnimation animation="fade-up" delay={200}>
+        {/* Add the new Website Showcase section above the Domain Collection */}
+        <section id="website-showcase">
+          <ScrollAnimation animation="fade-up" delay={600}>
+            <ErrorBoundary>
+              <Suspense fallback={<WebsiteShowcaseSkeleton />}>
+                <WebsiteShowcase />
+              </Suspense>
+            </ErrorBoundary>
+          </ScrollAnimation>
+        </section>
+
+        {/* Share & Connect on X */}
+        <section id="x-share-widget">
+          <ScrollAnimation animation="fade-up" delay={700}>
+            <ErrorBoundary>
+              <XShareWidget />
+            </ErrorBoundary>
+          </ScrollAnimation>
+        </section>
+
+        {/* Domain Scroller - Now positioned directly above the footer */}
+        <section id="domains">
+          <ScrollAnimation animation="fade-up" delay={800}>
+            <ErrorBoundary>
+              <Suspense fallback={<DomainMarqueeSkeleton />}>
+                <VerticalDomainScroller />
+              </Suspense>
+            </ErrorBoundary>
+          </ScrollAnimation>
+        </section>
+
+        {/* Based Profile Tease Section */}
+        <ScrollAnimation animation="fade-up" delay={900}>
           <ErrorBoundary>
-            <Suspense fallback={<ContentSectionSkeleton />}>
-              <section className="py-24 px-8 md:px-16 bg-black text-white text-center relative">
-                {/* Background Image with 10% opacity */}
-                <div
-                  className="absolute inset-0 w-full h-full"
-                  style={{
-                    backgroundImage: "url('/BckgTech.png')",
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                    opacity: 0.1,
-                  }}
-                ></div>
-
-                {/* Content with relative positioning to appear above the background */}
-                <div className="relative z-10">
-                  <p className="mb-8">The Revolution</p>
-                  <h2 className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto leading-tight mb-12">
-                    Convergence of Political, Religious, and Technological Transformation Shaping our Future.
-                  </h2>
-                  <p className="max-w-2xl mx-auto">
-                    Big Based represents the convergence of Political, Religious, and Technological transformation
-                    shaping our future. It's a bold initiative to reclaim control, decentralize power, and align
-                    technology with faith and freedom. As the world reaches a tipping point, Big Based offers the tools
-                    and vision to lead this cultural and digital renaissance
-                  </p>
-                </div>
-              </section>
-            </Suspense>
+            <BasedProfileTease />
           </ErrorBoundary>
         </ScrollAnimation>
-      </section>
 
-      {/* About Big Based Section */}
-      <section id="about">
-        <ScrollAnimation animation="fade-up" delay={300}>
+        {/* Based Quiz Section */}
+        <section id="based-quiz">
+          <ScrollAnimation animation="fade-up" delay={1000}>
+            <ErrorBoundary>
+              <BasedQuiz />
+            </ErrorBoundary>
+          </ScrollAnimation>
+        </section>
+
+        {/* Add the SitemapContainer component here */}
+        <ScrollAnimation animation="fade-up" delay={1100}>
           <ErrorBoundary>
-            <Suspense fallback={<ContentSectionSkeleton />}>
-              <AboutSection />
-            </Suspense>
+            <SitemapContainer />
           </ErrorBoundary>
         </ScrollAnimation>
-      </section>
 
-      {/* Add the new Media Voting Platform component */}
-      <section id="media">
-        <ScrollAnimation animation="fade-up" delay={400}>
-          <ErrorBoundary>
-            <Suspense fallback={<ContentSectionSkeleton />}>
-              <MediaVotingPlatform />
-            </Suspense>
-          </ErrorBoundary>
-        </ScrollAnimation>
-      </section>
+        {/* Call to Action Section - Moved to the end, right above the footer */}
+        <section id="call-to-action" className="pb-10 mb-5">
+          <ScrollAnimation animation="fade-up" delay={1200}>
+            <ErrorBoundary>
+              <CallToAction />
+            </ErrorBoundary>
+          </ScrollAnimation>
+        </section>
 
-      {/* Add the new Live Based Index Module component */}
-      <ScrollAnimation animation="fade-up" delay={500}>
         <ErrorBoundary>
-          <Suspense fallback={<ContentSectionSkeleton />}>
-            <LiveBasedIndexModule />
-          </Suspense>
+          <Footer />
         </ErrorBoundary>
-      </ScrollAnimation>
-
-      {/* Add the new Website Showcase section above the Domain Collection */}
-      <section id="website-showcase">
-        <ScrollAnimation animation="fade-up" delay={600}>
-          <ErrorBoundary>
-            <Suspense fallback={<WebsiteShowcaseSkeleton />}>
-              <WebsiteShowcase />
-            </Suspense>
-          </ErrorBoundary>
-        </ScrollAnimation>
-      </section>
-
-      {/* Share & Connect on X */}
-      <section id="x-share-widget">
-        <ScrollAnimation animation="fade-up" delay={700}>
-          <ErrorBoundary>
-            <XShareWidget />
-          </ErrorBoundary>
-        </ScrollAnimation>
-      </section>
-
-      {/* Domain Scroller - Now positioned directly above the footer */}
-      <section id="domains">
-        <ScrollAnimation animation="fade-up" delay={800}>
-          <ErrorBoundary>
-            <Suspense fallback={<DomainMarqueeSkeleton />}>
-              <VerticalDomainScroller />
-            </Suspense>
-          </ErrorBoundary>
-        </ScrollAnimation>
-      </section>
-
-      {/* Based Profile Tease Section */}
-      <ScrollAnimation animation="fade-up" delay={900}>
-        <ErrorBoundary>
-          <BasedProfileTease />
-        </ErrorBoundary>
-      </ScrollAnimation>
-
-      {/* Based Quiz Section */}
-      <section id="based-quiz">
-        <ScrollAnimation animation="fade-up" delay={1000}>
-          <ErrorBoundary>
-            <BasedQuiz />
-          </ErrorBoundary>
-        </ScrollAnimation>
-      </section>
-
-      {/* Add the SitemapContainer component here */}
-      <ScrollAnimation animation="fade-up" delay={1100}>
-        <ErrorBoundary>
-          <SitemapContainer />
-        </ErrorBoundary>
-      </ScrollAnimation>
-
-      {/* Call to Action Section - Moved to the end, right above the footer */}
-      <section id="call-to-action" className="pb-10 mb-5">
-        <ScrollAnimation animation="fade-up" delay={1200}>
-          <ErrorBoundary>
-            <CallToAction />
-          </ErrorBoundary>
-        </ScrollAnimation>
-      </section>
-
-      <ErrorBoundary>
-        <Footer />
-      </ErrorBoundary>
-    </main>
+      </main>
+    </>
   )
 }

@@ -12,6 +12,8 @@ import SectionPersistenceWrapper from "@/components/section-persistence-wrapper"
 import { baseMetadata, viewportConfig } from "./metadata-config"
 import { getOrganizationData, getWebsiteData } from "@/lib/structured-data"
 import StructuredData from "@/components/structured-data"
+import { CookieConsent } from "@/components/cookie-consent"
+// Remove the import of AnnouncementBar from here
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -135,6 +137,7 @@ export default function RootLayout({
           </ErrorBoundary>
         </ThemeProvider>
         <StructuredData data={structuredData} />
+        <CookieConsent />
       </body>
     </html>
   )
