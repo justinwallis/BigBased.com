@@ -5,8 +5,8 @@ import { createClient } from "@supabase/supabase-js"
 // Initialize Supabase client
 const supabaseUrl = process.env.SUPABASE_URL || ""
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+// Create a simple handler with detailed error logging
 const handler = NextAuth({
   providers: [
     CredentialsProvider({
@@ -16,57 +16,50 @@ const handler = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null
-        }
-
         try {
+          console.log("NextAuth authorize function called")
+
+          if (!credentials?.email || !credentials?.password) {
+            console.log("Missing credentials")
+            return null
+          }
+
+          const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+          console.log("Attempting Supabase sign in")
           const { data, error } = await supabase.auth.signInWithPassword({
             email: credentials.email,
             password: credentials.password,
           })
 
-          if (error || !data.user) {
-            console.error("Supabase auth error:", error)
+          if (error) {
+            console.error("Supabase auth error:", error.message)
             return null
           }
 
+          if (!data.user) {
+            console.log("No user returned from Supabase")
+            return null
+          }
+
+          console.log("Supabase auth successful")
           return {
             id: data.user.id,
             email: data.user.email,
             name: data.user.email,
           }
         } catch (error) {
-          console.error("NextAuth authorize error:", error)
+          console.error("NextAuth authorize unexpected error:", error)
           return null
         }
       },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id
-      }
-      return token
-    },
-    async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.id as string
-      }
-      return session
-    },
-  },
-  pages: {
-    signIn: "/",
-    error: "/",
-  },
+  secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  secret: process.env.NEXTAUTH_SECRET || "your-secret-key-change-in-production",
-  debug: process.env.NODE_ENV === "development",
+  debug: true,
 })
 
 export { handler as GET, handler as POST }
