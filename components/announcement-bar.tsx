@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { AnimatePresence, motion } from "framer-motion"
+import { useTheme } from "next-themes"
 
 type Announcement = {
   id: number
@@ -18,6 +19,7 @@ const announcements: Announcement[] = [
 ]
 
 export function AnnouncementBar() {
+  const { theme } = useTheme()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [direction, setDirection] = useState(0) // -1 for left, 1 for right
   const [isPaused, setIsPaused] = useState(false)
@@ -75,16 +77,25 @@ export function AnnouncementBar() {
     }),
   }
 
+  // Background color based on theme
+  const bgColor =
+    theme === "dark"
+      ? "rgba(25, 39, 69, 0.3)" // Dark blue tint for dark mode
+      : "rgba(0, 0, 0, 0.2)" // Light black tint for light mode
+
+  // Hover color based on theme
+  const hoverClass = theme === "dark" ? "hover:bg-blue-900 hover:bg-opacity-30" : "hover:bg-black hover:bg-opacity-30"
+
   return (
     <div
       className="announcement-bar w-full text-white py-1 isolate overflow-hidden"
-      style={{ backgroundColor: "rgba(0, 0, 0, 0.2)" }}
+      style={{ backgroundColor: bgColor }}
     >
       <div className="w-full flex items-center justify-between" style={{ backgroundColor: "transparent" }}>
         {announcements.length > 1 && (
           <button
             onClick={goToPrev}
-            className="px-4 py-0.5 hover:bg-black hover:bg-opacity-30 transition-colors z-10"
+            className={`px-4 py-0.5 transition-colors z-10 ${hoverClass}`}
             aria-label="Previous announcement"
             style={{ backgroundColor: "transparent" }}
           >
@@ -134,7 +145,7 @@ export function AnnouncementBar() {
         {announcements.length > 1 && (
           <button
             onClick={goToNext}
-            className="px-4 py-0.5 hover:bg-black hover:bg-opacity-30 transition-colors z-10"
+            className={`px-4 py-0.5 transition-colors z-10 ${hoverClass}`}
             aria-label="Next announcement"
             style={{ backgroundColor: "transparent" }}
           >
