@@ -7,22 +7,30 @@ import { preloadNextImages } from "@/utils/image-preloader"
 import OptimizedImage from "./optimized-image"
 import { useImagePreloader } from "@/hooks/use-image-preloader"
 
-// Add text shadow styles
+// Add text shadow styles - DOUBLED intensity
 const textShadowStyles = `
   .text-shadow-container h2 {
-    text-shadow: 0 1px 3px rgba(255, 255, 255, 0.3);
+    text-shadow: 0 2px 6px rgba(255, 255, 255, 0.6), 0 0 2px rgba(255, 255, 255, 0.8);
   }
   
   .text-shadow-container p {
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.25);
+    text-shadow: 0 1px 4px rgba(255, 255, 255, 0.5), 0 0 2px rgba(255, 255, 255, 0.7);
+  }
+  
+  .text-shadow-container a {
+    text-shadow: 0 1px 3px rgba(255, 255, 255, 0.5), 0 0 2px rgba(255, 255, 255, 0.7);
   }
   
   .dark .text-shadow-container h2 {
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8), 0 0 2px rgba(0, 0, 0, 0.9);
   }
   
   .dark .text-shadow-container p {
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7), 0 0 2px rgba(0, 0, 0, 0.8);
+  }
+  
+  .dark .text-shadow-container a {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7), 0 0 2px rgba(0, 0, 0, 0.8);
   }
 `
 
