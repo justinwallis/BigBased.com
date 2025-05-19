@@ -247,7 +247,12 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
 
   // Sync internal state with prop
   useEffect(() => {
-    setInternalIsOpen(isOpen)
+    // Use a small delay to prevent immediate closing
+    const timer = setTimeout(() => {
+      setInternalIsOpen(isOpen)
+    }, 10)
+
+    return () => clearTimeout(timer)
   }, [isOpen])
 
   // Listen for custom event to open search popup
@@ -429,6 +434,9 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
           "relative w-full max-w-4xl h-[85vh] rounded-lg shadow-2xl overflow-hidden flex flex-col",
           isDarkMode ? "bg-gray-900" : "bg-white",
         )}
+        onClickCapture={(e) => {
+          e.stopPropagation()
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-1 overflow-hidden">

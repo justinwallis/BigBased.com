@@ -456,7 +456,11 @@ export default function ClientPage() {
     // Prevent event from bubbling up to parent elements
     e.preventDefault()
     e.stopPropagation()
-    setIsSearchPopupOpen(true)
+
+    // Use a small delay to ensure event handling is complete
+    setTimeout(() => {
+      setIsSearchPopupOpen(true)
+    }, 10)
   }
 
   // Expose the search popup function globally
@@ -549,6 +553,11 @@ export default function ClientPage() {
             data-search-trigger="true"
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors duration-200"
             onClick={handleSearchClick}
+            onMouseDown={(e) => {
+              // Prevent mousedown event which can cause focus issues
+              e.preventDefault()
+              e.stopPropagation()
+            }}
           >
             <Search className="h-5 w-5 dark:text-white" />
           </button>
