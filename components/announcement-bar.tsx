@@ -36,13 +36,13 @@ export function AnnouncementBar() {
     }
   }, [])
 
-  // Auto-rotate announcements every 5 seconds
+  // Auto-rotate announcements every 10 seconds (doubled from 5 seconds)
   useEffect(() => {
     if (!isPaused && announcements.length > 1) {
       const interval = setInterval(() => {
         setDirection(1) // Moving right for auto-rotation
         setCurrentIndex((prev) => (prev + 1) % announcements.length)
-      }, 5000)
+      }, 10000) // Changed from 5000 to 10000 ms
       return () => clearInterval(interval)
     }
   }, [isPaused])
