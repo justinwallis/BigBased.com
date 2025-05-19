@@ -10,6 +10,9 @@ import { cn } from "@/lib/utils"
 import { useTheme } from "@/components/theme-provider"
 import { useMobile } from "@/hooks/use-mobile"
 
+// Define the same custom event name used in side-menu.tsx
+const OPEN_SEARCH_EVENT = "bb:openSearchPopup"
+
 type SearchPopupProps = {
   isOpen: boolean
   onClose: () => void
@@ -234,25 +237,66 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null)
+  const [internalIsOpen, setInternalIsOpen] = useState(isOpen)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const resultsContainerRef = useRef<HTMLDivElement>(null)
   const { theme } = useTheme()
   const { isMobile } = useMobile()
   const isDarkMode = theme === "dark"
 
+  // Sync internal state with prop
+  useEffect(() => {
+    setInternalIsOpen(isOpen)
+  }, [isOpen])
+
+  // Listen for custom event to open search popup
+  useEffect(() => {
+    const handleOpenSearchEvent = () => {
+      setInternalIsOpen(true)
+    }
+
+    // Listen for the custom event
+    window.addEventListener(OPEN_SEARCH_EVENT, handleOpenSearchEvent)
+
+    // Also expose a global function to open the search popup
+    if (typeof window !== "undefined") {
+      window.openSearchPopup = () => {
+        setInternalIsOpen(true)
+      }
+    }
+
+    return () => {
+      window.removeEventListener(OPEN_SEARCH_EVENT, handleOpenSearchEvent)
+      // Clean up global function
+      if (typeof window !== "undefined") {
+        window.openSearchPopup = undefined
+      }
+    }
+  }, [])
+
+  // Notify parent component when internal state changes
+  useEffect(() => {
+    if (!internalIsOpen && isOpen) {
+      onClose()
+    }
+  }, [internalIsOpen, isOpen, onClose])
+
   // Focus the search input when the popup opens
   useEffect(() => {
-    if (isOpen && searchInputRef.current) {
+    if (internalIsOpen && searchInputRef.current) {
       setTimeout(() => {
         searchInputRef.current?.focus()
       }, 100)
     }
-  }, [isOpen])
+  }, [internalIsOpen])
 
   // Close on escape key
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose()
+      if (e.key === "Escape") {
+        setInternalIsOpen(false)
+        onClose()
+      }
     }
 
     window.addEventListener("keydown", handleEsc)
@@ -308,14 +352,17 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
     return grouped
   }, [filteredItems])
 
-  if (!isOpen) return null
+  if (!internalIsOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center">
+    <div className="fixed inset-0 z-[300] flex items-center justify-center">
       {/* Backdrop */}
       <div
         className={cn("absolute inset-0 backdrop-blur-sm", isDarkMode ? "bg-black/70" : "bg-gray-500/30")}
-        onClick={onClose}
+        onClick={() => {
+          setInternalIsOpen(false)
+          onClose()
+        }}
       />
 
       {/* Search Popup */}
@@ -402,7 +449,10 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
                     "absolute right-3 top-1/2 transform -translate-y-1/2",
                     isDarkMode ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-900",
                   )}
-                  onClick={onClose}
+                  onClick={() => {
+                    setInternalIsOpen(false)
+                    onClose()
+                  }}
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -448,7 +498,10 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
                             "flex flex-col items-center justify-center p-3 rounded-lg transition-colors",
                             isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100",
                           )}
-                          onClick={onClose}
+                          onClick={() => {
+                            setInternalIsOpen(false)
+                            onClose()
+                          }}
                         >
                           <div className="relative w-12 h-12 mb-2 rounded-lg overflow-hidden">
                             <Image
@@ -477,7 +530,15 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {(searchTerm ? groupedItems.screens : filteredItems.filter((item) => item.type === "screen")).map(
                       (item) => (
-                        <Link key={item.id} href={item.href} className="group" onClick={onClose}>
+                        <Link
+                          key={item.id}
+                          href={item.href}
+                          className="group"
+                          onClick={() => {
+                            setInternalIsOpen(false)
+                            onClose()
+                          }}
+                        >
                           <div
                             className={cn(
                               "relative aspect-[4/3] rounded-lg overflow-hidden mb-2 border group-hover:border-blue-500 transition-colors",
@@ -515,7 +576,15 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {(searchTerm ? groupedItems.pages : filteredItems.filter((item) => item.type === "page")).map(
                       (item) => (
-                        <Link key={item.id} href={item.href} className="group" onClick={onClose}>
+                        <Link
+                          key={item.id}
+                          href={item.href}
+                          className="group"
+                          onClick={() => {
+                            setInternalIsOpen(false)
+                            onClose()
+                          }}
+                        >
                           <div
                             className={cn(
                               "relative aspect-[4/3] rounded-lg overflow-hidden mb-2 border group-hover:border-blue-500 transition-colors",

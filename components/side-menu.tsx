@@ -39,6 +39,9 @@ interface SideMenuProps {
   setIsSearchPopupOpen?: (isOpen: boolean) => void
 }
 
+// Define a custom event name for opening the search popup
+const OPEN_SEARCH_EVENT = "bb:openSearchPopup"
+
 export default function SideMenu({
   isOpen,
   setIsOpen,
@@ -82,9 +85,45 @@ export default function SideMenu({
     }
   }, [isOpen])
 
-  // Focus search input when openWithSearch is true
+  // Define a function to trigger the search popup using multiple methods
+  const triggerSearchPopup = () => {
+    // Method 1: Try using the prop function
+    if (typeof setIsSearchPopupOpen === "function") {
+      setIsSearchPopupOpen(true)
+    }
 
-  // Handle search functionality
+    // Method 2: Try using a global function if available
+    if (typeof window !== "undefined" && window.openSearchPopup) {
+      window.openSearchPopup()
+    }
+
+    // Method 3: Dispatch a custom event that the search popup component can listen for
+    if (typeof window !== "undefined" && typeof window.CustomEvent === "function") {
+      const event = new CustomEvent(OPEN_SEARCH_EVENT)
+      window.dispatchEvent(event)
+    }
+
+    // Method 4: Set a global flag that can be checked by other components
+    if (typeof window !== "undefined") {
+      window.BB_SEARCH_REQUESTED = true
+    }
+
+    // Method 5: Try to find and click the main search button in the header
+    if (typeof document !== "undefined") {
+      const mainSearchButton = document.querySelector('[data-search-trigger="true"]')
+      if (mainSearchButton && mainSearchButton instanceof HTMLElement) {
+        mainSearchButton.click()
+      }
+    }
+  }
+
+  // Add a global handler for the search popup
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      // Define a global function that other components can call
+      window.openSearchPopup = triggerSearchPopup
+    }
+  }, [])
 
   const handleDragStart = (e) => {
     try {
@@ -261,23 +300,11 @@ export default function SideMenu({
             <div className="flex items-center space-x-1">
               {/* Search Icon */}
               <button
-                onClick={() => {
-                  // Close the side menu
-                  setIsOpen(false)
-                  // Try to open search popup with a slight delay to ensure menu closes first
-                  setTimeout(() => {
-                    if (typeof setIsSearchPopupOpen === "function") {
-                      setIsSearchPopupOpen(true)
-                    } else if (typeof window !== "undefined" && window.openSearchPopup) {
-                      // Fallback to global function if available
-                      window.openSearchPopup()
-                    } else {
-                      // Fallback to navigating to search page
-                      window.location.href = "/search"
-                    }
-                  }, 100)
+                onClick={(e) => {
+                  e.stopPropagation()
+                  triggerSearchPopup()
                 }}
-                className="text-gray-500 dark:text-gray-300 hover:text-black dark:hover:text-white p-1"
+                className="text-gray-500 dark:text-gray-300 hover:text-black dark:hover:text-white p-1 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
                 aria-label="Search"
               >
                 <Search size={20} />
@@ -286,7 +313,7 @@ export default function SideMenu({
               {/* Notification Bell */}
               <button
                 onClick={onNotificationBellClick}
-                className="text-gray-500 dark:text-gray-300 hover:text-black dark:hover:text-white p-1"
+                className="text-gray-500 dark:text-gray-300 hover:text-black dark:hover:text-white p-1 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
                 aria-label="Notifications"
               >
                 <div className="relative">
@@ -301,7 +328,7 @@ export default function SideMenu({
               {/* Close Button */}
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-gray-500 dark:text-gray-300 hover:text-black dark:hover:text-white ml-1"
+                className="text-gray-500 dark:text-gray-300 hover:text-black dark:hover:text-white ml-1 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
                 aria-label="Close menu"
               >
                 <X size={24} />

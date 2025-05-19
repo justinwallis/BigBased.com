@@ -456,6 +456,19 @@ export default function ClientPage() {
     setIsSearchPopupOpen(true)
   }
 
+  // Expose the search popup function globally
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.openSearchPopup = () => setIsSearchPopupOpen(true)
+    }
+
+    return () => {
+      if (typeof window !== "undefined") {
+        window.openSearchPopup = undefined
+      }
+    }
+  }, [])
+
   // Hide content until loaded to prevent flash
   if (typeof window !== "undefined" && !contentLoaded) {
     return null
@@ -465,7 +478,12 @@ export default function ClientPage() {
     <main className="min-h-screen bg-white dark:bg-gray-900">
       {/* Side Menu */}
       <ErrorBoundary>
-        <SideMenu isOpen={isSideMenuOpen} setIsOpen={setIsSideMenuOpen} openWithSearch={openWithSearch} />
+        <SideMenu
+          isOpen={isSideMenuOpen}
+          setIsOpen={setIsSideMenuOpen}
+          openWithSearch={openWithSearch}
+          setIsSearchPopupOpen={setIsSearchPopupOpen}
+        />
       </ErrorBoundary>
 
       {/* Search Popup */}
@@ -511,6 +529,7 @@ export default function ClientPage() {
         <div className="flex items-center space-x-4">
           <ThemeToggle />
           <button
+            data-search-trigger="true"
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors duration-200"
             onClick={handleSearchClick}
           >
