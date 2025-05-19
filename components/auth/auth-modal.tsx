@@ -1,12 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { TabsList, TabsTrigger } from "@/components/ui/tabs"
 import LoginForm from "./login-form"
 import SignupForm from "./signup-form"
 import Image from "next/image"
-import "../app/auth-animations.css"
 
 interface AuthModalProps {
   isOpen: boolean
@@ -47,14 +46,15 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[425px] shadow-2xl border-0 overflow-hidden">
-        <div className="flex justify-center mb-2">
+        {/* Logo positioned at the top */}
+        <div className="flex flex-col items-center space-y-4 mb-4">
           <Image src="/bb-logo.png" alt="Big Based Logo" width={80} height={80} priority />
-        </div>
-        <DialogHeader>
-          <DialogTitle className="text-center text-2xl font-bold">
+
+          {/* Title with dark mode support */}
+          <h2 className="text-center text-2xl font-bold text-gray-900 dark:text-white">
             {activeTab === "login" ? "Welcome Back" : "Join BigBased"}
-          </DialogTitle>
-        </DialogHeader>
+          </h2>
+        </div>
 
         <div className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">

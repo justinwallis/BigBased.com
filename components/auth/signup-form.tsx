@@ -174,14 +174,16 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
         )}
 
         {success && (
-          <Alert className="bg-green-50 text-green-800 border-green-200">
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
+          <Alert className="bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800">
+            <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
             <AlertDescription>Success! Check your email for a confirmation link.</AlertDescription>
           </Alert>
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email" className="text-gray-900 dark:text-white">
+            Email
+          </Label>
           <Input
             id="email"
             type="email"
@@ -189,19 +191,21 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="border-gray-300 focus:border-gray-400 focus:ring-gray-400"
+            className="border-gray-300 focus:border-gray-400 focus:ring-gray-400 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password" className="text-gray-900 dark:text-white">
+            Password
+          </Label>
           <Input
             id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="border-gray-300 focus:border-gray-400 focus:ring-gray-400"
+            className="border-gray-300 focus:border-gray-400 focus:ring-gray-400 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
           />
 
           <div className="mt-2 space-y-1 text-sm">
@@ -213,7 +217,13 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
                 ) : (
                   <X className="h-3.5 w-3.5 text-red-500" />
                 )}
-                <span className={passwordRequirements.length ? "text-green-600" : "text-gray-500"}>
+                <span
+                  className={
+                    passwordRequirements.length
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-gray-500 dark:text-gray-400"
+                  }
+                >
                   At least 10 characters
                 </span>
               </div>
@@ -223,7 +233,13 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
                 ) : (
                   <X className="h-3.5 w-3.5 text-red-500" />
                 )}
-                <span className={passwordRequirements.uppercase ? "text-green-600" : "text-gray-500"}>
+                <span
+                  className={
+                    passwordRequirements.uppercase
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-gray-500 dark:text-gray-400"
+                  }
+                >
                   Uppercase letter
                 </span>
               </div>
@@ -233,7 +249,13 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
                 ) : (
                   <X className="h-3.5 w-3.5 text-red-500" />
                 )}
-                <span className={passwordRequirements.lowercase ? "text-green-600" : "text-gray-500"}>
+                <span
+                  className={
+                    passwordRequirements.lowercase
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-gray-500 dark:text-gray-400"
+                  }
+                >
                   Lowercase letter
                 </span>
               </div>
@@ -243,7 +265,15 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
                 ) : (
                   <X className="h-3.5 w-3.5 text-red-500" />
                 )}
-                <span className={passwordRequirements.number ? "text-green-600" : "text-gray-500"}>Number</span>
+                <span
+                  className={
+                    passwordRequirements.number
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-gray-500 dark:text-gray-400"
+                  }
+                >
+                  Number
+                </span>
               </div>
               <div className="flex items-center gap-1">
                 {passwordRequirements.special ? (
@@ -251,7 +281,13 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
                 ) : (
                   <X className="h-3.5 w-3.5 text-red-500" />
                 )}
-                <span className={passwordRequirements.special ? "text-green-600" : "text-gray-500"}>
+                <span
+                  className={
+                    passwordRequirements.special
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-gray-500 dark:text-gray-400"
+                  }
+                >
                   Special character
                 </span>
               </div>
@@ -275,17 +311,17 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
           <div className="grid gap-1.5 leading-none">
             <label
               htmlFor="terms"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-900 dark:text-white"
             >
               I agree to the Terms of Service and Privacy Policy
             </label>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground dark:text-gray-400">
               By creating an account, you agree to our{" "}
-              <a href="/terms" className="text-primary hover:underline">
+              <a href="/terms" className="text-primary hover:underline dark:text-gray-300">
                 Terms of Service
               </a>{" "}
               and{" "}
-              <a href="/privacy" className="text-primary hover:underline">
+              <a href="/privacy" className="text-primary hover:underline dark:text-gray-300">
                 Privacy Policy
               </a>
               .
@@ -295,7 +331,7 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
 
         <Button
           type="submit"
-          className="w-full transition-all duration-300 hover:bg-gray-800"
+          className="w-full transition-all duration-300 hover:bg-gray-800 dark:hover:bg-gray-700"
           disabled={isLoading || success || !agreedToTerms || !recaptchaVerified}
         >
           {isLoading ? "Creating account..." : "Create account"}
