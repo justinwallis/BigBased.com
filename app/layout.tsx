@@ -13,7 +13,7 @@ import { baseMetadata, viewportConfig } from "./metadata-config"
 import { getOrganizationData, getWebsiteData } from "@/lib/structured-data"
 import StructuredData from "@/components/structured-data"
 import { CookieConsent } from "@/components/cookie-consent"
-// Remove the import of AnnouncementBar from here
+import { AnnouncementBar } from "@/components/announcement-bar"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -124,6 +124,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://cdn.onesignal.com" />
       </head>
       <body className={inter.className}>
+        <AnnouncementBar />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <ErrorBoundary>
             <OneSignalProvider>
