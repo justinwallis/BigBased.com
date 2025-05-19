@@ -6,6 +6,7 @@ import Image from "next/image"
 import { X, Search, Bell } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import BBLogo from "@/components/bb-logo"
+import SearchPopup from "@/components/search-popup"
 
 const logos = [
   { name: "Organization 1", path: "/logos/org1.png" },
@@ -47,6 +48,7 @@ export default function SideMenu({
 }: SideMenuProps) {
   const [scrollY, setScrollY] = useState(0)
   const [menuPosition, setMenuPosition] = useState({ top: 0, startX: 0, isDragging: false })
+  const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const initialRenderRef = useRef(true)
 
@@ -205,11 +207,17 @@ export default function SideMenu({
     }
   }, [])
 
-  // Prevent scroll propagation to the main page
-  // Remove this entire useEffect block:
+  // Handle search icon click
+  const handleSearchClick = (e) => {
+    e.stopPropagation() // Prevent the click from closing the sidebar
+    setIsSearchPopupOpen(true)
+  }
 
   return (
     <>
+      {/* Search Popup */}
+      <SearchPopup isOpen={isSearchPopupOpen} onClose={() => setIsSearchPopupOpen(false)} />
+
       {/* Hamburger Button - Fixed positioning with improved stickiness */}
       <button
         className="fixed left-0 z-50 bg-black dark:bg-white text-white dark:text-black p-3 rounded-r-lg group hover:bg-gray-900 dark:hover:bg-gray-100"
@@ -268,8 +276,8 @@ export default function SideMenu({
             <div className="flex items-center space-x-1">
               {/* Search Icon */}
               <button
-                onClick={() => searchInputRef.current?.focus()}
-                className="text-gray-500 dark:text-gray-300 hover:text-black dark:hover:text-white p-1"
+                onClick={handleSearchClick}
+                className="text-gray-500 dark:text-gray-300 hover:text-black dark:hover:text-white p-1 relative z-10"
                 aria-label="Search"
               >
                 <Search size={18} />

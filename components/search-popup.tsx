@@ -236,6 +236,7 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const resultsContainerRef = useRef<HTMLDivElement>(null)
+  const popupRef = useRef<HTMLDivElement>(null)
   const { theme } = useTheme()
   const { isMobile } = useMobile()
   const isDarkMode = theme === "dark"
@@ -258,6 +259,27 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
     window.addEventListener("keydown", handleEsc)
     return () => window.removeEventListener("keydown", handleEsc)
   }, [onClose])
+
+  // Prevent body scrolling when popup is open
+  useEffect(() => {
+    if (isOpen) {
+      // Save current scroll position
+      const scrollY = window.scrollY
+
+      // Add styles to prevent scrolling
+      document.body.style.position = "fixed"
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.width = "100%"
+
+      return () => {
+        // Remove styles and restore scroll position
+        document.body.style.position = ""
+        document.body.style.top = ""
+        document.body.style.width = ""
+        window.scrollTo(0, scrollY)
+      }
+    }
+  }, [isOpen])
 
   // Search functionality
   const filteredItems = useMemo(() => {
@@ -312,9 +334,10 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-start justify-center pt-[5vh]"
+      className="fixed inset-0 z-[300] flex items-start justify-center pt-[5vh]"
       onClick={onClose}
-      onWheel={(e) => e.stopPropagation()}
+      onWheel={(e) => e.preventDefault()}
+      ref={popupRef}
     >
       {/* Backdrop */}
       <div
@@ -417,42 +440,6 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
             <div
               ref={resultsContainerRef}
               className={cn("flex-1 overflow-y-auto p-6", isDarkMode ? "bg-gray-900" : "bg-white")}
-              onWheel={(e) => {
-                const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
-                const isAtTop = scrollTop === 0
-                const isAtBottom = Math.abs(scrollTop + clientHeight - scrollHeight) < 2
-
-                // Only stop propagation at boundaries, don't prevent default
-                if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
-                  e.stopPropagation()
-                }
-              }}
-              onTouchStart={(e) => {
-                const target = e.currentTarget
-                const isAtTop = target.scrollTop === 0
-                const isAtBottom = target.scrollTop + target.clientHeight >= target.scrollHeight - 1
-
-                // Store the initial touch position and scroll state
-                target.dataset.touchStartY = e.touches[0].clientY.toString()
-                target.dataset.isAtTop = isAtTop.toString()
-                target.dataset.isAtBottom = isAtBottom.toString()
-              }}
-              onTouchMove={(e) => {
-                const target = e.currentTarget
-                const touchY = e.touches[0].clientY
-                const startY = Number.parseFloat(target.dataset.touchStartY || "0")
-                const isAtTop = target.dataset.isAtTop === "true"
-                const isAtBottom = target.dataset.isAtBottom === "true"
-
-                // Determine scroll direction
-                const isScrollingUp = touchY > startY
-                const isScrollingDown = touchY < startY
-
-                // Only stop propagation at boundaries
-                if ((isAtTop && isScrollingUp) || (isAtBottom && isScrollingDown)) {
-                  e.stopPropagation()
-                }
-              }}
             >
               {/* Search Results */}
               {searchTerm && (
