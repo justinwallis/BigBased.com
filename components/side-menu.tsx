@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
@@ -51,6 +53,54 @@ export default function SideMenu({
   const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const initialRenderRef = useRef(true)
+  const scrollableContentRef = useRef<HTMLDivElement>(null)
+  const previousBodyOverflowRef = useRef("")
+  const previousBodyPositionRef = useRef("")
+  const previousBodyTopRef = useRef("")
+  const previousBodyLeftRef = useRef("")
+  const previousBodyWidthRef = useRef("")
+
+  // Lock/unlock body scroll when sidebar is opened/closed
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    if (isOpen) {
+      // Save current body styles
+      previousBodyOverflowRef.current = document.body.style.overflow
+      previousBodyPositionRef.current = document.body.style.position
+      previousBodyTopRef.current = document.body.style.top
+      previousBodyLeftRef.current = document.body.style.left
+      previousBodyWidthRef.current = document.body.style.width
+
+      // Calculate scrollbar width
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+
+      // Lock body scroll
+      document.body.style.overflow = "hidden"
+      document.body.style.position = "fixed"
+      document.body.style.top = `-${window.scrollY}px`
+      document.body.style.left = "0"
+      document.body.style.width = "100%"
+
+      // Add padding to prevent content shift
+      if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`
+      }
+    } else {
+      // Restore body scroll
+      const scrollY = document.body.style.top ? Number.parseInt(document.body.style.top) * -1 : 0
+
+      document.body.style.overflow = previousBodyOverflowRef.current
+      document.body.style.position = previousBodyPositionRef.current
+      document.body.style.top = previousBodyTopRef.current
+      document.body.style.left = previousBodyLeftRef.current
+      document.body.style.width = previousBodyWidthRef.current
+      document.body.style.paddingRight = ""
+
+      // Restore scroll position
+      window.scrollTo(0, scrollY)
+    }
+  }, [isOpen])
 
   // Check localStorage for saved menu state on initial render
   useEffect(() => {
@@ -213,6 +263,18 @@ export default function SideMenu({
     setIsSearchPopupOpen(true)
   }
 
+  // Prevent wheel events from propagating outside the scrollable area
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
+    const isAtTop = scrollTop === 0
+    const isAtBottom = Math.abs(scrollTop + clientHeight - scrollHeight) < 2
+
+    // If we're at the top and trying to scroll up, or at the bottom and trying to scroll down
+    if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
+      e.preventDefault()
+    }
+  }
+
   return (
     <>
       {/* Search Popup */}
@@ -311,18 +373,9 @@ export default function SideMenu({
         </div>
 
         <div
+          ref={scrollableContentRef}
           className="flex-grow overflow-y-auto custom-scrollbar p-6"
-          onWheel={(e) => {
-            const target = e.currentTarget
-            const { scrollTop, scrollHeight, clientHeight } = target
-            const isAtTop = scrollTop === 0
-            const isAtBottom = Math.abs(scrollTop + clientHeight - scrollHeight) < 2
-
-            // Only prevent default when at boundaries to stop propagation
-            if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
-              e.stopPropagation()
-            }
-          }}
+          onWheel={handleWheel}
         >
           <nav className="mb-8">
             <ul className="space-y-4">
