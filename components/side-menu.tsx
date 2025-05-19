@@ -5,10 +5,11 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { X, Search, Bell } from "lucide-react"
+import { X, Search, Bell, ChevronRight } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import BBLogo from "@/components/bb-logo"
 import SearchPopup from "@/components/search-popup"
+import { usePathname } from "next/navigation"
 
 const logos = [
   { name: "Organization 1", path: "/logos/org1.png" },
@@ -39,6 +40,63 @@ interface SideMenuProps {
   openWithSearch?: boolean
   onNotificationBellClick?: () => void
   isSubscribed?: boolean
+}
+
+// Helper function to format segment names
+function formatSegment(segment: string): string {
+  // Replace hyphens with spaces and capitalize each word
+  return segment
+    .replace(/-/g, " ")
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ")
+}
+
+// Simple Breadcrumb component directly in the SideMenu file
+function SimpleBreadcrumb() {
+  const pathname = usePathname()
+
+  // Skip rendering breadcrumbs on the homepage
+  if (pathname === "/") return null
+
+  // Split the pathname into segments and decode them
+  const segments = pathname
+    .split("/")
+    .filter(Boolean)
+    .map((segment) => decodeURIComponent(segment))
+
+  // If there are no segments, don't render anything
+  if (segments.length === 0) return null
+
+  return (
+    <div className="mb-4 py-2 px-3 bg-gray-50 dark:bg-gray-800 rounded-md text-xs">
+      <div className="flex items-center flex-wrap">
+        <Link href="/" className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+          Home
+        </Link>
+        {segments.map((segment, index) => {
+          // Build the href for this segment
+          const href = "/" + segments.slice(0, index + 1).join("/")
+
+          return (
+            <div key={segment} className="flex items-center">
+              <ChevronRight className="h-3 w-3 mx-1 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+              {index === segments.length - 1 ? (
+                <span className="font-medium text-gray-800 dark:text-gray-200">{formatSegment(segment)}</span>
+              ) : (
+                <Link
+                  href={href}
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                >
+                  {formatSegment(segment)}
+                </Link>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
 }
 
 export default function SideMenu({
@@ -377,6 +435,9 @@ export default function SideMenu({
           className="flex-grow overflow-y-auto custom-scrollbar p-6"
           onWheel={handleWheel}
         >
+          {/* Breadcrumb - Only shows when not on homepage */}
+          <SimpleBreadcrumb />
+
           <nav className="mb-8">
             <ul className="space-y-4">
               <li>

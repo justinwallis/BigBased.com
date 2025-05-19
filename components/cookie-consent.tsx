@@ -26,9 +26,9 @@ export function CookieConsent() {
   if (!isVisible) return null
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 py-1 px-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 shadow-md">
+    <div className="fixed bottom-0 left-0 right-0 z-50 py-1 px-4 bg-white/10 dark:bg-gray-900/10 border-t border-gray-200/30 dark:border-gray-800/30 shadow-md backdrop-blur-sm">
       <div className="container mx-auto flex flex-row items-center justify-between">
-        <p className="text-xs text-gray-700 dark:text-gray-300">
+        <p className="text-xs text-gray-800 dark:text-gray-200">
           <strong>Essential Cookies Only:</strong> We use cookies solely for critical site functionality.
         </p>
         <div className="flex items-center gap-1 ml-2 flex-shrink-0">
