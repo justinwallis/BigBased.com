@@ -452,43 +452,9 @@ export default function ClientPage() {
     }
   }, [])
 
-  const handleSearchClick = (e) => {
-    // Prevent event from bubbling up to parent elements
-    e.preventDefault()
-    e.stopPropagation()
-
-    // Use a small delay to ensure event handling is complete
-    setTimeout(() => {
-      setIsSearchPopupOpen(true)
-    }, 10)
+  const handleSearchClick = () => {
+    setIsSearchPopupOpen(true)
   }
-
-  // Expose the search popup function globally
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.openSearchPopup = () => setIsSearchPopupOpen(true)
-    }
-
-    return () => {
-      if (typeof window !== "undefined") {
-        window.openSearchPopup = undefined
-      }
-    }
-  }, [])
-
-  // Add keyboard shortcut for search (press '/' to open search)
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      // Open search when '/' is pressed, but not when in an input field
-      if (e.key === "/" && !["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName)) {
-        e.preventDefault()
-        setIsSearchPopupOpen(true)
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [])
 
   // Hide content until loaded to prevent flash
   if (typeof window !== "undefined" && !contentLoaded) {
@@ -499,12 +465,7 @@ export default function ClientPage() {
     <main className="min-h-screen bg-white dark:bg-gray-900">
       {/* Side Menu */}
       <ErrorBoundary>
-        <SideMenu
-          isOpen={isSideMenuOpen}
-          setIsOpen={setIsSideMenuOpen}
-          openWithSearch={openWithSearch}
-          setIsSearchPopupOpen={setIsSearchPopupOpen}
-        />
+        <SideMenu isOpen={isSideMenuOpen} setIsOpen={setIsSideMenuOpen} openWithSearch={openWithSearch} />
       </ErrorBoundary>
 
       {/* Search Popup */}
@@ -550,14 +511,8 @@ export default function ClientPage() {
         <div className="flex items-center space-x-4">
           <ThemeToggle />
           <button
-            data-search-trigger="true"
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors duration-200"
             onClick={handleSearchClick}
-            onMouseDown={(e) => {
-              // Prevent mousedown event which can cause focus issues
-              e.preventDefault()
-              e.stopPropagation()
-            }}
           >
             <Search className="h-5 w-5 dark:text-white" />
           </button>

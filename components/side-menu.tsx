@@ -36,11 +36,7 @@ interface SideMenuProps {
   openWithSearch?: boolean
   onNotificationBellClick?: () => void
   isSubscribed?: boolean
-  setIsSearchPopupOpen?: (isOpen: boolean) => void
 }
-
-// Define a custom event name for opening the search popup
-const OPEN_SEARCH_EVENT = "bb:openSearchPopup"
 
 export default function SideMenu({
   isOpen,
@@ -48,10 +44,10 @@ export default function SideMenu({
   openWithSearch = false,
   onNotificationBellClick = () => {},
   isSubscribed = false,
-  setIsSearchPopupOpen = () => {},
 }: SideMenuProps) {
   const [scrollY, setScrollY] = useState(0)
   const [menuPosition, setMenuPosition] = useState({ top: 0, startX: 0, isDragging: false })
+  const searchInputRef = useRef<HTMLInputElement>(null)
   const initialRenderRef = useRef(true)
 
   // Check localStorage for saved menu state on initial render
@@ -85,45 +81,14 @@ export default function SideMenu({
     }
   }, [isOpen])
 
-  // Define a function to trigger the search popup using multiple methods
-  const triggerSearchPopup = () => {
-    // Method 1: Try using the prop function
-    if (typeof setIsSearchPopupOpen === "function") {
-      setIsSearchPopupOpen(true)
-    }
-
-    // Method 2: Try using a global function if available
-    if (typeof window !== "undefined" && window.openSearchPopup) {
-      window.openSearchPopup()
-    }
-
-    // Method 3: Dispatch a custom event that the search popup component can listen for
-    if (typeof window !== "undefined" && typeof window.CustomEvent === "function") {
-      const event = new CustomEvent(OPEN_SEARCH_EVENT)
-      window.dispatchEvent(event)
-    }
-
-    // Method 4: Set a global flag that can be checked by other components
-    if (typeof window !== "undefined") {
-      window.BB_SEARCH_REQUESTED = true
-    }
-
-    // Method 5: Try to find and click the main search button in the header
-    if (typeof document !== "undefined") {
-      const mainSearchButton = document.querySelector('[data-search-trigger="true"]')
-      if (mainSearchButton && mainSearchButton instanceof HTMLElement) {
-        mainSearchButton.click()
-      }
-    }
-  }
-
-  // Add a global handler for the search popup
+  // Focus search input when openWithSearch is true
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      // Define a global function that other components can call
-      window.openSearchPopup = triggerSearchPopup
+    if (isOpen && openWithSearch && searchInputRef.current) {
+      setTimeout(() => {
+        searchInputRef.current?.focus()
+      }, 300) // Delay to allow animation to complete
     }
-  }, [])
+  }, [isOpen, openWithSearch])
 
   const handleDragStart = (e) => {
     try {
@@ -300,24 +265,21 @@ export default function SideMenu({
             <div className="flex items-center space-x-1">
               {/* Search Icon */}
               <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  triggerSearchPopup()
-                }}
-                className="text-gray-500 dark:text-gray-300 hover:text-black dark:hover:text-white p-1 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
+                onClick={() => searchInputRef.current?.focus()}
+                className="text-gray-500 dark:text-gray-300 hover:text-black dark:hover:text-white p-1"
                 aria-label="Search"
               >
-                <Search size={20} />
+                <Search size={18} />
               </button>
 
               {/* Notification Bell */}
               <button
                 onClick={onNotificationBellClick}
-                className="text-gray-500 dark:text-gray-300 hover:text-black dark:hover:text-white p-1 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
+                className="text-gray-500 dark:text-gray-300 hover:text-black dark:hover:text-white p-1"
                 aria-label="Notifications"
               >
                 <div className="relative">
-                  <Bell size={20} />
+                  <Bell size={18} />
                   {isSubscribed && <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full" />}
                 </div>
               </button>
@@ -328,10 +290,10 @@ export default function SideMenu({
               {/* Close Button */}
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-gray-500 dark:text-gray-300 hover:text-black dark:hover:text-white ml-1 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
+                className="text-gray-500 dark:text-gray-300 hover:text-black dark:hover:text-white ml-0.5"
                 aria-label="Close menu"
               >
-                <X size={24} />
+                <X size={22} />
               </button>
             </div>
           </div>

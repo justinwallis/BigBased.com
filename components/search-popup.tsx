@@ -10,9 +10,6 @@ import { cn } from "@/lib/utils"
 import { useTheme } from "@/components/theme-provider"
 import { useMobile } from "@/hooks/use-mobile"
 
-// Define the same custom event name used in side-menu.tsx
-const OPEN_SEARCH_EVENT = "bb:openSearchPopup"
-
 type SearchPopupProps = {
   isOpen: boolean
   onClose: () => void
@@ -237,113 +234,30 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null)
-  const [internalIsOpen, setInternalIsOpen] = useState(isOpen)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const resultsContainerRef = useRef<HTMLDivElement>(null)
-  const popupRef = useRef<HTMLDivElement>(null)
   const { theme } = useTheme()
   const { isMobile } = useMobile()
   const isDarkMode = theme === "dark"
 
-  // Sync internal state with prop
-  useEffect(() => {
-    // Use a small delay to prevent immediate closing
-    const timer = setTimeout(() => {
-      setInternalIsOpen(isOpen)
-    }, 10)
-
-    return () => clearTimeout(timer)
-  }, [isOpen])
-
-  // Listen for custom event to open search popup
-  useEffect(() => {
-    const handleOpenSearchEvent = () => {
-      setInternalIsOpen(true)
-    }
-
-    // Listen for the custom event
-    window.addEventListener(OPEN_SEARCH_EVENT, handleOpenSearchEvent)
-
-    // Also expose a global function to open the search popup
-    if (typeof window !== "undefined") {
-      window.openSearchPopup = () => {
-        setInternalIsOpen(true)
-      }
-    }
-
-    return () => {
-      window.removeEventListener(OPEN_SEARCH_EVENT, handleOpenSearchEvent)
-      // Clean up global function
-      if (typeof window !== "undefined") {
-        window.openSearchPopup = undefined
-      }
-    }
-  }, [])
-
-  // Notify parent component when internal state changes
-  useEffect(() => {
-    if (!internalIsOpen && isOpen) {
-      onClose()
-    }
-  }, [internalIsOpen, isOpen, onClose])
-
   // Focus the search input when the popup opens
   useEffect(() => {
-    if (internalIsOpen && searchInputRef.current) {
+    if (isOpen && searchInputRef.current) {
       setTimeout(() => {
         searchInputRef.current?.focus()
       }, 100)
     }
-  }, [internalIsOpen])
+  }, [isOpen])
 
   // Close on escape key
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setInternalIsOpen(false)
-        onClose()
-      }
+      if (e.key === "Escape") onClose()
     }
 
     window.addEventListener("keydown", handleEsc)
     return () => window.removeEventListener("keydown", handleEsc)
   }, [onClose])
-
-  // Prevent body scrolling when popup is open
-  useEffect(() => {
-    if (internalIsOpen) {
-      // Save the current overflow style
-      const originalOverflow = document.body.style.overflow
-      // Prevent scrolling on the body
-      document.body.style.overflow = "hidden"
-
-      // Restore original overflow when component unmounts or popup closes
-      return () => {
-        document.body.style.overflow = originalOverflow
-      }
-    }
-  }, [internalIsOpen])
-
-  // Handle clicks outside the popup to close it
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      // Only process if popup is open
-      if (!internalIsOpen) return
-
-      // Check if click is outside the popup
-      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
-        setInternalIsOpen(false)
-        onClose()
-      }
-    }
-
-    // Add event listener with capture phase to ensure it runs before other handlers
-    document.addEventListener("mousedown", handleClickOutside, true)
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside, true)
-    }
-  }, [internalIsOpen, onClose])
 
   // Search functionality
   const filteredItems = useMemo(() => {
@@ -394,49 +308,22 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
     return grouped
   }, [filteredItems])
 
-  if (!internalIsOpen) return null
-
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    // Ensure this is a direct click on the backdrop, not bubbled from children
-    if (e.target === e.currentTarget) {
-      setInternalIsOpen(false)
-      onClose()
-    }
-  }
+  if (!isOpen) return null
 
   return (
-    <div
-      className="fixed inset-0 z-[300] flex items-center justify-center"
-      onWheel={(e) => e.stopPropagation()}
-      onTouchMove={(e) => {
-        // Only prevent default if we're at the boundary
-        const scrollContainer = resultsContainerRef.current
-        if (scrollContainer) {
-          const { scrollTop, scrollHeight, clientHeight } = scrollContainer
-          // At the top and trying to scroll up, or at the bottom and trying to scroll down
-          if (
-            (scrollTop <= 0 && e.touches[0].clientY > 0) ||
-            (scrollTop + clientHeight >= scrollHeight && e.touches[0].clientY < 0)
-          ) {
-            e.preventDefault()
-          }
-        }
-      }}
-      onClick={handleBackdropClick}
-    >
+    <div className="fixed inset-0 z-[100] flex items-center justify-center">
       {/* Backdrop */}
-      <div className={cn("absolute inset-0 backdrop-blur-sm", isDarkMode ? "bg-black/70" : "bg-gray-500/30")} />
+      <div
+        className={cn("absolute inset-0 backdrop-blur-sm", isDarkMode ? "bg-black/70" : "bg-gray-500/30")}
+        onClick={onClose}
+      />
 
       {/* Search Popup */}
       <div
-        ref={popupRef}
         className={cn(
           "relative w-full max-w-4xl h-[85vh] rounded-lg shadow-2xl overflow-hidden flex flex-col",
           isDarkMode ? "bg-gray-900" : "bg-white",
         )}
-        onClickCapture={(e) => {
-          e.stopPropagation()
-        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-1 overflow-hidden">
@@ -515,10 +402,7 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
                     "absolute right-3 top-1/2 transform -translate-y-1/2",
                     isDarkMode ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-900",
                   )}
-                  onClick={() => {
-                    setInternalIsOpen(false)
-                    onClose()
-                  }}
+                  onClick={onClose}
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -528,7 +412,7 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
             {/* Scrollable Results Area */}
             <div
               ref={resultsContainerRef}
-              className={cn("flex-1 overflow-y-auto overscroll-contain p-6", isDarkMode ? "bg-gray-900" : "bg-white")}
+              className={cn("flex-1 overflow-y-auto p-6", isDarkMode ? "bg-gray-900" : "bg-white")}
             >
               {/* Search Results */}
               {searchTerm && (
@@ -564,10 +448,7 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
                             "flex flex-col items-center justify-center p-3 rounded-lg transition-colors",
                             isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100",
                           )}
-                          onClick={() => {
-                            setInternalIsOpen(false)
-                            onClose()
-                          }}
+                          onClick={onClose}
                         >
                           <div className="relative w-12 h-12 mb-2 rounded-lg overflow-hidden">
                             <Image
@@ -596,15 +477,7 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {(searchTerm ? groupedItems.screens : filteredItems.filter((item) => item.type === "screen")).map(
                       (item) => (
-                        <Link
-                          key={item.id}
-                          href={item.href}
-                          className="group"
-                          onClick={() => {
-                            setInternalIsOpen(false)
-                            onClose()
-                          }}
-                        >
+                        <Link key={item.id} href={item.href} className="group" onClick={onClose}>
                           <div
                             className={cn(
                               "relative aspect-[4/3] rounded-lg overflow-hidden mb-2 border group-hover:border-blue-500 transition-colors",
@@ -642,15 +515,7 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {(searchTerm ? groupedItems.pages : filteredItems.filter((item) => item.type === "page")).map(
                       (item) => (
-                        <Link
-                          key={item.id}
-                          href={item.href}
-                          className="group"
-                          onClick={() => {
-                            setInternalIsOpen(false)
-                            onClose()
-                          }}
-                        >
+                        <Link key={item.id} href={item.href} className="group" onClick={onClose}>
                           <div
                             className={cn(
                               "relative aspect-[4/3] rounded-lg overflow-hidden mb-2 border group-hover:border-blue-500 transition-colors",
