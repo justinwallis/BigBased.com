@@ -7,6 +7,25 @@ import { preloadNextImages } from "@/utils/image-preloader"
 import OptimizedImage from "./optimized-image"
 import { useImagePreloader } from "@/hooks/use-image-preloader"
 
+// Add text shadow styles
+const textShadowStyles = `
+  .text-shadow-container h2 {
+    text-shadow: 0 1px 3px rgba(255, 255, 255, 0.3);
+  }
+  
+  .text-shadow-container p {
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.25);
+  }
+  
+  .dark .text-shadow-container h2 {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+  
+  .dark .text-shadow-container p {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  }
+`
+
 // Define the hero section data
 const heroSections = [
   {
@@ -425,6 +444,25 @@ export default function HeroCarousel() {
     }
   }
 
+  // Add style tag for text shadows
+  useEffect(() => {
+    // Create style element if it doesn't exist
+    if (!document.getElementById("hero-text-shadow-styles")) {
+      const styleEl = document.createElement("style")
+      styleEl.id = "hero-text-shadow-styles"
+      styleEl.innerHTML = textShadowStyles
+      document.head.appendChild(styleEl)
+    }
+
+    // Clean up on unmount
+    return () => {
+      const styleEl = document.getElementById("hero-text-shadow-styles")
+      if (styleEl) {
+        styleEl.remove()
+      }
+    }
+  }, [])
+
   return (
     <section
       ref={sectionRef}
@@ -620,7 +658,7 @@ export default function HeroCarousel() {
               <div className="flex w-full h-full items-center flex-col md:flex-row">
                 {/* Text Section - 1/3 width on desktop, full width on mobile */}
                 <div
-                  className="w-full md:w-1/3 pr-0 md:pr-8 mb-6 md:mb-0 relative z-20"
+                  className="w-full md:w-1/3 pr-0 md:pr-8 mb-6 md:mb-0 relative z-20 text-shadow-container"
                   style={{ marginTop: windowWidth < 768 ? "-80px" : "-40px" }}
                 >
                   <p className="text-lg mb-2 text-gray-700 dark:text-gray-300">{hero.subtitle}</p>
