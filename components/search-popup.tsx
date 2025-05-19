@@ -319,42 +319,26 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
     }
   }, [internalIsOpen])
 
-  // Prevent scroll events from closing the popup
+  // Handle clicks outside the popup to close it
   useEffect(() => {
-    if (!internalIsOpen) return
+    const handleClickOutside = (event: MouseEvent) => {
+      // Only process if popup is open
+      if (!internalIsOpen) return
 
-    const handleWheel = (e: WheelEvent) => {
-      // Check if the event target is inside the popup
-      if (popupRef.current && popupRef.current.contains(e.target as Node)) {
-        // Don't do anything special, just let the scroll happen within the popup
-        return
+      // Check if click is outside the popup
+      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
+        setInternalIsOpen(false)
+        onClose()
       }
-
-      // If we're here, the wheel event is outside the popup, so prevent it
-      e.preventDefault()
     }
 
-    const handleTouchMove = (e: TouchEvent) => {
-      // Check if the event target is inside the popup
-      if (popupRef.current && popupRef.current.contains(e.target as Node)) {
-        // Don't do anything special, just let the touch move happen within the popup
-        return
-      }
-
-      // If we're here, the touch move is outside the popup, so prevent it
-      e.preventDefault()
-    }
-
-    // Add event listeners to the document
-    document.addEventListener("wheel", handleWheel, { passive: false })
-    document.addEventListener("touchmove", handleTouchMove, { passive: false })
+    // Add event listener with capture phase to ensure it runs before other handlers
+    document.addEventListener("mousedown", handleClickOutside, true)
 
     return () => {
-      // Clean up event listeners
-      document.removeEventListener("wheel", handleWheel)
-      document.removeEventListener("touchmove", handleTouchMove)
+      document.removeEventListener("mousedown", handleClickOutside, true)
     }
-  }, [internalIsOpen])
+  }, [internalIsOpen, onClose])
 
   // Search functionality
   const filteredItems = useMemo(() => {
@@ -408,7 +392,7 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
   if (!internalIsOpen) return null
 
   const handleBackdropClick = (e: React.MouseEvent) => {
-    // Only close if the click is directly on the backdrop
+    // Ensure this is a direct click on the backdrop, not bubbled from children
     if (e.target === e.currentTarget) {
       setInternalIsOpen(false)
       onClose()
@@ -416,7 +400,25 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center" onClick={handleBackdropClick}>
+    <div
+      className="fixed inset-0 z-[300] flex items-center justify-center"
+      onWheel={(e) => e.stopPropagation()}
+      onTouchMove={(e) => {
+        // Only prevent default if we're at the boundary
+        const scrollContainer = resultsContainerRef.current
+        if (scrollContainer) {
+          const { scrollTop, scrollHeight, clientHeight } = scrollContainer
+          // At the top and trying to scroll up, or at the bottom and trying to scroll down
+          if (
+            (scrollTop <= 0 && e.touches[0].clientY > 0) ||
+            (scrollTop + clientHeight >= scrollHeight && e.touches[0].clientY < 0)
+          ) {
+            e.preventDefault()
+          }
+        }
+      }}
+      onClick={handleBackdropClick}
+    >
       {/* Backdrop */}
       <div className={cn("absolute inset-0 backdrop-blur-sm", isDarkMode ? "bg-black/70" : "bg-gray-500/30")} />
 

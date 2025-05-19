@@ -452,7 +452,10 @@ export default function ClientPage() {
     }
   }, [])
 
-  const handleSearchClick = () => {
+  const handleSearchClick = (e) => {
+    // Prevent event from bubbling up to parent elements
+    e.preventDefault()
+    e.stopPropagation()
     setIsSearchPopupOpen(true)
   }
 
@@ -462,27 +465,25 @@ export default function ClientPage() {
       window.openSearchPopup = () => setIsSearchPopupOpen(true)
     }
 
-    // Add keyboard shortcut for search (press '/' to open search)
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Only trigger if not in an input field or textarea
-      if (
-        e.key === "/" &&
-        document.activeElement?.tagName !== "INPUT" &&
-        document.activeElement?.tagName !== "TEXTAREA"
-      ) {
+    return () => {
+      if (typeof window !== "undefined") {
+        window.openSearchPopup = undefined
+      }
+    }
+  }, [])
+
+  // Add keyboard shortcut for search (press '/' to open search)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Open search when '/' is pressed, but not when in an input field
+      if (e.key === "/" && !["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName)) {
         e.preventDefault()
         setIsSearchPopupOpen(true)
       }
     }
 
     window.addEventListener("keydown", handleKeyDown)
-
-    return () => {
-      if (typeof window !== "undefined") {
-        window.openSearchPopup = undefined
-      }
-      window.removeEventListener("keydown", handleKeyDown)
-    }
+    return () => window.removeEventListener("keydown", handleKeyDown)
   }, [])
 
   // Hide content until loaded to prevent flash
@@ -546,14 +547,10 @@ export default function ClientPage() {
           <ThemeToggle />
           <button
             data-search-trigger="true"
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors duration-200 group relative"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors duration-200"
             onClick={handleSearchClick}
-            aria-label="Search (Press / to search)"
           >
             <Search className="h-5 w-5 dark:text-white" />
-            <span className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-              Press / to search
-            </span>
           </button>
           <button className="bg-black dark:bg-white text-white dark:text-black px-6 py-2 rounded-full font-medium transition-all duration-300 hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 hover:shadow-md">
             Join
