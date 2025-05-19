@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import LoginForm from "./login-form"
 import SignupForm from "./signup-form"
@@ -19,14 +19,9 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[425px] shadow-2xl border-0">
-        <div className="flex justify-center mb-4">
-          <Image src="/bb-logo.png" alt="Big Based Logo" width={80} height={80} className="mt-2" />
+        <div className="flex justify-center my-4">
+          <Image src="/bb-logo.png" alt="Big Based Logo" width={100} height={100} />
         </div>
-        <DialogHeader>
-          <DialogTitle className="text-center text-2xl font-bold">
-            {activeTab === "login" ? "Welcome Back" : "Join BigBased"}
-          </DialogTitle>
-        </DialogHeader>
         <Tabs defaultValue={defaultTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger
