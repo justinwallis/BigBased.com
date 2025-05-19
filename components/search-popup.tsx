@@ -240,6 +240,7 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
   const [internalIsOpen, setInternalIsOpen] = useState(isOpen)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const resultsContainerRef = useRef<HTMLDivElement>(null)
+  const popupRef = useRef<HTMLDivElement>(null)
   const { theme } = useTheme()
   const { isMobile } = useMobile()
   const isDarkMode = theme === "dark"
@@ -303,6 +304,58 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
     return () => window.removeEventListener("keydown", handleEsc)
   }, [onClose])
 
+  // Prevent body scrolling when popup is open
+  useEffect(() => {
+    if (internalIsOpen) {
+      // Save the current overflow style
+      const originalOverflow = document.body.style.overflow
+      // Prevent scrolling on the body
+      document.body.style.overflow = "hidden"
+
+      // Restore original overflow when component unmounts or popup closes
+      return () => {
+        document.body.style.overflow = originalOverflow
+      }
+    }
+  }, [internalIsOpen])
+
+  // Prevent scroll events from closing the popup
+  useEffect(() => {
+    if (!internalIsOpen) return
+
+    const handleWheel = (e: WheelEvent) => {
+      // Check if the event target is inside the popup
+      if (popupRef.current && popupRef.current.contains(e.target as Node)) {
+        // Don't do anything special, just let the scroll happen within the popup
+        return
+      }
+
+      // If we're here, the wheel event is outside the popup, so prevent it
+      e.preventDefault()
+    }
+
+    const handleTouchMove = (e: TouchEvent) => {
+      // Check if the event target is inside the popup
+      if (popupRef.current && popupRef.current.contains(e.target as Node)) {
+        // Don't do anything special, just let the touch move happen within the popup
+        return
+      }
+
+      // If we're here, the touch move is outside the popup, so prevent it
+      e.preventDefault()
+    }
+
+    // Add event listeners to the document
+    document.addEventListener("wheel", handleWheel, { passive: false })
+    document.addEventListener("touchmove", handleTouchMove, { passive: false })
+
+    return () => {
+      // Clean up event listeners
+      document.removeEventListener("wheel", handleWheel)
+      document.removeEventListener("touchmove", handleTouchMove)
+    }
+  }, [internalIsOpen])
+
   // Search functionality
   const filteredItems = useMemo(() => {
     if (!searchTerm.trim()) {
@@ -354,19 +407,22 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
 
   if (!internalIsOpen) return null
 
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    // Only close if the click is directly on the backdrop
+    if (e.target === e.currentTarget) {
+      setInternalIsOpen(false)
+      onClose()
+    }
+  }
+
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center">
+    <div className="fixed inset-0 z-[300] flex items-center justify-center" onClick={handleBackdropClick}>
       {/* Backdrop */}
-      <div
-        className={cn("absolute inset-0 backdrop-blur-sm", isDarkMode ? "bg-black/70" : "bg-gray-500/30")}
-        onClick={() => {
-          setInternalIsOpen(false)
-          onClose()
-        }}
-      />
+      <div className={cn("absolute inset-0 backdrop-blur-sm", isDarkMode ? "bg-black/70" : "bg-gray-500/30")} />
 
       {/* Search Popup */}
       <div
+        ref={popupRef}
         className={cn(
           "relative w-full max-w-4xl h-[85vh] rounded-lg shadow-2xl overflow-hidden flex flex-col",
           isDarkMode ? "bg-gray-900" : "bg-white",
@@ -462,7 +518,7 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
             {/* Scrollable Results Area */}
             <div
               ref={resultsContainerRef}
-              className={cn("flex-1 overflow-y-auto p-6", isDarkMode ? "bg-gray-900" : "bg-white")}
+              className={cn("flex-1 overflow-y-auto overscroll-contain p-6", isDarkMode ? "bg-gray-900" : "bg-white")}
             >
               {/* Search Results */}
               {searchTerm && (
