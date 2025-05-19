@@ -3,7 +3,7 @@
 import { useAuth } from "@/contexts/auth-context"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import dynamic from "next/dynamic"
 import Image from "next/image"
 import { useTheme } from "next-themes"
@@ -16,11 +16,33 @@ export default function GlobalAuthModal() {
   const { showAuthModal, setShowAuthModal, currentAuthTab, setAuthTab } = useAuth()
   const [isMounted, setIsMounted] = useState(false)
   const { theme } = useTheme()
+  const dialogContentRef = useRef<HTMLDivElement>(null)
 
   // Only render on client side
   useEffect(() => {
     setIsMounted(true)
   }, [])
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (showAuthModal) {
+      // Save current scroll position
+      const scrollY = window.scrollY
+
+      // Add styles to prevent body scroll
+      document.body.style.position = "fixed"
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.width = "100%"
+
+      return () => {
+        // Restore scroll position when modal closes
+        document.body.style.position = ""
+        document.body.style.top = ""
+        document.body.style.width = ""
+        window.scrollTo(0, scrollY)
+      }
+    }
+  }, [showAuthModal])
 
   if (!isMounted) {
     return null
@@ -28,8 +50,15 @@ export default function GlobalAuthModal() {
 
   return (
     <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader className="flex flex-col items-center space-y-2">
+      <DialogContent
+        ref={dialogContentRef}
+        className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto"
+        onScroll={(e) => {
+          // Prevent event propagation to avoid scrolling the body
+          e.stopPropagation()
+        }}
+      >
+        <DialogHeader className="flex flex-col items-center space-y-2 sticky top-0 bg-background z-10 pt-6 pb-2">
           <div className="flex justify-center w-full mb-2">
             <Image
               src="/BigBasedIconInvert.png"
@@ -58,14 +87,14 @@ export default function GlobalAuthModal() {
           onValueChange={(value) => setAuthTab(value as "login" | "signup")}
           className="w-full"
         >
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-2 sticky top-[132px] z-10 bg-background">
             <TabsTrigger value="login">Login</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
-          <TabsContent value="login">
+          <TabsContent value="login" className="pb-6">
             <LoginForm onSuccess={() => setShowAuthModal(false)} />
           </TabsContent>
-          <TabsContent value="signup">
+          <TabsContent value="signup" className="pb-6">
             <SignupForm
               onSuccess={() => {
                 setAuthTab("login")
