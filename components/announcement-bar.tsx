@@ -156,3 +156,6 @@ export function AnnouncementBar() {
     </div>
   )
 }
+
+// Add default export to support both import styles
+export default AnnouncementBar
