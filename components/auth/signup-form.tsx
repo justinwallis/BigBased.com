@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { createProfile } from "@/app/actions/profile-actions"
 import { Checkbox } from "@/components/ui/checkbox"
 import Script from "next/script"
+import VerificationCodeInput from "./verification-code-input"
 
 interface SignupFormProps {
   onSuccess?: () => void
@@ -43,6 +44,10 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
   const [recaptchaVerified, setRecaptchaVerified] = useState(false)
   const recaptchaRef = useRef<HTMLDivElement>(null)
   const recaptchaWidgetId = useRef<number | null>(null)
+
+  // New state for verification step
+  const [showVerification, setShowVerification] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
 
   // Password requirements
   const [passwordRequirements, setPasswordRequirements] = useState({
@@ -143,11 +148,9 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
           // Continue anyway, as the auth was successful
         }
 
-        setSuccess(true)
-
-        if (onSuccess) {
-          onSuccess()
-        }
+        // Instead of immediately showing success, show verification step
+        setUserId(data.user.id)
+        setShowVerification(true)
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.")
@@ -155,6 +158,47 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Handle verification code submission
+  const handleVerifyCode = async (code: string) => {
+    // This would call your API to verify the code
+    // For now, we'll simulate a successful verification
+    return new Promise<{ success: boolean; message?: string }>((resolve) => {
+      setTimeout(() => {
+        if (code === "123456") {
+          // In a real app, you'd verify against your backend
+          setSuccess(true)
+          resolve({ success: true })
+        } else {
+          resolve({ success: false, message: "Invalid verification code. Please try again." })
+        }
+      }, 1000)
+    })
+  }
+
+  // Handle resending verification code
+  const handleResendCode = async () => {
+    // This would call your API to resend the verification code
+    // For now, we'll simulate a successful resend
+    return new Promise<{ success: boolean; message?: string }>((resolve) => {
+      setTimeout(() => {
+        resolve({ success: true, message: "Verification code sent!" })
+      }, 1000)
+    })
+  }
+
+  // If showing verification step, render the verification component
+  if (showVerification) {
+    return (
+      <VerificationCodeInput
+        email={email}
+        onVerify={handleVerifyCode}
+        onResendCode={handleResendCode}
+        onSuccess={onSuccess}
+        onCancel={() => setShowVerification(false)}
+      />
+    )
   }
 
   return (

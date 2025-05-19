@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AlertCircle, CheckCircle2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import VerificationCodeInput from "./verification-code-input"
 
 interface LoginFormProps {
   onSuccess?: () => void
@@ -20,6 +21,10 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+
+  // New state for verification step
+  const [showVerification, setShowVerification] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,12 +39,23 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
         return
       }
 
-      setSuccess(true)
+      // Check if email verification is required
+      // This is a simulated check - in a real app, your backend would tell you if verification is needed
+      const needsVerification = Math.random() > 0.5 // Simulate 50% chance of needing verification
 
-      if (onSuccess) {
-        setTimeout(() => {
-          onSuccess()
-        }, 500) // Small delay for better UX
+      if (needsVerification) {
+        // Show verification step
+        setUserId(data?.user?.id || null)
+        setShowVerification(true)
+      } else {
+        // No verification needed, proceed with success
+        setSuccess(true)
+
+        if (onSuccess) {
+          setTimeout(() => {
+            onSuccess()
+          }, 500) // Small delay for better UX
+        }
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.")
@@ -47,6 +63,47 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Handle verification code submission
+  const handleVerifyCode = async (code: string) => {
+    // This would call your API to verify the code
+    // For now, we'll simulate a successful verification
+    return new Promise<{ success: boolean; message?: string }>((resolve) => {
+      setTimeout(() => {
+        if (code === "123456") {
+          // In a real app, you'd verify against your backend
+          setSuccess(true)
+          resolve({ success: true })
+        } else {
+          resolve({ success: false, message: "Invalid verification code. Please try again." })
+        }
+      }, 1000)
+    })
+  }
+
+  // Handle resending verification code
+  const handleResendCode = async () => {
+    // This would call your API to resend the verification code
+    // For now, we'll simulate a successful resend
+    return new Promise<{ success: boolean; message?: string }>((resolve) => {
+      setTimeout(() => {
+        resolve({ success: true, message: "Verification code sent!" })
+      }, 1000)
+    })
+  }
+
+  // If showing verification step, render the verification component
+  if (showVerification) {
+    return (
+      <VerificationCodeInput
+        email={email}
+        onVerify={handleVerifyCode}
+        onResendCode={handleResendCode}
+        onSuccess={onSuccess}
+        onCancel={() => setShowVerification(false)}
+      />
+    )
   }
 
   return (
