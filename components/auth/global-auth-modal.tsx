@@ -1,12 +1,13 @@
 "use client"
 
 import { useAuth } from "@/contexts/auth-context"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useEffect, useState, useRef } from "react"
 import dynamic from "next/dynamic"
 import Image from "next/image"
 import { useTheme } from "next-themes"
+import { X } from "lucide-react"
 
 // Dynamically import forms to avoid SSR issues
 const LoginForm = dynamic(() => import("./login-form"), { ssr: false })
@@ -58,6 +59,10 @@ export default function GlobalAuthModal() {
           e.stopPropagation()
         }}
       >
+        <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-20 dark:text-white">
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </DialogClose>
         <DialogHeader className="flex flex-col items-center space-y-2 sticky top-0 bg-background z-10 pt-6 pb-2">
           <div className="flex justify-center w-full mb-2">
             <Image
