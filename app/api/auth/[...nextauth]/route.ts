@@ -1,7 +1,11 @@
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
+import { createClient } from "@supabase/supabase-js"
+
+// Initialize Supabase client
+const supabaseUrl = process.env.SUPABASE_URL || ""
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 const handler = NextAuth({
   providers: [
@@ -16,21 +20,25 @@ const handler = NextAuth({
           return null
         }
 
-        const supabase = createServerComponentClient({ cookies })
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: credentials.email,
+            password: credentials.password,
+          })
 
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: credentials.email,
-          password: credentials.password,
-        })
+          if (error || !data.user) {
+            console.error("Supabase auth error:", error)
+            return null
+          }
 
-        if (error || !data.user) {
+          return {
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.email,
+          }
+        } catch (error) {
+          console.error("NextAuth authorize error:", error)
           return null
-        }
-
-        return {
-          id: data.user.id,
-          email: data.user.email,
-          name: data.user.email,
         }
       },
     }),
@@ -55,7 +63,10 @@ const handler = NextAuth({
   },
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
+  secret: process.env.NEXTAUTH_SECRET || "your-secret-key-change-in-production",
+  debug: process.env.NODE_ENV === "development",
 })
 
 export { handler as GET, handler as POST }

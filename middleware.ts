@@ -1,52 +1,56 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { getToken } from "next-auth/jwt"
 
-export function middleware(request: NextRequest) {
-  // Clone the request headers
-  const requestHeaders = new Headers(request.headers)
+export async function middleware(request: NextRequest) {
+  // Get the pathname of the request
+  const path = request.nextUrl.pathname
 
-  // Add the full URL as a custom header
-  requestHeaders.set("x-url", request.url)
+  // Public paths that don't require authentication
+  const isPublicPath =
+    path === "/" ||
+    path === "/about" ||
+    path === "/features" ||
+    path === "/partners" ||
+    path === "/contact" ||
+    path === "/transform" ||
+    path === "/faq" ||
+    path === "/revolution" ||
+    path.startsWith("/api/auth")
 
-  // Check if the request is for a debug page
-  if (
-    request.nextUrl.pathname === "/debug" ||
-    request.nextUrl.pathname.startsWith("/debug/") ||
-    request.nextUrl.pathname === "/debug-static" ||
-    request.nextUrl.pathname.startsWith("/debug-static/")
-  ) {
-    // We can add special headers for debug pages if needed
-    const headers = new Headers(requestHeaders)
-    headers.set("x-debug-mode", "true")
+  // Check if the user is authenticated
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+  })
 
-    return NextResponse.next({
-      request: {
-        headers,
-      },
-    })
+  const isAuthenticated = !!token
+
+  // If it's a protected path and the user is not authenticated,
+  // redirect to the home page
+  if (!isPublicPath && !isAuthenticated) {
+    return NextResponse.redirect(new URL("/", request.url))
   }
 
-  // Return the response with the modified headers
-  return NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
-  })
+  // If it's the login page and the user is authenticated,
+  // redirect to the profile page
+  if (path === "/login" && isAuthenticated) {
+    return NextResponse.redirect(new URL("/profile", request.url))
+  }
+
+  return NextResponse.next()
 }
 
+// See "Matching Paths" below to learn more
 export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - public (public files)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
-    "/debug",
-    "/debug/:path*",
-    "/debug-static",
-    "/debug-static/:path*",
+    "/((?!_next/static|_next/image|favicon.ico|public|.*\\.png$|.*\\.jpg$|.*\\.svg$|.*\\.ico$).*)",
   ],
 }
