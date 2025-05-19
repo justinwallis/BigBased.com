@@ -311,7 +311,11 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center">
+    <div
+      className="fixed inset-0 z-[100] flex items-start justify-center pt-[5vh]"
+      onClick={onClose}
+      onWheel={(e) => e.stopPropagation()}
+    >
       {/* Backdrop */}
       <div
         className={cn("absolute inset-0 backdrop-blur-sm", isDarkMode ? "bg-black/70" : "bg-gray-500/30")}
@@ -413,6 +417,42 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
             <div
               ref={resultsContainerRef}
               className={cn("flex-1 overflow-y-auto p-6", isDarkMode ? "bg-gray-900" : "bg-white")}
+              onWheel={(e) => {
+                const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
+                const isAtTop = scrollTop === 0
+                const isAtBottom = Math.abs(scrollTop + clientHeight - scrollHeight) < 2
+
+                // Only stop propagation at boundaries, don't prevent default
+                if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
+                  e.stopPropagation()
+                }
+              }}
+              onTouchStart={(e) => {
+                const target = e.currentTarget
+                const isAtTop = target.scrollTop === 0
+                const isAtBottom = target.scrollTop + target.clientHeight >= target.scrollHeight - 1
+
+                // Store the initial touch position and scroll state
+                target.dataset.touchStartY = e.touches[0].clientY.toString()
+                target.dataset.isAtTop = isAtTop.toString()
+                target.dataset.isAtBottom = isAtBottom.toString()
+              }}
+              onTouchMove={(e) => {
+                const target = e.currentTarget
+                const touchY = e.touches[0].clientY
+                const startY = Number.parseFloat(target.dataset.touchStartY || "0")
+                const isAtTop = target.dataset.isAtTop === "true"
+                const isAtBottom = target.dataset.isAtBottom === "true"
+
+                // Determine scroll direction
+                const isScrollingUp = touchY > startY
+                const isScrollingDown = touchY < startY
+
+                // Only stop propagation at boundaries
+                if ((isAtTop && isScrollingUp) || (isAtBottom && isScrollingDown)) {
+                  e.stopPropagation()
+                }
+              }}
             >
               {/* Search Results */}
               {searchTerm && (

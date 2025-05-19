@@ -205,6 +205,9 @@ export default function SideMenu({
     }
   }, [])
 
+  // Prevent scroll propagation to the main page
+  // Remove this entire useEffect block:
+
   return (
     <>
       {/* Hamburger Button - Fixed positioning with improved stickiness */}
@@ -299,7 +302,20 @@ export default function SideMenu({
           </div>
         </div>
 
-        <div className="flex-grow overflow-y-auto custom-scrollbar p-6">
+        <div
+          className="flex-grow overflow-y-auto custom-scrollbar p-6"
+          onWheel={(e) => {
+            const target = e.currentTarget
+            const { scrollTop, scrollHeight, clientHeight } = target
+            const isAtTop = scrollTop === 0
+            const isAtBottom = Math.abs(scrollTop + clientHeight - scrollHeight) < 2
+
+            // Only prevent default when at boundaries to stop propagation
+            if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
+              e.stopPropagation()
+            }
+          }}
+        >
           <nav className="mb-8">
             <ul className="space-y-4">
               <li>
