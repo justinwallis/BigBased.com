@@ -55,8 +55,8 @@ export function AnnouncementBar() {
   const currentAnnouncement = announcements[currentIndex]
 
   return (
-    <div className="w-full bg-gradient-to-r from-black via-gray-900 to-black dark:bg-black text-white py-1 px-4">
-      <div className="container mx-auto flex items-center justify-between">
+    <div className="w-full bg-black dark:bg-black text-white py-1 px-4 [background-image:none!important]">
+      <div className="container mx-auto flex items-center justify-between [background-image:none!important]">
         {announcements.length > 1 && (
           <button
             onClick={goToPrev}
