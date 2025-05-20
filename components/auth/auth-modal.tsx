@@ -18,9 +18,20 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
   const [previousTab, setPreviousTab] = useState<string>(defaultTab)
   const [isTransitioning, setIsTransitioning] = useState(false)
 
+  // Debug logging
+  useEffect(() => {
+    console.log("AuthModal mounted, isOpen:", isOpen)
+  }, [])
+
+  // Log when modal state changes
+  useEffect(() => {
+    console.log("Auth modal isOpen changed:", isOpen)
+  }, [isOpen])
+
   // Handle tab changes with animation
   const handleTabChange = (value: string) => {
     if (value !== activeTab && !isTransitioning) {
+      console.log("Changing tab to:", value)
       setIsTransitioning(true)
       setPreviousTab(activeTab)
       setActiveTab(value)
