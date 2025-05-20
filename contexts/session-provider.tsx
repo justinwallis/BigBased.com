@@ -1,76 +1,68 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useState, useEffect } from "react"
-import { useAuth } from "./auth-context"
 
-// Define the session types to match NextAuth's interface
-type Session = {
-  user: {
-    name?: string
-    email?: string
-    image?: string
-    id?: string
-  } | null
-  expires: string
+import { createContext, useContext, useEffect, useState } from "react"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import type { Session, User } from "@supabase/supabase-js"
+
+type SessionContextType = {
+  session: Session | null
+  user: User | null
+  isLoading: boolean
 }
 
-type SessionContextValue = {
-  data: Session | null
-  status: "loading" | "authenticated" | "unauthenticated"
-  update: (data?: Session | null) => Promise<Session | null>
-}
-
-// Create the session context
-const SessionContext = createContext<SessionContextValue>({
-  data: null,
-  status: "loading",
-  update: async () => null,
+const SessionContext = createContext<SessionContextType>({
+  session: null,
+  user: null,
+  isLoading: true,
 })
 
-// Create the SessionProvider component
-export function SessionProvider({ children }: { children: React.ReactNode }) {
-  const { user, isLoading } = useAuth()
-  const [session, setSession] = useState<Session | null>(null)
-  const [status, setStatus] = useState<"loading" | "authenticated" | "unauthenticated">("loading")
-
-  // Update session based on Supabase auth
-  useEffect(() => {
-    if (isLoading) {
-      setStatus("loading")
-    } else if (user) {
-      const newSession: Session = {
-        user: {
-          id: user.id,
-          email: user.email,
-        },
-        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
-      }
-      setSession(newSession)
-      setStatus("authenticated")
-    } else {
-      setSession(null)
-      setStatus("unauthenticated")
-    }
-  }, [user, isLoading])
-
-  // Mock update function
-  const update = async (data?: Session | null) => {
-    if (data) {
-      setSession(data)
-      return data
-    }
-    return session
-  }
-
-  return <SessionContext.Provider value={{ data: session, status, update }}>{children}</SessionContext.Provider>
+export function useSession() {
+  return useContext(SessionContext)
 }
 
-// Create a useSession hook that matches NextAuth's interface
-export function useSession() {
-  const context = useContext(SessionContext)
-  if (context === undefined) {
-    throw new Error("useSession must be used within a SessionProvider")
-  }
-  return context
+export function SessionProvider({ children }: { children: React.ReactNode }) {
+  const [session, setSession] = useState<Session | null>(null)
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const supabase = createClientComponentClient()
+
+  useEffect(() => {
+    async function getSession() {
+      setIsLoading(true)
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession()
+        if (error) {
+          console.error("Error getting session:", error)
+        } else {
+          setSession(session)
+          setUser(session?.user ?? null)
+        }
+      } catch (error) {
+        console.error("Unexpected error getting session:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    getSession()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+      setUser(session?.user ?? null)
+      setIsLoading(false)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [supabase])
+
+  return <SessionContext.Provider value={{ session, user, isLoading }}>{children}</SessionContext.Provider>
 }

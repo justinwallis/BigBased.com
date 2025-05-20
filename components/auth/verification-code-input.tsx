@@ -4,8 +4,8 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 
 interface VerificationCodeInputProps {
-  length?: number
-  onChange?: (code: string) => void
+  length: number
+  onChange: (code: string) => void
   onComplete?: (code: string) => void
   inputMode?: "numeric" | "text"
   disabled?: boolean
@@ -13,12 +13,10 @@ interface VerificationCodeInputProps {
   inputClassName?: string
   containerClassName?: string
   autoFocus?: boolean
-  email?: string
-  onSuccess?: () => void
 }
 
-export const VerificationCodeInput: React.FC<VerificationCodeInputProps> = ({
-  length = 6,
+const VerificationCodeInput: React.FC<VerificationCodeInputProps> = ({
+  length,
   onChange,
   onComplete,
   inputMode = "numeric",
@@ -27,8 +25,6 @@ export const VerificationCodeInput: React.FC<VerificationCodeInputProps> = ({
   inputClassName = "",
   containerClassName = "",
   autoFocus = true,
-  email,
-  onSuccess,
 }) => {
   const [code, setCode] = useState(Array(length).fill(""))
   const inputRefs = useRef<Array<HTMLInputElement | null>>([])
@@ -43,10 +39,7 @@ export const VerificationCodeInput: React.FC<VerificationCodeInputProps> = ({
     const newCode = [...code]
     newCode[index] = value
     setCode(newCode)
-
-    if (onChange) {
-      onChange(newCode.join(""))
-    }
+    onChange(newCode.join(""))
 
     if (value && index < length - 1) {
       inputRefs.current[index + 1]?.focus()
@@ -82,3 +75,5 @@ export const VerificationCodeInput: React.FC<VerificationCodeInputProps> = ({
     </div>
   )
 }
+
+export default VerificationCodeInput

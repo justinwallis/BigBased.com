@@ -1,34 +1,56 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs"
+import { getToken } from "next-auth/jwt"
 
 export async function middleware(request: NextRequest) {
-  try {
-    // Create a Supabase client configured to use cookies
-    const res = NextResponse.next()
-    const supabase = createMiddlewareClient({ req: request, res })
+  // Get the pathname of the request
+  const path = request.nextUrl.pathname
 
-    // Refresh session if expired - required for Server Components
-    await supabase.auth.getSession()
+  // Public paths that don't require authentication
+  const isPublicPath =
+    path === "/" ||
+    path === "/about" ||
+    path === "/features" ||
+    path === "/partners" ||
+    path === "/contact" ||
+    path === "/transform" ||
+    path === "/faq" ||
+    path === "/revolution" ||
+    path.startsWith("/api/auth")
 
-    return res
-  } catch (e) {
-    console.error("Middleware error:", e)
-    return NextResponse.next()
+  // Check if the user is authenticated
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+  })
+
+  const isAuthenticated = !!token
+
+  // If it's a protected path and the user is not authenticated,
+  // redirect to the home page
+  if (!isPublicPath && !isAuthenticated) {
+    return NextResponse.redirect(new URL("/", request.url))
   }
+
+  // If it's the login page and the user is authenticated,
+  // redirect to the profile page
+  if (path === "/login" && isAuthenticated) {
+    return NextResponse.redirect(new URL("/profile", request.url))
+  }
+
+  return NextResponse.next()
 }
 
-// Specify which routes use this middleware
+// See "Matching Paths" below to learn more
 export const config = {
   matcher: [
     /*
-     * Match all request paths except:
+     * Match all request paths except for the ones starting with:
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public (public files)
-     * - api routes
      */
-    "/((?!_next/static|_next/image|favicon.ico|public|api).*)",
+    "/((?!_next/static|_next/image|favicon.ico|public|.*\\.png$|.*\\.jpg$|.*\\.svg$|.*\\.ico$).*)",
   ],
 }

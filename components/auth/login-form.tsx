@@ -1,103 +1,82 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
-import { useAuth } from "@/contexts/auth-context"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
+import { logAuthEvent } from "@/app/actions/auth-log-actions"
+import { AUTH_EVENTS } from "@/app/constants/auth-log-constants"
 
-export const LoginForm = () => {
-  const [email, setEmail] = useState("")
+const LoginForm = () => {
+  const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const { signIn } = useAuth()
+  const [error, setError] = useState("")
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError(null)
-    setIsLoading(true)
 
     try {
-      const { error } = await signIn(email, password)
-
-      if (error) {
-        setError(error.message || "Failed to sign in")
-        return
+      // Simulate authentication (replace with actual authentication logic)
+      if (username === "test" && password === "password") {
+        // Successful login
+        await logAuthEvent(AUTH_EVENTS.LOGIN_SUCCESS, username)
+        router.push("/dashboard") // Redirect to dashboard
+      } else {
+        // Failed login
+        await logAuthEvent(AUTH_EVENTS.LOGIN_FAILED, username)
+        setError("Invalid username or password")
       }
-
-      // Redirect to home page or dashboard
-      router.push("/")
     } catch (err) {
-      setError("An unexpected error occurred")
-      console.error(err)
-    } finally {
-      setIsLoading(false)
+      console.error("Login error:", err)
+      setError("An error occurred during login.")
     }
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle>Login</CardTitle>
-        <CardDescription>Enter your credentials to access your account</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@example.com"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
-              <Link href="/forgot-password" className="text-sm text-blue-600 hover:text-blue-800">
-                Forgot password?
-              </Link>
-            </div>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Signing in..." : "Sign in"}
-          </Button>
-        </form>
-      </CardContent>
-      <CardFooter className="flex justify-center">
-        <p className="text-sm text-gray-600">
-          Don&apos;t have an account?{" "}
-          <Link href="/signup" className="text-blue-600 hover:text-blue-800">
-            Sign up
-          </Link>
-        </p>
-      </CardFooter>
-    </Card>
+    <form onSubmit={handleSubmit} className="max-w-sm mx-auto mt-10">
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+          <strong className="font-bold">Error!</strong>
+          <span className="block sm:inline">{error}</span>
+        </div>
+      )}
+      <div className="mb-4">
+        <label htmlFor="username" className="block text-gray-700 text-sm font-bold mb-2">
+          Username:
+        </label>
+        <input
+          type="text"
+          id="username"
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+      </div>
+      <div className="mb-6">
+        <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">
+          Password:
+        </label>
+        <input
+          type="password"
+          id="password"
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+      </div>
+      <div className="flex items-center justify-between">
+        <button
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          type="submit"
+        >
+          Sign In
+        </button>
+        <a className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800" href="#">
+          Forgot Password?
+        </a>
+      </div>
+    </form>
   )
 }
 
-// Also export as default for compatibility
 export default LoginForm

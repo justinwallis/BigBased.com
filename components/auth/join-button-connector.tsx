@@ -4,33 +4,33 @@ import { useEffect, useState } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
 
-const JoinButtonConnector = () => {
+export default function JoinButtonConnector() {
   const router = useRouter()
-  const { setShowAuthModal, setAuthTab } = useAuth()
-  const [isInitialized, setIsInitialized] = useState(false)
+  const [authContext, setAuthContext] = useState<{
+    setShowAuthModal: ((show: boolean) => void) | undefined
+    setAuthTab: ((tab: "login" | "signup") => void) | undefined
+  }>({ setShowAuthModal: undefined, setAuthTab: undefined })
+
+  useEffect(() => {
+    try {
+      const context = useAuth()
+      setAuthContext({ setShowAuthModal: context.setShowAuthModal, setAuthTab: context.setAuthTab })
+    } catch (error) {
+      console.warn("Auth context not available, join buttons will redirect to signup page")
+    }
+  }, [])
 
   useEffect(() => {
     try {
       // Function to find and modify join buttons
       const findAndModifyJoinButtons = () => {
-        console.log("Looking for join buttons...")
         // Find all buttons or links with text content containing "Join"
-        const joinButtons = Array.from(document.querySelectorAll("button, a")).filter((el) => {
-          const text = el.textContent?.trim().toLowerCase()
-          return text === "join" || text === "join now" || text === "sign up" || text === "signup"
-        })
-
-        console.log(`Found ${joinButtons.length} join buttons`)
+        const joinButtons = Array.from(document.querySelectorAll("button, a")).filter(
+          (el) => el.textContent?.trim().toLowerCase() === "join",
+        )
 
         // Modify each join button
         joinButtons.forEach((button) => {
-          // Skip if already processed
-          if (button.getAttribute("data-auth-connected") === "true") {
-            return
-          }
-
-          console.log("Connecting join button:", button)
-
           // Store original click handler
           const originalOnClick = button.onclick
 
@@ -38,11 +38,15 @@ const JoinButtonConnector = () => {
           button.onclick = (e) => {
             e.preventDefault()
             e.stopPropagation()
-            console.log("Join button clicked, opening auth modal")
 
-            // Open auth modal with signup tab
-            setAuthTab("signup")
-            setShowAuthModal(true)
+            if (authContext.setShowAuthModal && authContext.setAuthTab) {
+              // Open auth modal with signup tab if auth context is available
+              authContext.setAuthTab("signup")
+              authContext.setShowAuthModal(true)
+            } else {
+              // Fallback to redirect if auth context is not available
+              router.push("/auth/signup")
+            }
 
             // Optionally call original handler
             if (typeof originalOnClick === "function") {
@@ -57,11 +61,8 @@ const JoinButtonConnector = () => {
         })
       }
 
-      // Run initially after a short delay to ensure DOM is loaded
-      const initialTimer = setTimeout(() => {
-        findAndModifyJoinButtons()
-        setIsInitialized(true)
-      }, 1000)
+      // Run initially
+      setTimeout(findAndModifyJoinButtons, 1000)
 
       // Set up a MutationObserver to watch for DOM changes
       const observer = new MutationObserver((mutations) => {
@@ -79,22 +80,15 @@ const JoinButtonConnector = () => {
       // Start observing the document with the configured parameters
       observer.observe(document.body, { childList: true, subtree: true })
 
-      // Also run periodically to catch any buttons that might have been missed
-      const intervalTimer = setInterval(findAndModifyJoinButtons, 3000)
-
       // Cleanup
       return () => {
-        clearTimeout(initialTimer)
-        clearInterval(intervalTimer)
         observer.disconnect()
       }
     } catch (error) {
       console.error("Error in JoinButtonConnector:", error)
     }
-  }, [setShowAuthModal, setAuthTab])
+  }, [authContext.setShowAuthModal, authContext.setAuthTab, router])
 
   // This component doesn't render anything
   return null
 }
-
-export default JoinButtonConnector
