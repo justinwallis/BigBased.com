@@ -1,24 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
 
-export default function JoinButtonConnector() {
+const JoinButtonConnector = () => {
   const router = useRouter()
-  const [authContext, setAuthContext] = useState<{
-    setShowAuthModal: ((show: boolean) => void) | undefined
-    setAuthTab: ((tab: "login" | "signup") => void) | undefined
-  }>({ setShowAuthModal: undefined, setAuthTab: undefined })
-
-  useEffect(() => {
-    try {
-      const context = useAuth()
-      setAuthContext({ setShowAuthModal: context.setShowAuthModal, setAuthTab: context.setAuthTab })
-    } catch (error) {
-      console.warn("Auth context not available, join buttons will redirect to signup page")
-    }
-  }, [])
+  const { setShowAuthModal, setAuthTab } = useAuth()
 
   useEffect(() => {
     try {
@@ -39,14 +27,9 @@ export default function JoinButtonConnector() {
             e.preventDefault()
             e.stopPropagation()
 
-            if (authContext.setShowAuthModal && authContext.setAuthTab) {
-              // Open auth modal with signup tab if auth context is available
-              authContext.setAuthTab("signup")
-              authContext.setShowAuthModal(true)
-            } else {
-              // Fallback to redirect if auth context is not available
-              router.push("/auth/signup")
-            }
+            // Open auth modal with signup tab
+            setAuthTab("signup")
+            setShowAuthModal(true)
 
             // Optionally call original handler
             if (typeof originalOnClick === "function") {
@@ -87,8 +70,10 @@ export default function JoinButtonConnector() {
     } catch (error) {
       console.error("Error in JoinButtonConnector:", error)
     }
-  }, [authContext.setShowAuthModal, authContext.setAuthTab, router])
+  }, [setShowAuthModal, setAuthTab])
 
   // This component doesn't render anything
   return null
 }
+
+export default JoinButtonConnector

@@ -13,8 +13,8 @@ import { baseMetadata, viewportConfig } from "./metadata-config"
 import { getOrganizationData, getWebsiteData } from "@/lib/structured-data"
 import StructuredData from "@/components/structured-data"
 import { CookieConsent } from "@/components/cookie-consent"
-import { NextAuthProvider } from "@/contexts/next-auth-provider"
 import { AuthProvider } from "@/contexts/auth-context"
+import { NextAuthProvider } from "@/contexts/next-auth-provider"
 import AnnouncementBar from "@/components/announcement-bar"
 
 const inter = Inter({ subsets: ["latin"] })

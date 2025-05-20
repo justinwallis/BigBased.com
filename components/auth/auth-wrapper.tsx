@@ -2,27 +2,37 @@
 
 import type React from "react"
 
-import { useEffect } from "react"
-import { useSession } from "next-auth/react"
 import { useAuth } from "@/contexts/auth-context"
-import GlobalAuthModal from "./global-auth-modal"
-import JoinButtonConnector from "./join-button-connector"
+import { useSession } from "@/contexts/session-provider"
+import { useRouter, usePathname } from "next/navigation"
+import { useEffect, useState } from "react"
 
 export default function AuthWrapper({ children }: { children: React.ReactNode }) {
-  const { data: nextAuthSession } = useSession()
-  const { setShowAuthModal } = useAuth()
+  const { user, isLoading } = useAuth()
+  const session = useSession()
+  const router = useRouter()
+  const pathname = usePathname()
+  const [isAuthorized, setIsAuthorized] = useState(false)
 
-  // Sync NextAuth session with Supabase auth context if needed
+  // List of protected routes that require authentication
+  const protectedRoutes = ["/profile", "/dashboard", "/settings"]
+
   useEffect(() => {
-    // This is where you could sync the NextAuth session with Supabase if needed
-    // For now, we'll just keep them separate
-  }, [nextAuthSession])
+    // Check if the current path is a protected route
+    const isProtectedRoute = protectedRoutes.some((route) => pathname?.startsWith(route))
 
-  return (
-    <>
-      {children}
-      <GlobalAuthModal />
-      <JoinButtonConnector />
-    </>
-  )
+    // If it's a protected route and the user is not authenticated, redirect to login
+    if (isProtectedRoute && !isLoading && !user) {
+      router.push("/login")
+    } else {
+      setIsAuthorized(true)
+    }
+  }, [user, isLoading, pathname, router])
+
+  // Show nothing while checking authentication
+  if (!isAuthorized && protectedRoutes.some((route) => pathname?.startsWith(route))) {
+    return null
+  }
+
+  return <>{children}</>
 }

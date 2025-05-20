@@ -1,82 +1,138 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { useFormStatus } from "react-dom"
-import { register } from "@/app/actions/auth-actions"
-import { logAuthEvent } from "@/app/actions/auth-log-actions"
-import { AUTH_EVENTS, AUTH_STATUS } from "@/app/constants/auth-log-constants"
+import { useAuth } from "@/contexts/auth-context"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import Link from "next/link"
+import { VerificationCodeInput } from "./verification-code-input"
 
-interface State {
-  message: string | null
-}
+export const SignupForm = () => {
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [showVerification, setShowVerification] = useState(false)
+  const { signUp } = useAuth()
 
-const initialState: State = {
-  message: null,
-}
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
 
-export default function SignupForm() {
-  const [state, setState] = useState(initialState)
-  const router = useRouter()
+    // Validate passwords match
+    if (password !== confirmPassword) {
+      setError("Passwords do not match")
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      const { data, error } = await signUp(email, password)
+
+      if (error) {
+        setError(error.message || "Failed to sign up")
+        return
+      }
+
+      // If email confirmation is required
+      if (data?.user && !data.user.confirmed_at) {
+        setShowVerification(true)
+      }
+    } catch (err) {
+      setError("An unexpected error occurred")
+      console.error(err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (showVerification) {
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle>Verify your email</CardTitle>
+          <CardDescription>We've sent a verification code to {email}. Please enter it below.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <VerificationCodeInput
+            email={email}
+            onSuccess={() => {
+              // Handle successful verification
+              window.location.href = "/"
+            }}
+          />
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
-    <form
-      aria-labelledby="signup-title"
-      action={async (formData) => {
-        const result = await register(formData)
-        if (result?.error) {
-          setState({ message: result.error })
-          logAuthEvent(AUTH_EVENTS.SIGNUP_FAILED, AUTH_STATUS.FAILURE, result.error)
-        } else {
-          setState({ message: null })
-          router.push("/login")
-          logAuthEvent(AUTH_EVENTS.SIGNUP_SUCCESS, AUTH_STATUS.SUCCESS, "User signed up successfully")
-        }
-      }}
-    >
-      <h1 id="signup-title" className="text-2xl font-bold">
-        Sign Up
-      </h1>
-      {state?.message ? <p className="mt-2 text-red-500">{state?.message}</p> : null}
-      <div className="mt-4">
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-          Email
-        </label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-        />
-      </div>
-      <div className="mt-4">
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-          Password
-        </label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-        />
-      </div>
-      <SubmitButton />
-    </form>
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle>Create an account</CardTitle>
+        <CardDescription>Enter your details to create your account</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@example.com"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          </div>
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? "Creating account..." : "Create account"}
+          </Button>
+        </form>
+      </CardContent>
+      <CardFooter className="flex justify-center">
+        <p className="text-sm text-gray-600">
+          Already have an account?{" "}
+          <Link href="/login" className="text-blue-600 hover:text-blue-800">
+            Sign in
+          </Link>
+        </p>
+      </CardFooter>
+    </Card>
   )
 }
 
-function SubmitButton() {
-  const { pending } = useFormStatus()
-
-  return (
-    <button
-      type="submit"
-      aria-disabled={pending}
-      className="mt-4 w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-indigo-300"
-    >
-      {pending ? "Creating account..." : "Create account"}
-    </button>
-  )
-}
+// Also export as default for compatibility
+export default SignupForm
