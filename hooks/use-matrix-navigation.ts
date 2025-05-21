@@ -9,7 +9,7 @@ export function useMatrixNavigation() {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    // Create a style element for the matrix transition
+    // Create a style element for the matrix transition and page fade-in
     const styleElement = document.createElement("style")
     styleElement.textContent = `
       .matrix-transition {
@@ -53,6 +53,17 @@ export function useMatrixNavigation() {
       
       .matrix-canvas.fade-out {
         opacity: 0;
+      }
+      
+      /* Page fade-in styles */
+      .page-fade-in {
+        animation: fadeIn 0.6s ease-out forwards;
+        opacity: 0;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
       }
     `
     document.head.appendChild(styleElement)
@@ -125,6 +136,64 @@ export function useMatrixNavigation() {
           }
         },
       }
+    }
+
+    // Function to add page fade-in effect
+    const addPageFadeIn = () => {
+      // Create a wrapper for the entire page content
+      const fadeWrapper = document.createElement("div")
+      fadeWrapper.className = "page-fade-in"
+
+      // Move all body children (except scripts and the matrix transition) into the wrapper
+      const childNodes = Array.from(document.body.children)
+      childNodes.forEach((child) => {
+        // Skip scripts and the matrix transition
+        if (
+          child.tagName !== "SCRIPT" &&
+          !child.classList.contains("matrix-transition") &&
+          child.id !== "page-fade-wrapper" // Avoid nesting fade wrappers
+        ) {
+          fadeWrapper.appendChild(child)
+        }
+      })
+
+      // Add the wrapper to the body
+      fadeWrapper.id = "page-fade-wrapper"
+      document.body.appendChild(fadeWrapper)
+
+      // Remove the wrapper after animation completes
+      setTimeout(() => {
+        if (fadeWrapper && document.body.contains(fadeWrapper)) {
+          // Move all children back to body
+          while (fadeWrapper.firstChild) {
+            document.body.appendChild(fadeWrapper.firstChild)
+          }
+          // Remove the empty wrapper
+          document.body.removeChild(fadeWrapper)
+        }
+      }, 1000) // A bit longer than the animation duration
+    }
+
+    // Add page fade-in on initial load
+    if (typeof window !== "undefined") {
+      // Wait for DOM to be ready
+      if (document.readyState === "complete" || document.readyState === "interactive") {
+        setTimeout(addPageFadeIn, 0)
+      } else {
+        document.addEventListener("DOMContentLoaded", () => {
+          setTimeout(addPageFadeIn, 0)
+        })
+      }
+    }
+
+    // Handle navigation events for page fade-in
+    router.events = router.events || {}
+    const originalPush = router.push
+    router.push = function (...args) {
+      // Add page fade-in after navigation
+      const result = originalPush.apply(this, args)
+      setTimeout(addPageFadeIn, 100) // Small delay to ensure DOM is updated
+      return result
     }
 
     // Handle link clicks

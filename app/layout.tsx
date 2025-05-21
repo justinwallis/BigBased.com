@@ -16,6 +16,7 @@ import { NextAuthProvider } from "@/contexts/next-auth-provider"
 import { AuthProvider } from "@/contexts/auth-context"
 import AnnouncementBar from "@/components/announcement-bar"
 import { MatrixNavigationProvider } from "@/components/matrix-navigation-provider"
+import { PageFadeWrapper } from "@/components/page-fade-wrapper"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -135,8 +136,10 @@ export default function RootLayout({
                   <AuthProvider>
                     <AuthWrapper>
                       <MatrixNavigationProvider>
-                        <SectionPersistenceWrapper />
-                        {children}
+                        <PageFadeWrapper>
+                          <SectionPersistenceWrapper />
+                          {children}
+                        </PageFadeWrapper>
                       </MatrixNavigationProvider>
                     </AuthWrapper>
                   </AuthProvider>
