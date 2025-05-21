@@ -131,7 +131,14 @@ export function MatrixTransition() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
       <canvas ref={canvasRef} className="absolute inset-0" />
       <div className="relative z-10 flex items-center justify-center" style={{ opacity: logoOpacity }}>
-        <Image src="/bb-logo.png" alt="Big Based Logo" width={120} height={120} className="h-auto w-auto" />
+        <Image
+          src="/bb-logo.png"
+          alt="Big Based Logo"
+          width={120}
+          height={120}
+          className="h-auto w-auto filter drop-shadow(0 0 10px rgba(255, 255, 255, 0.8))"
+          style={{ filter: "drop-shadow(0 0 10px rgba(255, 255, 255, 0.8))" }}
+        />
       </div>
     </div>
   )
