@@ -1,54 +1,28 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { usePathname, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import { useTheme } from "next-themes"
 
-export function MatrixPageTransition() {
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+interface MatrixPageTransitionProps {
+  onTransitionComplete?: () => void
+}
+
+export function MatrixPageTransition({ onTransitionComplete }: MatrixPageTransitionProps) {
   const { theme, systemTheme } = useTheme()
-  const [isVisible, setIsVisible] = useState(false)
   const [transitionOpacity, setTransitionOpacity] = useState(0)
   const [logoOpacity, setLogoOpacity] = useState(0)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const previousPathRef = useRef<string | null>(null)
   const animationFrameRef = useRef<number | null>(null)
   const fadeIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const transitionCompleteRef = useRef(false)
 
   // Determine if we're in dark mode
   const isDarkMode = theme === "dark" || (theme === "system" && systemTheme === "dark")
 
-  // Track page changes
+  // Handle transition lifecycle
   useEffect(() => {
-    const currentPath = pathname + searchParams.toString()
-
-    // Skip initial render
-    if (previousPathRef.current === null) {
-      previousPathRef.current = currentPath
-      return
-    }
-
-    // Skip if path hasn't changed
-    if (previousPathRef.current === currentPath) return
-
-    // Skip transitions between auth pages
-    const isAuthPage = (path: string) => path.startsWith("/auth/")
-    if (isAuthPage(previousPathRef.current) && isAuthPage(pathname)) {
-      previousPathRef.current = currentPath
-      return
-    }
-
-    // Update previous path
-    previousPathRef.current = currentPath
-
-    // Show transition
-    setIsVisible(true)
-    setLogoOpacity(0)
-    setTransitionOpacity(0)
-
     // Fade in transition
     if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current)
     fadeIntervalRef.current = setInterval(() => {
@@ -88,7 +62,15 @@ export function MatrixPageTransition() {
               setTransitionOpacity((prevTrans) => {
                 if (prevTrans <= 0) {
                   if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current)
-                  setIsVisible(false)
+
+                  // Signal transition complete
+                  if (!transitionCompleteRef.current) {
+                    transitionCompleteRef.current = true
+                    if (onTransitionComplete) {
+                      onTransitionComplete()
+                    }
+                  }
+
                   return 0
                 }
                 return prevTrans - 0.05
@@ -106,11 +88,11 @@ export function MatrixPageTransition() {
       if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current)
       if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current)
     }
-  }, [pathname, searchParams])
+  }, [onTransitionComplete])
 
   // Matrix rain effect
   useEffect(() => {
-    if (!isVisible || !canvasRef.current) return
+    if (!canvasRef.current) return
 
     const canvas = canvasRef.current
     const ctx = canvas.getContext("2d")
@@ -180,9 +162,7 @@ export function MatrixPageTransition() {
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [isVisible, isDarkMode])
-
-  if (!isVisible) return null
+  }, [isDarkMode])
 
   return (
     <div

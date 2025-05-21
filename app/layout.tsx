@@ -15,8 +15,7 @@ import { CookieConsent } from "@/components/cookie-consent"
 import { NextAuthProvider } from "@/contexts/next-auth-provider"
 import { AuthProvider } from "@/contexts/auth-context"
 import AnnouncementBar from "@/components/announcement-bar"
-import { PageTransitionProvider } from "@/contexts/page-transition-context"
-import { MatrixPageTransition } from "@/components/matrix-page-transition"
+import { MatrixTransitionManager } from "@/components/matrix-transition-manager"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -135,11 +134,10 @@ export default function RootLayout({
                 <NextAuthProvider>
                   <AuthProvider>
                     <AuthWrapper>
-                      <PageTransitionProvider>
-                        <MatrixPageTransition />
+                      <MatrixTransitionManager>
                         <SectionPersistenceWrapper />
                         {children}
-                      </PageTransitionProvider>
+                      </MatrixTransitionManager>
                     </AuthWrapper>
                   </AuthProvider>
                 </NextAuthProvider>
