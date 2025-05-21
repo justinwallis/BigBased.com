@@ -150,10 +150,12 @@ export default function RootLayout({
                 if (isDarkMode()) {
                   document.documentElement.classList.add('dark');
                   document.documentElement.style.backgroundColor = '#111827'; // dark:bg-gray-900
+                  document.body.style.backgroundColor = '#111827'; // dark:bg-gray-900
                   document.documentElement.style.color = '#ffffff';
                 } else {
                   document.documentElement.classList.remove('dark');
                   document.documentElement.style.backgroundColor = '#ffffff';
+                  document.body.style.backgroundColor = '#ffffff';
                   document.documentElement.style.color = '#000000';
                 }
               })();
