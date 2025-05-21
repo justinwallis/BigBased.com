@@ -81,11 +81,16 @@ export function useMatrixNavigation() {
         height: 100%;
         z-index: 1;
         opacity: 0;
-        transition: opacity 0.6s ease-in-out;
+        transition: opacity 1.2s ease-in-out;
       }
       
       .matrix-background.visible {
         opacity: 1;
+      }
+
+      .matrix-transition.fade-out {
+        opacity: 0;
+        transition: opacity 1.5s ease-in-out;
       }
     `
     document.head.appendChild(styleElement)
@@ -114,6 +119,7 @@ export function useMatrixNavigation() {
           fadeOut: () => {},
           fadeIn: () => {},
           fadeInBackground: () => {},
+          fadeOutAll: () => {},
         }
 
       canvas.width = window.innerWidth
@@ -166,7 +172,7 @@ export function useMatrixNavigation() {
         fadeInBackground: () => {
           return new Promise<void>((resolve) => {
             background.classList.add("visible")
-            setTimeout(resolve, 600) // Match the CSS transition duration
+            setTimeout(resolve, 1200) // Match the CSS transition duration
           })
         },
         fadeOut: () => {
@@ -178,6 +184,16 @@ export function useMatrixNavigation() {
               cancelAnimationFrame(animationFrame)
               resolve()
             }, 800) // Match the CSS transition duration
+          })
+        },
+        fadeOutAll: () => {
+          return new Promise<void>((resolve) => {
+            container.classList.add("fade-out")
+            setTimeout(() => {
+              isRunning = false
+              cancelAnimationFrame(animationFrame)
+              resolve()
+            }, 1500) // Match the CSS transition duration
           })
         },
         cleanup: () => {
@@ -280,19 +296,19 @@ export function useMatrixNavigation() {
       // Wait for logo to fade out
       await new Promise<void>((resolve) => setTimeout(resolve, 500))
 
-      // Fade out matrix code
-      await matrixEffect.fadeOut()
-
-      // Now fade in the background at the last moment
+      // Now fade in the background after the logo has faded out
       await matrixEffect.fadeInBackground()
 
-      // Wait a moment with just the background visible
-      await new Promise<void>((resolve) => setTimeout(resolve, 200))
+      // Wait a moment with the background visible
+      await new Promise<void>((resolve) => setTimeout(resolve, 800))
+
+      // Fade out the entire transition smoothly
+      await matrixEffect.fadeOutAll()
 
       // Navigate to the new page
       router.push(destinationHref)
 
-      // Clean up after navigation (the background will remain until the new page loads)
+      // Clean up after navigation
       setTimeout(() => {
         matrixEffect.cleanup()
         if (document.body.contains(transitionContainer)) {
