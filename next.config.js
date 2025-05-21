@@ -12,13 +12,6 @@ const nextConfig = {
     domains: ["placeholder.com", "via.placeholder.com"],
     unoptimized: true,
   },
-  // Add this to suppress the message port errors
-  experimental: {
-    // This helps with some React 18 hydration issues
-    optimizeCss: true,
-    // This can help with the message port errors
-    scrollRestoration: true,
-  },
   async headers() {
     return [
       {
@@ -49,11 +42,6 @@ const nextConfig = {
       {
         source: "/social-preview",
         destination: "/static-meta.html",
-      },
-      // Add rewrites for the missing feature pages to prevent 404 errors
-      {
-        source: "/features/:path*",
-        destination: "/features",
       },
     ]
   },
