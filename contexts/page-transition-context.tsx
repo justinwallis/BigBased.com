@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from "react"
 import { usePathname } from "next/navigation"
 
 interface PageTransitionContextType {
@@ -22,9 +22,22 @@ interface PageTransitionProviderProps {
 export function PageTransitionProvider({ children }: PageTransitionProviderProps) {
   const pathname = usePathname()
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const previousPathRef = useRef<string | null>(null)
 
   useEffect(() => {
-    // Start transition when pathname changes
+    // Skip initial render
+    if (previousPathRef.current === null) {
+      previousPathRef.current = pathname
+      return
+    }
+
+    // Skip if pathname hasn't changed
+    if (previousPathRef.current === pathname) return
+
+    // Update previous path
+    previousPathRef.current = pathname
+
+    // Start transition
     setIsTransitioning(true)
 
     // End transition after delay

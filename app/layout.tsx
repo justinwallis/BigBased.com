@@ -4,7 +4,6 @@ import type { Metadata, Viewport } from "next/types"
 import { Inter } from "next/font/google"
 import ClientPreloaderContainer from "@/components/client-preloader-container"
 import { ErrorBoundary } from "@/components/error-boundary"
-import PageTransition from "@/components/page-transition"
 import { ThemeProvider } from "@/components/theme-provider"
 import OneSignalProvider from "@/components/one-signal-provider"
 import AuthWrapper from "@/components/auth/auth-wrapper"
@@ -16,6 +15,8 @@ import { CookieConsent } from "@/components/cookie-consent"
 import { NextAuthProvider } from "@/contexts/next-auth-provider"
 import { AuthProvider } from "@/contexts/auth-context"
 import AnnouncementBar from "@/components/announcement-bar"
+import { PageTransitionProvider } from "@/contexts/page-transition-context"
+import { MatrixPageTransition } from "@/components/matrix-page-transition"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -134,8 +135,11 @@ export default function RootLayout({
                 <NextAuthProvider>
                   <AuthProvider>
                     <AuthWrapper>
-                      <SectionPersistenceWrapper />
-                      <PageTransition>{children}</PageTransition>
+                      <PageTransitionProvider>
+                        <MatrixPageTransition />
+                        <SectionPersistenceWrapper />
+                        {children}
+                      </PageTransitionProvider>
                     </AuthWrapper>
                   </AuthProvider>
                 </NextAuthProvider>

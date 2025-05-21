@@ -1,8 +1,9 @@
 "use client"
 
-import { type ReactNode, useEffect, useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect, type ReactNode } from "react"
 import { usePathname } from "next/navigation"
+import { AnimatePresence, motion } from "framer-motion"
+import { MatrixTransitionEffect } from "./matrix-transition-effect"
 
 interface PageTransitionProps {
   children: ReactNode
@@ -10,29 +11,47 @@ interface PageTransitionProps {
 
 export default function PageTransition({ children }: PageTransitionProps) {
   const pathname = usePathname()
-  const [isFirstRender, setIsFirstRender] = useState(true)
+  const [showMatrixTransition, setShowMatrixTransition] = useState(false)
+  const [previousPath, setPreviousPath] = useState<string | null>(null)
 
   useEffect(() => {
-    // Skip animation on first render
-    setIsFirstRender(false)
-  }, [])
+    // Skip initial render
+    if (previousPath === null) {
+      setPreviousPath(pathname)
+      return
+    }
 
-  // Skip animation on first render to avoid transition when the page initially loads
-  if (isFirstRender) {
-    return <>{children}</>
-  }
+    // Skip if pathname hasn't changed
+    if (previousPath === pathname) return
+
+    // Show matrix transition
+    setShowMatrixTransition(true)
+
+    // Hide matrix transition after delay
+    const hideTimeout = setTimeout(() => {
+      setShowMatrixTransition(false)
+    }, 2000)
+
+    // Update previous path
+    setPreviousPath(pathname)
+
+    return () => clearTimeout(hideTimeout)
+  }, [pathname, previousPath])
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={pathname}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
+    <>
+      {showMatrixTransition && <MatrixTransitionEffect />}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={pathname}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          {children}
+        </motion.div>
+      </AnimatePresence>
+    </>
   )
 }

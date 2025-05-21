@@ -1,86 +1,67 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { usePathname, useSearchParams } from "next/navigation"
 import Image from "next/image"
 
-export function MatrixPageTransition() {
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const [isVisible, setIsVisible] = useState(false)
-  const [logoOpacity, setLogoOpacity] = useState(0)
+export function MatrixTransitionEffect() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const previousPathRef = useRef<string | null>(null)
+  const [logoOpacity, setLogoOpacity] = useState(0)
   const animationFrameRef = useRef<number | null>(null)
-  const fadeIntervalRef = useRef<NodeJS.Timeout | null>(null)
-  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Track page changes
+  // Fade logo in and out
   useEffect(() => {
-    const currentPath = pathname + searchParams.toString()
-
-    // Skip initial render
-    if (previousPathRef.current === null) {
-      previousPathRef.current = currentPath
-      return
-    }
-
-    // Skip if path hasn't changed
-    if (previousPathRef.current === currentPath) return
-
-    // Update previous path
-    previousPathRef.current = currentPath
-
-    // Show transition
-    setIsVisible(true)
+    // Start with opacity 0
     setLogoOpacity(0)
 
     // Fade in logo
-    if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current)
-    fadeIntervalRef.current = setInterval(() => {
-      setLogoOpacity((prev) => {
-        if (prev >= 1) {
-          if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current)
-          return 1
-        }
-        return prev + 0.05
-      })
+    let opacity = 0
+    const fadeInInterval = setInterval(() => {
+      opacity += 0.05
+      if (opacity >= 1) {
+        clearInterval(fadeInInterval)
+        opacity = 1
+      }
+      setLogoOpacity(opacity)
     }, 50)
 
-    // Hide transition after delay
-    if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current)
-    hideTimeoutRef.current = setTimeout(() => {
-      // Fade out logo
-      if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current)
-      fadeIntervalRef.current = setInterval(() => {
-        setLogoOpacity((prev) => {
-          if (prev <= 0) {
-            if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current)
-            setIsVisible(false)
-            return 0
-          }
-          return prev - 0.05
-        })
+    // Schedule fade out
+    const fadeOutTimeout = setTimeout(() => {
+      const fadeOutInterval = setInterval(() => {
+        opacity -= 0.05
+        if (opacity <= 0) {
+          clearInterval(fadeOutInterval)
+          opacity = 0
+          setLogoOpacity(0)
+        } else {
+          setLogoOpacity(opacity)
+        }
       }, 50)
-    }, 1500)
+
+      return () => clearInterval(fadeOutInterval)
+    }, 1000)
 
     return () => {
-      if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current)
-      if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current)
+      clearInterval(fadeInInterval)
+      clearTimeout(fadeOutTimeout)
     }
-  }, [pathname, searchParams])
+  }, [])
 
   // Matrix rain effect
   useEffect(() => {
-    if (!isVisible || !canvasRef.current) return
+    if (!canvasRef.current) return
 
     const canvas = canvasRef.current
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
     // Set canvas dimensions
-    canvas.width = window.innerWidth
-    canvas.height = window.innerHeight
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
+
+    resizeCanvas()
+    window.addEventListener("resize", resizeCanvas)
 
     // Matrix characters
     const chars = "01".split("")
@@ -132,15 +113,13 @@ export function MatrixPageTransition() {
 
     animate()
 
-    // Cleanup
     return () => {
+      window.removeEventListener("resize", resizeCanvas)
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [isVisible])
-
-  if (!isVisible) return null
+  }, [])
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black">
