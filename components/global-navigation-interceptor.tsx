@@ -93,7 +93,11 @@ export function GlobalNavigationInterceptor({ children }: { children: React.Reac
             <div style="position: relative; z-index: 10; display: flex; align-items: center; justify-content: center; height: 100%;">
               <img src="${
                 document.documentElement.classList.contains("dark") ? "/bb-logo.png" : "/BigBasedIconInvert.png"
-              }" alt="Big Based Logo" width="120" height="120" style="opacity: 0; transition: opacity 0.5s ease-in-out; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));">
+              }" alt="Big Based Logo" width="120" height="120" style="opacity: 0; transition: opacity 0.5s ease-in-out; filter: ${
+                document.documentElement.classList.contains("dark")
+                  ? "drop-shadow(0 0 10px #0f0)"
+                  : "drop-shadow(0 0 10px rgba(0, 0, 0, 0.8))"
+              };">
             </div>
           </div>
         `

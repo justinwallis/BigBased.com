@@ -257,7 +257,9 @@ export function useMatrixNavigation() {
       logoImg.alt = "Big Based Logo"
       logoImg.width = 120
       logoImg.height = 120
-      logoImg.style.filter = "drop-shadow(0 0 10px rgba(255, 255, 255, 0.8))"
+      logoImg.style.filter = isDark
+        ? "drop-shadow(0 0 10px #0f0)" // Green shadow for dark mode
+        : "drop-shadow(0 0 10px rgba(0, 0, 0, 0.8))" // Black shadow for light mode
       logoContainer.appendChild(logoImg)
 
       // Start matrix effect with separate background

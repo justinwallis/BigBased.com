@@ -3,11 +3,13 @@
 import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import { usePageTransition } from "@/contexts/page-transition-context"
+import { useTheme } from "next-themes"
 
 export function EnhancedMatrixTransition() {
   const { isTransitioning } = usePageTransition()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [logoOpacity, setLogoOpacity] = useState(0)
+  const { resolvedTheme } = useTheme()
 
   // Fade logo in and out
   useEffect(() => {
@@ -137,7 +139,12 @@ export function EnhancedMatrixTransition() {
           height={120}
           className="h-auto w-auto"
           priority
-          style={{ filter: "drop-shadow(0 0 10px rgba(255, 255, 255, 0.8))" }}
+          style={{
+            filter:
+              resolvedTheme === "dark"
+                ? "drop-shadow(0 0 10px #0f0)" // Green shadow for dark mode
+                : "drop-shadow(0 0 10px rgba(0, 0, 0, 0.8))", // Black shadow for light mode
+          }}
         />
       </div>
     </div>

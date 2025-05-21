@@ -125,6 +125,22 @@ export function MatrixTransition() {
     }
   }, [isTransitioning])
 
+  useEffect(() => {
+    // Check if we're in dark mode
+    const isDarkMode = document.documentElement.classList.contains("dark")
+
+    // Find our logo element
+    const logoElement = document.querySelector(".dark-mode-logo") as HTMLElement
+    if (logoElement) {
+      // Apply appropriate shadow based on theme
+      if (isDarkMode) {
+        logoElement.style.filter = "drop-shadow(0 0 10px #0f0)" // Green shadow for dark mode
+      } else {
+        logoElement.style.filter = "drop-shadow(0 0 10px rgba(0, 0, 0, 0.8))" // Black shadow for light mode
+      }
+    }
+  }, [isTransitioning])
+
   if (!isTransitioning) return null
 
   return (
@@ -136,8 +152,8 @@ export function MatrixTransition() {
           alt="Big Based Logo"
           width={120}
           height={120}
-          className="h-auto w-auto filter drop-shadow(0 0 10px rgba(255, 255, 255, 0.8))"
-          style={{ filter: "drop-shadow(0 0 10px rgba(255, 255, 255, 0.8))" }}
+          className="h-auto w-auto dark-mode-logo"
+          style={{ filter: "drop-shadow(0 0 10px rgba(0, 0, 0, 0.8))" }}
         />
       </div>
     </div>
