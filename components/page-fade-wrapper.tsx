@@ -26,10 +26,14 @@ export function PageFadeWrapper({ children }: { children: React.ReactNode }) {
       wrapperRef.current.style.animation = "none"
       void wrapperRef.current.offsetWidth // Force reflow
 
-      // Apply the animation
-      wrapperRef.current.style.animation = "fadeIn 0.6s ease-out forwards"
+      // Determine if we're on the main page
+      const isMainPage = pathname === "/"
+
+      // Apply different animation durations based on the page
+      const duration = isMainPage ? 0.6 : 1.2 // 0.6s for main page, 1.2s for other pages
+      wrapperRef.current.style.animation = `fadeIn ${duration}s ease-out forwards`
     }
-  }, [hasAnimated])
+  }, [hasAnimated, pathname])
 
   return (
     <div
