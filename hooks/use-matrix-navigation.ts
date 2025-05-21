@@ -9,7 +9,7 @@ export function useMatrixNavigation() {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    // Create a style element for the matrix transition and page fade-in
+    // Create a style element for the matrix transition
     const styleElement = document.createElement("style")
     styleElement.textContent = `
       .matrix-transition {
@@ -24,6 +24,7 @@ export function useMatrixNavigation() {
         display: flex;
         align-items: center;
         justify-content: center;
+        pointer-events: none;
       }
       
       .matrix-transition.visible {
@@ -39,6 +40,16 @@ export function useMatrixNavigation() {
       
       .matrix-logo.visible {
         opacity: 1;
+      }
+      
+      .matrix-canvas-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 5;
+        background-color: transparent;
       }
       
       .matrix-canvas {
@@ -58,17 +69,49 @@ export function useMatrixNavigation() {
       .matrix-canvas.fade-out {
         opacity: 0;
       }
+      
+      .matrix-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        opacity: 0;
+        transition: opacity 1.2s ease-in-out;
+      }
+      
+      .matrix-background.visible {
+        opacity: 1;
+      }
     `
     document.head.appendChild(styleElement)
 
     // Function to create and animate the matrix effect
     const createMatrixEffect = (container: HTMLElement, isDark: boolean) => {
+      // Create a separate container for the canvas to allow independent opacity control
+      const canvasContainer = document.createElement("div")
+      canvasContainer.className = "matrix-canvas-container"
+      container.appendChild(canvasContainer)
+
       const canvas = document.createElement("canvas")
       canvas.className = "matrix-canvas"
-      container.appendChild(canvas)
+      canvasContainer.appendChild(canvas)
+
+      // Create a separate background element
+      const background = document.createElement("div")
+      background.className = "matrix-background"
+      background.style.backgroundColor = isDark ? "#111827" : "#ffffff"
+      container.appendChild(background)
 
       const ctx = canvas.getContext("2d")
-      if (!ctx) return { cleanup: () => {}, fadeOut: () => {}, fadeIn: () => {} }
+      if (!ctx)
+        return {
+          cleanup: () => {},
+          fadeOut: () => {},
+          fadeIn: () => {},
+          fadeInBackground: () => {},
+        }
 
       canvas.width = window.innerWidth
       canvas.height = window.innerHeight
@@ -117,6 +160,12 @@ export function useMatrixNavigation() {
             setTimeout(resolve, 800) // Match the CSS transition duration
           })
         },
+        fadeInBackground: () => {
+          return new Promise<void>((resolve) => {
+            background.classList.add("visible")
+            setTimeout(resolve, 1200) // Match the CSS transition duration
+          })
+        },
         fadeOut: () => {
           return new Promise<void>((resolve) => {
             canvas.classList.remove("visible")
@@ -131,8 +180,11 @@ export function useMatrixNavigation() {
         cleanup: () => {
           isRunning = false
           cancelAnimationFrame(animationFrame)
-          if (container.contains(canvas)) {
-            container.removeChild(canvas)
+          if (container.contains(canvasContainer)) {
+            container.removeChild(canvasContainer)
+          }
+          if (container.contains(background)) {
+            container.removeChild(background)
           }
         },
       }
@@ -180,9 +232,7 @@ export function useMatrixNavigation() {
       // Create transition container
       const transitionContainer = document.createElement("div")
       transitionContainer.className = "matrix-transition"
-      transitionContainer.style.backgroundColor = document.documentElement.classList.contains("dark")
-        ? "#111827" // dark:bg-gray-900
-        : "#ffffff" // white
+      transitionContainer.classList.add("visible") // Make container visible but transparent
       document.body.appendChild(transitionContainer)
 
       // Create logo container
@@ -200,21 +250,20 @@ export function useMatrixNavigation() {
       logoImg.height = 120
       logoContainer.appendChild(logoImg)
 
-      // Start matrix effect
+      // Start matrix effect with separate background
       const isDark = document.documentElement.classList.contains("dark")
       const matrixEffect = createMatrixEffect(transitionContainer, isDark)
 
-      // Start with the matrix code first, without background
+      // First, fade in just the matrix code on a transparent background
       await matrixEffect.fadeIn()
 
-      // Wait until the middle of the animation before starting the background fade
-      await new Promise<void>((resolve) => setTimeout(resolve, 400))
+      // Wait a moment to let the matrix code be visible alone
+      await new Promise<void>((resolve) => setTimeout(resolve, 800))
 
-      // Now start fading in the background
-      transitionContainer.classList.add("visible")
+      // Now fade in the background
+      await matrixEffect.fadeInBackground()
 
-      // Show logo after matrix code is visible
-      await new Promise<void>((resolve) => setTimeout(resolve, 300))
+      // Show logo after background is visible
       logoContainer.classList.add("visible")
 
       // Wait for logo to be visible
