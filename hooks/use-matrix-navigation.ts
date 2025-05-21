@@ -151,9 +151,11 @@ export function useMatrixNavigation() {
       logoContainer.className = "matrix-logo"
       transitionContainer.appendChild(logoContainer)
 
-      // Create logo image
+      // Create logo image - SWAPPED LOGOS FOR DARK/LIGHT MODE
       const logoImg = document.createElement("img")
-      logoImg.src = document.documentElement.classList.contains("dark") ? "/bb-logo.png" : "/BigBasedIconInvert.png"
+      logoImg.src = document.documentElement.classList.contains("dark")
+        ? "/BigBasedIconInvert.png" // Dark mode - use inverted logo (white)
+        : "/bb-logo.png" // Light mode - use regular logo (black)
       logoImg.alt = "Big Based Logo"
       logoImg.width = 120
       logoImg.height = 120
@@ -163,35 +165,41 @@ export function useMatrixNavigation() {
       const isDark = document.documentElement.classList.contains("dark")
       const matrixEffect = createMatrixEffect(transitionContainer, isDark)
 
-      // Show transition with a slight delay
+      // IMPROVED TIMING: Make sure transition is fully visible before proceeding
+      // Show transition immediately
+      transitionContainer.classList.add("visible")
+
+      // Ensure the transition is fully visible before showing the logo
       setTimeout(() => {
-        transitionContainer.classList.add("visible")
+        logoContainer.classList.add("visible")
 
-        // Show logo after transition is visible
-        setTimeout(() => {
-          logoContainer.classList.add("visible")
+        // Navigate after delay
+        if (timeoutRef.current) clearTimeout(timeoutRef.current)
+        timeoutRef.current = setTimeout(() => {
+          // Hide logo
+          logoContainer.classList.remove("visible")
 
-          // Navigate after delay
-          if (timeoutRef.current) clearTimeout(timeoutRef.current)
-          timeoutRef.current = setTimeout(() => {
-            // Hide logo
-            logoContainer.classList.remove("visible")
+          // Hide transition after logo is hidden
+          setTimeout(() => {
+            // IMPORTANT: Only navigate after transition is fully complete
+            const performNavigation = () => {
+              // Store the href for navigation
+              const destinationHref = href
 
-            // Hide transition after logo is hidden
-            setTimeout(() => {
-              transitionContainer.classList.remove("visible")
+              // Clean up
+              matrixEffect.cleanup()
+              document.body.removeChild(transitionContainer)
+              isTransitioningRef.current = false
 
-              // Clean up and navigate
-              setTimeout(() => {
-                matrixEffect.cleanup()
-                document.body.removeChild(transitionContainer)
-                isTransitioningRef.current = false
-                router.push(href!)
-              }, 300)
-            }, 500)
-          }, 1500)
-        }, 300)
-      }, 10)
+              // Navigate programmatically
+              router.push(destinationHref)
+            }
+
+            // Wait for transition to complete before navigating
+            setTimeout(performNavigation, 300)
+          }, 500)
+        }, 1500)
+      }, 300)
     }
 
     // Add event listener with capture to intercept before React's event system
