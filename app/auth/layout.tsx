@@ -11,10 +11,10 @@ interface AuthLayoutProps {
 export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <div className="min-h-screen flex flex-col items-center justify-start pt-20 bg-gray-50 dark:bg-gray-900 p-4">
-        <div className="w-full max-w-md space-y-8">
+      <div className="min-h-screen flex flex-col items-center bg-gray-50 dark:bg-gray-900 p-4">
+        <div className="w-full max-w-md space-y-6 mt-4">
           <div className="flex flex-col items-center justify-center">
-            <Link href="/" className="mb-6">
+            <Link href="/" className="mb-4">
               <div className="relative w-16 h-16">
                 <Image src="/bb-logo.png" alt="Big Based Logo" fill className="object-contain dark:hidden" priority />
                 <Image
