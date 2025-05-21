@@ -1,32 +1,58 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { useAuth } from "@/contexts/auth-context"
-import AuthModal from "./auth-modal"
-import { LogOut, User } from "lucide-react"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { signOut } from "@/app/actions/auth-actions"
+import { useRouter } from "next/navigation"
+import type { User } from "@supabase/supabase-js"
+import { supabaseClient } from "@/lib/supabase/client"
 
 export default function AuthButton() {
-  const { user, signOut, isLoading } = useAuth()
-  const [showAuthModal, setShowAuthModal] = useState(false)
-  const [authTab, setAuthTab] = useState<"login" | "signup">("login")
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
 
-  const handleOpenAuth = (tab: "login" | "signup") => {
-    setAuthTab(tab)
-    setShowAuthModal(true)
+  useEffect(() => {
+    const supabase = supabaseClient()
+    if (!supabase) return
+
+    // Check for existing session
+    const checkSession = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
+        setUser(session?.user || null)
+        setIsLoading(false)
+      } catch (error) {
+        console.error("Error checking session:", error)
+        setIsLoading(false)
+      }
+    }
+
+    checkSession()
+
+    // Set up auth state listener
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  const handleSignOut = async () => {
+    await signOut()
+    router.push("/")
   }
 
   if (isLoading) {
     return (
-      <Button variant="outline" size="sm" disabled>
+      <Button variant="ghost" size="sm" disabled>
         Loading...
       </Button>
     )
@@ -34,39 +60,25 @@ export default function AuthButton() {
 
   if (user) {
     return (
-      <>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="flex items-center gap-2">
-              <User className="h-4 w-4" />
-              <span className="hidden sm:inline">{user.email?.split("@")[0] || "Account"}</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut()} className="text-red-600">
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} defaultTab={authTab} />
-      </>
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="sm" asChild>
+          <Link href="/profile">Profile</Link>
+        </Button>
+        <Button variant="outline" size="sm" onClick={handleSignOut}>
+          Sign Out
+        </Button>
+      </div>
     )
   }
 
   return (
-    <>
-      <Button variant="ghost" size="sm" onClick={() => handleOpenAuth("login")}>
-        Login
+    <div className="flex items-center gap-4">
+      <Button variant="ghost" size="sm" asChild>
+        <Link href="/auth/sign-in">Sign In</Link>
       </Button>
-
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} defaultTab={authTab} />
-    </>
+      <Button size="sm" asChild>
+        <Link href="/auth/sign-up">Join</Link>
+      </Button>
+    </div>
   )
 }

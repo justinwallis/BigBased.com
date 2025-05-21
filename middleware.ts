@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { getToken } from "next-auth/jwt"
+import { createServerClient } from "@/lib/supabase/server"
+import { cookies } from "next/headers"
 
 export async function middleware(request: NextRequest) {
   // Get the pathname of the request
@@ -16,26 +17,35 @@ export async function middleware(request: NextRequest) {
     path === "/transform" ||
     path === "/faq" ||
     path === "/revolution" ||
-    path.startsWith("/api/auth")
+    path.startsWith("/api/auth") ||
+    path.startsWith("/auth/sign-in") ||
+    path.startsWith("/auth/sign-up") ||
+    path.startsWith("/auth/forgot-password") ||
+    path.startsWith("/auth/reset-password") ||
+    path.startsWith("/auth/callback")
 
-  // Check if the user is authenticated
-  const token = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  })
+  // Protected paths that require authentication
+  const isProtectedPath = path.startsWith("/profile") || path.startsWith("/dashboard")
 
-  const isAuthenticated = !!token
-
-  // If it's a protected path and the user is not authenticated,
-  // redirect to the home page
-  if (!isPublicPath && !isAuthenticated) {
-    return NextResponse.redirect(new URL("/", request.url))
+  // Skip middleware for non-protected paths
+  if (!isProtectedPath) {
+    return NextResponse.next()
   }
 
-  // If it's the login page and the user is authenticated,
-  // redirect to the profile page
-  if (path === "/login" && isAuthenticated) {
-    return NextResponse.redirect(new URL("/profile", request.url))
+  // Check if the user is authenticated
+  const cookieStore = cookies()
+  const supabase = createServerClient(cookieStore)
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+  const isAuthenticated = !!session
+
+  // If it's a protected path and the user is not authenticated,
+  // redirect to the sign-in page
+  if (isProtectedPath && !isAuthenticated) {
+    const redirectUrl = new URL("/auth/sign-in", request.url)
+    redirectUrl.searchParams.set("redirect", request.nextUrl.pathname)
+    return NextResponse.redirect(redirectUrl)
   }
 
   return NextResponse.next()

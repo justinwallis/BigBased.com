@@ -7,13 +7,55 @@ import { logAuthEvent } from "./auth-log-actions"
 import { AUTH_EVENTS, AUTH_STATUS } from "@/app/constants/auth-log-constants"
 import { generateRandomString } from "@/lib/utils"
 
+// Validate password strength
+function validatePassword(password: string): { valid: boolean; message?: string } {
+  // Check minimum length
+  if (password.length < 10) {
+    return { valid: false, message: "Password must be at least 10 characters long" }
+  }
+
+  // Check for uppercase letter
+  if (!/[A-Z]/.test(password)) {
+    return { valid: false, message: "Password must contain at least one uppercase letter" }
+  }
+
+  // Check for lowercase letter
+  if (!/[a-z]/.test(password)) {
+    return { valid: false, message: "Password must contain at least one lowercase letter" }
+  }
+
+  // Check for number
+  if (!/[0-9]/.test(password)) {
+    return { valid: false, message: "Password must contain at least one number" }
+  }
+
+  // Check for special character
+  if (!/[^A-Za-z0-9]/.test(password)) {
+    return { valid: false, message: "Password must contain at least one special character" }
+  }
+
+  return { valid: true }
+}
+
 // Register a new user
 export async function register(formData: FormData) {
   const email = formData.get("email") as string
   const password = formData.get("password") as string
+  const confirmPassword = formData.get("confirmPassword") as string
 
-  if (!email || !password) {
+  if (!email || !password || !confirmPassword) {
     return { error: "Email and password are required" }
+  }
+
+  // Check if passwords match
+  if (password !== confirmPassword) {
+    return { error: "Passwords do not match" }
+  }
+
+  // Validate password strength
+  const passwordValidation = validatePassword(password)
+  if (!passwordValidation.valid) {
+    return { error: passwordValidation.message }
   }
 
   try {
@@ -113,7 +155,7 @@ export async function signOut() {
     await logAuthEvent(session.user.id, AUTH_EVENTS.LOGOUT, AUTH_STATUS.SUCCESS, {})
   }
 
-  redirect("/login")
+  redirect("/auth/sign-in")
 }
 
 // Reset password request
@@ -132,7 +174,7 @@ export async function resetPasswordRequest(formData: FormData) {
     await logAuthEvent(null, AUTH_EVENTS.PASSWORD_RESET_REQUEST, AUTH_STATUS.PENDING, { email })
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/reset-password`,
+      redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/reset-password`,
     })
 
     if (error) {
@@ -157,9 +199,21 @@ export async function resetPasswordRequest(formData: FormData) {
 // Reset password
 export async function resetPassword(formData: FormData) {
   const password = formData.get("password") as string
+  const confirmPassword = formData.get("confirmPassword") as string
 
-  if (!password) {
+  if (!password || !confirmPassword) {
     return { error: "Password is required" }
+  }
+
+  // Check if passwords match
+  if (password !== confirmPassword) {
+    return { error: "Passwords do not match" }
+  }
+
+  // Validate password strength
+  const passwordValidation = validatePassword(password)
+  if (!passwordValidation.valid) {
+    return { error: passwordValidation.message }
   }
 
   try {
