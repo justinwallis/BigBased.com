@@ -20,7 +20,7 @@ export function useMatrixNavigation() {
         height: 100%;
         z-index: 9999;
         opacity: 0;
-        transition: opacity 0.3s ease-in-out;
+        transition: opacity 1.5s ease-in-out; /* Slower fade-in for background */
         display: flex;
         align-items: center;
         justify-content: center;
@@ -47,8 +47,12 @@ export function useMatrixNavigation() {
         left: 0;
         width: 100%;
         height: 100%;
-        opacity: 1;
+        opacity: 0; /* Start invisible */
         transition: opacity 0.8s ease-in-out;
+      }
+      
+      .matrix-canvas.visible {
+        opacity: 1;
       }
       
       .matrix-canvas.fade-out {
@@ -75,7 +79,7 @@ export function useMatrixNavigation() {
       container.appendChild(canvas)
 
       const ctx = canvas.getContext("2d")
-      if (!ctx) return { cleanup: () => {}, fadeOut: () => {} }
+      if (!ctx) return { cleanup: () => {}, fadeOut: () => {}, fadeIn: () => {} }
 
       canvas.width = window.innerWidth
       canvas.height = window.innerHeight
@@ -118,8 +122,15 @@ export function useMatrixNavigation() {
       animate()
 
       return {
+        fadeIn: () => {
+          return new Promise<void>((resolve) => {
+            canvas.classList.add("visible")
+            setTimeout(resolve, 800) // Match the CSS transition duration
+          })
+        },
         fadeOut: () => {
           return new Promise<void>((resolve) => {
+            canvas.classList.remove("visible")
             canvas.classList.add("fade-out")
             setTimeout(() => {
               isRunning = false
@@ -262,10 +273,16 @@ export function useMatrixNavigation() {
       const isDark = document.documentElement.classList.contains("dark")
       const matrixEffect = createMatrixEffect(transitionContainer, isDark)
 
-      // Show transition immediately
+      // Show transition container (background) - this will fade in slowly
       transitionContainer.classList.add("visible")
 
-      // Show logo after transition is visible
+      // Wait a short moment before starting the matrix code
+      await new Promise<void>((resolve) => setTimeout(resolve, 200))
+
+      // Fade in the matrix code
+      await matrixEffect.fadeIn()
+
+      // Show logo after matrix code is visible
       await new Promise<void>((resolve) => setTimeout(resolve, 300))
       logoContainer.classList.add("visible")
 
