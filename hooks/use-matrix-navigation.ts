@@ -40,21 +40,31 @@ export function useMatrixNavigation() {
       .matrix-logo.visible {
         opacity: 1;
       }
+      
+      .matrix-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 1;
+        transition: opacity 0.8s ease-in-out;
+      }
+      
+      .matrix-canvas.fade-out {
+        opacity: 0;
+      }
     `
     document.head.appendChild(styleElement)
 
     // Function to create and animate the matrix effect
     const createMatrixEffect = (container: HTMLElement, isDark: boolean) => {
       const canvas = document.createElement("canvas")
-      canvas.style.position = "absolute"
-      canvas.style.top = "0"
-      canvas.style.left = "0"
-      canvas.style.width = "100%"
-      canvas.style.height = "100%"
+      canvas.className = "matrix-canvas"
       container.appendChild(canvas)
 
       const ctx = canvas.getContext("2d")
-      if (!ctx) return { cleanup: () => {} }
+      if (!ctx) return { cleanup: () => {}, fadeOut: () => {} }
 
       canvas.width = window.innerWidth
       canvas.height = window.innerHeight
@@ -86,14 +96,29 @@ export function useMatrixNavigation() {
       }
 
       let animationFrame: number
+      let isRunning = true
+
       const animate = () => {
-        draw()
-        animationFrame = requestAnimationFrame(animate)
+        if (isRunning) {
+          draw()
+          animationFrame = requestAnimationFrame(animate)
+        }
       }
       animate()
 
       return {
+        fadeOut: () => {
+          return new Promise<void>((resolve) => {
+            canvas.classList.add("fade-out")
+            setTimeout(() => {
+              isRunning = false
+              cancelAnimationFrame(animationFrame)
+              resolve()
+            }, 800) // Match the CSS transition duration
+          })
+        },
         cleanup: () => {
+          isRunning = false
           cancelAnimationFrame(animationFrame)
           if (container.contains(canvas)) {
             container.removeChild(canvas)
@@ -103,7 +128,7 @@ export function useMatrixNavigation() {
     }
 
     // Handle link clicks
-    const handleLinkClick = (e: MouseEvent) => {
+    const handleLinkClick = async (e: MouseEvent) => {
       // Find if the click was on a link
       let target = e.target as HTMLElement | null
       let href: string | null = null
@@ -138,6 +163,9 @@ export function useMatrixNavigation() {
       if (isTransitioningRef.current) return
       isTransitioningRef.current = true
 
+      // Store the href for navigation
+      const destinationHref = href
+
       // Create transition container
       const transitionContainer = document.createElement("div")
       transitionContainer.className = "matrix-transition"
@@ -151,7 +179,7 @@ export function useMatrixNavigation() {
       logoContainer.className = "matrix-logo"
       transitionContainer.appendChild(logoContainer)
 
-      // Create logo image - SWAPPED LOGOS FOR DARK/LIGHT MODE
+      // Create logo image
       const logoImg = document.createElement("img")
       logoImg.src = document.documentElement.classList.contains("dark")
         ? "/BigBasedIconInvert.png" // Dark mode - use inverted logo (white)
@@ -165,41 +193,39 @@ export function useMatrixNavigation() {
       const isDark = document.documentElement.classList.contains("dark")
       const matrixEffect = createMatrixEffect(transitionContainer, isDark)
 
-      // IMPROVED TIMING: Make sure transition is fully visible before proceeding
       // Show transition immediately
       transitionContainer.classList.add("visible")
 
-      // Ensure the transition is fully visible before showing the logo
+      // Show logo after transition is visible
+      await new Promise<void>((resolve) => setTimeout(resolve, 300))
+      logoContainer.classList.add("visible")
+
+      // Wait for logo to be visible
+      await new Promise<void>((resolve) => setTimeout(resolve, 1500))
+
+      // Hide logo
+      logoContainer.classList.remove("visible")
+
+      // Wait for logo to fade out
+      await new Promise<void>((resolve) => setTimeout(resolve, 500))
+
+      // Fade out matrix code, leaving just the background
+      await matrixEffect.fadeOut()
+
+      // Wait a moment with just the background visible
+      await new Promise<void>((resolve) => setTimeout(resolve, 200))
+
+      // Navigate to the new page
+      router.push(destinationHref)
+
+      // Clean up after navigation (the background will remain until the new page loads)
       setTimeout(() => {
-        logoContainer.classList.add("visible")
-
-        // Navigate after delay
-        if (timeoutRef.current) clearTimeout(timeoutRef.current)
-        timeoutRef.current = setTimeout(() => {
-          // Hide logo
-          logoContainer.classList.remove("visible")
-
-          // Hide transition after logo is hidden
-          setTimeout(() => {
-            // IMPORTANT: Only navigate after transition is fully complete
-            const performNavigation = () => {
-              // Store the href for navigation
-              const destinationHref = href
-
-              // Clean up
-              matrixEffect.cleanup()
-              document.body.removeChild(transitionContainer)
-              isTransitioningRef.current = false
-
-              // Navigate programmatically
-              router.push(destinationHref)
-            }
-
-            // Wait for transition to complete before navigating
-            setTimeout(performNavigation, 300)
-          }, 500)
-        }, 1500)
-      }, 300)
+        matrixEffect.cleanup()
+        if (document.body.contains(transitionContainer)) {
+          document.body.removeChild(transitionContainer)
+        }
+        isTransitioningRef.current = false
+      }, 500)
     }
 
     // Add event listener with capture to intercept before React's event system
