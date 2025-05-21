@@ -125,6 +125,41 @@ export default function RootLayout({
           rel="stylesheet"
         />
         <link rel="preconnect" href="https://cdn.onesignal.com" />
+
+        {/* Prevent flash of white in dark mode */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                // Check if dark mode is enabled
+                function isDarkMode() {
+                  // Check for saved theme preference
+                  const savedTheme = localStorage.getItem('theme');
+                  if (savedTheme === 'dark') return true;
+                  if (savedTheme === 'light') return false;
+                  
+                  // Check for system preference
+                  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    return true;
+                  }
+                  
+                  return false;
+                }
+                
+                // Apply dark mode class immediately if needed
+                if (isDarkMode()) {
+                  document.documentElement.classList.add('dark');
+                  document.documentElement.style.backgroundColor = '#111827'; // dark:bg-gray-900
+                  document.documentElement.style.color = '#ffffff';
+                } else {
+                  document.documentElement.classList.remove('dark');
+                  document.documentElement.style.backgroundColor = '#ffffff';
+                  document.documentElement.style.color = '#000000';
+                }
+              })();
+            `,
+          }}
+        />
       </head>
       <body className={inter.className}>
         <AnnouncementBar />
