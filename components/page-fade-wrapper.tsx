@@ -10,19 +10,24 @@ export function PageFadeWrapper({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams()
   const wrapperRef = useRef<HTMLDivElement>(null)
   const [hasAnimated, setHasAnimated] = useState(false)
+  const [currentPath, setCurrentPath] = useState("")
 
-  // Apply fade-in effect when the route changes, but only once per page load
+  // Track path changes without triggering re-renders
   useEffect(() => {
-    // Reset the animation state for new routes
-    setHasAnimated(false)
+    setCurrentPath(`${pathname}?${searchParams}`)
   }, [pathname, searchParams])
 
+  // Reset animation state when path changes
   useEffect(() => {
-    // Only apply the animation if it hasn't been applied yet for this route
-    if (!hasAnimated && wrapperRef.current) {
-      setHasAnimated(true)
+    if (currentPath) {
+      setHasAnimated(false)
+    }
+  }, [currentPath])
 
-      // Remove any existing animation classes
+  // Apply the animation only once
+  useEffect(() => {
+    if (!hasAnimated && wrapperRef.current) {
+      // Remove any existing animation
       wrapperRef.current.style.animation = "none"
       void wrapperRef.current.offsetWidth // Force reflow
 
@@ -32,6 +37,9 @@ export function PageFadeWrapper({ children }: { children: React.ReactNode }) {
       // Apply different animation durations based on the page
       const duration = isMainPage ? 0.6 : 1.2 // 0.6s for main page, 1.2s for other pages
       wrapperRef.current.style.animation = `fadeIn ${duration}s ease-out forwards`
+
+      // Mark as animated
+      setHasAnimated(true)
     }
   }, [hasAnimated, pathname])
 
@@ -39,7 +47,7 @@ export function PageFadeWrapper({ children }: { children: React.ReactNode }) {
     <div
       ref={wrapperRef}
       style={{
-        opacity: hasAnimated ? 1 : 0, // Start invisible until animation is applied
+        opacity: 0, // Start invisible
       }}
     >
       <style jsx global>{`

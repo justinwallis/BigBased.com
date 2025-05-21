@@ -1,10 +1,12 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { InteractiveLearningCenter } from "./interactive-learning-center"
 
 export function AboutSection() {
   const [currentQuote, setCurrentQuote] = useState(0)
   const [isVisible, setIsVisible] = useState(true)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const quotes = [
     { text: "Freedom is never more than one generation away from extinction.", author: "Ronald Reagan" },
@@ -47,19 +49,22 @@ export function AboutSection() {
 
   useEffect(() => {
     // Set up the rotation interval
-    const interval = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       // Start fade out
       setIsVisible(false)
 
       // After fade out completes, change quote and fade in
-      setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         const nextQuote = Math.floor(Math.random() * quotes.length)
         setCurrentQuote(nextQuote)
         setIsVisible(true)
       }, 500) // This should match the CSS transition duration
     }, 8000) // Change quote every 8 seconds
 
-    return () => clearInterval(interval)
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    }
   }, [quotes.length])
 
   return (

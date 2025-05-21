@@ -53,37 +53,66 @@ export default function FundraisingProgressBar({
 
   // Simulate fetching data from GiveSendGo API
   useEffect(() => {
+    let isMounted = true
+
     const fetchData = async () => {
+      if (!isMounted) return
+
       setLoading(true)
       try {
         // In a real implementation, this would be an API call to GiveSendGo
         // For now, we'll simulate with random fluctuations
         setTimeout(() => {
+          if (!isMounted) return
+
           // Simulate small random fluctuations in the data
           const randomFluctuation = Math.random() * 500 - 250
           setRaised((prev) => Math.max(prev + randomFluctuation, prev))
-          setDonors((prev) => (Math.floor(Math.random() * 3) === 0 ? prev + 1 : prev))
+
+          if (Math.floor(Math.random() * 3) === 0) {
+            setDonors((prev) => prev + 1)
+          }
+
           setLoading(false)
         }, 1500)
       } catch (error) {
-        console.error("Error fetching fundraising data:", error)
-        setLoading(false)
+        if (isMounted) {
+          console.error("Error fetching fundraising data:", error)
+          setLoading(false)
+        }
       }
     }
 
     fetchData()
+
     // Refresh data periodically
     const intervalId = setInterval(fetchData, 60000) // every minute
-    return () => clearInterval(intervalId)
+
+    return () => {
+      isMounted = false
+      clearInterval(intervalId)
+    }
   }, [])
 
   // Periodically show sparkle animation
   useEffect(() => {
+    let isMounted = true
+
     const sparkleInterval = setInterval(() => {
-      setShowSparkle(true)
-      setTimeout(() => setShowSparkle(false), 2000)
+      if (isMounted) {
+        setShowSparkle(true)
+        setTimeout(() => {
+          if (isMounted) {
+            setShowSparkle(false)
+          }
+        }, 2000)
+      }
     }, 10000)
-    return () => clearInterval(sparkleInterval)
+
+    return () => {
+      isMounted = false
+      clearInterval(sparkleInterval)
+    }
   }, [])
 
   // Handle sharing on different platforms
