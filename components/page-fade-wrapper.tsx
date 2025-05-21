@@ -2,31 +2,40 @@
 
 import type React from "react"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { usePathname, useSearchParams } from "next/navigation"
 
 export function PageFadeWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const wrapperRef = useRef<HTMLDivElement>(null)
+  const [hasAnimated, setHasAnimated] = useState(false)
 
-  // Apply fade-in effect when the route changes
+  // Apply fade-in effect when the route changes, but only once per page load
   useEffect(() => {
-    if (wrapperRef.current) {
-      // Reset the animation by removing and re-adding the class
-      wrapperRef.current.classList.remove("animate-fade-in")
-      void wrapperRef.current.offsetWidth // Force reflow
-      wrapperRef.current.classList.add("animate-fade-in")
-    }
+    // Reset the animation state for new routes
+    setHasAnimated(false)
   }, [pathname, searchParams])
+
+  useEffect(() => {
+    // Only apply the animation if it hasn't been applied yet for this route
+    if (!hasAnimated && wrapperRef.current) {
+      setHasAnimated(true)
+
+      // Remove any existing animation classes
+      wrapperRef.current.style.animation = "none"
+      void wrapperRef.current.offsetWidth // Force reflow
+
+      // Apply the animation
+      wrapperRef.current.style.animation = "fadeIn 0.6s ease-out forwards"
+    }
+  }, [hasAnimated])
 
   return (
     <div
       ref={wrapperRef}
-      className="animate-fade-in"
       style={{
-        animation: "fadeIn 0.6s ease-out forwards",
-        opacity: 0,
+        opacity: hasAnimated ? 1 : 0, // Start invisible until animation is applied
       }}
     >
       <style jsx global>{`
