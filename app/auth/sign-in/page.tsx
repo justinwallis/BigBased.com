@@ -10,16 +10,20 @@ export const metadata: Metadata = {
 export default function SignInPage() {
   return (
     <>
-      <h2 className="text-xl font-semibold mb-6 text-center">Sign in to your account</h2>
-      <SignInForm />
-      <div className="mt-6 text-center text-sm">
-        <p className="text-gray-600 dark:text-gray-400">
-          Don't have an account?{" "}
-          <Link href="/auth/sign-up" className="text-primary hover:underline font-medium">
-            Sign up
+      <div className="mb-6 text-center">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Sign in to your account</h2>
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          Or{" "}
+          <Link href="/auth/sign-up" className="font-medium text-primary hover:underline">
+            create a new account
           </Link>
         </p>
-        <Link href="/auth/forgot-password" className="text-primary hover:underline text-sm mt-2 inline-block">
+      </div>
+
+      <SignInForm />
+
+      <div className="mt-6 text-center">
+        <Link href="/auth/forgot-password" className="text-sm font-medium text-primary hover:underline">
           Forgot your password?
         </Link>
       </div>

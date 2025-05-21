@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useFormStatus } from "react-dom"
 import { register } from "@/app/actions/auth-actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,6 +13,7 @@ import { Progress } from "@/components/ui/progress"
 interface State {
   message: string | null
   success: boolean
+  loading: boolean
 }
 
 interface PasswordStrength {
@@ -28,6 +28,7 @@ interface PasswordStrength {
 const initialState: State = {
   message: null,
   success: false,
+  loading: false,
 }
 
 const initialPasswordStrength: PasswordStrength = {
@@ -88,49 +89,74 @@ export default function SignUpForm() {
     return passwordStrength.score >= 4 && passwordsMatch && password.length > 0 && confirmPassword.length > 0
   }
 
+  async function handleSubmit(formData: FormData) {
+    // Client-side validation before submission
+    if (!isFormValid()) {
+      setState({
+        message: "Please ensure your password meets all requirements and passwords match.",
+        success: false,
+        loading: false,
+      })
+      return
+    }
+
+    setState({ ...state, loading: true, message: null })
+
+    try {
+      const result = await register(formData)
+
+      if (result?.error) {
+        setState({ message: result.error, success: false, loading: false })
+      } else if (result?.success) {
+        setState({
+          message: "Account created successfully! Please check your email to verify your account.",
+          success: true,
+          loading: false,
+        })
+        // Redirect to sign-in page after successful registration
+        setTimeout(() => {
+          router.push("/auth/sign-in")
+        }, 3000)
+      } else {
+        setState({ message: "An unknown error occurred", success: false, loading: false })
+      }
+    } catch (error) {
+      setState({
+        message: error instanceof Error ? error.message : "An unknown error occurred",
+        success: false,
+        loading: false,
+      })
+    }
+  }
+
   return (
-    <form
-      className="space-y-4"
-      action={async (formData) => {
-        // Client-side validation before submission
-        if (!isFormValid()) {
-          setState({
-            message: "Please ensure your password meets all requirements and passwords match.",
-            success: false,
-          })
-          return
-        }
-
-        const result = await register(formData)
-
-        if (result?.error) {
-          setState({ message: result.error, success: false })
-        } else if (result?.success) {
-          setState({
-            message: "Account created successfully! Please check your email to verify your account.",
-            success: true,
-          })
-          // Redirect to sign-in page after successful registration
-          setTimeout(() => {
-            router.push("/auth/sign-in")
-          }, 3000)
-        }
-      }}
-    >
+    <form className="space-y-6" action={handleSubmit}>
       {state.message && (
-        <Alert variant={state.success ? "default" : "destructive"} className="mb-4">
+        <Alert variant={state.success ? "default" : "destructive"}>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{state.message}</AlertDescription>
         </Alert>
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" autoComplete="email" required placeholder="you@example.com" />
+        <Label htmlFor="email" className="text-sm font-medium">
+          Email
+        </Label>
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required
+          placeholder="you@example.com"
+          className="w-full"
+        />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password" className="text-sm font-medium">
+          Password
+        </Label>
         <Input
           id="password"
           name="password"
@@ -139,14 +165,15 @@ export default function SignUpForm() {
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          className="w-full"
         />
 
         {/* Password strength indicator */}
         {password.length > 0 && (
-          <div className="mt-2 space-y-2">
+          <div className="mt-4 space-y-4">
             <div className="space-y-1">
               <Progress value={passwordStrength.score * 20} className={getStrengthColor()} />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 mt-1">
                 Password strength:{" "}
                 {passwordStrength.score <= 2
                   ? "Weak"
@@ -158,44 +185,44 @@ export default function SignUpForm() {
               </p>
             </div>
 
-            <ul className="space-y-1 text-sm">
+            <ul className="space-y-2 text-sm">
               <li className="flex items-center gap-2">
                 {passwordStrength.hasMinLength ? (
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
                 ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
+                  <XCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
                 )}
                 <span className="text-xs">At least 10 characters</span>
               </li>
               <li className="flex items-center gap-2">
                 {passwordStrength.hasUppercase ? (
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
                 ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
+                  <XCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
                 )}
                 <span className="text-xs">At least one uppercase letter</span>
               </li>
               <li className="flex items-center gap-2">
                 {passwordStrength.hasLowercase ? (
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
                 ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
+                  <XCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
                 )}
                 <span className="text-xs">At least one lowercase letter</span>
               </li>
               <li className="flex items-center gap-2">
                 {passwordStrength.hasNumber ? (
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
                 ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
+                  <XCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
                 )}
                 <span className="text-xs">At least one number</span>
               </li>
               <li className="flex items-center gap-2">
                 {passwordStrength.hasSpecialChar ? (
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
                 ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
+                  <XCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
                 )}
                 <span className="text-xs">At least one special character</span>
               </li>
@@ -205,7 +232,9 @@ export default function SignUpForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="confirmPassword">Confirm Password</Label>
+        <Label htmlFor="confirmPassword" className="text-sm font-medium">
+          Confirm Password
+        </Label>
         <Input
           id="confirmPassword"
           name="confirmPassword"
@@ -214,22 +243,14 @@ export default function SignUpForm() {
           required
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          className={confirmPassword && !passwordsMatch ? "border-red-500" : ""}
+          className={`w-full ${confirmPassword && !passwordsMatch ? "border-red-500" : ""}`}
         />
         {confirmPassword && !passwordsMatch && <p className="text-xs text-red-500 mt-1">Passwords do not match</p>}
       </div>
 
-      <SubmitButton disabled={!isFormValid()} />
+      <Button type="submit" className="w-full" disabled={state.loading || !isFormValid()}>
+        {state.loading ? "Creating account..." : "Create account"}
+      </Button>
     </form>
-  )
-}
-
-function SubmitButton({ disabled = false }) {
-  const { pending } = useFormStatus()
-
-  return (
-    <Button type="submit" className="w-full" disabled={pending || disabled}>
-      {pending ? "Creating account..." : "Create account"}
-    </Button>
   )
 }
