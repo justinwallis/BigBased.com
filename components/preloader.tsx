@@ -6,7 +6,6 @@ import loadingManager from "@/utils/loading-manager"
 import { preloadImages } from "@/utils/image-preloader"
 import { errorLogger } from "@/utils/error-logger"
 import Image from "next/image"
-import { useTheme } from "@/components/theme-provider"
 
 interface PreloaderProps {
   minimumLoadingTime?: number
@@ -112,13 +111,79 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
   const [selectedMessages, setSelectedMessages] = useState<string[]>([])
   const [resourcesLoaded, setResourcesLoaded] = useState(false)
   const [animationComplete, setAnimationComplete] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(false)
   const messageIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const messageIndexRef = useRef(0)
   const startTimeRef = useRef(Date.now())
   const hasCalledOnCompleteRef = useRef(false)
 
-  const { theme } = useTheme()
+  // Detect dark mode
+  useEffect(() => {
+    // Check for saved theme preference
+    const savedTheme = localStorage.getItem("theme")
+    if (savedTheme === "dark") {
+      setIsDarkMode(true)
+      return
+    }
+    if (savedTheme === "light") {
+      setIsDarkMode(false)
+      return
+    }
+
+    // Check for system preference
+    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      setIsDarkMode(true)
+      return
+    }
+
+    // Check if document already has dark class
+    if (document.documentElement.classList.contains("dark")) {
+      setIsDarkMode(true)
+      return
+    }
+
+    setIsDarkMode(false)
+  }, [])
+
+  // Listen for theme changes
+  useEffect(() => {
+    const handleThemeChange = () => {
+      const savedTheme = localStorage.getItem("theme")
+      if (savedTheme === "dark") {
+        setIsDarkMode(true)
+        return
+      }
+      if (savedTheme === "light") {
+        setIsDarkMode(false)
+        return
+      }
+
+      // Check for system preference
+      if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        setIsDarkMode(true)
+        return
+      }
+
+      setIsDarkMode(false)
+    }
+
+    // Listen for storage events (theme changes)
+    window.addEventListener("storage", handleThemeChange)
+
+    // Listen for system preference changes
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", handleThemeChange)
+    }
+
+    return () => {
+      window.removeEventListener("storage", handleThemeChange)
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener("change", handleThemeChange)
+      }
+    }
+  }, [])
 
   // Select random animation and messages on mount
   useEffect(() => {
@@ -321,7 +386,7 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
       {loading && (
         <motion.div
           className={`fixed inset-0 z-[9999] flex items-center justify-center ${
-            theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black"
+            isDarkMode ? "bg-gray-900 text-white" : "bg-white text-black"
           }`}
           initial={{ opacity: 1 }}
           exit={{
@@ -348,7 +413,7 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
                   {Array.from({ length: 20 }).map((_, j) => (
                     <span
                       key={j}
-                      className={`inline-block mx-1 ${theme === "dark" ? "text-white" : "text-black"} opacity-50`}
+                      className={`inline-block mx-1 ${isDarkMode ? "text-white" : "text-black"} opacity-50`}
                       style={{ animationDelay: `${j * 0.05}s` }}
                     >
                       {Math.random() > 0.5 ? "1" : "0"}
@@ -374,7 +439,7 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
                     animate={selectedVariant.logo.animate}
                   >
                     <Image
-                      src="/bb-logo.png"
+                      src={isDarkMode ? "/BigBasedIconInvert.png" : "/bb-logo.png"}
                       alt="BigBased Logo"
                       width={96}
                       height={96}
@@ -385,7 +450,9 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
                         const target = e.target as HTMLImageElement
                         if (target && target.parentElement) {
                           const div = document.createElement("div")
-                          div.className = "bg-black text-white px-6 py-3 text-4xl font-bold"
+                          div.className = isDarkMode
+                            ? "bg-white text-black px-6 py-3 text-4xl font-bold"
+                            : "bg-black text-white px-6 py-3 text-4xl font-bold"
                           div.textContent = "BB"
                           target.parentElement.replaceChild(div, target)
                         }
@@ -409,7 +476,7 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
                 <div className="h-12 flex items-center justify-center mb-4">
                   {selectedMessages.length > 0 && (
                     <motion.div
-                      className={`text-center italic text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}
+                      className={`text-center ${isDarkMode ? "text-gray-300" : "text-gray-600"} italic text-sm`}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 1.4, duration: 0.5 }}
@@ -430,7 +497,9 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
                 >
                   {/* Percentage display */}
                   <motion.div
-                    className={`absolute -top-6 right-0 text-sm font-bold ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+                    className={`absolute -top-6 right-0 text-sm font-bold ${
+                      isDarkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1.6, duration: 0.3 }}
@@ -440,10 +509,10 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
 
                   {/* Progress bar */}
                   <div
-                    className={`w-full h-full ${theme === "dark" ? "bg-gray-700" : "bg-gray-200"} rounded-full overflow-hidden`}
+                    className={`w-full h-full ${isDarkMode ? "bg-gray-700" : "bg-gray-200"} rounded-full overflow-hidden`}
                   >
                     <motion.div
-                      className={`h-full ${theme === "dark" ? "bg-white" : "bg-black"}`}
+                      className={`h-full ${isDarkMode ? "bg-white" : "bg-black"}`}
                       initial={{ width: "0%" }}
                       animate={{ width: `${progress}%` }}
                       transition={{
