@@ -72,21 +72,6 @@ export function useMatrixNavigation() {
       .matrix-canvas.fade-out {
         opacity: 0;
       }
-      
-      .matrix-background {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 1;
-        opacity: 0;
-        transition: opacity 1.2s ease-in-out;
-      }
-      
-      .matrix-background.visible {
-        opacity: 1;
-      }
     `
     document.head.appendChild(styleElement)
 
@@ -101,19 +86,12 @@ export function useMatrixNavigation() {
       canvas.className = "matrix-canvas"
       canvasContainer.appendChild(canvas)
 
-      // Create a separate background element
-      const background = document.createElement("div")
-      background.className = "matrix-background"
-      background.style.backgroundColor = isDark ? "#111827" : "#ffffff"
-      container.appendChild(background)
-
       const ctx = canvas.getContext("2d")
       if (!ctx)
         return {
           cleanup: () => {},
           fadeOut: () => {},
           fadeIn: () => {},
-          fadeInBackground: () => {},
         }
 
       canvas.width = window.innerWidth
@@ -127,9 +105,11 @@ export function useMatrixNavigation() {
         .map(() => Math.random() * -100)
 
       const draw = () => {
-        ctx.fillStyle = isDark ? "rgba(17, 24, 39, 0.05)" : "rgba(255, 255, 255, 0.05)"
+        // Use a transparent background for the canvas
+        ctx.fillStyle = "rgba(0, 0, 0, 0.05)"
         ctx.fillRect(0, 0, canvas.width, canvas.height)
 
+        // Set the color of the matrix code based on the theme
         ctx.fillStyle = isDark ? "#0f0" : "#000"
         ctx.font = `${fontSize}px monospace`
 
@@ -163,12 +143,6 @@ export function useMatrixNavigation() {
             setTimeout(resolve, 800) // Match the CSS transition duration
           })
         },
-        fadeInBackground: () => {
-          return new Promise<void>((resolve) => {
-            background.classList.add("visible")
-            setTimeout(resolve, 1200) // Match the CSS transition duration
-          })
-        },
         fadeOut: () => {
           return new Promise<void>((resolve) => {
             canvas.classList.remove("visible")
@@ -185,9 +159,6 @@ export function useMatrixNavigation() {
           cancelAnimationFrame(animationFrame)
           if (container.contains(canvasContainer)) {
             container.removeChild(canvasContainer)
-          }
-          if (container.contains(background)) {
-            container.removeChild(background)
           }
         },
       }
@@ -236,9 +207,8 @@ export function useMatrixNavigation() {
       const transitionContainer = document.createElement("div")
       transitionContainer.className = "matrix-transition"
 
-      // Set initial background color to match current theme to prevent flash
-      const isDark = theme === "dark" || resolvedTheme === "dark"
-      transitionContainer.style.backgroundColor = "transparent" // Start transparent
+      // Set initial background to transparent
+      transitionContainer.style.backgroundColor = "transparent"
       document.body.appendChild(transitionContainer)
 
       // Make container visible but with transparent background
@@ -251,27 +221,26 @@ export function useMatrixNavigation() {
 
       // Create logo image
       const logoImg = document.createElement("img")
-      logoImg.src = isDark
-        ? "/BigBasedIconInvert.png" // Dark mode - use inverted logo (white)
-        : "/bb-logo.png" // Light mode - use regular logo (black)
+      logoImg.src =
+        theme === "dark" || resolvedTheme === "dark"
+          ? "/BigBasedIconInvert.png" // Dark mode - use inverted logo (white)
+          : "/bb-logo.png" // Light mode - use regular logo (black)
       logoImg.alt = "Big Based Logo"
       logoImg.width = 120
       logoImg.height = 120
       logoContainer.appendChild(logoImg)
 
-      // Start matrix effect with separate background
+      // Start matrix effect with transparent background
+      const isDark = theme === "dark" || resolvedTheme === "dark"
       const matrixEffect = createMatrixEffect(transitionContainer, isDark)
 
-      // First, fade in just the matrix code on a transparent background
+      // Fade in just the matrix code on a transparent background
       await matrixEffect.fadeIn()
 
-      // Wait a moment to let the matrix code be visible alone
-      await new Promise<void>((resolve) => setTimeout(resolve, 800))
+      // Wait a moment to let the matrix code be visible
+      await new Promise<void>((resolve) => setTimeout(resolve, 1200))
 
-      // Now fade in the background
-      await matrixEffect.fadeInBackground()
-
-      // Show logo after background is visible
+      // Show logo
       logoContainer.classList.add("visible")
 
       // Wait for logo to be visible
@@ -283,16 +252,16 @@ export function useMatrixNavigation() {
       // Wait for logo to fade out
       await new Promise<void>((resolve) => setTimeout(resolve, 500))
 
-      // Fade out matrix code, leaving just the background
+      // Fade out matrix code
       await matrixEffect.fadeOut()
 
-      // Wait a moment with just the background visible
+      // Wait a moment with just the transparent background
       await new Promise<void>((resolve) => setTimeout(resolve, 200))
 
       // Navigate to the new page
       router.push(destinationHref)
 
-      // Clean up after navigation (the background will remain until the new page loads)
+      // Clean up after navigation
       setTimeout(() => {
         matrixEffect.cleanup()
         if (document.body.contains(transitionContainer)) {
