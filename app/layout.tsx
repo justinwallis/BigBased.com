@@ -162,12 +162,24 @@ export default function RootLayout({
                   document.body.classList.remove('dark-mode');
                   document.documentElement.style.color = '#000000';
                 }
+                
+                // Prevent any flashes during hydration
+                document.documentElement.style.visibility = 'visible';
               })();
             `,
           }}
         />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+          html { visibility: hidden; }
+          .no-js { visibility: visible; }
+        `,
+          }}
+        />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} no-js`}>
+        <script dangerouslySetInnerHTML={{ __html: `document.body.classList.remove('no-js');` }} />
         <AnnouncementBar />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <ErrorBoundary>

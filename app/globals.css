@@ -24,6 +24,16 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Prevent any automatic transitions that might cause flashes */
+* {
+  transition-property: none !important;
+}
+
+/* Only allow specific transitions that we control */
+.controlled-transition {
+  transition-property: opacity, transform, background-color !important;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useEffect, useRef, useState } from "react"
 import { usePathname, useSearchParams } from "next/navigation"
-import { useTheme } from "next-themes"
+import { useTheme } from "@/components/theme-provider"
 
 export function PageFadeWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -12,7 +12,8 @@ export function PageFadeWrapper({ children }: { children: React.ReactNode }) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const [hasAnimated, setHasAnimated] = useState(false)
   const [currentPath, setCurrentPath] = useState("")
-  const { theme, resolvedTheme } = useTheme()
+  const { theme } = useTheme()
+  const animationAppliedRef = useRef(false)
 
   // Track path changes without triggering re-renders
   useEffect(() => {
@@ -23,14 +24,18 @@ export function PageFadeWrapper({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (currentPath) {
       setHasAnimated(false)
+      animationAppliedRef.current = false
     }
   }, [currentPath])
 
   // Apply the animation only once
   useEffect(() => {
-    if (!hasAnimated && wrapperRef.current) {
+    if (!hasAnimated && wrapperRef.current && !animationAppliedRef.current) {
+      // Prevent multiple applications of animation
+      animationAppliedRef.current = true
+
       // Determine if we're in dark mode
-      const isDarkMode = theme === "dark" || resolvedTheme === "dark"
+      const isDarkMode = theme === "dark"
 
       // Determine if we're on the main page
       const isMainPage = pathname === "/"
@@ -38,48 +43,28 @@ export function PageFadeWrapper({ children }: { children: React.ReactNode }) {
       // Apply different animation durations based on the page
       const duration = isMainPage ? 0.6 : 1.2 // 0.6s for main page, 1.2s for other pages
 
-      // Remove any existing animation
-      wrapperRef.current.style.animation = "none"
-      void wrapperRef.current.offsetWidth // Force reflow
-
-      // Apply the animation with the correct background color
+      // Set the background color based on theme
       const bgColor = isDarkMode ? "#111827" : "#ffffff"
 
-      // Create a custom animation name based on the background color
-      const animationName = isDarkMode ? "fadeInDark" : "fadeInLight"
-
-      // Add the custom animation to the document
-      const styleSheet = document.styleSheets[0]
-      let animationExists = false
-
-      // Check if the animation already exists
-      for (let i = 0; i < styleSheet.cssRules.length; i++) {
-        const rule = styleSheet.cssRules[i]
-        if (rule instanceof CSSKeyframesRule && rule.name === animationName) {
-          animationExists = true
-          break
-        }
-      }
-
-      // Add the animation if it doesn't exist
-      if (!animationExists) {
-        styleSheet.insertRule(
-          `@keyframes ${animationName} {
-            from { opacity: 0; background-color: ${bgColor}; }
-            to { opacity: 1; background-color: ${bgColor}; }
-          }`,
-          styleSheet.cssRules.length,
-        )
-      }
-
-      // Apply the animation
-      wrapperRef.current.style.animation = `${animationName} ${duration}s ease-out forwards`
+      // Set initial styles immediately to prevent flash
+      wrapperRef.current.style.opacity = "0"
       wrapperRef.current.style.backgroundColor = bgColor
 
-      // Mark as animated
-      setHasAnimated(true)
+      // Use requestAnimationFrame to ensure smooth animation
+      requestAnimationFrame(() => {
+        if (wrapperRef.current) {
+          // Simple transition instead of animation to prevent conflicts
+          wrapperRef.current.style.transition = `opacity ${duration}s ease-out`
+          wrapperRef.current.style.opacity = "1"
+
+          // Mark as animated after transition completes
+          setTimeout(() => {
+            setHasAnimated(true)
+          }, duration * 1000)
+        }
+      })
     }
-  }, [hasAnimated, pathname, theme, resolvedTheme])
+  }, [hasAnimated, pathname, theme])
 
   return (
     <div
