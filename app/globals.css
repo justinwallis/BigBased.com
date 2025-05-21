@@ -917,3 +917,49 @@ body {
 .image-fade-in.loaded {
   opacity: 1;
 }
+
+/* Page transition animations */
+@keyframes fadeInLight {
+  from {
+    opacity: 0;
+    background-color: #ffffff;
+  }
+  to {
+    opacity: 1;
+    background-color: #ffffff;
+  }
+}
+
+@keyframes fadeInDark {
+  from {
+    opacity: 0;
+    background-color: #111827;
+  }
+  to {
+    opacity: 1;
+    background-color: #111827;
+  }
+}
+
+/* Ensure the body background color matches the theme */
+body.dark-mode {
+  background-color: #111827;
+}
+
+body.light-mode {
+  background-color: #ffffff;
+}
+
+/* Ensure smooth transitions between themes */
+body {
+  transition: background-color 0.3s ease-in-out;
+}
+
+/* Ensure the html element also has the correct background color */
+html.dark {
+  background-color: #111827;
+}
+
+html:not(.dark) {
+  background-color: #ffffff;
+}
