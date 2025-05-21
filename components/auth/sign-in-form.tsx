@@ -61,7 +61,7 @@ export default function SignInForm() {
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-sm font-medium">
+        <Label htmlFor="email" className="text-sm font-medium text-gray-900 dark:text-white">
           Email
         </Label>
         <Input
@@ -77,7 +77,7 @@ export default function SignInForm() {
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor="password" className="text-sm font-medium">
+          <Label htmlFor="password" className="text-sm font-medium text-gray-900 dark:text-white">
             Password
           </Label>
         </div>

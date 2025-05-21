@@ -139,7 +139,7 @@ export default function SignUpForm() {
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-sm font-medium">
+        <Label htmlFor="email" className="text-sm font-medium text-gray-900 dark:text-white">
           Email
         </Label>
         <Input
@@ -154,7 +154,7 @@ export default function SignUpForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password" className="text-sm font-medium">
+        <Label htmlFor="password" className="text-sm font-medium text-gray-900 dark:text-white">
           Password
         </Label>
         <Input
@@ -173,7 +173,7 @@ export default function SignUpForm() {
           <div className="mt-4 space-y-4">
             <div className="space-y-1">
               <Progress value={passwordStrength.score * 20} className={getStrengthColor()} />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Password strength:{" "}
                 {passwordStrength.score <= 2
                   ? "Weak"
@@ -192,7 +192,7 @@ export default function SignUpForm() {
                 ) : (
                   <XCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
                 )}
-                <span className="text-xs">At least 10 characters</span>
+                <span className="text-xs dark:text-gray-300">At least 10 characters</span>
               </li>
               <li className="flex items-center gap-2">
                 {passwordStrength.hasUppercase ? (
@@ -200,7 +200,7 @@ export default function SignUpForm() {
                 ) : (
                   <XCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
                 )}
-                <span className="text-xs">At least one uppercase letter</span>
+                <span className="text-xs dark:text-gray-300">At least one uppercase letter</span>
               </li>
               <li className="flex items-center gap-2">
                 {passwordStrength.hasLowercase ? (
@@ -208,7 +208,7 @@ export default function SignUpForm() {
                 ) : (
                   <XCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
                 )}
-                <span className="text-xs">At least one lowercase letter</span>
+                <span className="text-xs dark:text-gray-300">At least one lowercase letter</span>
               </li>
               <li className="flex items-center gap-2">
                 {passwordStrength.hasNumber ? (
@@ -216,7 +216,7 @@ export default function SignUpForm() {
                 ) : (
                   <XCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
                 )}
-                <span className="text-xs">At least one number</span>
+                <span className="text-xs dark:text-gray-300">At least one number</span>
               </li>
               <li className="flex items-center gap-2">
                 {passwordStrength.hasSpecialChar ? (
@@ -224,7 +224,7 @@ export default function SignUpForm() {
                 ) : (
                   <XCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
                 )}
-                <span className="text-xs">At least one special character</span>
+                <span className="text-xs dark:text-gray-300">At least one special character</span>
               </li>
             </ul>
           </div>
@@ -232,7 +232,7 @@ export default function SignUpForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="confirmPassword" className="text-sm font-medium">
+        <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-900 dark:text-white">
           Confirm Password
         </Label>
         <Input
