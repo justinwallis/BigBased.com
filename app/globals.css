@@ -24,9 +24,12 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Prevent any automatic transitions that might cause flashes */
-* {
-  transition-property: none !important;
+/* Allow specific transitions for matrix effects */
+.matrix-transition,
+.matrix-canvas,
+.matrix-logo,
+.matrix-background {
+  transition-property: opacity, transform, background-color !important;
 }
 
 /* Only allow specific transitions that we control */
