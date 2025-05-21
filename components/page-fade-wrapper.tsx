@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useEffect, useRef, useState } from "react"
 import { usePathname, useSearchParams } from "next/navigation"
-import { useTheme } from "@/components/theme-provider"
+import { useTheme } from "next-themes"
 
 export function PageFadeWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -12,7 +12,7 @@ export function PageFadeWrapper({ children }: { children: React.ReactNode }) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const [hasAnimated, setHasAnimated] = useState(false)
   const [currentPath, setCurrentPath] = useState("")
-  const { theme } = useTheme()
+  const { theme, resolvedTheme } = useTheme()
   const animationAppliedRef = useRef(false)
 
   // Track path changes without triggering re-renders
@@ -35,7 +35,7 @@ export function PageFadeWrapper({ children }: { children: React.ReactNode }) {
       animationAppliedRef.current = true
 
       // Determine if we're in dark mode
-      const isDarkMode = theme === "dark"
+      const isDarkMode = theme === "dark" || resolvedTheme === "dark"
 
       // Determine if we're on the main page
       const isMainPage = pathname === "/"
@@ -53,6 +53,9 @@ export function PageFadeWrapper({ children }: { children: React.ReactNode }) {
       // Use requestAnimationFrame to ensure smooth animation
       requestAnimationFrame(() => {
         if (wrapperRef.current) {
+          // Add the controlled-transition class to enable transitions
+          wrapperRef.current.classList.add("controlled-transition")
+
           // Simple transition instead of animation to prevent conflicts
           wrapperRef.current.style.transition = `opacity ${duration}s ease-out`
           wrapperRef.current.style.opacity = "1"
@@ -60,11 +63,16 @@ export function PageFadeWrapper({ children }: { children: React.ReactNode }) {
           // Mark as animated after transition completes
           setTimeout(() => {
             setHasAnimated(true)
+
+            // Remove the transition after it completes to prevent conflicts
+            if (wrapperRef.current) {
+              wrapperRef.current.style.transition = "none"
+            }
           }, duration * 1000)
         }
       })
     }
-  }, [hasAnimated, pathname, theme])
+  }, [hasAnimated, pathname, theme, resolvedTheme])
 
   return (
     <div
@@ -75,6 +83,7 @@ export function PageFadeWrapper({ children }: { children: React.ReactNode }) {
         width: "100%",
         height: "100%",
       }}
+      className="page-fade-wrapper"
     >
       {children}
     </div>
