@@ -1,17 +1,27 @@
 "use client"
 
-import type { ReactNode } from "react"
+import { useEffect, useState } from "react"
+import { AuthProvider } from "@/contexts/auth-context"
 import JoinButtonConnector from "./join-button-connector"
+import AuthButton from "./auth-button"
 
-interface AuthWrapperProps {
-  children: ReactNode
-}
+export default function AuthWrapper() {
+  const [mounted, setMounted] = useState(false)
 
-export default function AuthWrapper({ children }: AuthWrapperProps) {
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
+
   return (
-    <>
-      {children}
-      <JoinButtonConnector />
-    </>
+    <AuthProvider>
+      <div className="flex items-center gap-2">
+        <AuthButton />
+        <JoinButtonConnector />
+      </div>
+    </AuthProvider>
   )
 }

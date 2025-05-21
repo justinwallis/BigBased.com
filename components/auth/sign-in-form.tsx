@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useFormStatus } from "react-dom"
-import { signIn } from "@/app/actions/auth-actions"
+import { supabaseClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -24,23 +24,45 @@ export default function SignInForm() {
   const [state, setState] = useState<State>(initialState)
   const router = useRouter()
 
-  return (
-    <form
-      className="space-y-4"
-      action={async (formData) => {
-        const result = await signIn(formData)
+  async function handleSignIn(formData: FormData) {
+    try {
+      const email = formData.get("email") as string
+      const password = formData.get("password") as string
 
-        if (result?.error) {
-          setState({ message: result.error, success: false })
-        } else if (result?.success) {
-          setState({ message: "Sign in successful! Redirecting...", success: true })
-          // Redirect to profile or dashboard after successful login
-          setTimeout(() => {
-            router.push("/profile")
-          }, 1000)
-        }
-      }}
-    >
+      if (!email || !password) {
+        setState({ message: "Email and password are required", success: false })
+        return
+      }
+
+      const supabase = supabaseClient()
+      if (!supabase) {
+        setState({ message: "Authentication service unavailable", success: false })
+        return
+      }
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) {
+        setState({ message: error.message, success: false })
+        return
+      }
+
+      setState({ message: "Sign in successful! Redirecting...", success: true })
+      // Redirect to profile or dashboard after successful login
+      setTimeout(() => {
+        router.push("/profile")
+      }, 1000)
+    } catch (error) {
+      console.error("Sign in error:", error)
+      setState({ message: "An unexpected error occurred", success: false })
+    }
+  }
+
+  return (
+    <form className="space-y-4" action={handleSignIn}>
       {state.message && (
         <Alert variant={state.success ? "default" : "destructive"} className="mb-4">
           <AlertCircle className="h-4 w-4" />

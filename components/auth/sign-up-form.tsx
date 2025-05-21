@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useFormStatus } from "react-dom"
-import { register } from "@/app/actions/auth-actions"
+import { supabaseClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -88,35 +88,79 @@ export default function SignUpForm() {
     return passwordStrength.score >= 4 && passwordsMatch && password.length > 0 && confirmPassword.length > 0
   }
 
+  async function handleSignUp(formData: FormData) {
+    try {
+      // Client-side validation before submission
+      if (!isFormValid()) {
+        setState({
+          message: "Please ensure your password meets all requirements and passwords match.",
+          success: false,
+        })
+        return
+      }
+
+      const email = formData.get("email") as string
+      const password = formData.get("password") as string
+      const confirmPassword = formData.get("confirmPassword") as string
+
+      if (!email || !password || !confirmPassword) {
+        setState({ message: "All fields are required", success: false })
+        return
+      }
+
+      if (password !== confirmPassword) {
+        setState({ message: "Passwords do not match", success: false })
+        return
+      }
+
+      // Validate password requirements
+      if (
+        password.length < 10 ||
+        !/[A-Z]/.test(password) ||
+        !/[a-z]/.test(password) ||
+        !/[0-9]/.test(password) ||
+        !/[^A-Za-z0-9]/.test(password)
+      ) {
+        setState({ message: "Password does not meet all requirements", success: false })
+        return
+      }
+
+      const supabase = supabaseClient()
+      if (!supabase) {
+        setState({ message: "Authentication service unavailable", success: false })
+        return
+      }
+
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+
+      if (error) {
+        setState({ message: error.message, success: false })
+        return
+      }
+
+      setState({
+        message: "Account created successfully! Please check your email to verify your account.",
+        success: true,
+      })
+
+      // Redirect to sign-in page after successful registration
+      setTimeout(() => {
+        router.push("/auth/sign-in")
+      }, 3000)
+    } catch (error) {
+      console.error("Sign up error:", error)
+      setState({ message: "An unexpected error occurred", success: false })
+    }
+  }
+
   return (
-    <form
-      className="space-y-4"
-      action={async (formData) => {
-        // Client-side validation before submission
-        if (!isFormValid()) {
-          setState({
-            message: "Please ensure your password meets all requirements and passwords match.",
-            success: false,
-          })
-          return
-        }
-
-        const result = await register(formData)
-
-        if (result?.error) {
-          setState({ message: result.error, success: false })
-        } else if (result?.success) {
-          setState({
-            message: "Account created successfully! Please check your email to verify your account.",
-            success: true,
-          })
-          // Redirect to sign-in page after successful registration
-          setTimeout(() => {
-            router.push("/auth/sign-in")
-          }, 3000)
-        }
-      }}
-    >
+    <form className="space-y-4" action={handleSignUp}>
       {state.message && (
         <Alert variant={state.success ? "default" : "destructive"} className="mb-4">
           <AlertCircle className="h-4 w-4" />
@@ -146,7 +190,7 @@ export default function SignUpForm() {
           <div className="mt-2 space-y-2">
             <div className="space-y-1">
               <Progress value={passwordStrength.score * 20} className={getStrengthColor()} />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Password strength:{" "}
                 {passwordStrength.score <= 2
                   ? "Weak"
@@ -165,7 +209,7 @@ export default function SignUpForm() {
                 ) : (
                   <XCircle className="h-4 w-4 text-red-500" />
                 )}
-                <span className="text-xs">At least 10 characters</span>
+                <span className="text-xs dark:text-gray-300">At least 10 characters</span>
               </li>
               <li className="flex items-center gap-2">
                 {passwordStrength.hasUppercase ? (
@@ -173,7 +217,7 @@ export default function SignUpForm() {
                 ) : (
                   <XCircle className="h-4 w-4 text-red-500" />
                 )}
-                <span className="text-xs">At least one uppercase letter</span>
+                <span className="text-xs dark:text-gray-300">At least one uppercase letter</span>
               </li>
               <li className="flex items-center gap-2">
                 {passwordStrength.hasLowercase ? (
@@ -181,7 +225,7 @@ export default function SignUpForm() {
                 ) : (
                   <XCircle className="h-4 w-4 text-red-500" />
                 )}
-                <span className="text-xs">At least one lowercase letter</span>
+                <span className="text-xs dark:text-gray-300">At least one lowercase letter</span>
               </li>
               <li className="flex items-center gap-2">
                 {passwordStrength.hasNumber ? (
@@ -189,7 +233,7 @@ export default function SignUpForm() {
                 ) : (
                   <XCircle className="h-4 w-4 text-red-500" />
                 )}
-                <span className="text-xs">At least one number</span>
+                <span className="text-xs dark:text-gray-300">At least one number</span>
               </li>
               <li className="flex items-center gap-2">
                 {passwordStrength.hasSpecialChar ? (
@@ -197,7 +241,7 @@ export default function SignUpForm() {
                 ) : (
                   <XCircle className="h-4 w-4 text-red-500" />
                 )}
-                <span className="text-xs">At least one special character</span>
+                <span className="text-xs dark:text-gray-300">At least one special character</span>
               </li>
             </ul>
           </div>
@@ -224,7 +268,7 @@ export default function SignUpForm() {
   )
 }
 
-function SubmitButton({ disabled = false }) {
+function SubmitButton({ disabled = false }: { disabled?: boolean }) {
   const { pending } = useFormStatus()
 
   return (
