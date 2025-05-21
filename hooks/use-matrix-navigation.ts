@@ -2,11 +2,13 @@
 
 import { useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
+import { useTheme } from "next-themes"
 
 export function useMatrixNavigation() {
   const router = useRouter()
   const isTransitioningRef = useRef(false)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const { theme, resolvedTheme } = useTheme()
 
   useEffect(() => {
     // Create a style element for the matrix transition
@@ -25,6 +27,7 @@ export function useMatrixNavigation() {
         align-items: center;
         justify-content: center;
         pointer-events: none;
+        background-color: transparent;
       }
       
       .matrix-transition.visible {
@@ -232,8 +235,14 @@ export function useMatrixNavigation() {
       // Create transition container
       const transitionContainer = document.createElement("div")
       transitionContainer.className = "matrix-transition"
-      transitionContainer.classList.add("visible") // Make container visible but transparent
+
+      // Set initial background color to match current theme to prevent flash
+      const isDark = theme === "dark" || resolvedTheme === "dark"
+      transitionContainer.style.backgroundColor = "transparent" // Start transparent
       document.body.appendChild(transitionContainer)
+
+      // Make container visible but with transparent background
+      transitionContainer.classList.add("visible")
 
       // Create logo container
       const logoContainer = document.createElement("div")
@@ -242,7 +251,7 @@ export function useMatrixNavigation() {
 
       // Create logo image
       const logoImg = document.createElement("img")
-      logoImg.src = document.documentElement.classList.contains("dark")
+      logoImg.src = isDark
         ? "/BigBasedIconInvert.png" // Dark mode - use inverted logo (white)
         : "/bb-logo.png" // Light mode - use regular logo (black)
       logoImg.alt = "Big Based Logo"
@@ -251,7 +260,6 @@ export function useMatrixNavigation() {
       logoContainer.appendChild(logoImg)
 
       // Start matrix effect with separate background
-      const isDark = document.documentElement.classList.contains("dark")
       const matrixEffect = createMatrixEffect(transitionContainer, isDark)
 
       // First, fade in just the matrix code on a transparent background
@@ -302,5 +310,5 @@ export function useMatrixNavigation() {
       document.head.removeChild(styleElement)
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
     }
-  }, [router])
+  }, [router, theme, resolvedTheme])
 }

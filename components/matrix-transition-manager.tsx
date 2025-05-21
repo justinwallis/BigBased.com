@@ -5,6 +5,7 @@ import type React from "react"
 import { useEffect, useState, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { MatrixPageTransition } from "./matrix-page-transition"
+import { useTheme } from "next-themes"
 
 export function MatrixTransitionManager({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -14,6 +15,7 @@ export function MatrixTransitionManager({ children }: { children: React.ReactNod
   const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const navigationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const clickHandlerAttachedRef = useRef(false)
+  const { theme, resolvedTheme } = useTheme()
 
   // Handle the end of transition
   const handleTransitionEnd = useCallback(() => {
@@ -85,10 +87,14 @@ export function MatrixTransitionManager({ children }: { children: React.ReactNod
     }
   }, [router])
 
+  // Create a wrapper with the correct background color
+  const isDark = theme === "dark" || resolvedTheme === "dark"
+  const bgColor = isDark ? "#111827" : "#ffffff"
+
   return (
-    <>
+    <div style={{ backgroundColor: bgColor, minHeight: "100vh" }}>
       {children}
       {isTransitioning && <MatrixPageTransition onTransitionComplete={handleTransitionEnd} />}
-    </>
+    </div>
   )
 }

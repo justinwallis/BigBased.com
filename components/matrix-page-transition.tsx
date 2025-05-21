@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import Image from "next/image"
 import { useTheme } from "next-themes"
 
 interface MatrixPageTransitionProps {
@@ -9,177 +8,104 @@ interface MatrixPageTransitionProps {
 }
 
 export function MatrixPageTransition({ onTransitionComplete }: MatrixPageTransitionProps) {
-  const { theme, systemTheme } = useTheme()
-  const [transitionOpacity, setTransitionOpacity] = useState(0)
-  const [logoOpacity, setLogoOpacity] = useState(0)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const animationFrameRef = useRef<number | null>(null)
-  const fadeIntervalRef = useRef<NodeJS.Timeout | null>(null)
-  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const transitionCompleteRef = useRef(false)
+  const [showLogo, setShowLogo] = useState(false)
+  const { theme, resolvedTheme } = useTheme()
+  const isDark = theme === "dark" || resolvedTheme === "dark"
 
-  // Determine if we're in dark mode
-  const isDarkMode = theme === "dark" || (theme === "system" && systemTheme === "dark")
-
-  // Handle transition lifecycle
   useEffect(() => {
-    // Fade in transition
-    if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current)
-    fadeIntervalRef.current = setInterval(() => {
-      setTransitionOpacity((prev) => {
-        if (prev >= 1) {
-          if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current)
-
-          // Start fading in the logo after the transition is fully visible
-          fadeIntervalRef.current = setInterval(() => {
-            setLogoOpacity((prevLogo) => {
-              if (prevLogo >= 1) {
-                if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current)
-                return 1
-              }
-              return prevLogo + 0.05
-            })
-          }, 50)
-
-          return 1
-        }
-        return prev + 0.05
-      })
-    }, 30)
-
-    // Hide transition after delay
-    if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current)
-    hideTimeoutRef.current = setTimeout(() => {
-      // Fade out logo first
-      if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current)
-      fadeIntervalRef.current = setInterval(() => {
-        setLogoOpacity((prev) => {
-          if (prev <= 0) {
-            if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current)
-
-            // Then fade out the entire transition
-            fadeIntervalRef.current = setInterval(() => {
-              setTransitionOpacity((prevTrans) => {
-                if (prevTrans <= 0) {
-                  if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current)
-
-                  // Signal transition complete
-                  if (!transitionCompleteRef.current) {
-                    transitionCompleteRef.current = true
-                    if (onTransitionComplete) {
-                      onTransitionComplete()
-                    }
-                  }
-
-                  return 0
-                }
-                return prevTrans - 0.05
-              })
-            }, 30)
-
-            return 0
-          }
-          return prev - 0.05
-        })
-      }, 50)
-    }, 1500)
-
-    return () => {
-      if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current)
-      if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current)
-    }
-  }, [onTransitionComplete])
-
-  // Matrix rain effect
-  useEffect(() => {
-    if (!canvasRef.current) return
-
     const canvas = canvasRef.current
-    const ctx = canvas.getContext("2d")
-    if (!ctx) return
+    const container = containerRef.current
+    if (!canvas || !container) return
 
     // Set canvas dimensions
     canvas.width = window.innerWidth
     canvas.height = window.innerHeight
 
-    // Matrix characters
-    const chars = "01".split("")
+    // Get context
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
 
-    // Columns for the rain
+    // Matrix effect settings
     const fontSize = 14
     const columns = Math.floor(canvas.width / fontSize)
+    const drops: number[] = Array(columns)
+      .fill(0)
+      .map(() => Math.random() * -100)
 
-    // Array to track the y position of each drop
-    const drops: number[] = []
-    for (let i = 0; i < columns; i++) {
-      drops[i] = Math.random() * -100
-    }
-
-    // Drawing the characters
-    const draw = () => {
-      if (!ctx) return
-
-      // Semi-transparent background to create fade effect
-      // Use theme-appropriate background color
-      ctx.fillStyle = isDarkMode
-        ? "rgba(17, 24, 39, 0.05)" // dark:bg-gray-900 with opacity
-        : "rgba(255, 255, 255, 0.05)" // white with opacity
+    // Animation function
+    const animate = () => {
+      // Clear with semi-transparent background to create trail effect
+      ctx.fillStyle = isDark ? "rgba(17, 24, 39, 0.05)" : "rgba(255, 255, 255, 0.05)"
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      // Use theme-appropriate text color
-      ctx.fillStyle = isDarkMode ? "#0f0" : "#000" // Green in dark mode, black in light mode
+      // Set text color and font
+      ctx.fillStyle = isDark ? "#0f0" : "#000"
       ctx.font = `${fontSize}px monospace`
 
-      // Loop over drops
+      // Draw characters
       for (let i = 0; i < drops.length; i++) {
-        // Random character
-        const text = chars[Math.floor(Math.random() * chars.length)]
-
-        // x = i * fontSize, y = drops[i] * fontSize
+        const text = Math.random() > 0.5 ? "1" : "0"
         ctx.fillText(text, i * fontSize, drops[i] * fontSize)
 
-        // Sending the drop back to the top randomly after it crosses the screen
+        // Reset drop when it reaches bottom
         if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
           drops[i] = 0
         }
 
-        // Move drops down
+        // Move drop down
         drops[i]++
       }
-    }
 
-    // Animation loop
-    const animate = () => {
-      draw()
+      // Continue animation
       animationFrameRef.current = requestAnimationFrame(animate)
     }
 
+    // Start animation
     animate()
+
+    // Show logo after a delay
+    const logoTimer = setTimeout(() => {
+      setShowLogo(true)
+    }, 1000)
+
+    // Complete transition after animation
+    const completionTimer = setTimeout(() => {
+      if (onTransitionComplete) {
+        onTransitionComplete()
+      }
+    }, 3000)
 
     // Cleanup
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
       }
+      clearTimeout(logoTimer)
+      clearTimeout(completionTimer)
     }
-  }, [isDarkMode])
+  }, [onTransitionComplete, isDark])
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] flex items-center justify-center ${isDarkMode ? "bg-gray-900" : "bg-white"}`}
-      style={{ opacity: transitionOpacity }}
+      ref={containerRef}
+      className="fixed inset-0 z-[9999] flex items-center justify-center"
+      style={{ backgroundColor: isDark ? "#111827" : "#ffffff" }}
     >
       <canvas ref={canvasRef} className="absolute inset-0" />
-      <div className="relative z-10 flex items-center justify-center" style={{ opacity: logoOpacity }}>
-        <Image
-          src={isDarkMode ? "/bb-logo.png" : "/BigBasedIconInvert.png"}
-          alt="Big Based Logo"
-          width={120}
-          height={120}
-          className="h-auto w-auto"
-          priority
-        />
-      </div>
+      {showLogo && (
+        <div className="relative z-10 animate-pulse">
+          <img
+            src={isDark ? "/BigBasedIconInvert.png" : "/bb-logo.png"}
+            alt="Big Based Logo"
+            width={120}
+            height={120}
+            className="h-30 w-30"
+          />
+        </div>
+      )}
     </div>
   )
 }

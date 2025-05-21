@@ -1,14 +1,9 @@
 "use client"
-
-import type React from "react"
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useEffect } from "react"
+import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "next-themes"
+import type { ThemeProviderProps as NextThemeProviderProps } from "next-themes"
 
 type Theme = "dark" | "light"
-
-type ThemeProviderProps = {
-  children: React.ReactNode
-  defaultTheme?: Theme
-}
 
 type ThemeProviderState = {
   theme: Theme
@@ -24,56 +19,56 @@ const initialState: ThemeProviderState = {
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 
-export function ThemeProvider({ children, defaultTheme = "system" }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(defaultTheme as Theme)
-
+export function ThemeProvider({ children, ...props }: NextThemeProviderProps) {
+  // Apply theme class to body when theme changes
   useEffect(() => {
-    // Check for saved theme in localStorage
-    const savedTheme = localStorage.getItem("theme") as Theme | null
+    const handleThemeChange = () => {
+      const isDark = document.documentElement.classList.contains("dark")
 
-    // If there's a saved theme, use it
-    if (savedTheme) {
-      setTheme(savedTheme)
-    } else {
-      // Otherwise, check system preference
-      const systemPreference = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
-      setTheme(systemPreference)
+      if (isDark) {
+        document.body.classList.add("dark-mode")
+        document.body.classList.remove("light-mode")
+        document.body.style.backgroundColor = "#111827"
+      } else {
+        document.body.classList.add("light-mode")
+        document.body.classList.remove("dark-mode")
+        document.body.style.backgroundColor = "#ffffff"
+      }
+    }
+
+    // Set up mutation observer to watch for class changes on html element
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === "attributes" && mutation.attributeName === "class") {
+          handleThemeChange()
+        }
+      })
+    })
+
+    observer.observe(document.documentElement, { attributes: true })
+
+    // Initial call
+    handleThemeChange()
+
+    return () => {
+      observer.disconnect()
     }
   }, [])
 
-  useEffect(() => {
-    const root = window.document.documentElement
-
-    // Remove the previous theme class
-    root.classList.remove("light", "dark")
-
-    // Add the current theme class
-    root.classList.add(theme)
-
-    // Update the color-scheme property
-    root.style.colorScheme = theme
-
-    // Save theme preference to localStorage
-    localStorage.setItem("theme", theme)
-  }, [theme])
-
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark")
-  }
-
-  const value = {
-    theme,
-    setTheme,
-    toggleTheme,
-  }
-
-  return <ThemeProviderContext.Provider value={value}>{children}</ThemeProviderContext.Provider>
+  return <NextThemesProvider {...props}>{children}</NextThemesProvider>
 }
 
-export const useTheme = () => {
-  const context = useContext(ThemeProviderContext)
+// Custom hook that wraps next-themes useTheme to maintain compatibility with existing code
+export function useTheme() {
+  const { theme, setTheme, resolvedTheme } = useNextTheme()
 
-  if (context === undefined) throw new Error("useTheme must be used within a ThemeProvider")
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === "dark" ? "light" : "dark")
+  }
 
-  return context
+  return {
+    theme: (resolvedTheme || theme) as Theme,
+    setTheme: setTheme as (theme: Theme) => void,
+    toggleTheme,
+  }
 }
