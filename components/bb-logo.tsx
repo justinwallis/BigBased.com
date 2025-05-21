@@ -32,14 +32,14 @@ export default function BBLogo({ size = "md", className, inverted = false }: BBL
   const isDarkMode = mounted && theme === "dark"
 
   // Use the inverted logo in dark mode, unless explicitly overridden by the inverted prop
-  const logoSrc = inverted || isDarkMode ? "/BigBasedIconInvert.png" : "/bb-logo.png"
+  const logoSrc = mounted ? (inverted || theme === "dark" ? "/BigBasedIconInvert.png" : "/bb-logo.png") : "/bb-logo.png"
 
   // Log the logo source for debugging
-  useEffect(() => {
-    if (mounted) {
-      console.log("Logo source:", logoSrc, "isDarkMode:", isDarkMode)
-    }
-  }, [logoSrc, isDarkMode, mounted])
+  // useEffect(() => {
+  //   if (mounted) {
+  //     console.log("Logo source:", logoSrc, "isDarkMode:", isDarkMode)
+  //   }
+  // }, [logoSrc, isDarkMode, mounted])
 
   return (
     <div className={cn(sizeClasses[size], "relative", className)}>

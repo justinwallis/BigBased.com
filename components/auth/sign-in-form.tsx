@@ -1,72 +1,74 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { useFormStatus } from "react-dom"
+import { signIn } from "@/app/actions/auth-actions"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { AlertCircle } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
-const SignInForm = () => {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
+interface State {
+  message: string | null
+  success: boolean
+}
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError("")
+const initialState: State = {
+  message: null,
+  success: false,
+}
 
-    // Basic validation
-    if (!email || !password) {
-      setError("Please fill in all fields.")
-      return
-    }
-
-    // Simulate API call (replace with actual API call)
-    try {
-      // Replace this with your actual authentication logic
-      if (email === "test@example.com" && password === "password") {
-        alert("Sign in successful!") // Replace with proper redirection/state update
-      } else {
-        setError("Invalid email or password.")
-      }
-    } catch (err) {
-      setError("An error occurred. Please try again.")
-    }
-  }
+export default function SignInForm() {
+  const [state, setState] = useState<State>(initialState)
+  const router = useRouter()
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md mx-auto mt-8">
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Email
-        </label>
-        <input
-          type="email"
-          id="email"
-          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+    <form
+      className="space-y-4"
+      action={async (formData) => {
+        const result = await signIn(formData)
+
+        if (result?.error) {
+          setState({ message: result.error, success: false })
+        } else if (result?.success) {
+          setState({ message: "Sign in successful! Redirecting...", success: true })
+          // Redirect to profile or dashboard after successful login
+          setTimeout(() => {
+            router.push("/profile")
+          }, 1000)
+        }
+      }}
+    >
+      {state.message && (
+        <Alert variant={state.success ? "default" : "destructive"} className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{state.message}</AlertDescription>
+        </Alert>
+      )}
+
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input id="email" name="email" type="email" autoComplete="email" required placeholder="you@example.com" />
       </div>
-      <div className="mt-4">
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Password
-        </label>
-        <input
-          type="password"
-          id="password"
-          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+
+      <div className="space-y-2">
+        <Label htmlFor="password">Password</Label>
+        <Input id="password" name="password" type="password" autoComplete="current-password" required />
       </div>
-      {error && <div className="text-red-600 dark:text-red-400 text-sm mt-1">{error}</div>}
-      <div className="mt-6">
-        <button
-          type="submit"
-          className="w-full py-2 px-4 bg-primary text-white font-semibold rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
-        >
-          Sign In
-        </button>
-      </div>
+
+      <SubmitButton />
     </form>
   )
 }
 
-export default SignInForm
+function SubmitButton() {
+  const { pending } = useFormStatus()
+
+  return (
+    <Button type="submit" className="w-full" disabled={pending}>
+      {pending ? "Signing in..." : "Sign in"}
+    </Button>
+  )
+}
