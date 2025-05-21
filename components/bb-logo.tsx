@@ -9,10 +9,9 @@ interface BBLogoProps {
   size?: "sm" | "md" | "lg" | "xl"
   className?: string
   inverted?: boolean
-  forceInvert?: boolean
 }
 
-export default function BBLogo({ size = "md", className, inverted = false, forceInvert = false }: BBLogoProps) {
+export default function BBLogo({ size = "md", className, inverted = false }: BBLogoProps) {
   // Add mounted state to prevent hydration mismatch
   const [mounted, setMounted] = useState(false)
   const { theme } = useTheme()
@@ -30,10 +29,17 @@ export default function BBLogo({ size = "md", className, inverted = false, force
   }
 
   // Only check theme after component is mounted to avoid hydration mismatch
-  const isDarkMode = mounted && (theme === "dark" || forceInvert)
+  const isDarkMode = mounted && theme === "dark"
 
   // Use the inverted logo in dark mode, unless explicitly overridden by the inverted prop
   const logoSrc = inverted || isDarkMode ? "/BigBasedIconInvert.png" : "/bb-logo.png"
+
+  // Log the logo source for debugging
+  useEffect(() => {
+    if (mounted) {
+      console.log("Logo source:", logoSrc, "isDarkMode:", isDarkMode)
+    }
+  }, [logoSrc, isDarkMode, mounted])
 
   return (
     <div className={cn(sizeClasses[size], "relative", className)}>

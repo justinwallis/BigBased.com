@@ -1,96 +1,72 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { useFormStatus } from "react-dom"
-import { supabaseClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { AlertCircle } from "lucide-react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 
-interface State {
-  message: string | null
-  success: boolean
-}
+const SignInForm = () => {
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
 
-const initialState: State = {
-  message: null,
-  success: false,
-}
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError("")
 
-export default function SignInForm() {
-  const [state, setState] = useState<State>(initialState)
-  const router = useRouter()
+    // Basic validation
+    if (!email || !password) {
+      setError("Please fill in all fields.")
+      return
+    }
 
-  async function handleSignIn(formData: FormData) {
+    // Simulate API call (replace with actual API call)
     try {
-      const email = formData.get("email") as string
-      const password = formData.get("password") as string
-
-      if (!email || !password) {
-        setState({ message: "Email and password are required", success: false })
-        return
+      // Replace this with your actual authentication logic
+      if (email === "test@example.com" && password === "password") {
+        alert("Sign in successful!") // Replace with proper redirection/state update
+      } else {
+        setError("Invalid email or password.")
       }
-
-      const supabase = supabaseClient()
-      if (!supabase) {
-        setState({ message: "Authentication service unavailable", success: false })
-        return
-      }
-
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (error) {
-        setState({ message: error.message, success: false })
-        return
-      }
-
-      setState({ message: "Sign in successful! Redirecting...", success: true })
-      // Redirect to profile or dashboard after successful login
-      setTimeout(() => {
-        router.push("/profile")
-      }, 1000)
-    } catch (error) {
-      console.error("Sign in error:", error)
-      setState({ message: "An unexpected error occurred", success: false })
+    } catch (err) {
+      setError("An error occurred. Please try again.")
     }
   }
 
   return (
-    <form className="space-y-4" action={handleSignIn}>
-      {state.message && (
-        <Alert variant={state.success ? "default" : "destructive"} className="mb-4">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{state.message}</AlertDescription>
-        </Alert>
-      )}
-
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" autoComplete="email" required placeholder="you@example.com" />
+    <form onSubmit={handleSubmit} className="max-w-md mx-auto mt-8">
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Email
+        </label>
+        <input
+          type="email"
+          id="email"
+          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
       </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
-        <Input id="password" name="password" type="password" autoComplete="current-password" required />
+      <div className="mt-4">
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Password
+        </label>
+        <input
+          type="password"
+          id="password"
+          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
       </div>
-
-      <SubmitButton />
+      {error && <div className="text-red-600 dark:text-red-400 text-sm mt-1">{error}</div>}
+      <div className="mt-6">
+        <button
+          type="submit"
+          className="w-full py-2 px-4 bg-primary text-white font-semibold rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
+        >
+          Sign In
+        </button>
+      </div>
     </form>
   )
 }
 
-function SubmitButton() {
-  const { pending } = useFormStatus()
-
-  return (
-    <Button type="submit" className="w-full" disabled={pending}>
-      {pending ? "Signing in..." : "Sign in"}
-    </Button>
-  )
-}
+export default SignInForm

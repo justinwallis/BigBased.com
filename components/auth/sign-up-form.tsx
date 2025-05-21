@@ -1,279 +1,240 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useFormStatus } from "react-dom"
-import { supabaseClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { AlertCircle, CheckCircle2, XCircle } from "lucide-react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Progress } from "@/components/ui/progress"
+import { useState } from "react"
 
-interface State {
-  message: string | null
-  success: boolean
-}
-
-interface PasswordStrength {
-  score: number
-  hasMinLength: boolean
-  hasUppercase: boolean
-  hasLowercase: boolean
-  hasNumber: boolean
-  hasSpecialChar: boolean
-}
-
-const initialState: State = {
-  message: null,
-  success: false,
-}
-
-const initialPasswordStrength: PasswordStrength = {
-  score: 0,
-  hasMinLength: false,
-  hasUppercase: false,
-  hasLowercase: false,
-  hasNumber: false,
-  hasSpecialChar: false,
-}
-
-export default function SignUpForm() {
-  const [state, setState] = useState<State>(initialState)
+const SignUpForm = () => {
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [passwordsMatch, setPasswordsMatch] = useState(true)
-  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>(initialPasswordStrength)
-  const router = useRouter()
+  const [passwordRequirements, setPasswordRequirements] = useState({
+    minLength: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    specialChar: false,
+  })
+  const [emailError, setEmailError] = useState("")
+  const [passwordError, setPasswordError] = useState("")
+  const [confirmPasswordError, setConfirmPasswordError] = useState("")
 
-  // Check password strength
-  useEffect(() => {
-    const strength: PasswordStrength = {
-      score: 0,
-      hasMinLength: password.length >= 10,
-      hasUppercase: /[A-Z]/.test(password),
-      hasLowercase: /[a-z]/.test(password),
-      hasNumber: /[0-9]/.test(password),
-      hasSpecialChar: /[^A-Za-z0-9]/.test(password),
-    }
-
-    // Calculate score (1 point for each criteria met)
-    strength.score = [
-      strength.hasMinLength,
-      strength.hasUppercase,
-      strength.hasLowercase,
-      strength.hasNumber,
-      strength.hasSpecialChar,
-    ].filter(Boolean).length
-
-    setPasswordStrength(strength)
-
-    // Check if passwords match
-    if (confirmPassword) {
-      setPasswordsMatch(password === confirmPassword)
-    }
-  }, [password, confirmPassword])
-
-  // Get color for password strength indicator
-  const getStrengthColor = () => {
-    if (passwordStrength.score <= 2) return "bg-red-500"
-    if (passwordStrength.score <= 3) return "bg-yellow-500"
-    if (passwordStrength.score <= 4) return "bg-blue-500"
-    return "bg-green-500"
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value)
+    setEmailError("")
   }
 
-  // Check if form is valid for submission
-  const isFormValid = () => {
-    return passwordStrength.score >= 4 && passwordsMatch && password.length > 0 && confirmPassword.length > 0
+  const handlePasswordChange = (e) => {
+    const newPassword = e.target.value
+    setPassword(newPassword)
+    setPasswordError("")
+
+    setPasswordRequirements({
+      minLength: newPassword.length >= 8,
+      uppercase: /[A-Z]/.test(newPassword),
+      lowercase: /[a-z]/.test(newPassword),
+      number: /[0-9]/.test(newPassword),
+      specialChar: /[!@#$%^&*(),.?":{}|<>]/.test(newPassword),
+    })
   }
 
-  async function handleSignUp(formData: FormData) {
-    try {
-      // Client-side validation before submission
-      if (!isFormValid()) {
-        setState({
-          message: "Please ensure your password meets all requirements and passwords match.",
-          success: false,
-        })
-        return
-      }
+  const handleConfirmPasswordChange = (e) => {
+    setConfirmPassword(e.target.value)
+    setConfirmPasswordError("")
+  }
 
-      const email = formData.get("email") as string
-      const password = formData.get("password") as string
-      const confirmPassword = formData.get("confirmPassword") as string
+  const handleSubmit = (e) => {
+    e.preventDefault()
 
-      if (!email || !password || !confirmPassword) {
-        setState({ message: "All fields are required", success: false })
-        return
-      }
-
-      if (password !== confirmPassword) {
-        setState({ message: "Passwords do not match", success: false })
-        return
-      }
-
-      // Validate password requirements
-      if (
-        password.length < 10 ||
-        !/[A-Z]/.test(password) ||
-        !/[a-z]/.test(password) ||
-        !/[0-9]/.test(password) ||
-        !/[^A-Za-z0-9]/.test(password)
-      ) {
-        setState({ message: "Password does not meet all requirements", success: false })
-        return
-      }
-
-      const supabase = supabaseClient()
-      if (!supabase) {
-        setState({ message: "Authentication service unavailable", success: false })
-        return
-      }
-
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      })
-
-      if (error) {
-        setState({ message: error.message, success: false })
-        return
-      }
-
-      setState({
-        message: "Account created successfully! Please check your email to verify your account.",
-        success: true,
-      })
-
-      // Redirect to sign-in page after successful registration
-      setTimeout(() => {
-        router.push("/auth/sign-in")
-      }, 3000)
-    } catch (error) {
-      console.error("Sign up error:", error)
-      setState({ message: "An unexpected error occurred", success: false })
+    // Email validation
+    if (!email) {
+      setEmailError("Email is required")
+      return
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      setEmailError("Email is invalid")
+      return
     }
+
+    // Password validation
+    if (!password) {
+      setPasswordError("Password is required")
+      return
+    }
+
+    if (password !== confirmPassword) {
+      setConfirmPasswordError("Passwords do not match")
+      return
+    }
+
+    if (
+      !passwordRequirements.minLength ||
+      !passwordRequirements.uppercase ||
+      !passwordRequirements.lowercase ||
+      !passwordRequirements.number ||
+      !passwordRequirements.specialChar
+    ) {
+      setPasswordError("Password does not meet all requirements")
+      return
+    }
+
+    // Handle form submission logic here
+    console.log("Form submitted", { email, password })
   }
 
   return (
-    <form className="space-y-4" action={handleSignUp}>
-      {state.message && (
-        <Alert variant={state.success ? "default" : "destructive"} className="mb-4">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{state.message}</AlertDescription>
-        </Alert>
-      )}
-
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" autoComplete="email" required placeholder="you@example.com" />
+    <form onSubmit={handleSubmit} className="max-w-md mx-auto mt-8">
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Email
+        </label>
+        <input
+          type="email"
+          id="email"
+          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
+          value={email}
+          onChange={handleEmailChange}
+        />
+        {emailError && <p className="text-red-600 dark:text-red-400 text-sm mt-1">{emailError}</p>}
       </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
-        <Input
+      <div className="mt-4">
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Password
+        </label>
+        <input
+          type="password"
           id="password"
-          name="password"
-          type="password"
-          autoComplete="new-password"
-          required
+          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={handlePasswordChange}
         />
-
-        {/* Password strength indicator */}
-        {password.length > 0 && (
-          <div className="mt-2 space-y-2">
-            <div className="space-y-1">
-              <Progress value={passwordStrength.score * 20} className={getStrengthColor()} />
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Password strength:{" "}
-                {passwordStrength.score <= 2
-                  ? "Weak"
-                  : passwordStrength.score <= 3
-                    ? "Fair"
-                    : passwordStrength.score <= 4
-                      ? "Good"
-                      : "Strong"}
-              </p>
-            </div>
-
-            <ul className="space-y-1 text-sm">
-              <li className="flex items-center gap-2">
-                {passwordStrength.hasMinLength ? (
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
-                ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
-                )}
-                <span className="text-xs dark:text-gray-300">At least 10 characters</span>
-              </li>
-              <li className="flex items-center gap-2">
-                {passwordStrength.hasUppercase ? (
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
-                ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
-                )}
-                <span className="text-xs dark:text-gray-300">At least one uppercase letter</span>
-              </li>
-              <li className="flex items-center gap-2">
-                {passwordStrength.hasLowercase ? (
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
-                ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
-                )}
-                <span className="text-xs dark:text-gray-300">At least one lowercase letter</span>
-              </li>
-              <li className="flex items-center gap-2">
-                {passwordStrength.hasNumber ? (
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
-                ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
-                )}
-                <span className="text-xs dark:text-gray-300">At least one number</span>
-              </li>
-              <li className="flex items-center gap-2">
-                {passwordStrength.hasSpecialChar ? (
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
-                ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
-                )}
-                <span className="text-xs dark:text-gray-300">At least one special character</span>
-              </li>
-            </ul>
-          </div>
-        )}
+        {passwordError && <p className="text-red-600 dark:text-red-400 text-sm mt-1">{passwordError}</p>}
+        <div className="mt-2">
+          <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password must contain:</p>
+          <ul>
+            <li>
+              <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                <svg
+                  className={passwordRequirements.minLength ? "text-green-500" : "text-red-500"}
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="w-4 h-4"
+                >
+                  {passwordRequirements.minLength ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  )}
+                </svg>
+                At least 8 characters
+              </span>
+            </li>
+            <li>
+              <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                <svg
+                  className={passwordRequirements.uppercase ? "text-green-500" : "text-red-500"}
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="w-4 h-4"
+                >
+                  {passwordRequirements.uppercase ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  )}
+                </svg>
+                One uppercase letter
+              </span>
+            </li>
+            <li>
+              <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                <svg
+                  className={passwordRequirements.lowercase ? "text-green-500" : "text-red-500"}
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="w-4 h-4"
+                >
+                  {passwordRequirements.lowercase ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  )}
+                </svg>
+                One lowercase letter
+              </span>
+            </li>
+            <li>
+              <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                <svg
+                  className={passwordRequirements.number ? "text-green-500" : "text-red-500"}
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="w-4 h-4"
+                >
+                  {passwordRequirements.number ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  )}
+                </svg>
+                One number
+              </span>
+            </li>
+            <li>
+              <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                <svg
+                  className={passwordRequirements.specialChar ? "text-green-500" : "text-red-500"}
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="w-4 h-4"
+                >
+                  {passwordRequirements.specialChar ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  )}
+                </svg>
+                One special character
+              </span>
+            </li>
+          </ul>
+        </div>
       </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="confirmPassword">Confirm Password</Label>
-        <Input
-          id="confirmPassword"
-          name="confirmPassword"
+      <div className="mt-4">
+        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Confirm Password
+        </label>
+        <input
           type="password"
-          autoComplete="new-password"
-          required
+          id="confirmPassword"
+          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
           value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className={confirmPassword && !passwordsMatch ? "border-red-500" : ""}
+          onChange={handleConfirmPasswordChange}
         />
-        {confirmPassword && !passwordsMatch && <p className="text-xs text-red-500 mt-1">Passwords do not match</p>}
+        {confirmPasswordError && <p className="text-red-600 dark:text-red-400 text-sm mt-1">{confirmPasswordError}</p>}
       </div>
-
-      <SubmitButton disabled={!isFormValid()} />
+      <div className="mt-6">
+        <button
+          type="submit"
+          className="w-full py-2 px-4 bg-primary text-white font-semibold rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
+        >
+          Sign Up
+        </button>
+      </div>
     </form>
   )
 }
 
-function SubmitButton({ disabled = false }: { disabled?: boolean }) {
-  const { pending } = useFormStatus()
-
-  return (
-    <Button type="submit" className="w-full" disabled={pending || disabled}>
-      {pending ? "Creating account..." : "Create account"}
-    </Button>
-  )
-}
+export default SignUpForm

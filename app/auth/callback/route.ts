@@ -1,6 +1,6 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { createServerClient } from "@supabase/ssr"
+import { createServerClient } from "@/lib/supabase/server"
 import { cookies } from "next/headers"
+import { type NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
@@ -8,19 +8,7 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const cookieStore = cookies()
-    const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!, {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
-        },
-        set(name: string, value: string, options: any) {
-          cookieStore.set({ name, value, ...options })
-        },
-        remove(name: string, options: any) {
-          cookieStore.set({ name, value: "", ...options })
-        },
-      },
-    })
+    const supabase = createServerClient(cookieStore)
 
     await supabase.auth.exchangeCodeForSession(code)
   }
