@@ -917,3 +917,25 @@ body {
 .image-fade-in.loaded {
   opacity: 1;
 }
+
+/* Dark mode preloader styles */
+.dark .binary-row span {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.dark .progress-bar-bg {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.dark .progress-bar-fill {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+/* Ensure preloader text is visible in dark mode */
+.dark .preloader-text {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.dark .preloader-subtext {
+  color: rgba(255, 255, 255, 0.7);
+}

@@ -6,6 +6,7 @@ import loadingManager from "@/utils/loading-manager"
 import { preloadImages } from "@/utils/image-preloader"
 import { errorLogger } from "@/utils/error-logger"
 import Image from "next/image"
+import { useTheme } from "@/components/theme-provider"
 
 interface PreloaderProps {
   minimumLoadingTime?: number
@@ -116,6 +117,8 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
   const messageIndexRef = useRef(0)
   const startTimeRef = useRef(Date.now())
   const hasCalledOnCompleteRef = useRef(false)
+
+  const { theme } = useTheme()
 
   // Select random animation and messages on mount
   useEffect(() => {
@@ -317,7 +320,9 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
     <AnimatePresence mode="wait">
       {loading && (
         <motion.div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-white"
+          className={`fixed inset-0 z-[9999] flex items-center justify-center ${
+            theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black"
+          }`}
           initial={{ opacity: 1 }}
           exit={{
             opacity: 0,
@@ -343,7 +348,7 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
                   {Array.from({ length: 20 }).map((_, j) => (
                     <span
                       key={j}
-                      className="inline-block mx-1 text-black opacity-50"
+                      className={`inline-block mx-1 ${theme === "dark" ? "text-white" : "text-black"} opacity-50`}
                       style={{ animationDelay: `${j * 0.05}s` }}
                     >
                       {Math.random() > 0.5 ? "1" : "0"}
@@ -404,7 +409,7 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
                 <div className="h-12 flex items-center justify-center mb-4">
                   {selectedMessages.length > 0 && (
                     <motion.div
-                      className="text-center text-gray-600 italic text-sm"
+                      className={`text-center italic text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 1.4, duration: 0.5 }}
@@ -425,7 +430,7 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
                 >
                   {/* Percentage display */}
                   <motion.div
-                    className="absolute -top-6 right-0 text-sm font-bold text-gray-700"
+                    className={`absolute -top-6 right-0 text-sm font-bold ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1.6, duration: 0.3 }}
@@ -434,9 +439,11 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
                   </motion.div>
 
                   {/* Progress bar */}
-                  <div className="w-full h-full bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`w-full h-full ${theme === "dark" ? "bg-gray-700" : "bg-gray-200"} rounded-full overflow-hidden`}
+                  >
                     <motion.div
-                      className="h-full bg-black"
+                      className={`h-full ${theme === "dark" ? "bg-white" : "bg-black"}`}
                       initial={{ width: "0%" }}
                       animate={{ width: `${progress}%` }}
                       transition={{
