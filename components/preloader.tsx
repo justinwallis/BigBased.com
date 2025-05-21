@@ -120,30 +120,36 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
 
   // Detect dark mode
   useEffect(() => {
-    // Check for saved theme preference
-    const savedTheme = localStorage.getItem("theme")
-    if (savedTheme === "dark") {
-      setIsDarkMode(true)
-      return
-    }
-    if (savedTheme === "light") {
+    try {
+      // Check for saved theme preference
+      const savedTheme = localStorage.getItem("theme")
+      if (savedTheme === "dark") {
+        setIsDarkMode(true)
+        return
+      }
+      if (savedTheme === "light") {
+        setIsDarkMode(false)
+        return
+      }
+
+      // Check for system preference
+      if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        setIsDarkMode(true)
+        return
+      }
+
+      // Check if document already has dark class
+      if (document.documentElement && document.documentElement.classList.contains("dark")) {
+        setIsDarkMode(true)
+        return
+      }
+
       setIsDarkMode(false)
-      return
+    } catch (error) {
+      console.error("Error in dark mode detection:", error)
+      // Default to light mode on error
+      setIsDarkMode(false)
     }
-
-    // Check for system preference
-    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      setIsDarkMode(true)
-      return
-    }
-
-    // Check if document already has dark class
-    if (document.documentElement.classList.contains("dark")) {
-      setIsDarkMode(true)
-      return
-    }
-
-    setIsDarkMode(false)
   }, [])
 
   // Listen for theme changes

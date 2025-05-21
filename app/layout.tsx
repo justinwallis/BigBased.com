@@ -130,43 +130,61 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              (function() {
-                // Check if dark mode is enabled
-                function isDarkMode() {
-                  // Check for saved theme preference
-                  const savedTheme = localStorage.getItem('theme');
-                  if (savedTheme === 'dark') return true;
-                  if (savedTheme === 'light') return false;
-                  
-                  // Check for system preference
-                  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    return true;
-                  }
-                  
-                  return false;
-                }
-                
-                // Apply dark mode class immediately if needed
-                if (isDarkMode()) {
-                  document.documentElement.classList.add('dark');
-                  document.documentElement.style.backgroundColor = '#111827'; // dark:bg-gray-900
-                  document.body.style.backgroundColor = '#111827'; // dark:bg-gray-900
-                  document.body.classList.add('dark-mode');
-                  document.body.classList.remove('light-mode');
-                  document.documentElement.style.color = '#ffffff';
-                } else {
-                  document.documentElement.classList.remove('dark');
-                  document.documentElement.style.backgroundColor = '#ffffff';
-                  document.body.style.backgroundColor = '#ffffff';
-                  document.body.classList.add('light-mode');
-                  document.body.classList.remove('dark-mode');
-                  document.documentElement.style.color = '#000000';
-                }
-                
-                // Prevent any flashes during hydration
-                document.documentElement.style.visibility = 'visible';
-              })();
-            `,
+      (function() {
+        try {
+          // Check if dark mode is enabled
+          function isDarkMode() {
+            // Check for saved theme preference
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') return true;
+            if (savedTheme === 'light') return false;
+            
+            // Check for system preference
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+              return true;
+            }
+            
+            return false;
+          }
+          
+          // Apply dark mode class immediately if needed
+          if (isDarkMode()) {
+            if (document.documentElement) {
+              document.documentElement.classList.add('dark');
+              document.documentElement.style.backgroundColor = '#111827';
+              document.documentElement.style.color = '#ffffff';
+            }
+            if (document.body) {
+              document.body.style.backgroundColor = '#111827';
+              document.body.classList.add('dark-mode');
+              document.body.classList.remove('light-mode');
+            }
+          } else {
+            if (document.documentElement) {
+              document.documentElement.classList.remove('dark');
+              document.documentElement.style.backgroundColor = '#ffffff';
+              document.documentElement.style.color = '#000000';
+            }
+            if (document.body) {
+              document.body.style.backgroundColor = '#ffffff';
+              document.body.classList.add('light-mode');
+              document.body.classList.remove('dark-mode');
+            }
+          }
+          
+          // Prevent any flashes during hydration
+          if (document.documentElement) {
+            document.documentElement.style.visibility = 'visible';
+          }
+        } catch (e) {
+          console.error('Error in dark mode initialization:', e);
+          // Make content visible even if there's an error
+          if (document.documentElement) {
+            document.documentElement.style.visibility = 'visible';
+          }
+        }
+      })();
+    `,
           }}
         />
         <style
