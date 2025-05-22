@@ -4,13 +4,13 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
+import { useAuth } from "@/contexts/auth-context"
 
 export default function SignInForm() {
   const [email, setEmail] = useState("")
@@ -19,6 +19,7 @@ export default function SignInForm() {
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const { signIn } = useAuth()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -26,14 +27,10 @@ export default function SignInForm() {
     setError("")
 
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      })
+      const { error, data } = await signIn(email, password)
 
-      if (result?.error) {
-        setError(result.error)
+      if (error) {
+        setError(error instanceof Error ? error.message : String(error))
         setLoading(false)
       } else {
         setSuccess(true)
@@ -42,6 +39,7 @@ export default function SignInForm() {
         // Redirect to profile or dashboard after successful login
         setTimeout(() => {
           router.push("/profile")
+          router.refresh() // Refresh to update auth state
         }, 1000)
       }
     } catch (error) {

@@ -128,10 +128,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { data: null, error: new Error("Supabase client not available") }
       }
 
-      return await supabase.auth.signInWithPassword({
+      const result = await supabase.auth.signInWithPassword({
         email,
         password,
       })
+
+      // If successful, update the local state
+      if (result.data.session) {
+        setSession(result.data.session)
+        setUser(result.data.user)
+      }
+
+      return result
     } catch (error) {
       console.error("Error in signIn:", error)
       return { data: null, error }

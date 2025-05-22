@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { createClient } from "@supabase/supabase-js"
 
 export async function middleware(request: NextRequest) {
   // Get the pathname of the request
@@ -30,13 +31,31 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Check for NextAuth session token
-  const hasNextAuthCookie =
-    request.cookies.has("__Secure-next-auth.session-token") || request.cookies.has("next-auth.session-token")
+  // Check for Supabase session
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-  // If it's a protected path and the user is not authenticated,
-  // redirect to the sign-in page
-  if (isProtectedPath && !hasNextAuthCookie) {
+  // Get access token from cookie
+  const accessToken = request.cookies.get("sb-access-token")?.value
+
+  if (!accessToken) {
+    const redirectUrl = new URL("/auth/sign-in", request.url)
+    redirectUrl.searchParams.set("redirect", request.nextUrl.pathname)
+    return NextResponse.redirect(redirectUrl)
+  }
+
+  // Verify the token
+  const supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  })
+
+  const { data, error } = await supabase.auth.getUser(accessToken)
+
+  if (error || !data?.user) {
+    // Token is invalid or expired
     const redirectUrl = new URL("/auth/sign-in", request.url)
     redirectUrl.searchParams.set("redirect", request.nextUrl.pathname)
     return NextResponse.redirect(redirectUrl)
