@@ -16,7 +16,8 @@ import { supabaseClient } from "@/lib/supabase/client"
 export default function AuthButton() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [buttonText, setButtonText] = useState("Join")
+  const [buttonText, setButtonText] = useState("")
+  const [fadeState, setFadeState] = useState("fade-in")
 
   // Force a more reliable check for authentication status
   useEffect(() => {
@@ -27,6 +28,14 @@ export default function AuthButton() {
           console.error("No Supabase client available")
           setLoading(false)
           return
+        }
+
+        // Check if user has logged in before
+        const hasLoggedInBefore = localStorage.getItem("hasLoggedInBefore") === "true"
+        if (hasLoggedInBefore) {
+          setButtonText("Login")
+        } else {
+          setButtonText("Join")
         }
 
         // Force a fresh check of the session
@@ -40,6 +49,12 @@ export default function AuthButton() {
 
         console.log("Auth session data:", data)
         setUser(data.session?.user || null)
+
+        // If user logs in, remember this for future visits
+        if (data.session?.user) {
+          localStorage.setItem("hasLoggedInBefore", "true")
+        }
+
         setLoading(false)
       } catch (error) {
         console.error("Error checking auth status:", error)
@@ -56,6 +71,11 @@ export default function AuthButton() {
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log("Auth state changed:", _event, session?.user?.email)
       setUser(session?.user || null)
+
+      // If user logs in, remember this for future visits
+      if (session?.user) {
+        localStorage.setItem("hasLoggedInBefore", "true")
+      }
     })
 
     return () => {
@@ -63,18 +83,25 @@ export default function AuthButton() {
     }
   }, [])
 
-  // Alternate button text between Join and Login if not logged in
+  // Alternate button text between Join and Login if not logged in and never logged in before
   useEffect(() => {
     if (user) return // Don't alternate if logged in
 
     const hasLoggedInBefore = localStorage.getItem("hasLoggedInBefore") === "true"
     if (hasLoggedInBefore) {
       setButtonText("Login")
-      return
+      return // Don't alternate if they've logged in before
     }
 
     const interval = setInterval(() => {
-      setButtonText((prev) => (prev === "Join" ? "Login" : "Join"))
+      // Start fade out
+      setFadeState("fade-out")
+
+      // After fade out completes, change text and fade in
+      setTimeout(() => {
+        setButtonText((prev) => (prev === "Join" ? "Login" : "Join"))
+        setFadeState("fade-in")
+      }, 300) // Match this with the CSS transition duration
     }, 3000)
 
     return () => clearInterval(interval)
@@ -128,7 +155,8 @@ export default function AuthButton() {
   return (
     <Link
       href={buttonText === "Join" ? "/auth/sign-up" : "/auth/sign-in"}
-      className="inline-block min-w-[90px] text-center bg-black dark:bg-white text-white dark:text-black px-6 py-2 rounded-full font-medium transition-all duration-300 hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 hover:shadow-md"
+      className={`inline-block min-w-[90px] text-center bg-black dark:bg-white text-white dark:text-black px-6 py-2 rounded-full font-medium transition-all duration-300 hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 hover:shadow-md ${fadeState === "fade-in" ? "opacity-100" : "opacity-0"}`}
+      style={{ transition: "opacity 300ms ease-in-out" }}
     >
       {buttonText}
     </Link>

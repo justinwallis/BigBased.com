@@ -24,8 +24,6 @@ export default function SignInPage() {
         const { data } = await supabase.auth.getSession()
         if (data.session) {
           setIsLoggedIn(true)
-          // Store that user has logged in before
-          localStorage.setItem("hasLoggedIn", "true")
         }
         setIsLoading(false)
       } catch (error) {
@@ -38,7 +36,7 @@ export default function SignInPage() {
   }, [])
 
   if (isLoading) {
-    return <div className="container mx-auto py-10">Loading...</div>
+    return <div className="container mx-auto py-10 text-gray-900 dark:text-white">Loading...</div>
   }
 
   if (isLoggedIn) {
@@ -63,11 +61,20 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="max-w-md mx-auto">
-        <h1 className="text-2xl font-bold mb-6 dark:text-white">Log In</h1>
-        <SignInForm />
+    <>
+      <div className="mb-6 text-center">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome back!</h2>
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          Don't have an account yet?{" "}
+          <Link
+            href="/auth/sign-up"
+            className="font-medium text-primary hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+          >
+            Sign up
+          </Link>
+        </p>
       </div>
-    </div>
+      <SignInForm />
+    </>
   )
 }
