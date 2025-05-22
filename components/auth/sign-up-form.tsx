@@ -134,9 +134,9 @@ export default function SignUpForm() {
   return (
     <form className="space-y-6" action={handleSubmit}>
       {state.message && (
-        <Alert variant={state.success ? "default" : "destructive"}>
+        <Alert variant={state.success ? "default" : "destructive"} className="dark:bg-gray-800 dark:border-gray-700">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{state.message}</AlertDescription>
+          <AlertDescription className="dark:text-white">{state.message}</AlertDescription>
         </Alert>
       )}
 
@@ -151,7 +151,7 @@ export default function SignUpForm() {
           autoComplete="email"
           required
           placeholder="you@example.com"
-          className="w-full"
+          className="w-full dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:focus:border-blue-400"
         />
       </div>
 
@@ -167,7 +167,7 @@ export default function SignUpForm() {
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full"
+          className="w-full dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:focus:border-blue-400"
         />
 
         {/* Password strength indicator */}
@@ -175,7 +175,7 @@ export default function SignUpForm() {
           <div className="mt-4 space-y-4">
             <div className="space-y-1">
               <Progress value={passwordStrength.score * 20} className={getStrengthColor()} />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">
                 Password strength:{" "}
                 {passwordStrength.score <= 2
                   ? "Weak"
@@ -245,7 +245,7 @@ export default function SignUpForm() {
           required
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          className={`w-full ${confirmPassword && !passwordsMatch ? "border-red-500" : ""}`}
+          className={`w-full dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:focus:border-blue-400 ${confirmPassword && !passwordsMatch ? "border-red-500" : ""}`}
         />
         {confirmPassword && !passwordsMatch && <p className="text-xs text-red-500 mt-1">Passwords do not match</p>}
       </div>
