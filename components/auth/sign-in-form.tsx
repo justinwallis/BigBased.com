@@ -38,11 +38,13 @@ export default function SignInForm() {
         // Redirect to profile or dashboard after successful login
         setTimeout(() => {
           router.push("/profile")
+          router.refresh() // Refresh to update auth state
         }, 1000)
       } else {
         setState({ message: "An unknown error occurred", success: false, loading: false })
       }
     } catch (error) {
+      console.error("Sign in form error:", error)
       setState({
         message: error instanceof Error ? error.message : "An unknown error occurred",
         success: false,

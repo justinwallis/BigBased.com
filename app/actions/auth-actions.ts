@@ -63,27 +63,39 @@ export async function register(formData: FormData) {
     const supabase = createServerClient(cookieStore)
 
     // Log signup attempt
-    await logAuthEvent(null, AUTH_EVENTS.SIGNUP_ATTEMPT, AUTH_STATUS.PENDING, { email })
+    try {
+      await logAuthEvent(null, AUTH_EVENTS.SIGNUP_ATTEMPT, AUTH_STATUS.PENDING, { email })
+    } catch (logError) {
+      console.error("Error logging signup attempt:", logError)
+    }
 
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/auth/callback`,
       },
     })
 
     if (error) {
       // Log signup failure
-      await logAuthEvent(null, AUTH_EVENTS.SIGNUP_ATTEMPT, AUTH_STATUS.FAILURE, {
-        email,
-        error: error.message,
-      })
+      try {
+        await logAuthEvent(null, AUTH_EVENTS.SIGNUP_ATTEMPT, AUTH_STATUS.FAILURE, {
+          email,
+          error: error.message,
+        })
+      } catch (logError) {
+        console.error("Error logging signup failure:", logError)
+      }
       return { error: error.message }
     }
 
     // Log signup success
-    await logAuthEvent(null, AUTH_EVENTS.SIGNUP_ATTEMPT, AUTH_STATUS.SUCCESS, { email })
+    try {
+      await logAuthEvent(null, AUTH_EVENTS.SIGNUP_ATTEMPT, AUTH_STATUS.SUCCESS, { email })
+    } catch (logError) {
+      console.error("Error logging signup success:", logError)
+    }
 
     return { success: true }
   } catch (error) {
@@ -92,7 +104,7 @@ export async function register(formData: FormData) {
   }
 }
 
-// Sign in a user
+// Update the signIn function to handle errors better
 export async function signIn(formData: FormData) {
   const email = formData.get("email") as string
   const password = formData.get("password") as string
@@ -106,7 +118,12 @@ export async function signIn(formData: FormData) {
     const supabase = createServerClient(cookieStore)
 
     // Log login attempt
-    await logAuthEvent(null, AUTH_EVENTS.LOGIN_ATTEMPT, AUTH_STATUS.PENDING, { email })
+    try {
+      await logAuthEvent(null, AUTH_EVENTS.LOGIN_ATTEMPT, AUTH_STATUS.PENDING, { email })
+    } catch (logError) {
+      console.error("Error logging auth event:", logError)
+      // Continue with login even if logging fails
+    }
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -115,15 +132,25 @@ export async function signIn(formData: FormData) {
 
     if (error) {
       // Log login failure
-      await logAuthEvent(null, AUTH_EVENTS.LOGIN_ATTEMPT, AUTH_STATUS.FAILURE, {
-        email,
-        error: error.message,
-      })
+      try {
+        await logAuthEvent(null, AUTH_EVENTS.LOGIN_ATTEMPT, AUTH_STATUS.FAILURE, {
+          email,
+          error: error.message,
+        })
+      } catch (logError) {
+        console.error("Error logging auth failure:", logError)
+      }
       return { error: error.message }
     }
 
     // Log login success
-    await logAuthEvent(data.user.id, AUTH_EVENTS.LOGIN_SUCCESS, AUTH_STATUS.SUCCESS, { email })
+    try {
+      if (data.user) {
+        await logAuthEvent(data.user.id, AUTH_EVENTS.LOGIN_SUCCESS, AUTH_STATUS.SUCCESS, { email })
+      }
+    } catch (logError) {
+      console.error("Error logging auth success:", logError)
+    }
 
     return { success: true }
   } catch (error) {

@@ -116,11 +116,13 @@ export default function SignUpForm() {
         // Redirect to sign-in page after successful registration
         setTimeout(() => {
           router.push("/auth/sign-in")
+          router.refresh() // Refresh to update auth state
         }, 3000)
       } else {
         setState({ message: "An unknown error occurred", success: false, loading: false })
       }
     } catch (error) {
+      console.error("Sign up form error:", error)
       setState({
         message: error instanceof Error ? error.message : "An unknown error occurred",
         success: false,
