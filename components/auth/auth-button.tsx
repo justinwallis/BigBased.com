@@ -8,6 +8,14 @@ import { useRouter } from "next/navigation"
 import type { User } from "@supabase/supabase-js"
 import { supabaseClient } from "@/lib/supabase/client"
 import JoinButton from "./join-button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function AuthButton() {
   const [user, setUser] = useState<User | null>(null)
@@ -60,15 +68,30 @@ export default function AuthButton() {
   }
 
   if (user) {
+    // Get initials from email
+    const initials = user.email ? user.email.substring(0, 2).toUpperCase() : "BB"
+
     return (
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/profile">Profile</Link>
-        </Button>
-        <Button variant="outline" size="sm" onClick={handleSignOut}>
-          Sign Out
-        </Button>
-      </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className="rounded-full">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={user.user_metadata?.avatar_url || ""} alt="Profile" />
+              <AvatarFallback className="bg-primary text-primary-foreground">{initials}</AvatarFallback>
+            </Avatar>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem asChild>
+            <Link href="/profile">Profile</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/profile/security">Security</Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleSignOut}>Sign Out</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     )
   }
 
