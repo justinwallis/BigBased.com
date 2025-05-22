@@ -2,6 +2,7 @@ import dotenv from "dotenv"
 import path from "path"
 import payload, { type Payload } from "payload"
 import type { InitOptions } from "payload/config"
+import config from "./payload.config"
 
 // Load environment variables
 dotenv.config({
@@ -21,14 +22,11 @@ export const getPayload = async (options: InitOptions = {}): Promise<Payload> =>
     return cachedPayload
   }
 
-  // Import the config dynamically
-  const configPath = path.resolve(__dirname, "./payload.config.ts")
-
   try {
-    // Initialize Payload with the config
+    // Initialize Payload with the imported config
     const payloadInstance = await payload.init({
       secret: process.env.PAYLOAD_SECRET,
-      configPath,
+      config, // Use the imported config directly
       local: options.local !== false,
       ...(options || {}),
     })

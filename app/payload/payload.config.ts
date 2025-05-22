@@ -11,7 +11,8 @@ const serverURL =
   process.env.NEXT_PUBLIC_BASE_URL ||
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
 
-export default buildConfig({
+// Create the config object
+const config = buildConfig({
   serverURL,
   admin: {
     user: Users.slug,
@@ -37,3 +38,6 @@ export default buildConfig({
   cors: ["*"],
   csrf: [serverURL],
 })
+
+// Export the config
+export default config

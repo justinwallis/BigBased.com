@@ -1,21 +1,71 @@
 import { NextResponse } from "next/server"
-import { getPayload } from "../../../payload/getPayload"
+import payload from "payload"
+import config from "@/app/payload/payload.config"
 
 export async function GET() {
   try {
     // Check if Payload is available
     if (!process.env.PAYLOAD_SECRET || !process.env.POSTGRES_URL) {
-      return NextResponse.json({ status: "error", message: "Payload configuration missing" }, { status: 500 })
+      return NextResponse.json(
+        {
+          status: "error",
+          message: "Payload configuration missing",
+          missingVars: {
+            PAYLOAD_SECRET: !process.env.PAYLOAD_SECRET,
+            POSTGRES_URL: !process.env.POSTGRES_URL,
+          },
+        },
+        { status: 500 },
+      )
     }
 
     // Try to initialize Payload
-    const payload = await getPayload()
+    let initialized = false
+    try {
+      await payload.init({
+        secret: process.env.PAYLOAD_SECRET,
+        config,
+      })
+      initialized = true
+    } catch (error) {
+      console.error("Failed to initialize Payload:", error)
+      return NextResponse.json(
+        {
+          status: "error",
+          message: "Failed to initialize Payload",
+          error: error instanceof Error ? error.message : "Unknown error",
+        },
+        { status: 500 },
+      )
+    }
+
+    if (!initialized) {
+      return NextResponse.json(
+        {
+          status: "error",
+          message: "Payload initialization failed",
+        },
+        { status: 500 },
+      )
+    }
 
     // Try a simple query to test database connection
-    await payload.find({
-      collection: "users",
-      limit: 1,
-    })
+    try {
+      await payload.find({
+        collection: "users",
+        limit: 1,
+      })
+    } catch (error) {
+      console.error("Database query failed:", error)
+      return NextResponse.json(
+        {
+          status: "error",
+          message: "Database connection failed",
+          error: error instanceof Error ? error.message : "Unknown error",
+        },
+        { status: 500 },
+      )
+    }
 
     return NextResponse.json({
       status: "healthy",
