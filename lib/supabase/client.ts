@@ -1,9 +1,10 @@
 import { createClient } from "@supabase/supabase-js"
-import type { SupabaseClient } from "@supabase/supabase-js"
+import type { Database } from "@/types/supabase"
 
-let supabase: SupabaseClient | null = null
+// Create a single supabase client for interacting with your database
+let supabase: ReturnType<typeof createClient<Database>> | null = null
 
-export const supabaseClient = () => {
+export function supabaseClient() {
   if (supabase) return supabase
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -14,10 +15,10 @@ export const supabaseClient = () => {
     return null
   }
 
-  supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     auth: {
       persistSession: true,
-      storageKey: "sb-auth-token",
+      storageKey: "sb-access-token",
       storage: {
         getItem: (key) => {
           if (typeof window === "undefined") {
@@ -26,14 +27,20 @@ export const supabaseClient = () => {
           return JSON.parse(window.localStorage.getItem(key) || "null")
         },
         setItem: (key, value) => {
-          if (typeof window !== "undefined") {
-            window.localStorage.setItem(key, JSON.stringify(value))
+          if (typeof window === "undefined") {
+            return
           }
+          window.localStorage.setItem(key, JSON.stringify(value))
+          // Also set a cookie for the middleware to check
+          document.cookie = `${key}=true; path=/; max-age=2592000; SameSite=Lax` // 30 days
         },
         removeItem: (key) => {
-          if (typeof window !== "undefined") {
-            window.localStorage.removeItem(key)
+          if (typeof window === "undefined") {
+            return
           }
+          window.localStorage.removeItem(key)
+          // Also remove the cookie
+          document.cookie = `${key}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`
         },
       },
     },

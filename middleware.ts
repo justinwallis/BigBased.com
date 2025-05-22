@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { createClient } from "@supabase/supabase-js"
 
 export async function middleware(request: NextRequest) {
   // Get the pathname of the request
@@ -31,36 +30,19 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Check for Supabase session
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  // Check for Supabase session token in cookies
+  const supabaseSession = request.cookies.get("sb-access-token") || request.cookies.get("supabase-auth-token")
 
-  // Get access token from cookie
-  const accessToken = request.cookies.get("sb-access-token")?.value
-
-  if (!accessToken) {
+  // If it's a protected path and the user is not authenticated,
+  // redirect to the sign-in page
+  if (isProtectedPath && !supabaseSession) {
+    console.log("No session found, redirecting to sign-in")
     const redirectUrl = new URL("/auth/sign-in", request.url)
     redirectUrl.searchParams.set("redirect", request.nextUrl.pathname)
     return NextResponse.redirect(redirectUrl)
   }
 
-  // Verify the token
-  const supabase = createClient(supabaseUrl, supabaseKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  })
-
-  const { data, error } = await supabase.auth.getUser(accessToken)
-
-  if (error || !data?.user) {
-    // Token is invalid or expired
-    const redirectUrl = new URL("/auth/sign-in", request.url)
-    redirectUrl.searchParams.set("redirect", request.nextUrl.pathname)
-    return NextResponse.redirect(redirectUrl)
-  }
-
+  // Allow access to protected paths if authenticated
   return NextResponse.next()
 }
 
