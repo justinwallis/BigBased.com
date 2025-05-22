@@ -7,8 +7,12 @@ import { Pages } from "./collections/Pages"
 import { Media } from "./collections/Media"
 import { Posts } from "./collections/Posts"
 
+const serverURL =
+  process.env.NEXT_PUBLIC_BASE_URL ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
+
 export default buildConfig({
-  serverURL: process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
+  serverURL,
   admin: {
     user: Users.slug,
     meta: {
@@ -30,6 +34,6 @@ export default buildConfig({
       connectionString: process.env.POSTGRES_URL,
     },
   }),
-  cors: [process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"],
-  csrf: [process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"],
+  cors: ["*"],
+  csrf: [serverURL],
 })
