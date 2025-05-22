@@ -30,17 +30,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Check if the user is authenticated by looking for the auth cookie
-  // Look for any of the possible Supabase auth cookies
-  const hasAuthCookie =
-    request.cookies.has("sb-access-token") ||
-    request.cookies.has("sb-refresh-token") ||
-    request.cookies.has("sb:token") ||
-    request.cookies.has("supabase-auth-token")
+  // Check for NextAuth session token
+  const hasNextAuthCookie =
+    request.cookies.has("__Secure-next-auth.session-token") || request.cookies.has("next-auth.session-token")
 
   // If it's a protected path and the user is not authenticated,
   // redirect to the sign-in page
-  if (isProtectedPath && !hasAuthCookie) {
+  if (isProtectedPath && !hasNextAuthCookie) {
     const redirectUrl = new URL("/auth/sign-in", request.url)
     redirectUrl.searchParams.set("redirect", request.nextUrl.pathname)
     return NextResponse.redirect(redirectUrl)
