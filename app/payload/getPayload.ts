@@ -21,22 +21,24 @@ export const getPayload = async (options: InitOptions = {}): Promise<Payload> =>
     return cachedPayload
   }
 
-  // Initialize Payload
-  const payload = await initializePayload(options)
+  // Import the config dynamically
+  const configPath = path.resolve(__dirname, "./payload.config.ts")
 
-  // Cache the instance
-  cachedPayload = payload
+  try {
+    // Initialize Payload with the config
+    const payloadInstance = await payload.init({
+      secret: process.env.PAYLOAD_SECRET,
+      configPath,
+      local: options.local !== false,
+      ...(options || {}),
+    })
 
-  return payload
-}
+    // Cache the instance
+    cachedPayload = payloadInstance
 
-// Initialize Payload with the given options
-const initializePayload = async (options: InitOptions = {}): Promise<Payload> => {
-  const payloadInstance = await payload.init({
-    secret: process.env.PAYLOAD_SECRET || "your-payload-secret",
-    local: options.local !== false,
-    ...(options || {}),
-  })
-
-  return payloadInstance
+    return payloadInstance
+  } catch (error) {
+    console.error("Failed to initialize Payload:", error)
+    throw error
+  }
 }
