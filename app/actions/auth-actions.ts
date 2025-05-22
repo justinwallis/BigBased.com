@@ -1,10 +1,26 @@
 "use server"
 
-import { createServerClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
+import { cookies } from "next/headers"
+import { createClient } from "@supabase/supabase-js"
+import { generateRandomString } from "@/lib/utils"
 import { logAuthEvent } from "./auth-log-actions"
 import { AUTH_EVENTS, AUTH_STATUS } from "@/app/constants/auth-log-constants"
-import { generateRandomString } from "@/lib/utils"
+
+// Create a Supabase client for server actions
+const getSupabase = () => {
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error("Missing Supabase environment variables")
+  }
+
+  return createClient(supabaseUrl, supabaseKey, {
+    auth: {
+      persistSession: false,
+    },
+  })
+}
 
 // Validate password strength
 function validatePassword(password: string): { valid: boolean; message?: string } {
@@ -36,38 +52,134 @@ function validatePassword(password: string): { valid: boolean; message?: string 
   return { valid: true }
 }
 
-// Register a new user
-export async function register(formData: FormData) {
-  const email = formData.get("email") as string
-  const password = formData.get("password") as string
-  const confirmPassword = formData.get("confirmPassword") as string
-
-  if (!email || !password || !confirmPassword) {
-    return { error: "Email and password are required" }
-  }
-
-  // Check if passwords match
-  if (password !== confirmPassword) {
-    return { error: "Passwords do not match" }
-  }
-
-  // Validate password strength
-  const passwordValidation = validatePassword(password)
-  if (!passwordValidation.valid) {
-    return { error: passwordValidation.message }
-  }
-
+export async function signIn(formData: FormData) {
   try {
-    // Initialize Supabase client
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+    const email = formData.get("email") as string
+    const password = formData.get("password") as string
 
-    if (!supabaseUrl || !supabaseAnonKey) {
-      return { error: "Missing Supabase configuration" }
+    if (!email || !password) {
+      return { error: "Email and password are required" }
     }
 
-    const { createClient } = await import("@supabase/supabase-js")
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    const supabase = getSupabase()
+
+    // Log login attempt
+    try {
+      await logAuthEvent(null, AUTH_EVENTS.LOGIN_ATTEMPT, AUTH_STATUS.PENDING, { email })
+    } catch (logError) {
+      console.error("Error logging auth event:", logError)
+    }
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    if (error) {
+      // Log login failure
+      try {
+        await logAuthEvent(null, AUTH_EVENTS.LOGIN_ATTEMPT, AUTH_STATUS.FAILURE, {
+          email,
+          error: error.message,
+        })
+      } catch (logError) {
+        console.error("Error logging auth failure:", logError)
+      }
+      return { error: error.message }
+    }
+
+    // Set cookies for client-side auth
+    const cookieStore = cookies()
+    const session = data.session
+
+    if (session) {
+      cookieStore.set("sb-access-token", session.access_token, {
+        path: "/",
+        maxAge: session.expires_in,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+      })
+
+      cookieStore.set("sb-refresh-token", session.refresh_token, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+      })
+    }
+
+    // Log login success
+    try {
+      if (data.user) {
+        await logAuthEvent(data.user.id, AUTH_EVENTS.LOGIN_SUCCESS, AUTH_STATUS.SUCCESS, { email })
+      }
+    } catch (logError) {
+      console.error("Error logging auth success:", logError)
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error("Sign in error:", error)
+    return { error: "An unexpected error occurred" }
+  }
+}
+
+export async function signOut() {
+  try {
+    const supabase = getSupabase()
+
+    // Get the current user
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+
+    // Log logout attempt
+    if (session?.user) {
+      await logAuthEvent(session.user.id, AUTH_EVENTS.LOGOUT, AUTH_STATUS.PENDING, {})
+    }
+
+    await supabase.auth.signOut()
+
+    // Clear cookies
+    const cookieStore = cookies()
+    cookieStore.delete("sb-access-token")
+    cookieStore.delete("sb-refresh-token")
+
+    // Log logout success
+    if (session?.user) {
+      await logAuthEvent(session.user.id, AUTH_EVENTS.LOGOUT, AUTH_STATUS.SUCCESS, {})
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error("Sign out error:", error)
+    return { error: "An unexpected error occurred" }
+  }
+}
+
+export async function register(formData: FormData) {
+  try {
+    const email = formData.get("email") as string
+    const password = formData.get("password") as string
+    const confirmPassword = formData.get("confirmPassword") as string
+
+    if (!email || !password || !confirmPassword) {
+      return { error: "All fields are required" }
+    }
+
+    if (password !== confirmPassword) {
+      return { error: "Passwords do not match" }
+    }
+
+    // Validate password strength
+    const passwordValidation = validatePassword(password)
+    if (!passwordValidation.valid) {
+      return { error: passwordValidation.message }
+    }
+
+    const supabase = getSupabase()
 
     // Log signup attempt
     try {
@@ -80,7 +192,7 @@ export async function register(formData: FormData) {
       email,
       password,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/auth/callback`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL || "https://bigbased.com"}/auth/callback`,
       },
     })
 
@@ -107,91 +219,8 @@ export async function register(formData: FormData) {
     return { success: true }
   } catch (error) {
     console.error("Registration error:", error)
-    return { error: "An unexpected error occurred during registration" }
+    return { error: "An unexpected error occurred" }
   }
-}
-
-// Sign in a user
-export async function signIn(formData: FormData) {
-  const email = formData.get("email") as string
-  const password = formData.get("password") as string
-
-  if (!email || !password) {
-    return { error: "Email and password are required" }
-  }
-
-  try {
-    const supabase = createServerClient()
-
-    // Log login attempt
-    try {
-      await logAuthEvent(null, AUTH_EVENTS.LOGIN_ATTEMPT, AUTH_STATUS.PENDING, { email })
-    } catch (logError) {
-      console.error("Error logging auth event:", logError)
-      // Continue with login even if logging fails
-    }
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (error) {
-      // Log login failure
-      try {
-        await logAuthEvent(null, AUTH_EVENTS.LOGIN_ATTEMPT, AUTH_STATUS.FAILURE, {
-          email,
-          error: error.message,
-        })
-      } catch (logError) {
-        console.error("Error logging auth failure:", logError)
-      }
-      return { error: error.message }
-    }
-
-    // Log login success
-    try {
-      if (data.user) {
-        await logAuthEvent(data.user.id, AUTH_EVENTS.LOGIN_SUCCESS, AUTH_STATUS.SUCCESS, { email })
-      }
-    } catch (logError) {
-      console.error("Error logging auth success:", logError)
-    }
-
-    return { success: true }
-  } catch (error) {
-    console.error("Sign in error:", error)
-    return { error: "An unexpected error occurred during sign in" }
-  }
-}
-
-// Sign out a user
-export async function signOut() {
-  try {
-    const supabase = createServerClient()
-
-    // Get the current user
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-
-    // Log logout attempt
-    if (session?.user) {
-      await logAuthEvent(session.user.id, AUTH_EVENTS.LOGOUT, AUTH_STATUS.PENDING, {})
-    }
-
-    // Sign out
-    await supabase.auth.signOut()
-
-    // Log logout success
-    if (session?.user) {
-      await logAuthEvent(session.user.id, AUTH_EVENTS.LOGOUT, AUTH_STATUS.SUCCESS, {})
-    }
-  } catch (error) {
-    console.error("Sign out error:", error)
-  }
-
-  redirect("/auth/sign-in")
 }
 
 // Reset password request
@@ -203,13 +232,13 @@ export async function resetPasswordRequest(formData: FormData) {
   }
 
   try {
-    const supabase = createServerClient()
+    const supabase = getSupabase()
 
     // Log password reset request
     await logAuthEvent(null, AUTH_EVENTS.PASSWORD_RESET_REQUEST, AUTH_STATUS.PENDING, { email })
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/reset-password`,
+      redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL || "https://bigbased.com"}/auth/reset-password`,
     })
 
     if (error) {
@@ -252,7 +281,7 @@ export async function resetPassword(formData: FormData) {
   }
 
   try {
-    const supabase = createServerClient()
+    const supabase = getSupabase()
 
     // Get the current user
     const {
@@ -291,7 +320,7 @@ export async function resetPassword(formData: FormData) {
 // Generate backup codes
 export async function generateBackupCodes() {
   try {
-    const supabase = createServerClient()
+    const supabase = getSupabase()
 
     // Get the current user
     const {
@@ -339,7 +368,7 @@ export async function generateBackupCodes() {
 // Verify backup code
 export async function verifyBackupCode(code: string) {
   try {
-    const supabase = createServerClient()
+    const supabase = getSupabase()
 
     // Get the current user
     const {

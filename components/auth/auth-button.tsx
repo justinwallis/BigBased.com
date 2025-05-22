@@ -155,10 +155,13 @@ export default function AuthButton() {
   return (
     <Link
       href={buttonText === "Join" ? "/auth/sign-up" : "/auth/sign-in"}
-      className={`inline-block min-w-[90px] text-center bg-black dark:bg-white text-white dark:text-black px-6 py-2 rounded-full font-medium transition-all duration-300 hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 hover:shadow-md ${fadeState === "fade-in" ? "opacity-100" : "opacity-0"}`}
-      style={{ transition: "opacity 300ms ease-in-out" }}
+      className="inline-block min-w-[90px] text-center bg-black dark:bg-white text-white dark:text-black px-6 py-2 rounded-full font-medium transition-all duration-300 hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 hover:shadow-md"
     >
-      {buttonText}
+      <span
+        className={`inline-block transition-opacity duration-300 ${fadeState === "fade-in" ? "opacity-100" : "opacity-0"}`}
+      >
+        {buttonText}
+      </span>
     </Link>
   )
 }

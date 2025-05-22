@@ -71,13 +71,14 @@ export default function SignUpForm() {
       // Success
       setSuccess(true)
       setLoading(false)
+      localStorage.setItem("hasLoggedInBefore", "true")
 
       // Redirect to sign-in page after a delay
       setTimeout(() => {
         router.push("/auth/sign-in")
       }, 3000)
     } catch (err) {
-      console.error("Sign up error:", err)
+      console.error("Sign up form error:", err)
       setError("An unexpected error occurred")
       setLoading(false)
     }
@@ -148,7 +149,7 @@ export default function SignUpForm() {
       </div>
 
       <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "Creating account..." : "Create account"}
+        <span className="text-white dark:text-white">{loading ? "Loading... 🇺🇸" : "Create account"}</span>
       </Button>
     </form>
   )

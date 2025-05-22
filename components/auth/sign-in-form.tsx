@@ -103,7 +103,7 @@ export default function SignInForm() {
       </div>
 
       <Button type="submit" className="w-full" disabled={state.loading}>
-        <span className="text-white dark:text-white">{state.loading ? "Signing in..." : "Sign in"}</span>
+        <span className="text-white dark:text-white">{state.loading ? "Loading... 🇺🇸" : "Sign in"}</span>
       </Button>
     </form>
   )
