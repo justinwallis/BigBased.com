@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-// Simplified middleware that doesn't rely on server components
 export async function middleware(request: NextRequest) {
   // Get the pathname of the request
   const path = request.nextUrl.pathname
@@ -32,12 +31,16 @@ export async function middleware(request: NextRequest) {
   }
 
   // Check if the user is authenticated by looking for the auth cookie
-  const supabaseAuthCookie = request.cookies.get("sb-auth-token")
-  const isAuthenticated = !!supabaseAuthCookie
+  // Look for any of the possible Supabase auth cookies
+  const hasAuthCookie =
+    request.cookies.has("sb-access-token") ||
+    request.cookies.has("sb-refresh-token") ||
+    request.cookies.has("sb:token") ||
+    request.cookies.has("supabase-auth-token")
 
   // If it's a protected path and the user is not authenticated,
   // redirect to the sign-in page
-  if (isProtectedPath && !isAuthenticated) {
+  if (isProtectedPath && !hasAuthCookie) {
     const redirectUrl = new URL("/auth/sign-in", request.url)
     redirectUrl.searchParams.set("redirect", request.nextUrl.pathname)
     return NextResponse.redirect(redirectUrl)

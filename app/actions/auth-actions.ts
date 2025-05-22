@@ -1,7 +1,6 @@
 "use server"
 
 import { createServerClient } from "@/lib/supabase/server"
-import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { logAuthEvent } from "./auth-log-actions"
 import { AUTH_EVENTS, AUTH_STATUS } from "@/app/constants/auth-log-constants"
@@ -59,8 +58,7 @@ export async function register(formData: FormData) {
   }
 
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    const supabase = createServerClient()
 
     // Log signup attempt
     try {
@@ -104,7 +102,7 @@ export async function register(formData: FormData) {
   }
 }
 
-// Update the signIn function to handle errors better
+// Sign in a user
 export async function signIn(formData: FormData) {
   const email = formData.get("email") as string
   const password = formData.get("password") as string
@@ -114,8 +112,7 @@ export async function signIn(formData: FormData) {
   }
 
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    const supabase = createServerClient()
 
     // Log login attempt
     try {
@@ -161,25 +158,28 @@ export async function signIn(formData: FormData) {
 
 // Sign out a user
 export async function signOut() {
-  const cookieStore = cookies()
-  const supabase = createServerClient(cookieStore)
+  try {
+    const supabase = createServerClient()
 
-  // Get the current user
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+    // Get the current user
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
 
-  // Log logout attempt
-  if (session?.user) {
-    await logAuthEvent(session.user.id, AUTH_EVENTS.LOGOUT, AUTH_STATUS.PENDING, {})
-  }
+    // Log logout attempt
+    if (session?.user) {
+      await logAuthEvent(session.user.id, AUTH_EVENTS.LOGOUT, AUTH_STATUS.PENDING, {})
+    }
 
-  // Sign out
-  await supabase.auth.signOut()
+    // Sign out
+    await supabase.auth.signOut()
 
-  // Log logout success
-  if (session?.user) {
-    await logAuthEvent(session.user.id, AUTH_EVENTS.LOGOUT, AUTH_STATUS.SUCCESS, {})
+    // Log logout success
+    if (session?.user) {
+      await logAuthEvent(session.user.id, AUTH_EVENTS.LOGOUT, AUTH_STATUS.SUCCESS, {})
+    }
+  } catch (error) {
+    console.error("Sign out error:", error)
   }
 
   redirect("/auth/sign-in")
@@ -194,8 +194,7 @@ export async function resetPasswordRequest(formData: FormData) {
   }
 
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    const supabase = createServerClient()
 
     // Log password reset request
     await logAuthEvent(null, AUTH_EVENTS.PASSWORD_RESET_REQUEST, AUTH_STATUS.PENDING, { email })
@@ -244,8 +243,7 @@ export async function resetPassword(formData: FormData) {
   }
 
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    const supabase = createServerClient()
 
     // Get the current user
     const {
@@ -284,8 +282,7 @@ export async function resetPassword(formData: FormData) {
 // Generate backup codes
 export async function generateBackupCodes() {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    const supabase = createServerClient()
 
     // Get the current user
     const {
@@ -333,8 +330,7 @@ export async function generateBackupCodes() {
 // Verify backup code
 export async function verifyBackupCode(code: string) {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    const supabase = createServerClient()
 
     // Get the current user
     const {
