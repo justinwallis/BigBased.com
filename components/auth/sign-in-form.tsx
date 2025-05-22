@@ -4,7 +4,11 @@ import type React from "react"
 import { useState } from "react"
 import { signIn } from "next-auth/react"
 
-const SignInForm = () => {
+interface SignInFormProps {
+  showForgotPassword?: boolean
+}
+
+const SignInForm = ({ showForgotPassword = false }: SignInFormProps) => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -40,9 +44,12 @@ const SignInForm = () => {
   return (
     <form onSubmit={handleSubmit} className="max-w-sm mx-auto">
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+        <div
+          className="bg-red-100 border border-red-400 text-red-700 dark:bg-red-900 dark:text-red-200 px-4 py-3 rounded relative mb-4"
+          role="alert"
+        >
           <strong className="font-bold">Error!</strong>
-          <span className="block sm:inline">{error}</span>
+          <span className="block sm:inline"> {error}</span>
         </div>
       )}
       <div className="mb-4">
@@ -52,7 +59,7 @@ const SignInForm = () => {
         <input
           type="email"
           id="email"
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-white dark:bg-gray-800 leading-tight focus:outline-none focus:shadow-outline"
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-white dark:bg-gray-800 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 leading-tight focus:outline-none focus:shadow-outline"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -66,7 +73,7 @@ const SignInForm = () => {
         <input
           type="password"
           id="password"
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-white dark:bg-gray-800 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-white dark:bg-gray-800 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 mb-3 leading-tight focus:outline-none focus:shadow-outline"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -81,9 +88,14 @@ const SignInForm = () => {
         >
           {isLoading ? "Signing In..." : "Sign In"}
         </button>
-        <a className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800" href="#">
-          Forgot Password?
-        </a>
+        {showForgotPassword && (
+          <a
+            className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+            href="/auth/forgot-password"
+          >
+            Forgot Password?
+          </a>
+        )}
       </div>
     </form>
   )
