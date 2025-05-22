@@ -16,6 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { UserCircle } from "lucide-react"
 
 export default function AuthButton() {
   const [user, setUser] = useState<User | null>(null)
@@ -23,16 +24,20 @@ export default function AuthButton() {
   const router = useRouter()
 
   useEffect(() => {
-    const supabase = supabaseClient()
-    if (!supabase) return
-
-    // Check for existing session
     const checkSession = async () => {
       try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
-        setUser(session?.user || null)
+        const supabase = supabaseClient()
+        if (!supabase) {
+          setIsLoading(false)
+          return
+        }
+
+        const { data } = await supabase.auth.getSession()
+        if (data.session) {
+          setUser(data.session.user)
+          // Store that user has logged in before
+          localStorage.setItem("hasLoggedIn", "true")
+        }
         setIsLoading(false)
       } catch (error) {
         console.error("Error checking session:", error)
@@ -43,10 +48,16 @@ export default function AuthButton() {
     checkSession()
 
     // Set up auth state listener
+    const supabase = supabaseClient()
+    if (!supabase) return
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null)
+      if (session?.user) {
+        localStorage.setItem("hasLoggedIn", "true")
+      }
     })
 
     return () => {
@@ -55,8 +66,12 @@ export default function AuthButton() {
   }, [])
 
   const handleSignOut = async () => {
-    await signOut()
-    router.push("/")
+    try {
+      await signOut()
+      router.push("/")
+    } catch (error) {
+      console.error("Error signing out:", error)
+    }
   }
 
   if (isLoading) {
@@ -69,16 +84,20 @@ export default function AuthButton() {
 
   if (user) {
     // Get initials from email
-    const initials = user.email ? user.email.substring(0, 2).toUpperCase() : "BB"
+    const email = user.email || ""
+    const initials = email.substring(0, 2).toUpperCase()
 
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="rounded-full">
+          <Button variant="ghost" size="sm" className="rounded-full p-0 h-8 w-8">
             <Avatar className="h-8 w-8">
               <AvatarImage src={user.user_metadata?.avatar_url || ""} alt="Profile" />
-              <AvatarFallback className="bg-primary text-primary-foreground">{initials}</AvatarFallback>
+              <AvatarFallback className="bg-primary text-primary-foreground">
+                {initials || <UserCircle className="h-5 w-5" />}
+              </AvatarFallback>
             </Avatar>
+            <span className="sr-only">Open user menu</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">

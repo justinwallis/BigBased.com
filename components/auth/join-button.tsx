@@ -6,30 +6,33 @@ import { useRouter } from "next/navigation"
 
 export default function JoinButton() {
   const router = useRouter()
-  const [hasAccount, setHasAccount] = useState(false)
-  const [currentText, setCurrentText] = useState("Join")
-  const [isAnimating, setIsAnimating] = useState(false)
+  const [buttonText, setButtonText] = useState("Join")
+  const [isAlternating, setIsAlternating] = useState(true)
 
   useEffect(() => {
     // Check if user has previously logged in
     const hasLoggedIn = localStorage.getItem("hasLoggedIn") === "true"
-    setHasAccount(hasLoggedIn)
-    setCurrentText(hasLoggedIn ? "Login" : "Join")
+    if (hasLoggedIn) {
+      setButtonText("Login")
+      setIsAlternating(false) // Don't alternate if we know they've logged in
+    }
 
-    // Set up animation interval
-    const interval = setInterval(() => {
-      setIsAnimating(true)
-      setTimeout(() => {
-        setCurrentText((prev) => (prev === "Join" ? "Login" : "Join"))
-        setIsAnimating(false)
-      }, 500) // Half of the interval for fade out
-    }, 5000) // Change every 5 seconds
+    // Only set up animation if we're alternating
+    let interval: NodeJS.Timeout | null = null
 
-    return () => clearInterval(interval)
-  }, [])
+    if (isAlternating) {
+      interval = setInterval(() => {
+        setButtonText((prev) => (prev === "Join" ? "Login" : "Join"))
+      }, 3000) // Change every 3 seconds
+    }
+
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [isAlternating])
 
   const handleClick = () => {
-    if (hasAccount) {
+    if (buttonText === "Login") {
       router.push("/auth/sign-in")
     } else {
       router.push("/auth/sign-up")
@@ -40,18 +43,9 @@ export default function JoinButton() {
     <Button
       onClick={handleClick}
       size="sm"
-      className="bg-primary hover:bg-primary/90 text-white relative overflow-hidden"
+      className="bg-primary hover:bg-primary/90 text-white transition-all duration-300"
     >
-      <span
-        className={`transition-opacity duration-500 absolute inset-0 flex items-center justify-center w-full ${
-          isAnimating ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        {currentText}
-      </span>
-      <span className="opacity-0">
-        {currentText} {/* Placeholder to maintain button width */}
-      </span>
+      {buttonText}
     </Button>
   )
 }
