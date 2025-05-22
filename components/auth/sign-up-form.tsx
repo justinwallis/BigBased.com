@@ -149,7 +149,7 @@ export default function SignUpForm() {
       </div>
 
       <Button type="submit" className="w-full" disabled={loading}>
-        <span className="text-white dark:text-white">{loading ? "Loading... 🇺🇸" : "Create account"}</span>
+        <span className="text-white dark:text-black">{loading ? "Loading... 🇺🇸" : "Create account"}</span>
       </Button>
     </form>
   )

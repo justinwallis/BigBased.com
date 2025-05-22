@@ -1,8 +1,10 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { signIn } from "@/app/actions/auth-actions"
+import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,58 +12,58 @@ import { AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
 
-interface State {
-  message: string | null
-  success: boolean
-  loading: boolean
-}
-
-const initialState: State = {
-  message: null,
-  success: false,
-  loading: false,
-}
-
 export default function SignInForm() {
-  const [state, setState] = useState<State>(initialState)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState(false)
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  async function handleSubmit(formData: FormData) {
-    setState({ ...state, loading: true, message: null })
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError("")
 
     try {
-      const result = await signIn(formData)
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      })
 
       if (result?.error) {
-        setState({ message: result.error, success: false, loading: false })
-      } else if (result?.success) {
-        setState({ message: "Sign in successful! Redirecting...", success: true, loading: false })
+        setError(result.error)
+        setLoading(false)
+      } else {
+        setSuccess(true)
         // Store that user has logged in before
         localStorage.setItem("hasLoggedInBefore", "true")
         // Redirect to profile or dashboard after successful login
         setTimeout(() => {
           router.push("/profile")
-          router.refresh() // Refresh to update auth state
         }, 1000)
-      } else {
-        setState({ message: "An unknown error occurred", success: false, loading: false })
       }
     } catch (error) {
-      console.error("Sign in form error:", error)
-      setState({
-        message: error instanceof Error ? error.message : "An unknown error occurred",
-        success: false,
-        loading: false,
-      })
+      console.error("Sign in error:", error)
+      setError("An unexpected error occurred")
+      setLoading(false)
     }
   }
 
   return (
-    <form className="space-y-6 max-w-sm mx-auto" action={handleSubmit}>
-      {state.message && (
-        <Alert variant={state.success ? "default" : "destructive"}>
+    <form className="space-y-6 max-w-sm mx-auto" onSubmit={handleSubmit}>
+      {error && (
+        <Alert variant="destructive" className="dark:bg-gray-800 dark:border-gray-700">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{state.message}</AlertDescription>
+          <AlertDescription className="dark:text-white">{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {success && (
+        <Alert className="dark:bg-gray-800 dark:border-gray-700">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="dark:text-white">Sign in successful! Redirecting...</AlertDescription>
         </Alert>
       )}
 
@@ -71,8 +73,9 @@ export default function SignInForm() {
         </Label>
         <Input
           id="email"
-          name="email"
           type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           autoComplete="email"
           required
           placeholder="you@example.com"
@@ -94,16 +97,17 @@ export default function SignInForm() {
         </div>
         <Input
           id="password"
-          name="password"
           type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           autoComplete="current-password"
           required
           className="w-full text-gray-900 dark:text-white dark:bg-gray-800 dark:border-gray-700"
         />
       </div>
 
-      <Button type="submit" className="w-full" disabled={state.loading}>
-        <span className="text-white dark:text-white">{state.loading ? "Loading... 🇺🇸" : "Sign in"}</span>
+      <Button type="submit" className="w-full" disabled={loading}>
+        <span className="text-white dark:text-black">{loading ? "Loading... 🇺🇸" : "Sign in"}</span>
       </Button>
     </form>
   )
