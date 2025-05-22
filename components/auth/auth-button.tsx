@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { UserCircle } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import {
@@ -12,26 +11,35 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { supabaseClient } from "@/lib/supabase/client"
 
 export default function AuthButton() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [buttonText, setButtonText] = useState("Join")
-  const supabase = createClientComponentClient()
 
+  // Force a more reliable check for authentication status
   useEffect(() => {
     const checkUser = async () => {
       try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
-        setUser(session?.user || null)
-
-        // Store login status in localStorage
-        if (session?.user) {
-          localStorage.setItem("hasLoggedInBefore", "true")
+        const supabase = supabaseClient()
+        if (!supabase) {
+          console.error("No Supabase client available")
+          setLoading(false)
+          return
         }
 
+        // Force a fresh check of the session
+        const { data, error } = await supabase.auth.getSession()
+
+        if (error) {
+          console.error("Error checking auth status:", error)
+          setLoading(false)
+          return
+        }
+
+        console.log("Auth session data:", data)
+        setUser(data.session?.user || null)
         setLoading(false)
       } catch (error) {
         console.error("Error checking auth status:", error)
@@ -42,18 +50,20 @@ export default function AuthButton() {
     checkUser()
 
     // Set up auth state change listener
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const supabase = supabaseClient()
+    if (!supabase) return
+
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth state changed:", _event, session?.user?.email)
       setUser(session?.user || null)
     })
 
     return () => {
-      subscription.unsubscribe()
+      data.subscription.unsubscribe()
     }
-  }, [supabase])
+  }, [])
 
-  // Alternate button text between Join and Login if not logged in before
+  // Alternate button text between Join and Login if not logged in
   useEffect(() => {
     if (user) return // Don't alternate if logged in
 
@@ -71,11 +81,15 @@ export default function AuthButton() {
   }, [user])
 
   const handleSignOut = async () => {
+    const supabase = supabaseClient()
+    if (!supabase) return
+
     await supabase.auth.signOut()
+    window.location.href = "/"
   }
 
   if (loading) {
-    return <button className="bg-gray-300 dark:bg-gray-700 text-transparent px-6 py-2 rounded-full">Loading...</button>
+    return <div className="w-[90px] h-[40px] bg-gray-300 dark:bg-gray-700 rounded-full animate-pulse"></div>
   }
 
   if (user) {
@@ -83,9 +97,9 @@ export default function AuthButton() {
       <DropdownMenu>
         <DropdownMenuTrigger className="focus:outline-none">
           <Avatar className="h-9 w-9 border-2 border-white dark:border-gray-800">
-            <AvatarImage src={user.user_metadata?.avatar_url || "/placeholder.svg"} alt={user.email} />
+            <AvatarImage src={user.user_metadata?.avatar_url || ""} alt={user.email} />
             <AvatarFallback className="bg-blue-500 text-white">
-              {user.email ? user.email.substring(0, 2).toUpperCase() : <UserCircle />}
+              {user.email ? user.email.substring(0, 2).toUpperCase() : <UserCircle className="h-5 w-5" />}
             </AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>
@@ -114,7 +128,7 @@ export default function AuthButton() {
   return (
     <Link
       href={buttonText === "Join" ? "/auth/sign-up" : "/auth/sign-in"}
-      className="bg-black dark:bg-white text-white dark:text-black px-6 py-2 rounded-full font-medium transition-all duration-300 hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 hover:shadow-md"
+      className="inline-block min-w-[90px] text-center bg-black dark:bg-white text-white dark:text-black px-6 py-2 rounded-full font-medium transition-all duration-300 hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 hover:shadow-md"
     >
       {buttonText}
     </Link>
