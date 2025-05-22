@@ -12,7 +12,8 @@ interface BBLogoAuthProps {
   forceLight?: boolean
 }
 
-export default function BBLogoAuth({ size = "md", className, forceDark = false, forceLight = false }: BBLogoAuthProps) {
+// Export as both named and default export to support both import styles
+export function BBLogoAuth({ size = "md", className, forceDark = false, forceLight = false }: BBLogoAuthProps) {
   const [mounted, setMounted] = useState(false)
   const { theme } = useTheme()
 
@@ -47,3 +48,6 @@ export default function BBLogoAuth({ size = "md", className, forceDark = false, 
     </div>
   )
 }
+
+// Also export as default for backward compatibility
+export default BBLogoAuth

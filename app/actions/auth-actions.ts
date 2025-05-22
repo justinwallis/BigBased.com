@@ -58,7 +58,16 @@ export async function register(formData: FormData) {
   }
 
   try {
-    const supabase = createServerClient()
+    // Initialize Supabase client
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return { error: "Missing Supabase configuration" }
+    }
+
+    const { createClient } = await import("@supabase/supabase-js")
+    const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
     // Log signup attempt
     try {
