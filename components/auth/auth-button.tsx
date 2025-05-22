@@ -1,103 +1,122 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { signOut } from "@/app/actions/auth-actions"
-import { useRouter } from "next/navigation"
-import { supabaseClient } from "@/lib/supabase/client"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { UserCircle } from "lucide-react"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function AuthButton() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [userEmail, setUserEmail] = useState("")
-  const router = useRouter()
-
-  // Add console logs to debug
-  console.log("AuthButton rendering, isLoggedIn:", isLoggedIn)
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [buttonText, setButtonText] = useState("Join")
+  const supabase = createClientComponentClient()
 
   useEffect(() => {
-    async function checkAuth() {
+    const checkUser = async () => {
       try {
-        console.log("Checking auth status...")
-        const supabase = supabaseClient()
-        if (!supabase) {
-          console.log("No Supabase client available")
-          setIsLoading(false)
-          return
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
+        setUser(session?.user || null)
+
+        // Store login status in localStorage
+        if (session?.user) {
+          localStorage.setItem("hasLoggedInBefore", "true")
         }
 
-        const { data, error } = await supabase.auth.getSession()
-        console.log("Auth session data:", data, "Error:", error)
-
-        if (data.session) {
-          console.log("User is logged in:", data.session.user.email)
-          setIsLoggedIn(true)
-          setUserEmail(data.session.user.email || "")
-        } else {
-          console.log("No active session found")
-          setIsLoggedIn(false)
-        }
-        setIsLoading(false)
+        setLoading(false)
       } catch (error) {
-        console.error("Error checking auth:", error)
-        setIsLoading(false)
+        console.error("Error checking auth status:", error)
+        setLoading(false)
       }
     }
 
-    checkAuth()
+    checkUser()
 
-    // Set up auth listener
-    const supabase = supabaseClient()
-    if (!supabase) return
-
-    const { data } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed:", event, session?.user?.email)
-      setIsLoggedIn(!!session)
-      setUserEmail(session?.user?.email || "")
+    // Set up auth state change listener
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null)
     })
 
     return () => {
-      data.subscription.unsubscribe()
+      subscription.unsubscribe()
     }
-  }, [])
+  }, [supabase])
+
+  // Alternate button text between Join and Login if not logged in before
+  useEffect(() => {
+    if (user) return // Don't alternate if logged in
+
+    const hasLoggedInBefore = localStorage.getItem("hasLoggedInBefore") === "true"
+    if (hasLoggedInBefore) {
+      setButtonText("Login")
+      return
+    }
+
+    const interval = setInterval(() => {
+      setButtonText((prev) => (prev === "Join" ? "Login" : "Join"))
+    }, 3000)
+
+    return () => clearInterval(interval)
+  }, [user])
 
   const handleSignOut = async () => {
-    try {
-      console.log("Signing out...")
-      await signOut()
-      setIsLoggedIn(false)
-      router.push("/")
-    } catch (error) {
-      console.error("Error signing out:", error)
-    }
+    await supabase.auth.signOut()
   }
 
-  if (isLoading) {
-    return <Button disabled>Loading...</Button>
+  if (loading) {
+    return <button className="bg-gray-300 dark:bg-gray-700 text-transparent px-6 py-2 rounded-full">Loading...</button>
   }
 
-  if (isLoggedIn) {
+  if (user) {
     return (
-      <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm">
-          {userEmail.substring(0, 10)}
-        </Button>
-        <Button variant="destructive" size="sm" onClick={handleSignOut}>
-          Sign Out
-        </Button>
-      </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger className="focus:outline-none">
+          <Avatar className="h-9 w-9 border-2 border-white dark:border-gray-800">
+            <AvatarImage src={user.user_metadata?.avatar_url || "/placeholder.svg"} alt={user.email} />
+            <AvatarFallback className="bg-blue-500 text-white">
+              {user.email ? user.email.substring(0, 2).toUpperCase() : <UserCircle />}
+            </AvatarFallback>
+          </Avatar>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          <div className="px-2 py-1.5 text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{user.email}</div>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link href="/profile" className="cursor-pointer">
+              Profile
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/profile/security" className="cursor-pointer">
+              Security
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-500 dark:text-red-400">
+            Sign out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     )
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <Button variant="outline" size="sm" asChild>
-        <Link href="/auth/sign-in">Sign In</Link>
-      </Button>
-      <Button variant="default" size="sm" asChild>
-        <Link href="/auth/sign-up">Join</Link>
-      </Button>
-    </div>
+    <Link
+      href={buttonText === "Join" ? "/auth/sign-up" : "/auth/sign-in"}
+      className="bg-black dark:bg-white text-white dark:text-black px-6 py-2 rounded-full font-medium transition-all duration-300 hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 hover:shadow-md"
+    >
+      {buttonText}
+    </Link>
   )
 }

@@ -58,6 +58,8 @@ import BasedProfileTease from "@/components/based-profile-tease"
 import BBLogo from "@/components/bb-logo"
 // Make sure to add the import at the top of the file:
 import BasedQuiz from "@/components/based-quiz"
+// Add this import with the other imports at the top of the file
+import AuthButton from "@/components/auth/auth-button"
 
 export const viewport: Viewport = viewportConfig
 
@@ -516,9 +518,7 @@ export default function ClientPage() {
           >
             <Search className="h-5 w-5 dark:text-white" />
           </button>
-          <button className="bg-black dark:bg-white text-white dark:text-black px-6 py-2 rounded-full font-medium transition-all duration-300 hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 hover:shadow-md">
-            Join
-          </button>
+          <AuthButton />
         </div>
       </nav>
 
