@@ -46,13 +46,13 @@ const SignInForm = () => {
         </div>
       )}
       <div className="mb-4">
-        <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">
+        <label htmlFor="email" className="block text-gray-700 dark:text-white text-sm font-bold mb-2">
           Email
         </label>
         <input
           type="email"
           id="email"
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-white dark:bg-gray-800 leading-tight focus:outline-none focus:shadow-outline"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -60,13 +60,13 @@ const SignInForm = () => {
         />
       </div>
       <div className="mb-6">
-        <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">
+        <label htmlFor="password" className="block text-gray-700 dark:text-white text-sm font-bold mb-2">
           Password
         </label>
         <input
           type="password"
           id="password"
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-white dark:bg-gray-800 mb-3 leading-tight focus:outline-none focus:shadow-outline"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
