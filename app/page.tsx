@@ -38,8 +38,8 @@ export const viewport: Viewport = viewportConfig
 export default function Home() {
   return (
     <main>
-      <h1>Big Based</h1>
-      <p>Website coming soon</p>
+      <h1>Big Based Website</h1>
+      <p>Welcome to our website</p>
     </main>
   )
 }
