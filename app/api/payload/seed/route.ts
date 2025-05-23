@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import payload from "payload"
-import bcrypt from "bcryptjs"
+import config from "../../../../payload.config"
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,9 +12,8 @@ export async function POST(req: NextRequest) {
 
     if (!payload.initialized) {
       await payload.init({
+        config,
         secret: process.env.PAYLOAD_SECRET!,
-        config: await import("../../../../payload.config").then((m) => m.default),
-        disableDBConnect: false,
       })
     }
 
@@ -36,13 +35,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Create admin user
-    const hashedPassword = await bcrypt.hash("BigBased2024!", 12)
-
     const adminUser = await payload.create({
       collection: "users",
       data: {
         email: "admin@bigbased.com",
-        password: hashedPassword,
+        password: "BigBased2024!",
         roles: ["admin"],
         name: "Admin User",
       },

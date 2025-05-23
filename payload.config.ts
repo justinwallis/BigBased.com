@@ -14,13 +14,8 @@ const serverURL =
   process.env.NEXT_PUBLIC_BASE_URL ||
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
 
-// Ensure we have a secret key
-if (!process.env.PAYLOAD_SECRET) {
-  console.warn("No PAYLOAD_SECRET environment variable set. Using a fallback for development only.")
-}
-
 // Create the config
-export const config = buildConfig({
+const payloadConfig = buildConfig({
   admin: {
     user: Users.slug,
     importMap: {
@@ -34,7 +29,6 @@ export const config = buildConfig({
   },
   collections: [Users, Pages, Posts, Media],
   editor: lexicalEditor({}),
-  // Explicitly set the secret key with a fallback for development
   secret: process.env.PAYLOAD_SECRET || "insecure-secret-for-dev-only",
   typescript: {
     outputFile: path.resolve(process.cwd(), "types/payload-types.ts"),
@@ -53,10 +47,12 @@ export const config = buildConfig({
       token: process.env.BLOB_READ_WRITE_TOKEN || "",
     }),
   ],
-  cors: [process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000", "https://bigbased.com", "https://*.bigbased.com"],
-  csrf: [process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000", "https://bigbased.com", "https://*.bigbased.com"],
+  cors: [serverURL, "https://bigbased.com", "https://*.bigbased.com"],
+  csrf: [serverURL, "https://bigbased.com", "https://*.bigbased.com"],
   serverURL,
 })
 
-// Export the config as default as well
-export default config
+// Export all required formats
+export default payloadConfig
+export const config = payloadConfig
+export { payloadConfig }
