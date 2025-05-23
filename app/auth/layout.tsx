@@ -1,8 +1,5 @@
 import type { ReactNode } from "react"
 import Link from "next/link"
-import Image from "next/image"
-import { ThemeProvider } from "@/components/theme-provider"
-import { ThemeToggle } from "@/components/theme-toggle"
 
 interface AuthLayoutProps {
   children: ReactNode
@@ -10,37 +7,59 @@ interface AuthLayoutProps {
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <div className="min-h-screen flex flex-col items-center bg-gray-50 dark:bg-gray-900 p-4">
-        <div className="w-full max-w-md space-y-6 mt-4">
-          <div className="flex flex-col items-center justify-center">
-            <Link href="/" className="mb-4">
-              <div className="relative w-16 h-16">
-                <Image src="/bb-logo.png" alt="Big Based Logo" fill className="object-contain dark:hidden" priority />
-                <Image
-                  src="/BigBasedIconInvert.png"
-                  alt="Big Based Logo"
-                  fill
-                  className="object-contain hidden dark:block"
-                  priority
-                />
-              </div>
-            </Link>
-            <h1 className="text-2xl font-bold text-center text-gray-900 dark:text-white">BIG BASED</h1>
-          </div>
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        backgroundColor: "#F9FAFB",
+        padding: "1rem",
+      }}
+    >
+      <div style={{ width: "100%", maxWidth: "28rem", marginTop: "1rem" }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <Link href="/" style={{ marginBottom: "1rem" }}>
+            <div
+              style={{
+                position: "relative",
+                width: "4rem",
+                height: "4rem",
+                backgroundColor: "#3B82F6",
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <span style={{ color: "white", fontWeight: "bold", fontSize: "1.5rem" }}>BB</span>
+            </div>
+          </Link>
+          <h1 style={{ fontSize: "1.5rem", fontWeight: "bold", textAlign: "center", color: "#111827" }}>BIG BASED</h1>
+        </div>
 
-          <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-8 border border-gray-200 dark:border-gray-700">
-            {children}
-          </div>
+        <div
+          style={{
+            backgroundColor: "white",
+            boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+            borderRadius: "0.5rem",
+            padding: "2rem",
+            border: "1px solid #E5E7EB",
+            marginTop: "1.5rem",
+          }}
+        >
+          {children}
+        </div>
 
-          <div className="flex items-center justify-between mt-4">
-            <Link href="/" className="text-sm text-gray-600 dark:text-gray-400 hover:underline">
-              Return to Home
-            </Link>
-            <ThemeToggle />
-          </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "1rem" }}>
+          <Link href="/" style={{ fontSize: "0.875rem", color: "#6B7280", textDecoration: "underline" }}>
+            Return to Home
+          </Link>
+          <Link href="/admin" style={{ fontSize: "0.875rem", color: "#3B82F6", textDecoration: "underline" }}>
+            Admin Panel
+          </Link>
         </div>
       </div>
-    </ThemeProvider>
+    </div>
   )
 }
