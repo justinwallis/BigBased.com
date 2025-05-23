@@ -55,7 +55,6 @@
     "cmdk": "1.0.4",
     "crypto": "latest",
     "date-fns": "latest",
-    "dotenv": "latest",
     "embla-carousel-react": "8.5.1",
     "escape-html": "latest",
     "framer-motion": "latest",

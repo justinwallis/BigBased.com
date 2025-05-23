@@ -20,7 +20,7 @@ if (!process.env.PAYLOAD_SECRET) {
 }
 
 // Create the config
-const config = buildConfig({
+export const config = buildConfig({
   admin: {
     user: Users.slug,
     importMap: {
@@ -56,5 +56,5 @@ const config = buildConfig({
   csrf: [process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000", "https://bigbased.com", "https://*.bigbased.com"],
 })
 
-// Export the config
+// Export the config as default as well
 export default config

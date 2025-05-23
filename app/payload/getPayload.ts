@@ -1,18 +1,44 @@
-import dotenv from "dotenv"
-import path from "path"
-import { getPayload as getPayloadFromNext } from "@payloadcms/next/dist/utilities"
+import { getPayload as getPayloadCore } from "payload"
+import { buildConfig } from "payload"
+import { postgresAdapter } from "@payloadcms/db-postgres"
+import { lexicalEditor } from "@payloadcms/richtext-lexical"
+import { vercelBlobStorage } from "@payloadcms/storage-vercel-blob"
 import type { Payload } from "payload"
 
-// Load environment variables
-dotenv.config({
-  path: path.resolve(__dirname, "../../.env.local"),
-})
+// Import collections
+import { Users } from "@/app/payload/collections/Users"
+import { Pages } from "@/app/payload/collections/Pages"
+import { Posts } from "@/app/payload/collections/Posts"
+import { Media } from "@/app/payload/collections/Media"
 
-// Log environment variables for debugging (will be removed in production)
-console.log("getPayload Environment Check:", {
-  hasSecret: !!process.env.PAYLOAD_SECRET,
-  secretLength: process.env.PAYLOAD_SECRET?.length,
-  hasDB: !!process.env.POSTGRES_URL,
+// Create the config inline to avoid import issues
+const payloadConfig = buildConfig({
+  admin: {
+    user: Users.slug,
+    meta: {
+      titleSuffix: "- Big Based CMS",
+      favicon: "/favicon.ico",
+      ogImage: "/og-image.png",
+    },
+  },
+  collections: [Users, Pages, Posts, Media],
+  editor: lexicalEditor({}),
+  secret: process.env.PAYLOAD_SECRET || "insecure-secret-for-dev-only",
+  db: postgresAdapter({
+    pool: {
+      connectionString: process.env.POSTGRES_URL || "",
+    },
+  }),
+  plugins: [
+    vercelBlobStorage({
+      collections: {
+        media: true,
+      },
+      token: process.env.BLOB_READ_WRITE_TOKEN || "",
+    }),
+  ],
+  cors: ["https://bigbased.com", "https://*.bigbased.com", "http://localhost:3000"],
+  csrf: ["https://bigbased.com", "https://*.bigbased.com", "http://localhost:3000"],
 })
 
 // Cache the Payload instance
@@ -29,10 +55,9 @@ export const getPayloadClient = async (): Promise<Payload> => {
   }
 
   try {
-    // Use the Next.js specific Payload initialization with explicit secret
-    const payloadInstance = await getPayloadFromNext({
-      // Import the config directly to avoid circular dependencies
-      configPath: path.resolve(process.cwd(), "payload.config.ts"),
+    // Use the core Payload initialization
+    const payloadInstance = await getPayloadCore({
+      config: payloadConfig,
       secret: process.env.PAYLOAD_SECRET,
     })
 

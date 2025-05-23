@@ -21,6 +21,26 @@ const nextConfig = {
       },
     ],
   },
+  webpack: (config, { isServer }) => {
+    // Handle the cloudflare:sockets issue
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        crypto: false,
+      }
+    }
+
+    // Ignore cloudflare modules
+    config.externals = config.externals || []
+    config.externals.push({
+      "cloudflare:sockets": "commonjs cloudflare:sockets",
+    })
+
+    return config
+  },
   async headers() {
     return [
       {
