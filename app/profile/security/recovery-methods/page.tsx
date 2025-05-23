@@ -1,5 +1,5 @@
-import { RecoveryMethodsClientPage } from "./RecoveryMethodsClientPage"
+import { SimpleRecoveryPage } from "./SimpleRecoveryPage"
 
 export default function RecoveryMethodsPage() {
-  return <RecoveryMethodsClientPage />
+  return <SimpleRecoveryPage />
 }
