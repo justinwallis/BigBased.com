@@ -1,5 +1,0 @@
-{
-  "watch": ["server.ts", "payload.config.ts", "collections", "seed"],
-  "ext": "js,ts,json",
-  "exec": "ts-node --project tsconfig.server.json server.ts"
-}
