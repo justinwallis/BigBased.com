@@ -5,13 +5,18 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { CheckCircle, XCircle, Loader2 } from "lucide-react"
+import { CheckCircle, XCircle, Loader2, Copy } from "lucide-react"
+import { Textarea } from "@/components/ui/textarea"
 
 export default function SetupPage() {
   const [secret, setSecret] = useState("")
   const [loading, setLoading] = useState(false)
-  const [setupStatus, setSetupStatus] = useState<null | { success: boolean; message: string; details?: string }>(null)
-  const [initStatus, setInitStatus] = useState<null | { success: boolean; message: string; details?: string }>(null)
+  const [setupStatus, setSetupStatus] = useState<null | {
+    success: boolean
+    message: string
+    details?: string
+    sqlScript?: string
+  }>(null)
   const [adminCredentials, setAdminCredentials] = useState<null | { email: string; password: string }>(null)
 
   const handleSetupDatabase = async () => {
@@ -31,7 +36,7 @@ export default function SetupPage() {
 
       const data = await response.json()
 
-      if (response.ok) {
+      if (response.ok && data.success) {
         setSetupStatus({ success: true, message: data.message })
 
         // If admin credentials were returned directly
@@ -46,6 +51,7 @@ export default function SetupPage() {
           success: false,
           message: data.error || "Failed to setup database",
           details: data.details,
+          sqlScript: data.sqlScript,
         })
       }
     } catch (error) {
@@ -58,46 +64,15 @@ export default function SetupPage() {
     }
   }
 
-  const handleInitializeDatabase = async () => {
-    if (!secret) return
-
-    setLoading(true)
-    setInitStatus(null)
-
-    try {
-      const response = await fetch("/api/payload/init", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ secret }),
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        alert("SQL script copied to clipboard!")
       })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        setInitStatus({ success: true, message: data.message })
-        if (data.adminEmail && data.adminPassword) {
-          setAdminCredentials({
-            email: data.adminEmail,
-            password: data.adminPassword,
-          })
-        }
-      } else {
-        setInitStatus({
-          success: false,
-          message: data.error || "Failed to initialize database",
-          details: data.details,
-        })
-      }
-    } catch (error) {
-      setInitStatus({
-        success: false,
-        message: error instanceof Error ? error.message : "An unknown error occurred",
+      .catch((err) => {
+        console.error("Failed to copy text: ", err)
       })
-    } finally {
-      setLoading(false)
-    }
   }
 
   return (
@@ -132,15 +107,19 @@ export default function SetupPage() {
             </Alert>
           )}
 
-          {initStatus && (
-            <Alert variant={initStatus.success ? "default" : "destructive"}>
-              {initStatus.success ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-              <AlertTitle>{initStatus.success ? "Success" : "Error"}</AlertTitle>
-              <AlertDescription>
-                {initStatus.message}
-                {initStatus.details && <div className="mt-2 text-xs opacity-80">{initStatus.details}</div>}
-              </AlertDescription>
-            </Alert>
+          {setupStatus?.sqlScript && (
+            <div className="mt-4">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-sm font-medium">Manual SQL Setup Required</h3>
+                <Button variant="outline" size="sm" onClick={() => copyToClipboard(setupStatus.sqlScript || "")}>
+                  <Copy className="h-4 w-4 mr-1" /> Copy
+                </Button>
+              </div>
+              <Textarea className="font-mono text-xs h-48" value={setupStatus.sqlScript} readOnly />
+              <p className="text-xs mt-2">
+                Copy this SQL and run it in your Supabase SQL Editor, then return here to continue.
+              </p>
+            </div>
           )}
 
           {adminCredentials && (
