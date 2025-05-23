@@ -1,35 +1,39 @@
 import payload from "payload"
+import type { Payload } from "payload"
 import config from "./payload.config"
 
-// This is a singleton to ensure we only instantiate Payload once
-let cached = (global as any).payload
-
-if (!cached) {
-  cached = (global as any).payload = {
-    client: null,
-    promise: null,
-  }
+// Track if Payload has been initialized
+const cached = global as unknown as {
+  payload?: Payload
 }
 
-export const getPayload = async () => {
-  if (cached.client) {
-    return cached.client
+if (!cached.payload) {
+  cached.payload = undefined
+}
+
+// Initialize Payload once and reuse the instance
+export async function getPayload(): Promise<Payload> {
+  if (cached.payload) {
+    return cached.payload
   }
 
-  if (!cached.promise) {
-    cached.promise = payload.init({
-      secret: process.env.PAYLOAD_SECRET || "your-payload-secret",
-      local: true,
-      config,
-    })
+  // Only initialize in server environment
+  if (typeof window === "undefined") {
+    try {
+      // Initialize Payload
+      await payload.init({
+        secret: process.env.PAYLOAD_SECRET || "big-based-secret-key",
+        config,
+        local: process.env.NODE_ENV !== "production",
+      })
+
+      cached.payload = payload
+      return payload
+    } catch (error) {
+      console.error("Error initializing Payload:", error)
+      throw error
+    }
   }
 
-  try {
-    cached.client = await cached.promise
-  } catch (e) {
-    cached.promise = null
-    throw e
-  }
-
-  return cached.client
+  throw new Error("Payload cannot be initialized on the client side")
 }

@@ -12,6 +12,24 @@ const nextConfig = {
     domains: ["placeholder.com", "via.placeholder.com"],
     unoptimized: true,
   },
+  // Add transpilation for Payload packages
+  transpilePackages: ["payload", "@payloadcms/db-postgres", "@payloadcms/richtext-slate"],
+  // Webpack configuration to handle specific issues
+  webpack: (config, { isServer }) => {
+    // Fix for the "cloudflare:sockets" issue
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        net: false,
+        dns: false,
+        tls: false,
+        fs: false,
+        path: false,
+      }
+    }
+
+    return config
+  },
   async headers() {
     return [
       {

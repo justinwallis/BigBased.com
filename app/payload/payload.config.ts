@@ -7,12 +7,13 @@ import { Pages } from "./collections/Pages"
 import { Media } from "./collections/Media"
 import { Posts } from "./collections/Posts"
 
+// Define server URL with fallbacks
 const serverURL =
   process.env.NEXT_PUBLIC_BASE_URL ||
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
 
 // Create the config object
-const config = buildConfig({
+export default buildConfig({
   serverURL,
   admin: {
     user: Users.slug,
@@ -32,12 +33,9 @@ const config = buildConfig({
   },
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.POSTGRES_URL,
+      connectionString: process.env.POSTGRES_URL || process.env.DATABASE_URL,
     },
   }),
-  cors: ["*"],
-  csrf: [serverURL],
+  cors: [serverURL, "https://*.vercel.app"],
+  csrf: [serverURL, "https://*.vercel.app"],
 })
-
-// Export the config
-export default config
