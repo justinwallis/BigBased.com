@@ -1,11 +1,13 @@
 import { createServerClient } from "@/lib/supabase/server"
 import type { User } from "@supabase/supabase-js"
 import { type NextRequest, NextResponse } from "next/server"
-import payload from "payload"
+import { getPayload } from "./getPayload"
 
 // Function to create or get a Payload user from a Supabase user
 export async function syncSupabaseUserToPayload(supabaseUser: User) {
   try {
+    const payload = await getPayload()
+
     // Check if a Payload user with this Supabase ID already exists
     const existingUsers = await payload.find({
       collection: "users",
