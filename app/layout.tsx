@@ -33,9 +33,9 @@ export const viewport: Viewport = viewportConfig
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   // Prepare structured data for the entire site
   const structuredData = {
     "@context": "https://schema.org",
