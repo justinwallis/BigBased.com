@@ -5,36 +5,41 @@ import { vercelBlobStorage } from "@payloadcms/storage-vercel-blob"
 import path from "path"
 
 // Import collections
-import { Users } from "./collections/Users"
-import { Media } from "./collections/Media"
-import { Pages } from "./collections/Pages"
-import { Posts } from "./collections/Posts"
+import Users from "./collections/Users"
+import Media from "./collections/Media"
+import Pages from "./collections/Pages"
+import Posts from "./collections/Posts"
 
 export default buildConfig({
-  secret: process.env.PAYLOAD_SECRET || "a-very-secret-key",
+  serverURL: process.env.NEXT_PUBLIC_SERVER_URL || "",
   admin: {
     user: "users",
-    importMap: {
-      baseDir: path.resolve(process.cwd()),
-    },
   },
-  collections: [Users, Media, Pages, Posts],
   editor: lexicalEditor({}),
-  db: postgresAdapter({
-    pool: {
-      connectionString: process.env.DATABASE_URL,
-    },
-  }),
+  collections: [Users, Media, Pages, Posts],
+  typescript: {
+    outputFile: path.resolve(__dirname, "payload-types.ts"),
+  },
+  graphQL: {
+    schemaOutputFile: path.resolve(__dirname, "generated-schema.graphql"),
+  },
   plugins: [
     vercelBlobStorage({
       enabled: true,
       collections: {
-        media: true,
+        media: {
+          generateFileURL: ({ filename }) => {
+            return `https://vercel-blob-storage.vercel.app/${filename}`
+          },
+        },
       },
-      token: process.env.BLOB_READ_WRITE_TOKEN!,
+      token: process.env.BLOB_READ_WRITE_TOKEN || "",
     }),
   ],
-  typescript: {
-    outputFile: path.resolve(process.cwd(), "src/payload-types.ts"),
-  },
+  db: postgresAdapter({
+    pool: {
+      connectionString: process.env.DATABASE_URL || "",
+    },
+  }),
+  secret: process.env.PAYLOAD_SECRET || "a-very-secret-key",
 })

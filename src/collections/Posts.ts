@@ -1,9 +1,13 @@
 import type { CollectionConfig } from "payload/types"
 
-export const Posts: CollectionConfig = {
+const Posts: CollectionConfig = {
   slug: "posts",
   admin: {
     useAsTitle: "title",
+    defaultColumns: ["title", "author", "category", "status", "publishedDate"],
+  },
+  access: {
+    read: () => true,
   },
   fields: [
     {
@@ -16,19 +20,9 @@ export const Posts: CollectionConfig = {
       type: "text",
       required: true,
       unique: true,
-    },
-    {
-      name: "excerpt",
-      type: "textarea",
-    },
-    {
-      name: "content",
-      type: "richText",
-    },
-    {
-      name: "featuredImage",
-      type: "relationship",
-      relationTo: "media",
+      admin: {
+        position: "sidebar",
+      },
     },
     {
       name: "author",
@@ -39,22 +33,73 @@ export const Posts: CollectionConfig = {
     {
       name: "publishedDate",
       type: "date",
+      admin: {
+        position: "sidebar",
+      },
+    },
+    {
+      name: "category",
+      type: "select",
+      options: [
+        {
+          value: "news",
+          label: "News",
+        },
+        {
+          value: "tutorial",
+          label: "Tutorial",
+        },
+        {
+          value: "article",
+          label: "Article",
+        },
+      ],
+      required: true,
+    },
+    {
+      name: "content",
+      type: "richText",
+      required: true,
     },
     {
       name: "status",
       type: "select",
       options: [
         {
-          label: "Draft",
           value: "draft",
+          label: "Draft",
         },
         {
-          label: "Published",
           value: "published",
+          label: "Published",
         },
       ],
       defaultValue: "draft",
-      required: true,
+      admin: {
+        position: "sidebar",
+      },
+    },
+    {
+      name: "featuredImage",
+      type: "upload",
+      relationTo: "media",
+      required: false,
+    },
+    {
+      name: "meta",
+      type: "group",
+      fields: [
+        {
+          name: "description",
+          type: "textarea",
+        },
+        {
+          name: "keywords",
+          type: "text",
+        },
+      ],
     },
   ],
 }
+
+export default Posts

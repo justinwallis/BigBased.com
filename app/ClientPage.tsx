@@ -428,7 +428,7 @@ export default function ClientPage() {
 
       // Remove the initial preloader after a short delay
       const timer = setTimeout(() => {
-        const preloader = window.initialPreloader
+        const preloader = window.document.getElementById("initialPreloader")
         if (preloader && preloader.parentNode) {
           // Fade out the preloader
           preloader.style.opacity = "0"
@@ -445,10 +445,7 @@ export default function ClientPage() {
 
       return () => clearTimeout(timer)
     } catch (error) {
-      errorLogger.logError(error instanceof Error ? error : new Error(String(error)), {
-        component: "Home",
-        function: "removePreloader",
-      })
+      console.error("Error removing preloader:", error)
       // Still mark content as loaded even if there's an error
       setContentLoaded(true)
     }

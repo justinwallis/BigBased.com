@@ -1,11 +1,21 @@
-import { getPayloadHMR } from "@payloadcms/next/utilities"
-import configPromise from "@/payload.config"
+import { getPayloadClient } from "@payloadcms/next/getPayloadClient"
+import { nextHandler } from "@payloadcms/next/handlers"
+import config from "../../../payload.config"
 
-const handler = async (req: Request): Promise<Response> => {
-  const payload = await getPayloadHMR({ config: configPromise })
-  return payload.handler(req)
+// This is the default handler for Payload routes
+const handler = nextHandler({
+  config,
+})
+
+export const GET = handler
+export const POST = handler
+export const PUT = handler
+export const PATCH = handler
+export const DELETE = handler
+
+// Export the Payload client for use in server components
+export const getPayload = async () => {
+  return getPayloadClient({
+    config,
+  })
 }
-
-export const dynamic = "force-dynamic"
-
-export { handler as GET, handler as POST, handler as PUT, handler as DELETE, handler as PATCH }

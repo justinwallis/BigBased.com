@@ -1,9 +1,12 @@
 import type { CollectionConfig } from "payload/types"
 
-export const Pages: CollectionConfig = {
+const Pages: CollectionConfig = {
   slug: "pages",
   admin: {
     useAsTitle: "title",
+  },
+  access: {
+    read: () => true,
   },
   fields: [
     {
@@ -16,26 +19,55 @@ export const Pages: CollectionConfig = {
       type: "text",
       required: true,
       unique: true,
+      admin: {
+        position: "sidebar",
+      },
     },
     {
       name: "content",
       type: "richText",
+      required: true,
+    },
+    {
+      name: "meta",
+      type: "group",
+      fields: [
+        {
+          name: "description",
+          type: "textarea",
+        },
+        {
+          name: "keywords",
+          type: "text",
+        },
+      ],
+    },
+    {
+      name: "publishedDate",
+      type: "date",
+      admin: {
+        position: "sidebar",
+      },
     },
     {
       name: "status",
       type: "select",
       options: [
         {
-          label: "Draft",
           value: "draft",
+          label: "Draft",
         },
         {
-          label: "Published",
           value: "published",
+          label: "Published",
         },
       ],
       defaultValue: "draft",
-      required: true,
+      admin: {
+        position: "sidebar",
+      },
     },
   ],
 }
+
+export default Pages

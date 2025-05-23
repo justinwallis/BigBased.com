@@ -1,6 +1,6 @@
 import type { CollectionConfig } from "payload/types"
 
-export const Users: CollectionConfig = {
+const Users: CollectionConfig = {
   slug: "users",
   auth: true,
   admin: {
@@ -10,11 +10,11 @@ export const Users: CollectionConfig = {
     {
       name: "name",
       type: "text",
-      required: true,
     },
     {
-      name: "role",
+      name: "roles",
       type: "select",
+      hasMany: true,
       options: [
         {
           label: "Admin",
@@ -24,13 +24,11 @@ export const Users: CollectionConfig = {
           label: "Editor",
           value: "editor",
         },
-        {
-          label: "User",
-          value: "user",
-        },
       ],
-      defaultValue: "user",
+      defaultValue: ["editor"],
       required: true,
     },
   ],
 }
+
+export default Users

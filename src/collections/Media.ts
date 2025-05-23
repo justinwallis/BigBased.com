@@ -1,11 +1,31 @@
 import type { CollectionConfig } from "payload/types"
 
-export const Media: CollectionConfig = {
+const Media: CollectionConfig = {
   slug: "media",
   upload: {
     staticURL: "/media",
     staticDir: "media",
-    mimeTypes: ["image/*", "application/pdf"],
+    imageSizes: [
+      {
+        name: "thumbnail",
+        width: 400,
+        height: 300,
+        position: "centre",
+      },
+      {
+        name: "card",
+        width: 768,
+        height: 1024,
+        position: "centre",
+      },
+      {
+        name: "hero",
+        width: 1920,
+        height: 1080,
+        position: "centre",
+      },
+    ],
+    mimeTypes: ["image/png", "image/jpeg", "image/gif", "image/svg+xml", "image/webp"],
   },
   fields: [
     {
@@ -16,6 +36,9 @@ export const Media: CollectionConfig = {
     {
       name: "caption",
       type: "text",
+      required: false,
     },
   ],
 }
+
+export default Media

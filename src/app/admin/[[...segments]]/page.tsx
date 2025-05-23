@@ -1,7 +1,28 @@
-import { redirect } from "next/navigation"
+"use client"
+
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 export default function AdminPage() {
-  redirect("/api/payload/admin")
-}
+  const router = useRouter()
 
-export const dynamic = "force-dynamic"
+  useEffect(() => {
+    // Redirect to the Payload admin panel
+    router.push("/api/payload/admin")
+  }, [router])
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-md">
+        <h1 className="text-2xl font-bold mb-4">Redirecting to Admin Panel...</h1>
+        <p>If you are not redirected automatically, click the button below:</p>
+        <button
+          onClick={() => (window.location.href = "/api/payload/admin")}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+        >
+          Go to Admin Panel
+        </button>
+      </div>
+    </div>
+  )
+}
