@@ -1,8 +1,10 @@
 import { createClient } from "@supabase/supabase-js"
 import type { Database } from "@/types/supabase"
+import { createBrowserClient } from "@supabase/ssr"
 
 // Create a single supabase client for interacting with your database
 let supabase: ReturnType<typeof createClient<Database>> | null = null
+let _supabaseClient: ReturnType<typeof createBrowserClient> | null = null
 
 export function supabaseClient() {
   if (supabase) return supabase
@@ -47,4 +49,14 @@ export function supabaseClient() {
   })
 
   return supabase
+}
+
+export const getSupabaseBrowserClient = () => {
+  if (!_supabaseClient) {
+    _supabaseClient = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+    )
+  }
+  return _supabaseClient
 }
