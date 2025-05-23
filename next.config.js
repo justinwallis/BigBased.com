@@ -9,7 +9,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ["placeholder.com", "via.placeholder.com"],
+    domains: ["placeholder.com", "via.placeholder.com", "blobs.vercel-storage.com"],
     unoptimized: true,
   },
   async headers() {
@@ -44,6 +44,16 @@ const nextConfig = {
         destination: "/static-meta.html",
       },
     ]
+  },
+  // This is needed for Payload CMS to work with Next.js
+  experimental: {
+    outputFileTracingExcludes: {
+      "*": [
+        "node_modules/@swc/core-linux-x64-gnu",
+        "node_modules/@swc/core-linux-x64-musl",
+        "node_modules/@esbuild/linux-x64",
+      ],
+    },
   },
 }
 

@@ -5,6 +5,11 @@ export async function middleware(request: NextRequest) {
   // Get the pathname of the request
   const path = request.nextUrl.pathname
 
+  // Skip middleware for admin routes (handled by Payload)
+  if (path.startsWith("/admin") || path.startsWith("/api/")) {
+    return NextResponse.next()
+  }
+
   // Public paths that don't require authentication
   const isPublicPath =
     path === "/" ||
@@ -15,7 +20,6 @@ export async function middleware(request: NextRequest) {
     path === "/transform" ||
     path === "/faq" ||
     path === "/revolution" ||
-    path.startsWith("/api/auth") ||
     path.startsWith("/auth/sign-in") ||
     path.startsWith("/auth/sign-up") ||
     path.startsWith("/auth/forgot-password") ||

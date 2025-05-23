@@ -7,7 +7,7 @@ export const Media: CollectionConfig = {
   },
   upload: {
     staticURL: "/media",
-    staticDir: "public/media",
+    staticDir: "media",
     imageSizes: [
       {
         name: "thumbnail",
@@ -22,13 +22,13 @@ export const Media: CollectionConfig = {
         position: "centre",
       },
       {
-        name: "hero",
-        width: 1920,
-        height: 1080,
+        name: "tablet",
+        width: 1024,
+        height: undefined,
         position: "centre",
       },
     ],
-    mimeTypes: ["image/png", "image/jpeg", "image/gif", "image/svg+xml", "image/webp"],
+    mimeTypes: ["image/*", "application/pdf"],
   },
   fields: [
     {
@@ -39,6 +39,7 @@ export const Media: CollectionConfig = {
     {
       name: "caption",
       type: "text",
+      required: false,
     },
   ],
 }
