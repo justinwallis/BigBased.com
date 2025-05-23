@@ -1,155 +1,242 @@
-import { type NextRequest, NextResponse } from "next/server"
-import payload from "payload"
+import type { NextRequest } from "next/server"
+import { getPayload } from "payload"
+import { buildConfig } from "payload"
+import { postgresAdapter } from "@payloadcms/db-postgres"
+import { lexicalEditor } from "@payloadcms/richtext-lexical"
+import { vercelBlobStorage } from "@payloadcms/storage-vercel-blob"
+import path from "path"
 
-// Initialize Payload if it hasn't been initialized yet
-const initPayload = async () => {
-  // Check if payload is already initialized
-  if (payload.initialized) return payload
+// Import collections
+import { Users } from "@/app/payload/collections/Users"
+import { Pages } from "@/app/payload/collections/Pages"
+import { Posts } from "@/app/payload/collections/Posts"
+import { Media } from "@/app/payload/collections/Media"
+
+// Modify the connection string to disable SSL verification
+function getModifiedConnectionString() {
+  const originalString = process.env.POSTGRES_URL || ""
+
+  // If the string already has parameters, append the SSL mode
+  if (originalString.includes("?")) {
+    return `${originalString}&sslmode=no-verify`
+  }
+
+  // Otherwise add the parameter with a question mark
+  return `${originalString}?sslmode=no-verify`
+}
+
+// Create the config inline to avoid import issues
+const payloadConfig = buildConfig({
+  admin: {
+    user: Users.slug,
+    importMap: {
+      baseDir: path.resolve(process.cwd()),
+    },
+    meta: {
+      titleSuffix: "- Big Based CMS",
+      favicon: "/favicon.ico",
+      ogImage: "/og-image.png",
+    },
+  },
+  collections: [Users, Pages, Posts, Media],
+  editor: lexicalEditor({}),
+  secret: process.env.PAYLOAD_SECRET || "insecure-secret-for-dev-only",
+  typescript: {
+    outputFile: path.resolve(process.cwd(), "types/payload-types.ts"),
+  },
+  db: postgresAdapter({
+    pool: {
+      connectionString: getModifiedConnectionString(),
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    },
+  }),
+  plugins: [
+    vercelBlobStorage({
+      collections: {
+        media: true,
+      },
+      token: process.env.BLOB_READ_WRITE_TOKEN || "",
+    }),
+  ],
+  cors: ["https://bigbased.com", "https://*.bigbased.com", "http://localhost:3000"],
+  csrf: ["https://bigbased.com", "https://*.bigbased.com", "http://localhost:3000"],
+})
+
+// Cache the Payload instance
+let cachedPayload: any = null
+
+// Initialize Payload
+const getPayloadClient = async () => {
+  if (!process.env.PAYLOAD_SECRET) {
+    throw new Error("PAYLOAD_SECRET environment variable is missing")
+  }
+
+  if (cachedPayload) {
+    return cachedPayload
+  }
 
   try {
-    // Initialize payload
-    await payload.init({
-      secret: process.env.PAYLOAD_SECRET || "",
-      local: true,
-      // This is needed for Vercel serverless environment
-      express: null,
+    // Use the core Payload initialization
+    const payloadInstance = await getPayload({
+      config: payloadConfig,
+      secret: process.env.PAYLOAD_SECRET,
     })
 
-    return payload
+    // Cache the instance
+    cachedPayload = payloadInstance
+
+    return payloadInstance
   } catch (error) {
-    console.error("Error initializing Payload:", error)
+    console.error("Failed to initialize Payload:", error)
     throw error
   }
 }
 
-// Handle all Payload API requests
+// Handle all Payload requests
 export async function GET(req: NextRequest, { params }: { params: { payload: string[] } }) {
   try {
-    const payloadInstance = await initPayload()
+    const payload = await getPayloadClient()
 
-    // Get the path from the URL
-    const path = `/${params.payload.join("/")}`
+    // Create a mock Express-like request object
+    const mockReq = {
+      url: req.url,
+      method: req.method,
+      headers: Object.fromEntries(req.headers.entries()),
+      query: Object.fromEntries(new URL(req.url).searchParams.entries()),
+      body: null,
+    }
 
-    // Process the request through Payload
-    const result = await payloadInstance.request({
-      method: "get",
-      url: path,
-      headers: Object.fromEntries(req.headers),
+    // Handle the request using Payload's handler
+    const response = await payload.handler(mockReq)
+
+    return new Response(response.body, {
+      status: response.status || 200,
+      headers: response.headers || {},
     })
-
-    // Return the result
-    return NextResponse.json(result.data, { status: result.status })
   } catch (error) {
-    console.error("Error processing Payload API request:", error)
-    return NextResponse.json(
-      {
-        error: "Failed to process Payload API request",
+    console.error("Error handling Payload request:", error)
+    return new Response(
+      JSON.stringify({
+        error: "Failed to handle request",
         details: error instanceof Error ? error.message : String(error),
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
       },
-      { status: 500 },
     )
   }
 }
 
-// Support other HTTP methods
 export async function POST(req: NextRequest, { params }: { params: { payload: string[] } }) {
   try {
-    const payloadInstance = await initPayload()
-    const path = `/${params.payload.join("/")}`
-    const body = await req.json()
+    const payload = await getPayloadClient()
 
-    const result = await payloadInstance.request({
-      method: "post",
-      url: path,
-      headers: Object.fromEntries(req.headers),
-      body,
+    // Get the request body
+    const body = await req.text()
+
+    // Create a mock Express-like request object
+    const mockReq = {
+      url: req.url,
+      method: req.method,
+      headers: Object.fromEntries(req.headers.entries()),
+      query: Object.fromEntries(new URL(req.url).searchParams.entries()),
+      body: body,
+    }
+
+    // Handle the request using Payload's handler
+    const response = await payload.handler(mockReq)
+
+    return new Response(response.body, {
+      status: response.status || 200,
+      headers: response.headers || {},
     })
-
-    return NextResponse.json(result.data, { status: result.status })
   } catch (error) {
-    console.error("Error processing Payload API request:", error)
-    return NextResponse.json(
-      {
-        error: "Failed to process Payload API request",
+    console.error("Error handling Payload POST request:", error)
+    return new Response(
+      JSON.stringify({
+        error: "Failed to handle POST request",
         details: error instanceof Error ? error.message : String(error),
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
       },
-      { status: 500 },
     )
   }
 }
 
 export async function PUT(req: NextRequest, { params }: { params: { payload: string[] } }) {
   try {
-    const payloadInstance = await initPayload()
-    const path = `/${params.payload.join("/")}`
-    const body = await req.json()
+    const payload = await getPayloadClient()
 
-    const result = await payloadInstance.request({
-      method: "put",
-      url: path,
-      headers: Object.fromEntries(req.headers),
-      body,
+    // Get the request body
+    const body = await req.text()
+
+    // Create a mock Express-like request object
+    const mockReq = {
+      url: req.url,
+      method: req.method,
+      headers: Object.fromEntries(req.headers.entries()),
+      query: Object.fromEntries(new URL(req.url).searchParams.entries()),
+      body: body,
+    }
+
+    // Handle the request using Payload's handler
+    const response = await payload.handler(mockReq)
+
+    return new Response(response.body, {
+      status: response.status || 200,
+      headers: response.headers || {},
     })
-
-    return NextResponse.json(result.data, { status: result.status })
   } catch (error) {
-    console.error("Error processing Payload API request:", error)
-    return NextResponse.json(
-      {
-        error: "Failed to process Payload API request",
+    console.error("Error handling Payload PUT request:", error)
+    return new Response(
+      JSON.stringify({
+        error: "Failed to handle PUT request",
         details: error instanceof Error ? error.message : String(error),
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
       },
-      { status: 500 },
     )
   }
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { payload: string[] } }) {
   try {
-    const payloadInstance = await initPayload()
-    const path = `/${params.payload.join("/")}`
+    const payload = await getPayloadClient()
 
-    const result = await payloadInstance.request({
-      method: "delete",
-      url: path,
-      headers: Object.fromEntries(req.headers),
+    // Create a mock Express-like request object
+    const mockReq = {
+      url: req.url,
+      method: req.method,
+      headers: Object.fromEntries(req.headers.entries()),
+      query: Object.fromEntries(new URL(req.url).searchParams.entries()),
+      body: null,
+    }
+
+    // Handle the request using Payload's handler
+    const response = await payload.handler(mockReq)
+
+    return new Response(response.body, {
+      status: response.status || 200,
+      headers: response.headers || {},
     })
-
-    return NextResponse.json(result.data, { status: result.status })
   } catch (error) {
-    console.error("Error processing Payload API request:", error)
-    return NextResponse.json(
-      {
-        error: "Failed to process Payload API request",
+    console.error("Error handling Payload DELETE request:", error)
+    return new Response(
+      JSON.stringify({
+        error: "Failed to handle DELETE request",
         details: error instanceof Error ? error.message : String(error),
-      },
-      { status: 500 },
-    )
-  }
-}
-
-export async function PATCH(req: NextRequest, { params }: { params: { payload: string[] } }) {
-  try {
-    const payloadInstance = await initPayload()
-    const path = `/${params.payload.join("/")}`
-    const body = await req.json()
-
-    const result = await payloadInstance.request({
-      method: "patch",
-      url: path,
-      headers: Object.fromEntries(req.headers),
-      body,
-    })
-
-    return NextResponse.json(result.data, { status: result.status })
-  } catch (error) {
-    console.error("Error processing Payload API request:", error)
-    return NextResponse.json(
+      }),
       {
-        error: "Failed to process Payload API request",
-        details: error instanceof Error ? error.message : String(error),
+        status: 500,
+        headers: { "Content-Type": "application/json" },
       },
-      { status: 500 },
     )
   }
 }
