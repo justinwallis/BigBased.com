@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createPool } from "@vercel/postgres"
+import { neon } from "@neondatabase/serverless"
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,13 +11,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid secret" }, { status: 401 })
     }
 
-    // Create a connection to the database
-    const pool = createPool({
-      connectionString: process.env.POSTGRES_URL,
-      ssl: {
-        rejectUnauthorized: false,
-      },
-    })
+    // Create a connection to the database using Neon
+    const sql = neon(process.env.NEON_NEON_DATABASE_URL!)
 
     // SQL to create the tables
     const createTablesSql = `
@@ -84,7 +79,7 @@ export async function POST(req: NextRequest) {
     `
 
     // Execute the SQL
-    await pool.query(createTablesSql)
+    await sql(createTablesSql)
 
     // Return success
     return NextResponse.json({ success: true, message: "Database tables created successfully" })
