@@ -54,6 +54,7 @@ export const config = buildConfig({
   ],
   cors: [process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000", "https://bigbased.com", "https://*.bigbased.com"],
   csrf: [process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000", "https://bigbased.com", "https://*.bigbased.com"],
+  serverURL,
 })
 
 // Export the config as default as well
