@@ -8,7 +8,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react"
 
 export default function AdminSetupPage() {
-  const [secret, setSecret] = useState(process.env.PAYLOAD_SECRET || "")
+  const [secret, setSecret] = useState("By9nIG6fWTiA8eikLBuGmT1Q3YSGG7goHF5HmIcgXKrSdq6uR0Qe2whBN1Rmwm69")
   const [email, setEmail] = useState("admin@bigbased.com")
   const [password, setPassword] = useState("BigBased2024!")
   const [tablesSetup, setTablesSetup] = useState(false)
@@ -176,8 +176,8 @@ export default function AdminSetupPage() {
               <Button className="w-full" onClick={() => window.open("/api/payload", "_blank")}>
                 Go to CMS Admin
               </Button>
-              <div className="text-sm text-center text-gray-500">
-                <p>Login with:</p>
+              <div className="text-sm text-center text-gray-500 bg-gray-100 p-3 rounded">
+                <p className="font-medium">Login Credentials:</p>
                 <p>Email: {email}</p>
                 <p>Password: {password}</p>
               </div>
