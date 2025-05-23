@@ -41,65 +41,35 @@ const payloadConfig = buildConfig({
   csrf: ["https://bigbased.com", "https://*.bigbased.com", "http://localhost:3000"],
 })
 
-// Handle GET requests
+// Handle admin panel requests
 export async function GET(req: NextRequest) {
-  return NextResponse.json({
-    message: "Use POST method to initialize database",
-    usage: "POST with { secret: 'your-payload-secret' }",
-  })
-}
-
-// Handle POST requests
-export async function POST(req: NextRequest) {
   try {
-    // Get the secret from the request body
-    const body = await req.json()
-    const { secret } = body
-
-    // Validate the secret
-    if (!secret || secret !== process.env.PAYLOAD_SECRET) {
-      return NextResponse.json({ error: "Invalid secret" }, { status: 401 })
-    }
-
     // Initialize Payload
     const payload = await getPayload({
       config: payloadConfig,
       secret: process.env.PAYLOAD_SECRET || "",
     })
 
-    // Create the admin user if it doesn't exist
-    const adminEmail = "admin@bigbased.com"
-    const existingAdmin = await payload.find({
-      collection: "users",
-      where: {
-        email: {
-          equals: adminEmail,
-        },
+    // Get the admin UI
+    const adminUI = await payload.getAdminUI({
+      req: {
+        url: req.url,
+        headers: Object.fromEntries(req.headers),
+        method: req.method,
       },
     })
 
-    if (existingAdmin.totalDocs === 0) {
-      await payload.create({
-        collection: "users",
-        data: {
-          email: adminEmail,
-          password: "BigBased2024!",
-          roles: ["admin"],
-        },
-      })
-    }
-
-    // Return success
-    return NextResponse.json({
-      success: true,
-      message: "Database initialized successfully",
-      adminEmail,
-      adminPassword: "BigBased2024!",
+    // Return the admin UI
+    return new NextResponse(adminUI, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/html",
+      },
     })
   } catch (error) {
-    console.error("Error initializing database:", error)
+    console.error("Error serving admin UI:", error)
     return NextResponse.json(
-      { error: "Failed to initialize database", details: error instanceof Error ? error.message : String(error) },
+      { error: "Failed to serve admin UI", details: error instanceof Error ? error.message : String(error) },
       { status: 500 },
     )
   }
