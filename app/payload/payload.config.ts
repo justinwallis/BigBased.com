@@ -19,7 +19,8 @@ if (!process.env.PAYLOAD_SECRET) {
   console.warn("No PAYLOAD_SECRET environment variable set. Using a fallback for development only.")
 }
 
-export default buildConfig({
+// Create the config
+const config = buildConfig({
   admin: {
     user: Users.slug,
     importMap: {
@@ -54,3 +55,7 @@ export default buildConfig({
   cors: [process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000", "https://bigbased.com", "https://*.bigbased.com"],
   csrf: [process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000", "https://bigbased.com", "https://*.bigbased.com"],
 })
+
+// Export both as default and as named export
+export default config
+export { config }
