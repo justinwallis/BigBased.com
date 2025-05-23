@@ -1,7 +1,13 @@
-import { getPayload } from "../../api/payload/[...payload]/route"
+import { getPayload } from "../../lib/payload"
 import { notFound } from "next/navigation"
 
-export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+interface BlogPostPageProps {
+  params: {
+    slug: string
+  }
+}
+
+export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const payload = await getPayload()
 
   try {
@@ -25,10 +31,10 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     const post = posts.docs[0]
 
     return (
-      <article className="container mx-auto px-4 py-8 max-w-4xl">
+      <article className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
-        {post.publishedAt && (
-          <p className="text-gray-600 mb-8">Published on {new Date(post.publishedAt).toLocaleDateString()}</p>
+        {post.publishedDate && (
+          <time className="text-gray-500 mb-8 block">{new Date(post.publishedDate).toLocaleDateString()}</time>
         )}
         {post.content && (
           <div className="prose max-w-none">
@@ -45,24 +51,3 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 }
 
 export const dynamic = "force-dynamic"
-
-export async function generateStaticParams() {
-  try {
-    const payload = await getPayload()
-    const posts = await payload.find({
-      collection: "posts",
-      where: {
-        status: {
-          equals: "published",
-        },
-      },
-    })
-
-    return posts.docs.map((post: any) => ({
-      slug: post.slug,
-    }))
-  } catch (error) {
-    console.error("Error generating static params:", error)
-    return []
-  }
-}

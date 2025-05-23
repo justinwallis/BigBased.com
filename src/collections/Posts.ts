@@ -18,12 +18,12 @@ export const Posts: CollectionConfig = {
       unique: true,
     },
     {
-      name: "excerpt",
-      type: "textarea",
-    },
-    {
       name: "content",
       type: "richText",
+    },
+    {
+      name: "excerpt",
+      type: "textarea",
     },
     {
       name: "featuredImage",
@@ -34,30 +34,19 @@ export const Posts: CollectionConfig = {
       name: "author",
       type: "relationship",
       relationTo: "users",
-      required: true,
+    },
+    {
+      name: "publishedDate",
+      type: "date",
     },
     {
       name: "status",
       type: "select",
       options: [
-        {
-          label: "Draft",
-          value: "draft",
-        },
-        {
-          label: "Published",
-          value: "published",
-        },
+        { label: "Draft", value: "draft" },
+        { label: "Published", value: "published" },
       ],
       defaultValue: "draft",
-      required: true,
-    },
-    {
-      name: "publishedAt",
-      type: "date",
-      admin: {
-        position: "sidebar",
-      },
     },
   ],
 }

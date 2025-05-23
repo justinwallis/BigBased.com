@@ -25,24 +25,10 @@ export const Pages: CollectionConfig = {
       name: "status",
       type: "select",
       options: [
-        {
-          label: "Draft",
-          value: "draft",
-        },
-        {
-          label: "Published",
-          value: "published",
-        },
+        { label: "Draft", value: "draft" },
+        { label: "Published", value: "published" },
       ],
       defaultValue: "draft",
-      required: true,
-    },
-    {
-      name: "publishedAt",
-      type: "date",
-      admin: {
-        position: "sidebar",
-      },
     },
   ],
 }

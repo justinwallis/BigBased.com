@@ -1,7 +1,7 @@
 import { AdminView } from "@payloadcms/next/views"
-import configPromise from "../../../payload.config"
+import configPromise from "../../payload.config"
 
-export default function AdminPage({ params }: { params: { segments: string[] } }) {
+export default function AdminPage() {
   return <AdminView config={configPromise} />
 }
 

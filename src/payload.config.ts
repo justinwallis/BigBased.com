@@ -10,7 +10,7 @@ import { Media } from "./collections/Media"
 import { Pages } from "./collections/Pages"
 import { Posts } from "./collections/Posts"
 
-export default buildConfig({
+const config = buildConfig({
   secret: process.env.PAYLOAD_SECRET || "a-very-secret-key",
   admin: {
     user: "users",
@@ -42,3 +42,8 @@ export default buildConfig({
   cors: [process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"].filter(Boolean),
   csrf: [process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"].filter(Boolean),
 })
+
+// Export as configPromise (required by Payload)
+const configPromise = Promise.resolve(config)
+
+export default configPromise

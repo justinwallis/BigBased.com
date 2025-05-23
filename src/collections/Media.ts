@@ -5,7 +5,7 @@ export const Media: CollectionConfig = {
   upload: {
     staticURL: "/media",
     staticDir: "media",
-    mimeTypes: ["image/*", "video/*", "audio/*", "application/pdf"],
+    mimeTypes: ["image/*", "application/pdf"],
   },
   fields: [
     {
