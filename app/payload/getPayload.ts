@@ -1,31 +1,37 @@
-import payload from "payload"
-import type { Payload } from "payload"
-import config from "./payload.config"
+import { getPayload as getPayloadOriginal } from "payload"
+import { buildConfig } from "./payload.config"
 
-// Cache for the Payload instance
-let cachedPayload: Payload | null = null
+// Global is used here to maintain a cached connection across hot reloads
+// in development. This prevents connections growing exponentially
+// during API Route usage.
+let cached = (global as any).payload
 
-export const getPayload = async (): Promise<Payload> => {
-  if (!process.env.PAYLOAD_SECRET) {
-    throw new Error("PAYLOAD_SECRET environment variable is missing")
+if (!cached) {
+  cached = (global as any).payload = { client: null, promise: null }
+}
+
+export const getPayload = async () => {
+  if (cached.client) {
+    return cached.client
   }
 
-  if (cachedPayload) {
-    return cachedPayload
-  }
-
-  // Initialize Payload
-  try {
-    await payload.init({
-      secret: process.env.PAYLOAD_SECRET,
-      config,
-      local: process.env.NODE_ENV !== "production",
+  if (!cached.promise) {
+    cached.promise = getPayloadOriginal({
+      // Pass the config object
+      config: buildConfig(),
+      // Make sure we're not trying to initialize Payload again if it's already been initialized
+      onInit: async (payload) => {
+        cached.client = payload
+      },
     })
-
-    cachedPayload = payload
-    return payload
-  } catch (error) {
-    console.error("Error initializing Payload:", error)
-    throw error
   }
+
+  try {
+    await cached.promise
+  } catch (e) {
+    cached.promise = null
+    throw e
+  }
+
+  return cached.client
 }
