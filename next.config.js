@@ -1,3 +1,5 @@
+const { withPayload } = require("@payloadcms/next/withPayload")
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -9,32 +11,8 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ["placeholder.com", "via.placeholder.com"],
+    domains: ["localhost"],
     unoptimized: true,
-  },
-  // Add transpilation for Payload packages
-  transpilePackages: ["payload", "@payloadcms/db-postgres", "@payloadcms/richtext-slate"],
-  // Webpack configuration to handle specific issues
-  webpack: (config, { isServer }) => {
-    // Fix for Node.js modules in browser
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        path: false,
-        os: false,
-        crypto: false,
-        stream: false,
-        http: false,
-        https: false,
-        zlib: false,
-        net: false,
-        dns: false,
-        tls: false,
-      }
-    }
-
-    return config
   },
   async headers() {
     return [
@@ -69,6 +47,9 @@ const nextConfig = {
       },
     ]
   },
+  experimental: {
+    reactCompiler: false,
+  },
 }
 
-module.exports = nextConfig
+module.exports = withPayload(nextConfig)
