@@ -171,13 +171,13 @@ export default function AdminSetupPage() {
             </Button>
           )}
 
-          {adminCreated && (
+          {(tablesSetup || adminCreated) && (
             <div className="space-y-4 w-full">
               <Button className="w-full" onClick={() => window.open("/api/payload", "_blank")}>
-                Go to CMS Admin
+                Go to CMS Dashboard
               </Button>
               <div className="text-sm text-center text-gray-500 bg-gray-100 p-3 rounded">
-                <p className="font-medium">Login Credentials:</p>
+                <p className="font-medium">Admin Credentials:</p>
                 <p>Email: {email}</p>
                 <p>Password: {password}</p>
               </div>
