@@ -57,6 +57,7 @@
     "date-fns": "latest",
     "embla-carousel-react": "8.5.1",
     "escape-html": "latest",
+    "express": "latest",
     "framer-motion": "latest",
     "fs": "latest",
     "glob": "latest",
