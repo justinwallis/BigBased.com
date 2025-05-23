@@ -10,8 +10,8 @@ import { CheckCircle, XCircle, Loader2 } from "lucide-react"
 export default function SetupPage() {
   const [secret, setSecret] = useState("")
   const [loading, setLoading] = useState(false)
-  const [setupStatus, setSetupStatus] = useState<null | { success: boolean; message: string }>(null)
-  const [initStatus, setInitStatus] = useState<null | { success: boolean; message: string }>(null)
+  const [setupStatus, setSetupStatus] = useState<null | { success: boolean; message: string; details?: string }>(null)
+  const [initStatus, setInitStatus] = useState<null | { success: boolean; message: string; details?: string }>(null)
   const [adminCredentials, setAdminCredentials] = useState<null | { email: string; password: string }>(null)
 
   const handleSetupDatabase = async () => {
@@ -33,8 +33,20 @@ export default function SetupPage() {
 
       if (response.ok) {
         setSetupStatus({ success: true, message: data.message })
+
+        // If admin credentials were returned directly
+        if (data.adminEmail && data.adminPassword) {
+          setAdminCredentials({
+            email: data.adminEmail,
+            password: data.adminPassword,
+          })
+        }
       } else {
-        setSetupStatus({ success: false, message: data.error || "Failed to setup database" })
+        setSetupStatus({
+          success: false,
+          message: data.error || "Failed to setup database",
+          details: data.details,
+        })
       }
     } catch (error) {
       setSetupStatus({
@@ -72,7 +84,11 @@ export default function SetupPage() {
           })
         }
       } else {
-        setInitStatus({ success: false, message: data.error || "Failed to initialize database" })
+        setInitStatus({
+          success: false,
+          message: data.error || "Failed to initialize database",
+          details: data.details,
+        })
       }
     } catch (error) {
       setInitStatus({
@@ -109,7 +125,10 @@ export default function SetupPage() {
             <Alert variant={setupStatus.success ? "default" : "destructive"}>
               {setupStatus.success ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
               <AlertTitle>{setupStatus.success ? "Success" : "Error"}</AlertTitle>
-              <AlertDescription>{setupStatus.message}</AlertDescription>
+              <AlertDescription>
+                {setupStatus.message}
+                {setupStatus.details && <div className="mt-2 text-xs opacity-80">{setupStatus.details}</div>}
+              </AlertDescription>
             </Alert>
           )}
 
@@ -117,7 +136,10 @@ export default function SetupPage() {
             <Alert variant={initStatus.success ? "default" : "destructive"}>
               {initStatus.success ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
               <AlertTitle>{initStatus.success ? "Success" : "Error"}</AlertTitle>
-              <AlertDescription>{initStatus.message}</AlertDescription>
+              <AlertDescription>
+                {initStatus.message}
+                {initStatus.details && <div className="mt-2 text-xs opacity-80">{initStatus.details}</div>}
+              </AlertDescription>
             </Alert>
           )}
 
@@ -132,15 +154,7 @@ export default function SetupPage() {
         <CardFooter className="flex flex-col space-y-2">
           <Button className="w-full" onClick={handleSetupDatabase} disabled={loading || !secret}>
             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            1. Setup Database Tables
-          </Button>
-          <Button
-            className="w-full"
-            onClick={handleInitializeDatabase}
-            disabled={loading || !secret || !setupStatus?.success}
-          >
-            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            2. Initialize Admin User
+            Setup Database & Create Admin
           </Button>
           {adminCredentials && (
             <Button className="w-full" variant="outline" onClick={() => (window.location.href = "/admin")}>
