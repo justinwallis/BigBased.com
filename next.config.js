@@ -1,8 +1,7 @@
-import { withPayload } from "@payloadcms/next/withPayload"
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  swcMinify: true,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -13,7 +12,6 @@ const nextConfig = {
     domains: ["placeholder.com", "via.placeholder.com"],
     unoptimized: true,
   },
-  serverExternalPackages: ["payload", "@payloadcms/next"],
   async headers() {
     return [
       {
@@ -49,4 +47,4 @@ const nextConfig = {
   },
 }
 
-export default withPayload(nextConfig)
+module.exports = nextConfig

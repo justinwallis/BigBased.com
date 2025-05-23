@@ -1,8 +1,10 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import Link from "next/link"
 import { useResourceLoading } from "@/hooks/use-resource-loading"
 import { preloadNextImages } from "@/utils/image-preloader"
+import OptimizedImage from "./optimized-image"
 import { useImagePreloader } from "@/hooks/use-image-preloader"
 
 // Add text shadow styles - DOUBLED intensity
@@ -470,19 +472,252 @@ export default function HeroCarousel() {
   }, [])
 
   return (
-    <div className="relative bg-gray-900 text-white py-20">
-      <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">Welcome to Big Based</h1>
-          <p className="text-xl mb-8">Your platform for truth, faith, and freedom.</p>
-          <a
-            href="/about"
-            className="inline-block bg-white text-gray-900 px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition-colors"
-          >
-            Learn More
-          </a>
+    <section
+      ref={sectionRef}
+      className="relative overflow-visible py-3 px-4 md:px-8 bg-white dark:bg-gray-900 transition-colors duration-300"
+      style={{
+        height: windowWidth < 768 ? "auto" : "610px",
+        minHeight: windowWidth < 768 ? "650px" : "610px",
+        marginTop: "0", // Remove negative margin
+        paddingTop: "80px", // Add padding to create space for the header
+      }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      tabIndex={0} // Make the section focusable for keyboard navigation
+      aria-roledescription="carousel"
+      aria-label="Hero content carousel"
+    >
+      {/* Left and Right Edge Fade Effects - Light Mode Only */}
+      <div
+        className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none dark:hidden"
+        style={{
+          background:
+            "linear-gradient(to right, rgba(255,255,255,1) 0%, rgba(255,255,255,0.8) 40%, rgba(255,255,255,0) 100%)",
+          height: "calc(130% - 17px)", // Reduced height by 17px (14px + 3px)
+          top: "-25%", // Keep the same top position to maintain upward extension
+          bottom: "auto", // Override the bottom: 0 from the className
+        }}
+      ></div>
+      <div
+        className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none dark:hidden"
+        style={{
+          background:
+            "linear-gradient(to left, rgba(255,255,255,1) 0%, rgba(255,255,255,0.8) 40%, rgba(255,255,255,0) 100%)",
+          height: "calc(130% - 17px)", // Reduced height by 17px (14px + 3px)
+          top: "-25%", // Keep the same top position to maintain upward extension
+          bottom: "auto", // Override the bottom: 0 from the className
+        }}
+      ></div>
+
+      {/* Dark mode fade effects - Updated to match dark:bg-gray-900 */}
+      <div
+        className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none hidden dark:block"
+        style={{
+          background: "linear-gradient(to right, rgba(17,24,39,1) 0%, rgba(17,24,39,0.8) 40%, rgba(17,24,39,0) 100%)",
+          height: "calc(130% - 17px)", // Reduced height by 17px (14px + 3px)
+          top: "-25%", // Keep the same top position to maintain upward extension
+          bottom: "auto", // Override the bottom: 0 from the className
+        }}
+      ></div>
+      <div
+        className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none hidden dark:block"
+        style={{
+          background: "linear-gradient(to left, rgba(17,24,39,1) 0%, rgba(17,24,39,0.8) 40%, rgba(17,24,39,0) 100%)",
+          height: "calc(130% - 17px)", // Reduced height by 17px (14px + 3px)
+          top: "-25%", // Keep the same top position to maintain upward extension
+          bottom: "auto", // Override the bottom: 0 from the className
+        }}
+      ></div>
+
+      {/* Navigation Arrows - Adjusted positions */}
+      <button
+        onClick={goToPrevious}
+        className="absolute top-1/2 transform -translate-y-1/2 z-30 transition-transform duration-300 hover:scale-110 focus:outline-none p-3"
+        style={{
+          filter: "drop-shadow(0px 2px 3px rgba(0,0,0,0.2))",
+          left: "2px", // -3px + 5px = 2px from left edge
+        }}
+        aria-label="Previous slide"
+      >
+        <img
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/leftarrow-cZusycTk5U0qpLdTilVQ4PmMac7R9k.png"
+          alt="Previous"
+          width="8"
+          height="8"
+          className="block dark:hidden"
+        />
+        <img
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/leftarrowwhite-3iCFk4QxkyUcDWYzwZDCy6avFMGXHZ.png"
+          alt="Previous"
+          width="8"
+          height="8"
+          className="hidden dark:block"
+        />
+      </button>
+      <button
+        onClick={goToNext}
+        className="absolute top-1/2 transform -translate-y-1/2 z-30 transition-transform duration-300 hover:scale-110 focus:outline-none p-3"
+        style={{
+          filter: "drop-shadow(0px 2px 3px rgba(0,0,0,0.2))",
+          right: "37px", // 45px - 8px = 37px from right edge
+        }}
+        aria-label="Next slide"
+      >
+        <img
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/rightarrow-lh3ALnXSTKUAzHVWPUW6RXicZyaB84.png"
+          alt="Next"
+          width="8"
+          height="8"
+          className="block dark:hidden"
+        />
+        <img
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/rightarrowwhite-KFDD9v6NMb8xQaVTDUhbHCBf6c0gTH.png"
+          alt="Next"
+          width="8"
+          height="8"
+          className="hidden dark:block"
+        />
+      </button>
+
+      {/* America First Badge */}
+      <div
+        className={`absolute bottom-8 right-12 z-20 flex flex-col items-start transition-all duration-300 ${
+          badgeHovered ? "scale-110" : ""
+        } shadow-lg rounded-md`}
+        style={{
+          padding: "16px 12px 8px 12px",
+          background: "radial-gradient(circle at center, rgba(0,0,0,0.03) 30%, rgba(0,0,0,0.01) 70%)",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+        }}
+        data-theme-style="true"
+        onMouseEnter={() => {
+          setBadgeHovered(true)
+          // Update gradient based on theme
+          const isDark = document.documentElement.classList.contains("dark")
+          const el = document.querySelector('[data-theme-style="true"]')
+          if (el) {
+            el.setAttribute(
+              "style",
+              `padding: 16px 12px 8px 12px; background: radial-gradient(circle at center, ${
+                isDark ? "rgba(30,41,59,0.1)" : "rgba(0,0,0,0.03)"
+              } 30%, ${isDark ? "rgba(30,41,59,0.05)" : "rgba(0,0,0,0.01)"} 70%); 
+        box-shadow: ${isDark ? "0 4px 12px rgba(0,0,0,0.2)" : "0 4px 12px rgba(0,0,0,0.08)"};
+        border-radius: 0.375rem;`,
+            )
+          }
+        }}
+        onMouseLeave={() => {
+          setBadgeHovered(false)
+          // Update gradient based on theme
+          const isDark = document.documentElement.classList.contains("dark")
+          const el = document.querySelector('[data-theme-style="true"]')
+          if (el) {
+            el.setAttribute(
+              "style",
+              `padding: 16px 12px 8px 12px; background: radial-gradient(circle at center, ${
+                isDark ? "rgba(30,41,59,0.1)" : "rgba(0,0,0,0.03)"
+              } 30%, ${isDark ? "rgba(30,41,59,0.05)" : "rgba(0,0,0,0.01)"} 70%);
+        box-shadow: ${isDark ? "0 4px 12px rgba(0,0,0,0.2)" : "0 4px 12px rgba(0,0,0,0.08)"};
+        border-radius: 0.375rem;`,
+            )
+          }
+        }}
+      >
+        <OptimizedImage
+          src="/AmericaFlag.png"
+          alt="American flag"
+          width={30}
+          height={18}
+          className="mb-2"
+          fallbackSrc="/AmericaFlag.png"
+        />
+        <div className="text-[10px] text-gray-800 dark:text-gray-100">
+          <p className="font-bold">AMERICA FIRST,</p>
+          <p>UNCENSORED CHRISTIAN</p>
+          <p>COMPANY</p>
         </div>
       </div>
-    </div>
+
+      {/* Carousel Track */}
+      <div
+        ref={carouselRef}
+        className="h-full w-full flex transition-transform duration-1800 ease-in-out"
+        style={{
+          transform: `translateX(-${activeIndex * 100}%)`,
+          transition: "transform 1.8s cubic-bezier(0.645, 0.045, 0.355, 1.000)", // Slower, more elegant easing
+        }}
+        aria-live="polite"
+      >
+        {/* Render all slides in a row, including cloned slides */}
+        {extendedSections.map((hero, index) => {
+          const slideId = `slide-${hero.id}-${index}`
+          return (
+            <div
+              key={slideId}
+              className="h-full w-full flex-shrink-0 flex items-center px-4 md:px-8 bg-white dark:bg-gray-900 transition-colors duration-300"
+              aria-hidden={activeIndex !== index}
+              role="group"
+              aria-roledescription="slide"
+              aria-label={`Slide ${index + 1} of ${totalSlides}`}
+            >
+              <div className="flex w-full h-full items-center flex-col md:flex-row">
+                {/* Text Section - 1/3 width on desktop, full width on mobile */}
+                <div
+                  className="w-full md:w-1/3 pr-0 md:pr-8 mb-6 md:mb-0 relative z-20 text-shadow-container"
+                  style={{ marginTop: windowWidth < 768 ? "-80px" : "-40px" }}
+                >
+                  <p className="text-lg mb-2 text-gray-700 dark:text-gray-300">{hero.subtitle}</p>
+                  <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">{hero.title}</h2>
+                  <p className="text-sm mb-6 text-gray-600 dark:text-gray-400">{hero.description}</p>
+                  <Link
+                    href={hero.ctaLink}
+                    className="flex items-center font-medium text-sm text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-gray-300 transition-colors duration-200"
+                  >
+                    {hero.ctaText} <span className="ml-2">→</span>
+                  </Link>
+                </div>
+
+                {/* Image Section - 2/3 width on desktop, full width on mobile */}
+                <div className="w-full md:w-2/3 h-full flex items-center justify-center py-4 md:py-0 relative z-10">
+                  <div
+                    className="relative w-full flex items-center justify-center"
+                    style={{
+                      minHeight: windowWidth < 768 ? "300px" : "610px",
+                      height: "610px",
+                      marginTop: "-80px", // Move images up to create "jumping off" effect
+                    }}
+                  >
+                    <OptimizedImage
+                      src={hero.image}
+                      alt={hero.imageAlt}
+                      width={800}
+                      height={610}
+                      className="object-contain transition-all duration-300"
+                      style={{
+                        ...getOptimalImageSize(
+                          slideId,
+                          windowWidth < 768 ? windowWidth : windowWidth * 0.66,
+                          windowWidth < 768 ? 300 : 610,
+                        ),
+                        maxHeight: "610px", // Ensure consistent height
+                        position: hero.image === "/DoveCross610h.png" ? "relative" : "static",
+                        zIndex: hero.image === "/DoveCross610h.png" ? "1" : "auto",
+                        transform: hero.image === "/DoveCross610h.png" ? "scale(1.15)" : "none", // Make the dove image slightly larger
+                      }}
+                      priority={index === activeIndex}
+                      onLoad={(e) => handleImageLoad(slideId, e)}
+                      fallbackSrc={`/placeholder.svg?height=610&width=800&query=${encodeURIComponent(hero.imageAlt || "hero")}`}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </section>
   )
 }

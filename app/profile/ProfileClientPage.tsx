@@ -1,77 +1,102 @@
 "use client"
 
-import Link from "next/link"
+import type React from "react"
+
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 export default function ProfileClientPage() {
-  return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#f9fafb",
-        fontFamily: "system-ui, -apple-system, sans-serif",
-      }}
-    >
-      <div
-        style={{
-          backgroundColor: "white",
-          padding: "2rem",
-          borderRadius: "8px",
-          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-          maxWidth: "400px",
-          width: "100%",
-          textAlign: "center",
-        }}
-      >
-        <h1
-          style={{
-            fontSize: "1.5rem",
-            fontWeight: "bold",
-            marginBottom: "1rem",
-            color: "#111827",
-          }}
-        >
-          Profile Page
-        </h1>
-        <p
-          style={{
-            color: "#6b7280",
-            marginBottom: "2rem",
-          }}
-        >
-          This is a placeholder profile page. Use the admin panel to manage content.
-        </p>
-        <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
-          <Link
-            href="/"
-            style={{
-              padding: "0.5rem 1rem",
-              backgroundColor: "#3b82f6",
-              color: "white",
-              textDecoration: "none",
-              borderRadius: "4px",
-              fontSize: "0.875rem",
-            }}
-          >
-            Home
-          </Link>
-          <Link
-            href="/admin"
-            style={{
-              padding: "0.5rem 1rem",
-              backgroundColor: "#10b981",
-              color: "white",
-              textDecoration: "none",
-              borderRadius: "4px",
-              fontSize: "0.875rem",
-            }}
-          >
-            Admin Panel
-          </Link>
-        </div>
+  const { user, isLoading, signOut } = useAuth()
+  const router = useRouter()
+  const [name, setName] = useState("")
+  const [bio, setBio] = useState("")
+  const [isSaving, setIsSaving] = useState(false)
+
+  useEffect(() => {
+    // If not loading and no user, redirect to sign in
+    if (!isLoading && !user) {
+      console.log("No user found, redirecting to sign in")
+      router.push("/auth/sign-in?redirect=/profile")
+    }
+
+    // Log authentication state for debugging
+    console.log("Auth state:", { isLoading, user: user ? "authenticated" : "not authenticated" })
+  }, [isLoading, user, router])
+
+  // If still loading or no user, show loading state
+  if (isLoading || !user) {
+    return (
+      <div className="container mx-auto py-10">
+        <Card>
+          <CardHeader>
+            <CardTitle>Loading Profile...</CardTitle>
+            <CardDescription>Please wait while we load your profile information.</CardDescription>
+          </CardHeader>
+        </Card>
       </div>
+    )
+  }
+
+  const handleSignOut = async () => {
+    await signOut()
+    router.push("/")
+  }
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSaving(true)
+
+    // Simulate saving profile
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+
+    setIsSaving(false)
+    // Show success message or handle errors
+  }
+
+  return (
+    <div className="container mx-auto py-10">
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Profile</CardTitle>
+          <CardDescription>Manage your account settings and profile information.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSaveProfile}>
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" value={user.email || ""} disabled />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="name">Name</Label>
+                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="bio">Bio</Label>
+                <Input
+                  id="bio"
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="Tell us about yourself"
+                />
+              </div>
+              <Button type="submit" disabled={isSaving}>
+                {isSaving ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+        <CardFooter>
+          <Button variant="outline" onClick={handleSignOut} className="ml-auto">
+            Sign Out
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
   )
 }

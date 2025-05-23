@@ -2,6 +2,21 @@ import type React from "react"
 import "./globals.css"
 import type { Metadata, Viewport } from "next/types"
 import { Inter } from "next/font/google"
+import ClientPreloaderContainer from "@/components/client-preloader-container"
+import { ErrorBoundary } from "@/components/error-boundary"
+import { ThemeProvider } from "@/components/theme-provider"
+import OneSignalProvider from "@/components/one-signal-provider"
+import AuthWrapper from "@/components/auth/auth-wrapper"
+import SectionPersistenceWrapper from "@/components/section-persistence-wrapper"
+import { baseMetadata, viewportConfig } from "./metadata-config"
+import { getOrganizationData, getWebsiteData } from "@/lib/structured-data"
+import StructuredData from "@/components/structured-data"
+import { CookieConsent } from "@/components/cookie-consent"
+import { NextAuthProvider } from "@/contexts/next-auth-provider"
+import { AuthProvider } from "@/contexts/auth-context"
+import AnnouncementBar from "@/components/announcement-bar"
+import { MatrixNavigationProvider } from "@/components/matrix-navigation-provider"
+import { PageFadeWrapper } from "@/components/page-fade-wrapper"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -31,11 +46,8 @@ export const metadata: Metadata = {
   },
   metadataBase: new URL(baseUrl),
   openGraph: {
-    title: "Big Based - Answer to Madness",
-    description:
-      "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform.",
+    ...baseMetadata.openGraph,
     url: baseUrl,
-    siteName: "Big Based",
     images: [
       {
         url: `${baseUrl}/BigBasedPreview.png`,
@@ -44,33 +56,27 @@ export const metadata: Metadata = {
         alt: "Big Based - Answer to Madness",
       },
     ],
-    locale: "en_US",
-    type: "website",
   },
   twitter: {
-    card: "summary_large_image",
-    title: "Big Based - Answer to Madness",
-    description:
-      "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform.",
-    site: "@bigbased",
+    ...baseMetadata.twitter,
     images: [`${baseUrl}/BigBasedPreview.png`],
   },
     generator: 'v0.dev'
 }
 
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  themeColor: "#ffffff",
-}
+export const viewport: Viewport = viewportConfig
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  // Prepare structured data for the entire site
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [getOrganizationData(), getWebsiteData()],
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -118,8 +124,9 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
+        <link rel="preconnect" href="https://cdn.onesignal.com" />
 
-        {/* Basic theme handling */}
+        {/* Prevent flash of white in dark mode */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -142,13 +149,17 @@ export default function RootLayout({
                 // Apply dark mode class immediately if needed
                 if (isDarkMode()) {
                   document.documentElement.classList.add('dark');
-                  document.documentElement.style.backgroundColor = '#111827';
-                  document.body.style.backgroundColor = '#111827';
+                  document.documentElement.style.backgroundColor = '#111827'; // dark:bg-gray-900
+                  document.body.style.backgroundColor = '#111827'; // dark:bg-gray-900
+                  document.body.classList.add('dark-mode');
+                  document.body.classList.remove('light-mode');
                   document.documentElement.style.color = '#ffffff';
                 } else {
                   document.documentElement.classList.remove('dark');
                   document.documentElement.style.backgroundColor = '#ffffff';
                   document.body.style.backgroundColor = '#ffffff';
+                  document.body.classList.add('light-mode');
+                  document.body.classList.remove('dark-mode');
                   document.documentElement.style.color = '#000000';
                 }
                 
@@ -167,58 +178,31 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.className} no-js`} style={{ margin: 0, padding: 0, minHeight: "100vh" }}>
+      <body className={`${inter.className} no-js`}>
         <script dangerouslySetInnerHTML={{ __html: `document.body.classList.remove('no-js');` }} />
-
-        {/* Simple announcement bar */}
-        <div
-          style={{
-            backgroundColor: "#1f2937",
-            color: "white",
-            textAlign: "center",
-            padding: "8px 16px",
-            fontSize: "14px",
-          }}
-        >
-          🚀 Welcome to Big Based - Your Cultural Revolution Platform
-        </div>
-
-        {/* Main content */}
-        <main style={{ minHeight: "calc(100vh - 40px)" }}>{children}</main>
-
-        {/* Simple footer */}
-        <footer
-          style={{
-            backgroundColor: "#f3f4f6",
-            padding: "20px",
-            textAlign: "center",
-            borderTop: "1px solid #e5e7eb",
-          }}
-        >
-          <p style={{ margin: 0, color: "#6b7280" }}>
-            © 2024 Big Based. All rights reserved. |
-            <a href="/admin" style={{ color: "#3b82f6", textDecoration: "none", marginLeft: "8px" }}>
-              Admin Panel
-            </a>
-          </p>
-        </footer>
-
-        {/* Structured data for SEO */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              name: "Big Based",
-              url: baseUrl,
-              logo: `${baseUrl}/bb-logo.png`,
-              description:
-                "Big Based is a cultural revolution platform with a living library of truth, faith, and insight.",
-              sameAs: ["https://twitter.com/bigbased"],
-            }),
-          }}
-        />
+        <AnnouncementBar />
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <ErrorBoundary>
+            <OneSignalProvider>
+              <ClientPreloaderContainer quotesToShow={5}>
+                <NextAuthProvider>
+                  <AuthProvider>
+                    <AuthWrapper>
+                      <MatrixNavigationProvider>
+                        <PageFadeWrapper>
+                          <SectionPersistenceWrapper />
+                          {children}
+                        </PageFadeWrapper>
+                      </MatrixNavigationProvider>
+                    </AuthWrapper>
+                  </AuthProvider>
+                </NextAuthProvider>
+              </ClientPreloaderContainer>
+            </OneSignalProvider>
+          </ErrorBoundary>
+        </ThemeProvider>
+        <StructuredData data={structuredData} />
+        <CookieConsent />
       </body>
     </html>
   )

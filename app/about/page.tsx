@@ -1,67 +1,71 @@
+import type { Metadata, Viewport } from "next/types"
+import { viewportConfig, generateMetadata } from "../metadata-config"
 import Link from "next/link"
+import { getWebPageData, getBreadcrumbData } from "@/lib/structured-data"
+import StructuredData from "@/components/structured-data"
 
-export const metadata = {
-  title: "About - Big Based",
-  description:
-    "Learn about Big Based, a cultural revolution platform dedicated to reclaiming digital sovereignty, preserving truth, and building a parallel economy.",
-}
+// Get the base URL for absolute URLs
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bigbased.com"
+
+export const metadata: Metadata = generateMetadata(
+  "About",
+  "Learn about Big Based, a cultural revolution platform dedicated to reclaiming digital sovereignty, preserving truth, and building a parallel economy.",
+)
+
+export const viewport: Viewport = viewportConfig
 
 export default function AboutPage() {
+  // Structured data for the about page
+  const pageStructuredData = getWebPageData(
+    "About Big Based",
+    "Learn about Big Based, a cultural revolution platform dedicated to reclaiming digital sovereignty, preserving truth, and building a parallel economy.",
+    "/about",
+    `${baseUrl}/og-image.png`,
+  )
+
+  // Breadcrumb data for the about page
+  const breadcrumbData = getBreadcrumbData([
+    { name: "Home", path: "/" },
+    { name: "About", path: "/about" },
+  ])
+
+  // Combine structured data
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [pageStructuredData, breadcrumbData],
+  }
+
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "white", padding: "2rem" }}>
-      <div style={{ maxWidth: "64rem", margin: "0 auto" }}>
-        <h1 style={{ fontSize: "2.25rem", fontWeight: "bold", marginBottom: "1.5rem", color: "black" }}>
-          About Big Based
-        </h1>
+    <>
+      <div className="min-h-screen bg-white dark:bg-gray-900 p-8">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-4xl font-bold mb-6 dark:text-white">About Big Based</h1>
 
-        <p style={{ marginBottom: "1rem", color: "#374151" }}>
-          Big Based is a cultural revolution platform dedicated to reclaiming digital sovereignty, preserving truth, and
-          building a parallel economy based on freedom and responsibility.
-        </p>
+          <p className="mb-4 dark:text-gray-200">
+            Big Based is a cultural revolution platform dedicated to reclaiming digital sovereignty, preserving truth,
+            and building a parallel economy based on freedom and responsibility.
+          </p>
 
-        <p style={{ marginBottom: "1rem", color: "#374151" }}>
-          Our mission is to provide tools, knowledge, and community for those seeking to break free from manipulation
-          and censorship while fostering connections between freedom-minded individuals.
-        </p>
+          <p className="mb-4 dark:text-gray-200">
+            Our mission is to provide tools, knowledge, and community for those seeking to break free from manipulation
+            and censorship while fostering connections between freedom-minded individuals.
+          </p>
 
-        <p style={{ marginBottom: "2rem", color: "#374151" }}>
-          Founded on principles of truth, faith, and freedom, Big Based offers a comprehensive library of 10,000+
-          meticulously researched pages, community connections, and practical solutions for navigating the challenges of
-          our time.
-        </p>
+          <p className="mb-8 dark:text-gray-200">
+            Founded on principles of truth, faith, and freedom, Big Based offers a comprehensive library of 10,000+
+            meticulously researched pages, community connections, and practical solutions for navigating the challenges
+            of our time.
+          </p>
 
-        <div style={{ marginBottom: "2rem" }}>
           <Link
             href="/"
-            style={{
-              backgroundColor: "black",
-              color: "white",
-              padding: "0.75rem 1.5rem",
-              borderRadius: "9999px",
-              fontWeight: "500",
-              textDecoration: "none",
-              display: "inline-block",
-              marginRight: "1rem",
-            }}
+            className="bg-black dark:bg-white text-white dark:text-black px-6 py-3 rounded-full font-medium inline-block hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
           >
             Back to Home
           </Link>
-          <Link
-            href="/admin"
-            style={{
-              backgroundColor: "#3B82F6",
-              color: "white",
-              padding: "0.75rem 1.5rem",
-              borderRadius: "9999px",
-              fontWeight: "500",
-              textDecoration: "none",
-              display: "inline-block",
-            }}
-          >
-            Admin Panel
-          </Link>
         </div>
       </div>
-    </div>
+      <StructuredData data={structuredData} />
+    </>
   )
 }

@@ -6,14 +6,50 @@ import loadingManager from "@/utils/loading-manager"
 /**
  * Hook to register and track a resource with the loading manager
  */
-export function useResourceLoading(resourceId: string, weight = 1) {
-  // This is a placeholder implementation
+export function useResourceLoading(resourceId: string, weight = 1, autoComplete = false) {
+  useEffect(() => {
+    try {
+      // Register the resource
+      loadingManager.registerResource(resourceId, weight)
+
+      // Mark as loading
+      loadingManager.startLoading(resourceId)
+
+      // If autoComplete is true, mark as loaded immediately
+      if (autoComplete) {
+        loadingManager.resourceLoaded(resourceId)
+      }
+
+      // Cleanup function
+      return () => {
+        // If the component unmounts before loading completes, mark as error
+        // This prevents hanging on resources that never complete
+        if (!autoComplete) {
+          loadingManager.resourceError(resourceId)
+        }
+      }
+    } catch (error) {
+      console.error(`Error in useResourceLoading for ${resourceId}:`, error)
+      // Ensure we don't block loading
+      loadingManager.resourceError(resourceId)
+    }
+  }, [resourceId, weight, autoComplete])
+
+  // Return functions to mark the resource as loaded or error
   return {
     markLoaded: () => {
-      console.log(`Resource ${resourceId} marked as loaded`)
+      try {
+        loadingManager.resourceLoaded(resourceId)
+      } catch (error) {
+        console.error(`Error marking ${resourceId} as loaded:`, error)
+      }
     },
     markError: () => {
-      console.log(`Resource ${resourceId} marked as error`)
+      try {
+        loadingManager.resourceError(resourceId)
+      } catch (error) {
+        console.error(`Error marking ${resourceId} as error:`, error)
+      }
     },
   }
 }
