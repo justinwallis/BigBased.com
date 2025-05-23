@@ -6,6 +6,9 @@ const Users: CollectionConfig = {
   admin: {
     useAsTitle: "email",
   },
+  access: {
+    read: () => true,
+  },
   fields: [
     {
       name: "name",
@@ -15,6 +18,7 @@ const Users: CollectionConfig = {
       name: "roles",
       type: "select",
       hasMany: true,
+      defaultValue: ["editor"],
       options: [
         {
           label: "Admin",

@@ -1,44 +1,27 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Spinner } from "@/components/ui/spinner"
-import ReactDOM from "react-dom/client"
+import { Payload } from "payload-admin"
 
 export default function AdminPage() {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    // Dynamically import the Payload admin UI
-    import("@payloadcms/ui").then(({ PayloadUICoreProvider, PayloadAdminBar }) => {
-      // Initialize the Payload admin UI
-      const AdminUI = () => {
-        return (
-          <PayloadUICoreProvider>
-            <PayloadAdminBar />
-          </PayloadUICoreProvider>
-        )
-      }
-
-      // Render the admin UI
-      const adminRoot = document.getElementById("payload-admin")
-      if (adminRoot) {
-        const root = document.createElement("div")
-        adminRoot.appendChild(root)
-        // @ts-ignore
-        ReactDOM.createRoot(root).render(<AdminUI />)
-      }
-    })
-
     setMounted(true)
   }, [])
 
   if (!mounted) {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <Spinner size="lg" />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Loading Admin Panel...</h1>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900 mx-auto"></div>
+        </div>
       </div>
     )
   }
 
-  return <div id="payload-admin" className="h-screen w-full" />
+  return <Payload />
 }
+
+export const dynamic = "force-dynamic"
