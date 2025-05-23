@@ -1,8 +1,25 @@
-import { AdminView } from "@payloadcms/next/views"
-import configPromise from "../../payload.config"
+"use client"
+
+import { redirect } from "next/navigation"
+import { useEffect } from "react"
 
 export default function AdminPage() {
-  return <AdminView config={configPromise} />
-}
+  useEffect(() => {
+    redirect("/api/payload/admin")
+  }, [])
 
-export const dynamic = "force-dynamic"
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold mb-4">Redirecting to Admin Panel...</h1>
+        <p>
+          If you are not redirected automatically,{" "}
+          <a href="/api/payload/admin" className="text-blue-600 hover:underline">
+            click here
+          </a>
+          .
+        </p>
+      </div>
+    </div>
+  )
+}

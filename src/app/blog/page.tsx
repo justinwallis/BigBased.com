@@ -1,9 +1,10 @@
-import { getPayload } from "../lib/payload"
+import { getPayload } from "../api/payload/[...payload]/lib/payload"
+
+export const dynamic = "force-dynamic"
 
 export default async function BlogPage() {
-  const payload = await getPayload()
-
   try {
+    const payload = await getPayload()
     const posts = await payload.find({
       collection: "posts",
       where: {
@@ -11,7 +12,7 @@ export default async function BlogPage() {
           equals: "published",
         },
       },
-      sort: "-publishedDate",
+      sort: "-createdAt",
     })
 
     return (
@@ -26,9 +27,7 @@ export default async function BlogPage() {
                 </a>
               </h2>
               {post.excerpt && <p className="text-gray-600 mb-4">{post.excerpt}</p>}
-              {post.publishedDate && (
-                <time className="text-sm text-gray-500">{new Date(post.publishedDate).toLocaleDateString()}</time>
-              )}
+              <div className="text-sm text-gray-500">Published: {new Date(post.createdAt).toLocaleDateString()}</div>
             </article>
           ))}
         </div>
@@ -39,10 +38,8 @@ export default async function BlogPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold mb-8">Blog</h1>
-        <p>Unable to load posts at this time.</p>
+        <p>Error loading posts. Please try again later.</p>
       </div>
     )
   }
 }
-
-export const dynamic = "force-dynamic"

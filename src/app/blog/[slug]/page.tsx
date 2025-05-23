@@ -1,5 +1,7 @@
-import { getPayload } from "../../lib/payload"
+import { getPayload } from "../../api/payload/[...payload]/lib/payload"
 import { notFound } from "next/navigation"
+
+export const dynamic = "force-dynamic"
 
 interface BlogPostPageProps {
   params: {
@@ -8,9 +10,8 @@ interface BlogPostPageProps {
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  const payload = await getPayload()
-
   try {
+    const payload = await getPayload()
     const posts = await payload.find({
       collection: "posts",
       where: {
@@ -24,7 +25,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       limit: 1,
     })
 
-    if (posts.docs.length === 0) {
+    if (!posts.docs.length) {
       notFound()
     }
 
@@ -32,22 +33,25 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
     return (
       <article className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
-        {post.publishedDate && (
-          <time className="text-gray-500 mb-8 block">{new Date(post.publishedDate).toLocaleDateString()}</time>
-        )}
-        {post.content && (
-          <div className="prose max-w-none">
-            {/* Render rich text content here */}
-            <div dangerouslySetInnerHTML={{ __html: post.content }} />
-          </div>
-        )}
+        <header className="mb-8">
+          <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
+          <div className="text-gray-600">Published: {new Date(post.createdAt).toLocaleDateString()}</div>
+        </header>
+
+        {post.excerpt && <div className="text-xl text-gray-700 mb-8 italic">{post.excerpt}</div>}
+
+        <div className="prose max-w-none">
+          {post.content && <div dangerouslySetInnerHTML={{ __html: post.content }} />}
+        </div>
       </article>
     )
   } catch (error) {
     console.error("Error fetching post:", error)
-    notFound()
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-4xl font-bold mb-8">Post Not Found</h1>
+        <p>Error loading post. Please try again later.</p>
+      </div>
+    )
   }
 }
-
-export const dynamic = "force-dynamic"

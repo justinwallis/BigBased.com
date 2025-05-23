@@ -1,18 +1,8 @@
-import { getPayloadHMR } from "@payloadcms/next/utilities"
-import configPromise from "../../../payload.config"
+import { getPayload } from "./lib/payload"
 
 const handler = async (req: Request): Promise<Response> => {
-  const payload = await getPayloadHMR({ config: configPromise })
+  const payload = await getPayload()
   return payload.handler(req)
 }
 
-export const GET = handler
-export const POST = handler
-export const PUT = handler
-export const DELETE = handler
-export const PATCH = handler
-
-// Export getPayload as named export (required)
-export const getPayload = async () => {
-  return await getPayloadHMR({ config: configPromise })
-}
+export { handler as GET, handler as POST, handler as PUT, handler as DELETE, handler as PATCH }
