@@ -1,7 +1,7 @@
 import dotenv from "dotenv"
 import path from "path"
-import payload, { type Payload } from "payload"
-import type { InitOptions } from "payload/config"
+import { getPayloadHMR } from "@payloadcms/next/utilities"
+import type { Payload } from "payload"
 
 // Load environment variables
 dotenv.config({
@@ -12,7 +12,7 @@ dotenv.config({
 let cachedPayload: Payload | null = null
 
 // Initialize Payload
-export const getPayload = async (options: InitOptions = {}): Promise<Payload> => {
+export const getPayload = async (): Promise<Payload> => {
   if (!process.env.PAYLOAD_SECRET) {
     throw new Error("PAYLOAD_SECRET environment variable is missing")
   }
@@ -22,15 +22,11 @@ export const getPayload = async (options: InitOptions = {}): Promise<Payload> =>
   }
 
   try {
-    // Use the root level config path for better compatibility
+    // Use the Next.js specific Payload initialization
     const configPath = path.resolve(process.cwd(), "payload.config.ts")
 
-    // Initialize Payload with the config
-    const payloadInstance = await payload.init({
-      secret: process.env.PAYLOAD_SECRET,
-      configPath,
-      local: options.local !== false,
-      ...(options || {}),
+    const payloadInstance = await getPayloadHMR({
+      config: configPath,
     })
 
     // Cache the instance

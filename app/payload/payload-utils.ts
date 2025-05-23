@@ -1,75 +1,121 @@
 import { getPayload } from "./getPayload"
 
+// Check if we're in a build environment or if Payload is not available
+const isPayloadAvailable = () => {
+  return (
+    process.env.PAYLOAD_SECRET &&
+    process.env.POSTGRES_URL &&
+    (process.env.VERCEL || process.env.NODE_ENV === "development")
+  )
+}
+
 export async function getPage(slug: string) {
+  if (!isPayloadAvailable()) {
+    console.log("Payload not available, skipping page fetch")
+    return null
+  }
+
   try {
     const payload = await getPayload()
 
-    const pages = await payload.find({
+    const result = await payload.find({
       collection: "pages",
       where: {
         slug: {
           equals: slug,
         },
+        _status: {
+          equals: "published",
+        },
       },
       limit: 1,
     })
 
-    return pages.docs[0] || null
+    return result.docs[0] || null
   } catch (error) {
-    console.error("Error fetching page:", error)
+    console.error(`Error fetching page with slug ${slug}:`, error)
     return null
-  }
-}
-
-export async function getAllPages() {
-  try {
-    const payload = await getPayload()
-
-    const pages = await payload.find({
-      collection: "pages",
-      limit: 100,
-    })
-
-    return pages.docs
-  } catch (error) {
-    console.error("Error fetching pages:", error)
-    return []
   }
 }
 
 export async function getPost(slug: string) {
+  if (!isPayloadAvailable()) {
+    console.log("Payload not available, skipping post fetch")
+    return null
+  }
+
   try {
     const payload = await getPayload()
 
-    const posts = await payload.find({
+    const result = await payload.find({
       collection: "posts",
       where: {
         slug: {
           equals: slug,
         },
+        _status: {
+          equals: "published",
+        },
       },
       limit: 1,
     })
 
-    return posts.docs[0] || null
+    return result.docs[0] || null
   } catch (error) {
-    console.error("Error fetching post:", error)
+    console.error(`Error fetching post with slug ${slug}:`, error)
     return null
   }
 }
 
-export async function getAllPosts() {
+export async function getPosts(page = 1, limit = 10) {
+  if (!isPayloadAvailable()) {
+    console.log("Payload not available, returning empty posts")
+    return { docs: [], totalPages: 0, page: 1, limit: 10, totalDocs: 0 }
+  }
+
   try {
     const payload = await getPayload()
 
-    const posts = await payload.find({
+    const result = await payload.find({
       collection: "posts",
+      where: {
+        _status: {
+          equals: "published",
+        },
+      },
+      sort: "-createdAt",
+      page,
+      limit,
+    })
+
+    return result
+  } catch (error) {
+    console.error("Error fetching posts:", error)
+    return { docs: [], totalPages: 0, page: 1, limit: 10, totalDocs: 0 }
+  }
+}
+
+export async function getAllPages() {
+  if (!isPayloadAvailable()) {
+    return []
+  }
+
+  try {
+    const payload = await getPayload()
+
+    const result = await payload.find({
+      collection: "pages",
+      where: {
+        _status: {
+          equals: "published",
+        },
+      },
       limit: 100,
     })
 
-    return posts.docs
+    return result.docs
   } catch (error) {
-    console.error("Error fetching posts:", error)
+    console.error("Error fetching all pages:", error)
     return []
   }
 }
