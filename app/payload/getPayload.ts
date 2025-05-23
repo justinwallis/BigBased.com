@@ -21,10 +21,10 @@ export const getPayload = async (options: InitOptions = {}): Promise<Payload> =>
     return cachedPayload
   }
 
-  // Import the config dynamically
-  const configPath = path.resolve(__dirname, "./payload.config.ts")
-
   try {
+    // Use the root level config path for better compatibility
+    const configPath = path.resolve(process.cwd(), "payload.config.ts")
+
     // Initialize Payload with the config
     const payloadInstance = await payload.init({
       secret: process.env.PAYLOAD_SECRET,

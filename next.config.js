@@ -8,9 +8,18 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  experimental: {
+    serverComponentsExternalPackages: ["payload"],
+  },
   images: {
-    domains: ["placeholder.com", "via.placeholder.com"],
+    domains: ["placeholder.com", "via.placeholder.com", "localhost", "bigbased.com"],
     unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ],
   },
   async headers() {
     return [
@@ -44,6 +53,13 @@ const nextConfig = {
         destination: "/static-meta.html",
       },
     ]
+  },
+  // Add webpack config to handle Payload properly
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals = [...(config.externals || []), "payload"]
+    }
+    return config
   },
 }
 

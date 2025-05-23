@@ -1,9 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getPayload } from "@/app/payload/getPayload"
 
 export async function POST(req: NextRequest) {
   try {
-    // Add a simple security check (you might want to make this more robust)
+    // Add a simple security check
     const { secret } = await req.json()
 
     if (secret !== process.env.PAYLOAD_SECRET) {
@@ -11,6 +10,9 @@ export async function POST(req: NextRequest) {
     }
 
     console.log("Initializing Payload database...")
+
+    // Dynamic import to avoid build-time issues
+    const { getPayload } = await import("@/app/payload/getPayload")
 
     // Get the Payload instance - this will create tables if they don't exist
     const payload = await getPayload()
@@ -54,6 +56,7 @@ export async function POST(req: NextRequest) {
       {
         error: "Failed to initialize database",
         details: error instanceof Error ? error.message : "Unknown error",
+        stack: error instanceof Error ? error.stack : undefined,
       },
       { status: 500 },
     )
