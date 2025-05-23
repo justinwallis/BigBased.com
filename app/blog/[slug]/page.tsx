@@ -1,56 +1,58 @@
-import { getPayload } from "@/lib/getPayload"
 import { notFound } from "next/navigation"
+import { getPost } from "../../payload/payload-utils"
+import { RichTextRenderer } from "@/components/rich-text-renderer"
 
-export const dynamic = "force-dynamic"
-
-interface BlogPostPageProps {
-  params: {
-    slug: string
-  }
+// Don't generate static params during build
+export async function generateStaticParams() {
+  return []
 }
 
-export default async function BlogPostPage({ params }: BlogPostPageProps) {
+// Make this page dynamic
+export const dynamic = "force-dynamic"
+
+export default async function BlogPostPage({ params }: { params: { slug: string } }) {
   try {
-    const payload = await getPayload()
+    const post = await getPost(params.slug)
 
-    const posts = await payload.find({
-      collection: "posts",
-      where: {
-        slug: {
-          equals: params.slug,
-        },
-        published: {
-          equals: true,
-        },
-      },
-      limit: 1,
-    })
-
-    if (posts.docs.length === 0) {
+    if (!post) {
       notFound()
     }
 
-    const post = posts.docs[0]
-
     return (
-      <article className="container mx-auto px-4 py-8 max-w-4xl">
-        <header className="mb-8">
+      <div className="container mx-auto px-4 py-12">
+        <article className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
-          {post.publishedDate && (
-            <time className="text-gray-600">{new Date(post.publishedDate).toLocaleDateString()}</time>
-          )}
-        </header>
 
-        {post.content && (
-          <div className="prose prose-lg max-w-none">
-            {/* You'll need to render the rich text content here */}
-            <div dangerouslySetInnerHTML={{ __html: JSON.stringify(post.content) }} />
+          <div className="flex items-center gap-4 mb-8 text-gray-600">
+            <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+            {post.category && (
+              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">{post.category}</span>
+            )}
           </div>
-        )}
-      </article>
+
+          {post.excerpt && <p className="text-xl text-gray-600 mb-8">{post.excerpt}</p>}
+
+          <div className="prose prose-lg max-w-none">
+            <RichTextRenderer content={post.content} />
+          </div>
+
+          {post.tags && post.tags.length > 0 && (
+            <div className="mt-8 pt-8 border-t">
+              <h3 className="text-lg font-semibold mb-2">Tags:</h3>
+              <div className="flex flex-wrap gap-2">
+                {post.tags.map((tag: string, index: number) => (
+                  <span key={index} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </article>
+      </div>
     )
   } catch (error) {
-    console.error("Error fetching blog post:", error)
+    console.error("Error loading blog post:", error)
     notFound()
   }
 }
