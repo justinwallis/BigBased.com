@@ -1,75 +1,38 @@
 "use server"
 
-import { getPayload } from "../payload/getPayload"
+import { getPayload } from "@/app/payload/getPayload"
 
-export async function initializePayloadDatabase() {
+export async function initPayloadDb() {
   try {
-    console.log("Initializing Payload database...")
-
-    // Get the Payload instance
+    // Initialize Payload
     const payload = await getPayload()
 
-    console.log("Payload initialized successfully")
-
-    // Create an admin user if none exists
-    const adminUsers = await payload.find({
+    // Create an admin user if one doesn't exist
+    const adminExists = await payload.find({
       collection: "users",
       where: {
-        roles: {
-          contains: "admin",
+        email: {
+          equals: "admin@bigbased.com",
         },
       },
     })
 
-    if (adminUsers.docs.length === 0) {
-      console.log("Creating admin user...")
-
+    if (adminExists.totalDocs === 0) {
       await payload.create({
         collection: "users",
         data: {
           email: "admin@bigbased.com",
           password: "BigBased2024!",
-          name: "Admin",
+          name: "Admin User",
           roles: ["admin"],
         },
       })
-
-      console.log("Admin user created successfully")
-    }
-
-    // Check if Pages collection has any documents
-    const pages = await payload.find({
-      collection: "pages",
-      limit: 1,
-    })
-
-    if (pages.docs.length === 0) {
-      console.log("Creating sample page...")
-
-      await payload.create({
-        collection: "pages",
-        data: {
-          title: "Welcome to Big Based",
-          slug: "welcome",
-          content: [
-            {
-              children: [
-                {
-                  text: "Welcome to Big Based! This is your first page created with Payload CMS.",
-                },
-              ],
-            },
-          ],
-          status: "published",
-        },
-      })
-
-      console.log("Sample page created successfully")
     }
 
     return {
       success: true,
-      message: "Payload database initialized successfully",
+      message:
+        "Database initialized successfully. Default admin user created with email: admin@bigbased.com and password: BigBased2024!",
     }
   } catch (error) {
     console.error("Error initializing database:", error)

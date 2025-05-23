@@ -1,39 +1,30 @@
-import payload from "payload"
-import type { Payload } from "payload"
+import { getPayloadClient } from "payload/dist/payload"
 import config from "./payload.config"
 
-// Track if Payload has been initialized
-const cached = global as unknown as {
-  payload?: Payload
-}
+// Cache the Payload instance
+let cachedPayload: any = null
 
-if (!cached.payload) {
-  cached.payload = undefined
-}
-
-// Initialize Payload once and reuse the instance
-export async function getPayload(): Promise<Payload> {
-  if (cached.payload) {
-    return cached.payload
+export const getPayload = async () => {
+  if (!process.env.PAYLOAD_SECRET) {
+    throw new Error("PAYLOAD_SECRET environment variable is missing")
   }
 
-  // Only initialize in server environment
-  if (typeof window === "undefined") {
-    try {
-      // Initialize Payload
-      await payload.init({
-        secret: process.env.PAYLOAD_SECRET || "big-based-secret-key",
-        config,
-        local: process.env.NODE_ENV !== "production",
-      })
-
-      cached.payload = payload
-      return payload
-    } catch (error) {
-      console.error("Error initializing Payload:", error)
-      throw error
-    }
+  if (cachedPayload) {
+    return cachedPayload
   }
 
-  throw new Error("Payload cannot be initialized on the client side")
+  // Initialize Payload
+  const payload = await getPayloadClient({
+    // Pass the config object
+    config,
+    // Set the options
+    options: {
+      local: true,
+      secret: process.env.PAYLOAD_SECRET,
+    },
+  })
+
+  cachedPayload = payload
+
+  return payload
 }

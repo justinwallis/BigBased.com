@@ -1,22 +1,19 @@
 import { buildConfig } from "payload/config"
 import { postgresAdapter } from "@payloadcms/db-postgres"
 import { slateEditor } from "@payloadcms/richtext-slate"
+import { webpackBundler } from "@payloadcms/bundler-webpack"
 import path from "path"
-import { Users } from "./collections/Users"
-import { Pages } from "./collections/Pages"
-import { Media } from "./collections/Media"
-import { Posts } from "./collections/Posts"
 
-// Define server URL with fallbacks
-const serverURL =
-  process.env.NEXT_PUBLIC_BASE_URL ||
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
+// Import collections
+import Users from "./collections/Users"
+import Pages from "./collections/Pages"
+import Media from "./collections/Media"
+import Posts from "./collections/Posts"
 
-// Create the config object
 export default buildConfig({
-  serverURL,
   admin: {
     user: Users.slug,
+    bundler: webpackBundler(),
     meta: {
       titleSuffix: "- Big Based CMS",
       favicon: "/favicon.ico",
@@ -26,16 +23,24 @@ export default buildConfig({
   editor: slateEditor({}),
   collections: [Users, Pages, Media, Posts],
   typescript: {
-    outputFile: path.resolve(__dirname, "payload-types.ts"),
+    outputFile: path.resolve(__dirname, "../payload-types.ts"),
   },
   graphQL: {
     schemaOutputFile: path.resolve(__dirname, "generated-schema.graphql"),
   },
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.POSTGRES_URL || process.env.DATABASE_URL,
+      connectionString: process.env.NEON_DATABASE_URL || process.env.POSTGRES_URL || "",
     },
   }),
-  cors: [serverURL, "https://*.vercel.app"],
-  csrf: [serverURL, "https://*.vercel.app"],
+  cors: [
+    process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
+    "https://bigbased.com",
+    "https://www.bigbased.com",
+  ].filter(Boolean),
+  csrf: [
+    process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
+    "https://bigbased.com",
+    "https://www.bigbased.com",
+  ].filter(Boolean),
 })
