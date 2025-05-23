@@ -1,5 +1,3 @@
-const { withPayload } = require("@payloadcms/next/withPayload")
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -11,7 +9,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ["localhost"],
+    domains: ["placeholder.com", "via.placeholder.com"],
     unoptimized: true,
   },
   async headers() {
@@ -47,9 +45,6 @@ const nextConfig = {
       },
     ]
   },
-  experimental: {
-    reactCompiler: false,
-  },
 }
 
-module.exports = withPayload(nextConfig)
+module.exports = nextConfig
