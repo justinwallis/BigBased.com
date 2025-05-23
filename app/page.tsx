@@ -1,8 +1,5 @@
 import type { Metadata, Viewport } from "next/types"
 import { baseMetadata, viewportConfig } from "./metadata-config"
-import ClientPage from "./ClientPage"
-import { getWebPageData, getBreadcrumbData } from "@/lib/structured-data"
-import StructuredData from "@/components/structured-data"
 
 // Get the base URL for absolute URLs
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bigbased.com"
@@ -39,27 +36,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = viewportConfig
 
 export default function Home() {
-  // Structured data for the homepage
-  const pageStructuredData = getWebPageData(
-    "Big Based - Answer to Madness",
-    "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform.",
-    "/",
-    `${baseUrl}/BigBasedPreview.png`,
-  )
-
-  // Breadcrumb data for the homepage
-  const breadcrumbData = getBreadcrumbData([{ name: "Home", path: "/" }])
-
-  // Combine structured data
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@graph": [pageStructuredData, breadcrumbData],
-  }
-
   return (
-    <>
-      <ClientPage />
-      <StructuredData data={structuredData} />
-    </>
+    <main className="flex min-h-screen flex-col items-center justify-center p-24">
+      <h1 className="text-4xl font-bold mb-6">Big Based</h1>
+      <p className="text-xl">Website coming soon</p>
+    </main>
   )
 }

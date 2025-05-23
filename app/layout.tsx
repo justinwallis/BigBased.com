@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import OneSignalProvider from "@/components/one-signal-provider"
 import AuthWrapper from "@/components/auth/auth-wrapper"
 import SectionPersistenceWrapper from "@/components/section-persistence-wrapper"
-import { baseMetadata, viewportConfig } from "./metadata-config"
+import { viewportConfig } from "./metadata-config"
 import { getOrganizationData, getWebsiteData } from "@/lib/structured-data"
 import StructuredData from "@/components/structured-data"
 import { CookieConsent } from "@/components/cookie-consent"
@@ -25,42 +25,7 @@ const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bigbased.com"
 
 export const metadata: Metadata = {
   title: "Big Based",
-  description: "Big Based is a cultural revolution platform with a living library of truth, faith, and insight.",
-  icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/icon0.svg", type: "image/svg+xml" },
-      { url: "/icon1.png", type: "image/png" },
-    ],
-    apple: {
-      url: "/apple-icon.png",
-      sizes: "180x180",
-      type: "image/png",
-    },
-  },
-  manifest: "/manifest.json",
-  themeColor: "#ffffff",
-  appleWebApp: {
-    title: "Big Based",
-    statusBarStyle: "default",
-  },
-  metadataBase: new URL(baseUrl),
-  openGraph: {
-    ...baseMetadata.openGraph,
-    url: baseUrl,
-    images: [
-      {
-        url: `${baseUrl}/BigBasedPreview.png`,
-        width: 1200,
-        height: 630,
-        alt: "Big Based - Answer to Madness",
-      },
-    ],
-  },
-  twitter: {
-    ...baseMetadata.twitter,
-    images: [`${baseUrl}/BigBasedPreview.png`],
-  },
+  description: "Big Based Website",
     generator: 'v0.dev'
 }
 
