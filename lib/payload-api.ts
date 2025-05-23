@@ -1,41 +1,79 @@
-import { getPayload } from "@/app/payload/getPayload"
+import { getPayload } from "../app/payload/getPayload"
 
-export async function getCollection(collection: string, query: any = {}) {
+export async function getPages(options: { limit?: number; page?: number; where?: any } = {}) {
   const payload = await getPayload()
 
-  try {
-    const result = await payload.find({
-      collection,
-      ...query,
-    })
+  const { docs, hasNextPage, hasPrevPage, nextPage, prevPage, totalDocs, totalPages } = await payload.find({
+    collection: "pages",
+    limit: options.limit || 10,
+    page: options.page || 1,
+    where: options.where || { status: { equals: "published" } },
+  })
 
-    return result
-  } catch (error) {
-    console.error(`Error fetching ${collection}:`, error)
-    throw error
+  return {
+    docs,
+    hasNextPage,
+    hasPrevPage,
+    nextPage,
+    prevPage,
+    totalDocs,
+    totalPages,
   }
 }
 
-export async function getDocument(collection: string, slug: string) {
+export async function getPageBySlug(slug: string) {
   const payload = await getPayload()
 
   try {
-    const result = await payload.find({
-      collection,
+    const page = await payload.find({
+      collection: "pages",
       where: {
-        slug: {
-          equals: slug,
-        },
+        and: [{ slug: { equals: slug } }, { status: { equals: "published" } }],
       },
     })
 
-    if (result.docs.length === 0) {
-      return null
-    }
-
-    return result.docs[0]
+    return page.docs[0] || null
   } catch (error) {
-    console.error(`Error fetching ${collection} document:`, error)
-    throw error
+    console.error(`Error fetching page with slug ${slug}:`, error)
+    return null
+  }
+}
+
+export async function getPosts(options: { limit?: number; page?: number; where?: any } = {}) {
+  const payload = await getPayload()
+
+  const { docs, hasNextPage, hasPrevPage, nextPage, prevPage, totalDocs, totalPages } = await payload.find({
+    collection: "posts",
+    limit: options.limit || 10,
+    page: options.page || 1,
+    where: options.where || { status: { equals: "published" } },
+  })
+
+  return {
+    docs,
+    hasNextPage,
+    hasPrevPage,
+    nextPage,
+    prevPage,
+    totalDocs,
+    totalPages,
+  }
+}
+
+export async function getPostBySlug(slug: string) {
+  const payload = await getPayload()
+
+  try {
+    const post = await payload.find({
+      collection: "posts",
+      where: {
+        and: [{ slug: { equals: slug } }, { status: { equals: "published" } }],
+      },
+    })
+
+    return post.docs[0] || null
+  } catch (error) {
+    console.error(`Error fetching post with slug ${slug}:`, error)
+    return null
   }
 }

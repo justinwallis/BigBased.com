@@ -37,6 +37,9 @@ const Posts: CollectionConfig = {
       type: "date",
       admin: {
         position: "sidebar",
+        date: {
+          pickerAppearance: "dayAndTime",
+        },
       },
     },
     {
@@ -44,24 +47,16 @@ const Posts: CollectionConfig = {
       type: "select",
       options: [
         {
-          value: "technology",
-          label: "Technology",
+          value: "news",
+          label: "News",
         },
         {
-          value: "culture",
-          label: "Culture",
+          value: "tutorial",
+          label: "Tutorial",
         },
         {
-          value: "politics",
-          label: "Politics",
-        },
-        {
-          value: "faith",
-          label: "Faith",
-        },
-        {
-          value: "economy",
-          label: "Economy",
+          value: "announcement",
+          label: "Announcement",
         },
       ],
       admin: {
@@ -69,17 +64,17 @@ const Posts: CollectionConfig = {
       },
     },
     {
+      name: "content",
+      type: "richText",
+      required: true,
+    },
+    {
       name: "featuredImage",
       type: "upload",
       relationTo: "media",
       admin: {
-        description: "Featured image for this post",
+        position: "sidebar",
       },
-    },
-    {
-      name: "content",
-      type: "richText",
-      required: true,
     },
     {
       name: "status",
@@ -98,20 +93,6 @@ const Posts: CollectionConfig = {
       admin: {
         position: "sidebar",
       },
-    },
-    {
-      name: "meta",
-      type: "group",
-      fields: [
-        {
-          name: "description",
-          type: "textarea",
-        },
-        {
-          name: "keywords",
-          type: "text",
-        },
-      ],
     },
   ],
 }

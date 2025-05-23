@@ -1,87 +1,52 @@
 "use client"
-
-import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import Image from "next/image"
 
 interface CMSContentProps {
-  collection: string
-  slug?: string
+  content: any
+  type: "page" | "post"
 }
 
-export default function CMSContent({ collection, slug }: CMSContentProps) {
-  const [data, setData] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+export default function CMSContent({ content, type }: CMSContentProps) {
+  const router = useRouter()
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        let url = `/api/${collection}`
-        if (slug) {
-          url = `${url}?where[slug][equals]=${slug}`
-        }
-
-        const response = await fetch(url)
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch data: ${response.statusText}`)
-        }
-
-        const result = await response.json()
-        setData(result)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An unknown error occurred")
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchData()
-  }, [collection, slug])
-
-  if (loading) {
-    return <div className="animate-pulse p-4 bg-gray-100 rounded-md">Loading content...</div>
-  }
-
-  if (error) {
-    return <div className="p-4 bg-red-100 text-red-700 rounded-md">Error: {error}</div>
-  }
-
-  if (!data || !data.docs || data.docs.length === 0) {
-    return <div className="p-4 bg-yellow-100 text-yellow-700 rounded-md">No content found</div>
-  }
-
-  // For collections, show a list
-  if (!slug) {
+  if (!content) {
     return (
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold">{collection.charAt(0).toUpperCase() + collection.slice(1)}</h2>
-        <ul className="space-y-2">
-          {data.docs.map((item: any) => (
-            <li key={item.id} className="p-4 bg-white shadow rounded-md">
-              <h3 className="text-xl font-semibold">{item.title}</h3>
-              {item.publishedDate && (
-                <p className="text-sm text-gray-500">{new Date(item.publishedDate).toLocaleDateString()}</p>
-              )}
-              {item.status && <span className="text-xs bg-gray-200 px-2 py-1 rounded">{item.status}</span>}
-            </li>
-          ))}
-        </ul>
+      <div className="p-8 text-center">
+        <h2 className="text-2xl font-bold mb-4">Content not found</h2>
+        <button onClick={() => router.back()} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          Go Back
+        </button>
       </div>
     )
   }
 
-  // For a single item, show its details
-  const item = data.docs[0]
-
   return (
-    <div className="space-y-4">
-      <h1 className="text-3xl font-bold">{item.title}</h1>
-      {item.publishedDate && (
-        <p className="text-sm text-gray-500">{new Date(item.publishedDate).toLocaleDateString()}</p>
-      )}
-      {item.status && <span className="text-xs bg-gray-200 px-2 py-1 rounded">{item.status}</span>}
+    <div className="max-w-4xl mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-4">{content.title}</h1>
 
-      {item.content && <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: item.content }} />}
+      {type === "post" && content.author && (
+        <div className="mb-4 text-gray-600">
+          By {content.author.name || content.author.email}
+          {content.publishedDate && <span> • {new Date(content.publishedDate).toLocaleDateString()}</span>}
+        </div>
+      )}
+
+      {content.featuredImage && (
+        <div className="mb-6 relative h-64 w-full">
+          <Image
+            src={content.featuredImage.url || "/placeholder.svg"}
+            alt={content.featuredImage.alt || content.title}
+            fill
+            className="object-cover rounded-lg"
+          />
+        </div>
+      )}
+
+      <div className="prose max-w-none">
+        {/* This is a simplified version - in a real app, you'd need to render the rich text content properly */}
+        <div dangerouslySetInnerHTML={{ __html: content.content }} />
+      </div>
     </div>
   )
 }

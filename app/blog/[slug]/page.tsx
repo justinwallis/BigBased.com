@@ -1,11 +1,21 @@
-import CMSContent from "@/components/cms-content"
+import { getPostBySlug } from "../../../lib/payload-api"
+import { notFound } from "next/navigation"
+import CMSContent from "../../../components/cms-content"
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
-  return (
-    <div className="container mx-auto py-8 px-4">
-      <CMSContent collection="posts" slug={params.slug} />
-    </div>
-  )
+interface BlogPostPageProps {
+  params: {
+    slug: string
+  }
+}
+
+export default async function BlogPostPage({ params }: BlogPostPageProps) {
+  const post = await getPostBySlug(params.slug)
+
+  if (!post) {
+    notFound()
+  }
+
+  return <CMSContent content={post} type="post" />
 }
 
 export const dynamic = "force-dynamic"

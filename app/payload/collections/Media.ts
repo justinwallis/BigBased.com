@@ -7,48 +7,39 @@ const Media: CollectionConfig = {
   access: {
     read: () => true,
   },
-  admin: {
-    useAsTitle: "filename",
-  },
   upload: {
+    staticDir: path.resolve(__dirname, "../../public/media"),
     staticURL: "/media",
-    staticDir: "media",
     disableLocalStorage: true,
-    adminThumbnail: "thumbnail",
-    mimeTypes: ["image/png", "image/jpeg", "image/gif", "image/svg+xml", "image/webp"],
     handlers: {
       upload: async ({ req, file, data }) => {
-        const { put } = await import("@vercel/blob")
-
-        if (!file.buffer) {
-          throw new Error("No file buffer")
-        }
-
-        const filename = `${path.parse(file.filename).name}-${Date.now()}${path.extname(file.filename)}`
-
         try {
-          const blob: PutBlobResult = await put(filename, file.buffer, {
-            access: "public",
-            contentType: file.mimeType,
+          // Use Vercel Blob for storage
+          const filename = `${Date.now()}-${file.name}`
+          const buffer = await file.data()
+
+          const response = await fetch(`https://api.vercel.com/v1/blobs`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`,
+              "Content-Type": file.mimetype,
+              "X-Vercel-Filename": filename,
+            },
+            body: buffer,
           })
 
+          const result = (await response.json()) as PutBlobResult
+
+          // Return the URL to be saved to the database
           return {
             filename,
-            mimeType: file.mimeType,
             filesize: file.size,
-            width: data.width,
-            height: data.height,
-            url: blob.url,
+            mimeType: file.mimetype,
+            url: result.url,
           }
         } catch (error) {
           console.error("Error uploading to Vercel Blob:", error)
           throw error
-        }
-      },
-      afterRead: async ({ doc }) => {
-        return {
-          ...doc,
-          url: doc.url,
         }
       },
     },
@@ -60,11 +51,8 @@ const Media: CollectionConfig = {
       required: true,
     },
     {
-      name: "url",
+      name: "caption",
       type: "text",
-      admin: {
-        readOnly: true,
-      },
     },
   ],
 }

@@ -18,7 +18,6 @@ const Users: CollectionConfig = {
       name: "roles",
       type: "select",
       hasMany: true,
-      defaultValue: ["editor"],
       options: [
         {
           label: "Admin",
@@ -29,6 +28,8 @@ const Users: CollectionConfig = {
           value: "editor",
         },
       ],
+      defaultValue: ["editor"],
+      required: true,
     },
   ],
 }

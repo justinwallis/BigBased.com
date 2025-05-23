@@ -29,22 +29,9 @@ const Pages: CollectionConfig = {
       required: true,
     },
     {
-      name: "meta",
-      type: "group",
-      fields: [
-        {
-          name: "description",
-          type: "textarea",
-        },
-        {
-          name: "keywords",
-          type: "text",
-        },
-      ],
-    },
-    {
-      name: "publishedDate",
-      type: "date",
+      name: "featuredImage",
+      type: "upload",
+      relationTo: "media",
       admin: {
         position: "sidebar",
       },

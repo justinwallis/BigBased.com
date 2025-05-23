@@ -1,27 +1,32 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Payload } from "payload-admin"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 export default function AdminPage() {
-  const [mounted, setMounted] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
-    setMounted(true)
+    // Redirect to the Payload admin panel
+    window.location.href = "/api/payload/admin"
   }, [])
 
-  if (!mounted) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Loading Admin Panel...</h1>
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900 mx-auto"></div>
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-md">
+        <h1 className="text-2xl font-bold mb-4">Loading Admin Panel...</h1>
+        <p>You will be redirected to the Payload CMS admin panel shortly.</p>
+        <div className="mt-4">
+          <button
+            onClick={() => (window.location.href = "/api/payload/admin")}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Go to Admin Panel
+          </button>
         </div>
       </div>
-    )
-  }
-
-  return <Payload />
+    </div>
+  )
 }
 
 export const dynamic = "force-dynamic"
