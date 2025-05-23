@@ -1,6 +1,6 @@
-import { createNextPayloadHandler } from "@payloadcms/next"
 import { type NextRequest, NextResponse } from "next/server"
 import path from "path"
+import { createNextHandler } from "@payloadcms/next/dist/handlers"
 
 // Log environment variables for debugging (will be removed in production)
 console.log("API Route Environment Check:", {
@@ -10,7 +10,7 @@ console.log("API Route Environment Check:", {
 })
 
 // Create a Payload handler with explicit secret
-const payloadHandler = createNextPayloadHandler({
+const payloadHandler = createNextHandler({
   // Use path to config instead of importing directly
   configPath: path.resolve(process.cwd(), "payload.config.ts"),
   secret: process.env.PAYLOAD_SECRET,

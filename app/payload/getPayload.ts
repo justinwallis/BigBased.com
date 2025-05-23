@@ -1,6 +1,6 @@
 import dotenv from "dotenv"
 import path from "path"
-import { getPayloadClient } from "@payloadcms/next/utilities"
+import { getPayload as getPayloadFromNext } from "@payloadcms/next/dist/utilities"
 import type { Payload } from "payload"
 
 // Load environment variables
@@ -19,7 +19,7 @@ console.log("getPayload Environment Check:", {
 let cachedPayload: Payload | null = null
 
 // Initialize Payload
-export const getPayload = async (): Promise<Payload> => {
+export const getPayloadClient = async (): Promise<Payload> => {
   if (!process.env.PAYLOAD_SECRET) {
     throw new Error("PAYLOAD_SECRET environment variable is missing")
   }
@@ -30,7 +30,7 @@ export const getPayload = async (): Promise<Payload> => {
 
   try {
     // Use the Next.js specific Payload initialization with explicit secret
-    const payloadInstance = await getPayloadClient({
+    const payloadInstance = await getPayloadFromNext({
       // Import the config directly to avoid circular dependencies
       configPath: path.resolve(process.cwd(), "payload.config.ts"),
       secret: process.env.PAYLOAD_SECRET,
@@ -45,3 +45,6 @@ export const getPayload = async (): Promise<Payload> => {
     throw error
   }
 }
+
+// Export the original function name for backward compatibility
+export const getPayload = getPayloadClient

@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
-const { withPayload } = require("@payloadcms/next/withPayload")
+const { withPayloadCMS } = require("@payloadcms/next/dist/withPayload")
 const path = require("path")
 
-const nextConfig = withPayload(
+const nextConfig = withPayloadCMS(
   {
     reactStrictMode: true,
     swcMinify: true,
