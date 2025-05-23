@@ -11,6 +11,19 @@ import { Pages } from "@/app/payload/collections/Pages"
 import { Posts } from "@/app/payload/collections/Posts"
 import { Media } from "@/app/payload/collections/Media"
 
+// Modify the connection string to disable SSL verification
+function getModifiedConnectionString() {
+  const originalString = process.env.POSTGRES_URL || ""
+
+  // If the string already has parameters, append the SSL mode
+  if (originalString.includes("?")) {
+    return `${originalString}&sslmode=no-verify`
+  }
+
+  // Otherwise add the parameter with a question mark
+  return `${originalString}?sslmode=no-verify`
+}
+
 // Create the config inline to avoid import issues
 const payloadConfig = buildConfig({
   admin: {
@@ -26,7 +39,10 @@ const payloadConfig = buildConfig({
   secret: process.env.PAYLOAD_SECRET || "insecure-secret-for-dev-only",
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.POSTGRES_URL || "",
+      connectionString: getModifiedConnectionString(),
+      ssl: {
+        rejectUnauthorized: false,
+      },
     },
   }),
   plugins: [
