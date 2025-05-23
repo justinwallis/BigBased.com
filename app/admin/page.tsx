@@ -172,9 +172,16 @@ export default function AdminSetupPage() {
           )}
 
           {adminCreated && (
-            <Button className="w-full" onClick={() => (window.location.href = "/api/payload")}>
-              Go to CMS
-            </Button>
+            <div className="space-y-4 w-full">
+              <Button className="w-full" onClick={() => window.open("/api/payload", "_blank")}>
+                Go to CMS Admin
+              </Button>
+              <div className="text-sm text-center text-gray-500">
+                <p>Login with:</p>
+                <p>Email: {email}</p>
+                <p>Password: {password}</p>
+              </div>
+            </div>
           )}
         </CardFooter>
       </Card>

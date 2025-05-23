@@ -14,8 +14,8 @@ export async function POST(req: NextRequest) {
     // Create a connection to the database using Neon
     const sql = neon(process.env.NEON_NEON_DATABASE_URL!)
 
-    // SQL to create the tables
-    const createTablesSql = `
+    // Execute the SQL using tagged template literals
+    await sql`
       -- Create the users table
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -27,7 +27,9 @@ export async function POST(req: NextRequest) {
         "createdAt" TIMESTAMP DEFAULT NOW(),
         "updatedAt" TIMESTAMP DEFAULT NOW()
       );
+    `
 
+    await sql`
       -- Create the pages table
       CREATE TABLE IF NOT EXISTS pages (
         id SERIAL PRIMARY KEY,
@@ -41,7 +43,9 @@ export async function POST(req: NextRequest) {
         "createdAt" TIMESTAMP DEFAULT NOW(),
         "updatedAt" TIMESTAMP DEFAULT NOW()
       );
+    `
 
+    await sql`
       -- Create the posts table
       CREATE TABLE IF NOT EXISTS posts (
         id SERIAL PRIMARY KEY,
@@ -55,7 +59,9 @@ export async function POST(req: NextRequest) {
         "createdAt" TIMESTAMP DEFAULT NOW(),
         "updatedAt" TIMESTAMP DEFAULT NOW()
       );
+    `
 
+    await sql`
       -- Create the media table
       CREATE TABLE IF NOT EXISTS media (
         id SERIAL PRIMARY KEY,
@@ -69,17 +75,28 @@ export async function POST(req: NextRequest) {
         "createdAt" TIMESTAMP DEFAULT NOW(),
         "updatedAt" TIMESTAMP DEFAULT NOW()
       );
-
-      -- Create indexes for better performance
-      CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-      CREATE INDEX IF NOT EXISTS idx_pages_slug ON pages(slug);
-      CREATE INDEX IF NOT EXISTS idx_posts_slug ON posts(slug);
-      CREATE INDEX IF NOT EXISTS idx_pages_status ON pages("_status");
-      CREATE INDEX IF NOT EXISTS idx_posts_status ON posts("_status");
     `
 
-    // Execute the SQL
-    await sql(createTablesSql)
+    await sql`
+      -- Create indexes for better performance
+      CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+    `
+
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_pages_slug ON pages(slug);
+    `
+
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_posts_slug ON posts(slug);
+    `
+
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_pages_status ON pages("_status");
+    `
+
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_posts_status ON posts("_status");
+    `
 
     // Return success
     return NextResponse.json({ success: true, message: "Database tables created successfully" })

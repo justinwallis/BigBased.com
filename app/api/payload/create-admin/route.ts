@@ -12,7 +12,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid secret" }, { status: 401 })
     }
 
-    // Get the email and password
     const { email, password } = body
 
     if (!email || !password) {
@@ -22,20 +21,24 @@ export async function POST(req: NextRequest) {
     // Create a connection to the database using Neon
     const sql = neon(process.env.NEON_NEON_DATABASE_URL!)
 
-    // Check if the user already exists
-    const existingUser = await sql`SELECT * FROM users WHERE email = ${email}`
+    // Check if user already exists
+    const existingUser = await sql`
+      SELECT id FROM users WHERE email = ${email}
+    `
 
     if (existingUser.length > 0) {
-      return NextResponse.json({ error: "User already exists" }, { status: 400 })
+      return NextResponse.json({ error: "User with this email already exists" }, { status: 400 })
     }
 
     // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10)
+    const salt = await bcrypt.genSalt(10)
+    const hashedPassword = await bcrypt.hash(password, salt)
 
-    // Insert the admin user
-    await sql`
-      INSERT INTO users (email, password, roles, name) 
-      VALUES (${email}, ${hashedPassword}, ARRAY['admin'], 'Admin User')
+    // Create the admin user
+    const result = await sql`
+      INSERT INTO users (email, password, roles, "createdAt", "updatedAt")
+      VALUES (${email}, ${hashedPassword}, ARRAY['admin'], NOW(), NOW())
+      RETURNING id, email
     `
 
     // Return success
@@ -43,9 +46,8 @@ export async function POST(req: NextRequest) {
       success: true,
       message: "Admin user created successfully",
       user: {
-        email,
-        roles: ["admin"],
-        name: "Admin User",
+        id: result[0].id,
+        email: result[0].email,
       },
     })
   } catch (error) {
