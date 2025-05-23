@@ -99,7 +99,7 @@ const Posts = {
   ],
 }
 
-// Build and export the config
+// Build the config
 const config = buildConfig({
   serverURL: process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
   admin: {
@@ -119,4 +119,5 @@ const config = buildConfig({
   secret: process.env.PAYLOAD_SECRET || "your-secret-key",
 })
 
+// Export the config as default
 export default config
