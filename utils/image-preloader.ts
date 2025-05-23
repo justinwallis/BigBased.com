@@ -45,24 +45,23 @@ export async function preloadImages(imagePaths: string[]): Promise<void> {
  * @param imagePaths Array of all image paths
  * @param count Number of next images to preload
  */
-export function preloadNextImages(currentIndex: number, imagePaths: string[], count = 2): void {
+export const preloadNextImages = (currentIndex: number, imagePaths: string[], count: number) => {
   try {
-    if (!imagePaths || imagePaths.length === 0) return
-
-    const nextImages: string[] = []
-    const totalImages = imagePaths.length
-
-    // Get the next 'count' images, wrapping around if needed
-    for (let i = 1; i <= count; i++) {
-      const nextIndex = (currentIndex + i) % totalImages
-      if (imagePaths[nextIndex]) {
-        nextImages.push(imagePaths[nextIndex])
-      }
-    }
-
-    // Preload these images
-    preloadImages(nextImages)
+    const nextImages = imagePaths.slice(currentIndex + 1, currentIndex + 1 + count)
+    nextImages.forEach((imagePath) => {
+      const img = new Image()
+      img.src = imagePath
+    })
   } catch (error) {
-    console.error("Error preloading next images:", error)
+    console.error("Error preloading images:", error)
   }
+}
+
+export const preloadImage = (src: string): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => resolve()
+    img.onerror = reject
+    img.src = src
+  })
 }

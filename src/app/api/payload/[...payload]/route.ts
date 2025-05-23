@@ -1,21 +1,14 @@
-import { getPayloadClient } from "@payloadcms/next/getPayloadClient"
-import { nextHandler } from "@payloadcms/next/handlers"
-import config from "../../../payload.config"
+import { getPayloadHMR } from "@payloadcms/next/utilities"
+import configPromise from "../../../../payload.config"
 
-// This is the default handler for Payload routes
-const handler = nextHandler({
-  config,
-})
-
-export const GET = handler
-export const POST = handler
-export const PUT = handler
-export const PATCH = handler
-export const DELETE = handler
-
-// Export the Payload client for use in server components
+// Create the getPayload function
 export const getPayload = async () => {
-  return getPayloadClient({
-    config,
-  })
+  return await getPayloadHMR({ config: configPromise })
 }
+
+const handler = async (req: Request): Promise<Response> => {
+  const payload = await getPayload()
+  return payload.handler(req)
+}
+
+export { handler as GET, handler as POST, handler as PUT, handler as DELETE, handler as PATCH }

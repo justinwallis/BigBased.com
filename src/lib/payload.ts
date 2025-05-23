@@ -1,4 +1,19 @@
-import { getPayload } from "../app/api/payload/[...payload]/route"
+import { getPayloadHMR } from "@payloadcms/next/utilities"
+import configPromise from "../../payload.config"
+// import { getPayload } from "../app/api/payload/[...payload]/route" // Removed to fix redeclaration
+
+let cachedPayload: any = null
+
+export const getPayload = async () => {
+  if (cachedPayload) {
+    return cachedPayload
+  }
+
+  cachedPayload = await getPayloadHMR({ config: configPromise })
+  return cachedPayload
+}
+
+export const getPayloadClient = getPayload
 
 // Helper function to fetch posts from Payload CMS
 export async function getPosts({ limit = 10, page = 1, where = {} } = {}) {

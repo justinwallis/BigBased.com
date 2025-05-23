@@ -5,12 +5,12 @@ import { vercelBlobStorage } from "@payloadcms/storage-vercel-blob"
 import path from "path"
 
 // Import collections
-import { Users } from "./collections/Users"
-import { Media } from "./collections/Media"
-import { Pages } from "./collections/Pages"
-import { Posts } from "./collections/Posts"
+import { Users } from "./src/collections/Users"
+import { Media } from "./src/collections/Media"
+import { Pages } from "./src/collections/Pages"
+import { Posts } from "./src/collections/Posts"
 
-export default buildConfig({
+const config = buildConfig({
   secret: process.env.PAYLOAD_SECRET || "a-very-secret-key",
   admin: {
     user: "users",
@@ -42,3 +42,7 @@ export default buildConfig({
   cors: [process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"].filter(Boolean),
   csrf: [process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"].filter(Boolean),
 })
+
+// Export as configPromise (required by Payload)
+const configPromise = Promise.resolve(config)
+export default configPromise
