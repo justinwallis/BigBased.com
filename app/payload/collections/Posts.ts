@@ -20,7 +20,7 @@ const Posts: CollectionConfig = {
       required: true,
       unique: true,
       admin: {
-        position: "sidebar",
+        description: 'The URL-friendly identifier for this post (e.g. "my-first-post")',
       },
     },
     {
@@ -28,40 +28,16 @@ const Posts: CollectionConfig = {
       type: "relationship",
       relationTo: "users",
       required: true,
-      admin: {
-        position: "sidebar",
-      },
     },
     {
       name: "publishedDate",
       type: "date",
-      admin: {
-        position: "sidebar",
-        date: {
-          pickerAppearance: "dayAndTime",
-        },
-      },
+      required: true,
     },
     {
-      name: "category",
-      type: "select",
-      options: [
-        {
-          value: "news",
-          label: "News",
-        },
-        {
-          value: "tutorial",
-          label: "Tutorial",
-        },
-        {
-          value: "announcement",
-          label: "Announcement",
-        },
-      ],
-      admin: {
-        position: "sidebar",
-      },
+      name: "featuredImage",
+      type: "upload",
+      relationTo: "media",
     },
     {
       name: "content",
@@ -69,30 +45,34 @@ const Posts: CollectionConfig = {
       required: true,
     },
     {
-      name: "featuredImage",
-      type: "upload",
-      relationTo: "media",
-      admin: {
-        position: "sidebar",
-      },
-    },
-    {
       name: "status",
       type: "select",
       options: [
         {
-          value: "draft",
           label: "Draft",
+          value: "draft",
         },
         {
-          value: "published",
           label: "Published",
+          value: "published",
         },
       ],
       defaultValue: "draft",
-      admin: {
-        position: "sidebar",
-      },
+      required: true,
+    },
+    {
+      name: "meta",
+      type: "group",
+      fields: [
+        {
+          name: "description",
+          type: "textarea",
+        },
+        {
+          name: "keywords",
+          type: "text",
+        },
+      ],
     },
   ],
 }

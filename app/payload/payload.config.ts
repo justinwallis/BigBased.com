@@ -4,7 +4,7 @@ import { slateEditor } from "@payloadcms/richtext-slate"
 import { webpackBundler } from "@payloadcms/bundler-webpack"
 import path from "path"
 
-// Collections
+// Import collections
 import Users from "./collections/Users"
 import Media from "./collections/Media"
 import Pages from "./collections/Pages"

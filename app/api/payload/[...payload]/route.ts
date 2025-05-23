@@ -1,102 +1,67 @@
 import { type NextRequest, NextResponse } from "next/server"
-import express from "express"
 import payload from "payload"
 import { getPayload } from "../../../payload/getPayload"
 
-// This is a workaround for the fact that Next.js doesn't support Express directly
-// We're creating a simple Express app to handle Payload requests
-const app = express()
-
 // Initialize Payload
-let payloadInitialized = false
+let initialized = false
 
 export async function POST(req: NextRequest, { params }: { params: { payload: string[] } }) {
-  return handleRequest(req, params)
+  return await handleRequest("POST", req, params)
 }
 
 export async function GET(req: NextRequest, { params }: { params: { payload: string[] } }) {
-  return handleRequest(req, params)
+  return await handleRequest("GET", req, params)
 }
 
 export async function PUT(req: NextRequest, { params }: { params: { payload: string[] } }) {
-  return handleRequest(req, params)
+  return await handleRequest("PUT", req, params)
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { payload: string[] } }) {
-  return handleRequest(req, params)
+  return await handleRequest("DELETE", req, params)
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: { payload: string[] } }) {
-  return handleRequest(req, params)
+  return await handleRequest("PATCH", req, params)
 }
 
 export const dynamic = "force-dynamic"
 
-async function handleRequest(req: NextRequest, params: { payload: string[] }) {
+async function handleRequest(method: string, req: NextRequest, params: { payload: string[] }) {
   try {
     // Initialize Payload if not already initialized
-    if (!payloadInitialized) {
+    if (!initialized) {
       await getPayload()
-      payloadInitialized = true
+      initialized = true
     }
 
-    // Convert NextRequest to Express request
-    const url = new URL(req.url)
-    const path = `/${params.payload.join("/")}${url.search}`
+    // Construct the path that Payload should handle
+    const path = ["api", ...params.payload].join("/")
 
-    // Create a mock Express request
-    const expressReq = {
-      method: req.method,
+    // Get the request body if it exists
+    let body = null
+    if (method !== "GET" && method !== "HEAD") {
+      body = await req.json().catch(() => ({}))
+    }
+
+    // Convert headers from NextRequest to a format Payload expects
+    const headers: Record<string, string> = {}
+    req.headers.forEach((value, key) => {
+      headers[key] = value
+    })
+
+    // Call Payload's local API
+    const result = await payload.local.request({
+      method,
       path,
-      url: path,
-      query: Object.fromEntries(url.searchParams),
-      headers: Object.fromEntries(req.headers),
-      body: req.body ? await req.json() : undefined,
-      cookies: Object.fromEntries(req.cookies),
-    }
-
-    // Create a mock Express response
-    let statusCode = 200
-    let responseBody: any = null
-    const responseHeaders: Record<string, string> = {}
-
-    const expressRes = {
-      status: (code: number) => {
-        statusCode = code
-        return expressRes
-      },
-      json: (body: any) => {
-        responseBody = body
-        return expressRes
-      },
-      send: (body: any) => {
-        responseBody = body
-        return expressRes
-      },
-      setHeader: (name: string, value: string) => {
-        responseHeaders[name] = value
-        return expressRes
-      },
-      getHeader: (name: string) => responseHeaders[name],
-      end: () => {},
-    }
-
-    // Process the request through Payload
-    await new Promise<void>((resolve) => {
-      payload.express.requestHandlers.forEach((handler) => {
-        handler(expressReq as any, expressRes as any, () => {
-          resolve()
-        })
-      })
+      body,
+      headers,
     })
 
-    // Return the response
-    return NextResponse.json(responseBody, {
-      status: statusCode,
-      headers: responseHeaders,
-    })
+    // Return the result as a NextResponse
+    return NextResponse.json(result.body, { status: result.status })
   } catch (error) {
-    console.error("Error handling Payload request:", error)
+    console.error("Payload API error:", error)
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

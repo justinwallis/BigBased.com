@@ -1,41 +1,29 @@
 import type { CollectionConfig } from "payload/types"
-import type { PutBlobResult } from "@vercel/blob"
 import path from "path"
+import { put } from "@vercel/blob"
 
 const Media: CollectionConfig = {
   slug: "media",
-  access: {
-    read: () => true,
-  },
   upload: {
-    staticDir: path.resolve(__dirname, "../../public/media"),
-    staticURL: "/media",
-    disableLocalStorage: true,
+    staticDir: path.resolve(__dirname, "../../../public/media"),
+    // Use Vercel Blob for file storage
     handlers: {
-      upload: async ({ req, file, data }) => {
-        try {
-          // Use Vercel Blob for storage
-          const filename = `${Date.now()}-${file.name}`
-          const buffer = await file.data()
+      upload: async ({ file, data }) => {
+        // Only proceed if we have a file
+        if (!file || !file.buffer) return
 
-          const response = await fetch(`https://api.vercel.com/v1/blobs`, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`,
-              "Content-Type": file.mimetype,
-              "X-Vercel-Filename": filename,
-            },
-            body: buffer,
+        try {
+          // Upload to Vercel Blob
+          const filename = `${Date.now()}-${file.filename}`
+          const { url } = await put(filename, file.buffer, {
+            access: "public",
+            contentType: file.mimetype,
           })
 
-          const result = (await response.json()) as PutBlobResult
-
-          // Return the URL to be saved to the database
+          // Return the URL to be saved in the database
           return {
             filename,
-            filesize: file.size,
-            mimeType: file.mimetype,
-            url: result.url,
+            url,
           }
         } catch (error) {
           console.error("Error uploading to Vercel Blob:", error)
@@ -44,6 +32,9 @@ const Media: CollectionConfig = {
       },
     },
   },
+  access: {
+    read: () => true,
+  },
   fields: [
     {
       name: "alt",
@@ -51,8 +42,11 @@ const Media: CollectionConfig = {
       required: true,
     },
     {
-      name: "caption",
+      name: "url",
       type: "text",
+      admin: {
+        readOnly: true,
+      },
     },
   ],
 }

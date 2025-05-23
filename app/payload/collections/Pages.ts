@@ -20,7 +20,7 @@ const Pages: CollectionConfig = {
       required: true,
       unique: true,
       admin: {
-        position: "sidebar",
+        description: 'The URL-friendly identifier for this page (e.g. "about-us")',
       },
     },
     {
@@ -29,30 +29,18 @@ const Pages: CollectionConfig = {
       required: true,
     },
     {
-      name: "featuredImage",
-      type: "upload",
-      relationTo: "media",
-      admin: {
-        position: "sidebar",
-      },
-    },
-    {
-      name: "status",
-      type: "select",
-      options: [
+      name: "meta",
+      type: "group",
+      fields: [
         {
-          value: "draft",
-          label: "Draft",
+          name: "description",
+          type: "textarea",
         },
         {
-          value: "published",
-          label: "Published",
+          name: "keywords",
+          type: "text",
         },
       ],
-      defaultValue: "draft",
-      admin: {
-        position: "sidebar",
-      },
     },
   ],
 }

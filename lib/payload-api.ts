@@ -1,79 +1,54 @@
-import { getPayload } from "../app/payload/getPayload"
+// Utility functions for fetching data from Payload CMS
 
-export async function getPages(options: { limit?: number; page?: number; where?: any } = {}) {
-  const payload = await getPayload()
-
-  const { docs, hasNextPage, hasPrevPage, nextPage, prevPage, totalDocs, totalPages } = await payload.find({
-    collection: "pages",
-    limit: options.limit || 10,
-    page: options.page || 1,
-    where: options.where || { status: { equals: "published" } },
+export async function getPages() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/payload/pages`, {
+    cache: "no-store",
   })
 
-  return {
-    docs,
-    hasNextPage,
-    hasPrevPage,
-    nextPage,
-    prevPage,
-    totalDocs,
-    totalPages,
+  if (!res.ok) {
+    throw new Error("Failed to fetch pages")
   }
+
+  const data = await res.json()
+  return data.docs
 }
 
 export async function getPageBySlug(slug: string) {
-  const payload = await getPayload()
-
-  try {
-    const page = await payload.find({
-      collection: "pages",
-      where: {
-        and: [{ slug: { equals: slug } }, { status: { equals: "published" } }],
-      },
-    })
-
-    return page.docs[0] || null
-  } catch (error) {
-    console.error(`Error fetching page with slug ${slug}:`, error)
-    return null
-  }
-}
-
-export async function getPosts(options: { limit?: number; page?: number; where?: any } = {}) {
-  const payload = await getPayload()
-
-  const { docs, hasNextPage, hasPrevPage, nextPage, prevPage, totalDocs, totalPages } = await payload.find({
-    collection: "posts",
-    limit: options.limit || 10,
-    page: options.page || 1,
-    where: options.where || { status: { equals: "published" } },
+  const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/payload/pages?where[slug][equals]=${slug}`, {
+    cache: "no-store",
   })
 
-  return {
-    docs,
-    hasNextPage,
-    hasPrevPage,
-    nextPage,
-    prevPage,
-    totalDocs,
-    totalPages,
+  if (!res.ok) {
+    throw new Error("Failed to fetch page")
   }
+
+  const data = await res.json()
+  return data.docs[0]
+}
+
+export async function getPosts() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/payload/posts?where[status][equals]=published`, {
+    cache: "no-store",
+  })
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch posts")
+  }
+
+  const data = await res.json()
+  return data.docs
 }
 
 export async function getPostBySlug(slug: string) {
-  const payload = await getPayload()
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SERVER_URL}/api/payload/posts?where[slug][equals]=${slug}&where[status][equals]=published`,
+    { cache: "no-store" },
+  )
 
-  try {
-    const post = await payload.find({
-      collection: "posts",
-      where: {
-        and: [{ slug: { equals: slug } }, { status: { equals: "published" } }],
-      },
-    })
-
-    return post.docs[0] || null
-  } catch (error) {
-    console.error(`Error fetching post with slug ${slug}:`, error)
-    return null
+  if (!res.ok) {
+    throw new Error("Failed to fetch post")
   }
+
+  const data = await res.json()
+  return data.docs[0]
 }
