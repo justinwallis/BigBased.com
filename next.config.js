@@ -1,3 +1,5 @@
+import { withPayload } from "@payloadcms/next/withPayload"
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -48,13 +50,6 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ["payload"],
   },
-  webpack: (config) => {
-    config.experiments = {
-      ...config.experiments,
-      topLevelAwait: true,
-    }
-    return config
-  },
 }
 
-module.exports = nextConfig
+export default withPayload(nextConfig)
