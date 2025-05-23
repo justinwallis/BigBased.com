@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
       await payload.init({
         secret: process.env.PAYLOAD_SECRET!,
         config: await import("../../../../payload.config").then((m) => m.default),
+        disableDBConnect: false,
       })
     }
 
