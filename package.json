@@ -71,6 +71,8 @@
     "nodemailer": "latest",
     "path": "latest",
     "payload": "latest",
+    "pg": "latest",
+    "pg-native": "latest",
     "react": "^19",
     "react-day-picker": "8.10.1",
     "react-dom": "^19",

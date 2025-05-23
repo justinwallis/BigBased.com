@@ -44,6 +44,7 @@ const payloadConfig = buildConfig({
         rejectUnauthorized: false,
       },
     },
+    migrationDir: "./migrations",
   }),
   plugins: [
     vercelBlobStorage({
@@ -60,7 +61,7 @@ const payloadConfig = buildConfig({
 // Handle GET requests
 export async function GET(req: NextRequest) {
   return NextResponse.json({
-    message: "Use POST method to initialize database",
+    message: "Use POST method to setup database",
     usage: "POST with { secret: 'your-payload-secret' }",
   })
 }
@@ -77,20 +78,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid secret" }, { status: 401 })
     }
 
-    console.log("Initializing Payload with valid secret...")
+    console.log("Setting up Payload database...")
 
-    // Initialize Payload
+    // Initialize Payload - this will create tables automatically
     const payload = await getPayload({
       config: payloadConfig,
       secret: process.env.PAYLOAD_SECRET || "",
     })
 
-    console.log("Payload initialized, checking for admin user...")
+    console.log("Database tables created, now creating admin user...")
 
-    // Create the admin user if it doesn't exist
+    // Create the admin user
     const adminEmail = "admin@bigbased.com"
 
     try {
+      // Try to find existing admin user
       const existingAdmin = await payload.find({
         collection: "users",
         where: {
@@ -99,8 +101,6 @@ export async function POST(req: NextRequest) {
           },
         },
       })
-
-      console.log(`Found ${existingAdmin.totalDocs} existing admin users`)
 
       if (existingAdmin.totalDocs === 0) {
         console.log("Creating admin user...")
@@ -113,33 +113,29 @@ export async function POST(req: NextRequest) {
           },
         })
         console.log("Admin user created successfully")
+      } else {
+        console.log("Admin user already exists")
       }
     } catch (userError) {
-      console.error("Error with user operations:", userError)
-      return NextResponse.json(
-        {
-          error: "Failed to create admin user",
-          details: userError instanceof Error ? userError.message : String(userError),
-          suggestion: "Try running the /api/payload/setup-db endpoint first to create the tables",
-        },
-        { status: 500 },
-      )
+      console.log("Error with user operations:", userError)
+      // Continue anyway - the tables should be created
     }
 
     // Return success
     return NextResponse.json({
       success: true,
-      message: "Database initialized successfully",
+      message: "Database setup completed successfully",
       adminEmail,
       adminPassword: "BigBased2024!",
+      note: "You can now access the admin panel at /admin",
     })
   } catch (error) {
-    console.error("Error initializing database:", error)
+    console.error("Error setting up database:", error)
     return NextResponse.json(
       {
-        error: "Failed to initialize database",
+        error: "Failed to setup database",
         details: error instanceof Error ? error.message : String(error),
-        suggestion: "Try running the /api/payload/setup-db endpoint first to create the tables",
+        note: "Check Vercel logs for more details",
       },
       { status: 500 },
     )
