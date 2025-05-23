@@ -14,6 +14,11 @@ const serverURL =
   process.env.NEXT_PUBLIC_BASE_URL ||
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
 
+// Ensure we have a secret key
+if (!process.env.PAYLOAD_SECRET) {
+  console.warn("No PAYLOAD_SECRET environment variable set. Using a fallback for development only.")
+}
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -28,7 +33,8 @@ export default buildConfig({
   },
   collections: [Users, Pages, Posts, Media],
   editor: lexicalEditor({}),
-  secret: process.env.PAYLOAD_SECRET || "",
+  // Explicitly set the secret key with a fallback for development
+  secret: process.env.PAYLOAD_SECRET || "insecure-secret-for-dev-only",
   typescript: {
     outputFile: path.resolve(process.cwd(), "types/payload-types.ts"),
   },
