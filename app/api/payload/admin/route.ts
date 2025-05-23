@@ -108,6 +108,7 @@ export async function GET(req: NextRequest) {
             text-decoration: none;
             font-weight: 500;
             transition: background-color 0.2s;
+            margin-bottom: 1rem;
           }
           .button:hover {
             background-color: #0060df;
@@ -147,54 +148,151 @@ export async function GET(req: NextRequest) {
           .submit-button:hover {
             background-color: #0060df;
           }
+          .error-message {
+            color: #e53e3e;
+            margin-top: 1rem;
+            display: none;
+          }
+          .success-message {
+            color: #38a169;
+            margin-top: 1rem;
+            display: none;
+          }
+          .setup-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+          }
         </style>
       </head>
       <body>
         <div class="container">
           <img src="/bb-logo.png" alt="Big Based Logo" class="logo">
           <h1>Big Based CMS</h1>
-          <p>Welcome to the Big Based Content Management System. Please log in to continue.</p>
           
-          <form class="login-form" id="login-form">
-            <div class="form-group">
-              <label for="email">Email</label>
-              <input type="email" id="email" name="email" placeholder="admin@bigbased.com" required>
+          <div class="setup-section">
+            <h2>Database Setup</h2>
+            <p>Before you can use the CMS, you need to set up the database tables.</p>
+            <button id="setup-db-btn" class="button">Setup Database Tables</button>
+            <div id="setup-status" class="success-message"></div>
+            
+            <div id="create-admin-section" style="display: none; margin-top: 2rem;">
+              <h2>Create Admin User</h2>
+              <form id="create-admin-form" class="login-form">
+                <div class="form-group">
+                  <label for="admin-email">Email</label>
+                  <input type="email" id="admin-email" name="email" value="admin@bigbased.com" required>
+                </div>
+                <div class="form-group">
+                  <label for="admin-password">Password</label>
+                  <input type="password" id="admin-password" name="password" value="BigBased2024!" required>
+                </div>
+                <button type="submit" class="submit-button">Create Admin User</button>
+              </form>
+              <div id="admin-status" class="success-message"></div>
             </div>
-            <div class="form-group">
-              <label for="password">Password</label>
-              <input type="password" id="password" name="password" placeholder="Enter your password" required>
-            </div>
-            <button type="submit" class="submit-button">Log In</button>
-          </form>
+          </div>
         </div>
 
         <script>
-          document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
+          // Setup database tables
+          document.getElementById('setup-db-btn').addEventListener('click', async () => {
+            const setupBtn = document.getElementById('setup-db-btn');
+            const setupStatus = document.getElementById('setup-status');
             
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            setupBtn.disabled = true;
+            setupBtn.textContent = 'Setting up...';
+            setupStatus.style.display = 'none';
             
             try {
-              const response = await fetch('/api/payload/users/login', {
+              const response = await fetch('/api/payload/setup-tables', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ secret: '${process.env.PAYLOAD_SECRET}' }),
               });
               
               const data = await response.json();
               
               if (response.ok) {
-                // Redirect to the dashboard or home page
-                window.location.href = '/api/payload/pages';
+                setupStatus.textContent = 'Database tables created successfully!';
+                setupStatus.className = 'success-message';
+                setupStatus.style.display = 'block';
+                
+                // Show the create admin section
+                document.getElementById('create-admin-section').style.display = 'block';
               } else {
-                alert('Login failed: ' + (data.message || 'Invalid credentials'));
+                setupStatus.textContent = 'Error: ' + (data.error || 'Failed to create tables');
+                setupStatus.className = 'error-message';
+                setupStatus.style.display = 'block';
               }
             } catch (error) {
-              console.error('Login error:', error);
-              alert('An error occurred during login. Please try again.');
+              console.error('Setup error:', error);
+              setupStatus.textContent = 'An error occurred during setup. Please try again.';
+              setupStatus.className = 'error-message';
+              setupStatus.style.display = 'block';
+            } finally {
+              setupBtn.disabled = false;
+              setupBtn.textContent = 'Setup Database Tables';
+            }
+          });
+          
+          // Create admin user
+          document.getElementById('create-admin-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const adminStatus = document.getElementById('admin-status');
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating...';
+            adminStatus.style.display = 'none';
+            
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
+            
+            try {
+              const response = await fetch('/api/payload/create-admin', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                  email, 
+                  password,
+                  secret: '${process.env.PAYLOAD_SECRET}'
+                }),
+              });
+              
+              const data = await response.json();
+              
+              if (response.ok) {
+                adminStatus.textContent = 'Admin user created successfully! You can now access the CMS.';
+                adminStatus.className = 'success-message';
+                adminStatus.style.display = 'block';
+                
+                // Add a button to go to the CMS
+                const cmsBtn = document.createElement('a');
+                cmsBtn.href = '/api/payload/pages';
+                cmsBtn.className = 'button';
+                cmsBtn.textContent = 'Go to CMS';
+                adminStatus.appendChild(document.createElement('br'));
+                adminStatus.appendChild(document.createElement('br'));
+                adminStatus.appendChild(cmsBtn);
+              } else {
+                adminStatus.textContent = 'Error: ' + (data.error || 'Failed to create admin user');
+                adminStatus.className = 'error-message';
+                adminStatus.style.display = 'block';
+              }
+            } catch (error) {
+              console.error('Admin creation error:', error);
+              adminStatus.textContent = 'An error occurred while creating the admin user. Please try again.';
+              adminStatus.className = 'error-message';
+              adminStatus.style.display = 'block';
+            } finally {
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Create Admin User';
             }
           });
         </script>
@@ -218,34 +316,34 @@ export async function GET(req: NextRequest) {
 }
 
 // Handle POST requests for login
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json()
+// export async function POST(req: NextRequest) {
+//   try {
+//     const body = await req.json()
 
-    // Check if this is a login request
-    if (body.email && body.password) {
-      // For now, just return a success response if the credentials match our admin user
-      if (body.email === "admin@bigbased.com" && body.password === "BigBased2024!") {
-        return NextResponse.json({
-          user: {
-            id: 1,
-            email: "admin@bigbased.com",
-            name: "Admin User",
-            roles: ["admin"],
-          },
-          token: "mock-jwt-token",
-        })
-      } else {
-        return NextResponse.json({ message: "Invalid credentials" }, { status: 401 })
-      }
-    }
+//     // Check if this is a login request
+//     if (body.email && body.password) {
+//       // For now, just return a success response if the credentials match our admin user
+//       if (body.email === "admin@bigbased.com" && body.password === "BigBased2024!") {
+//         return NextResponse.json({
+//           user: {
+//             id: 1,
+//             email: "admin@bigbased.com",
+//             name: "Admin User",
+//             roles: ["admin"],
+//           },
+//           token: "mock-jwt-token",
+//         })
+//       } else {
+//         return NextResponse.json({ message: "Invalid credentials" }, { status: 401 })
+//       }
+//     }
 
-    return NextResponse.json({ message: "Invalid request" }, { status: 400 })
-  } catch (error) {
-    console.error("Error processing admin POST request:", error)
-    return NextResponse.json(
-      { error: "Error processing request", details: error instanceof Error ? error.message : String(error) },
-      { status: 500 },
-    )
-  }
-}
+//     return NextResponse.json({ message: "Invalid request" }, { status: 400 })
+//   } catch (error) {
+//     console.error("Error processing admin POST request:", error)
+//     return NextResponse.json(
+//       { error: "Error processing request", details: error instanceof Error ? error.message : String(error) },
+//       { status: 500 },
+//     )
+//   }
+// }
