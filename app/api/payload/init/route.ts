@@ -61,11 +61,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid secret" }, { status: 401 })
     }
 
+    console.log("Initializing Payload with valid secret...")
+
     // Initialize Payload
     const payload = await getPayload({
       config: payloadConfig,
       secret: process.env.PAYLOAD_SECRET || "",
     })
+
+    console.log("Payload initialized, checking for admin user...")
 
     // Create the admin user if it doesn't exist
     const adminEmail = "admin@bigbased.com"
@@ -78,7 +82,10 @@ export async function POST(req: NextRequest) {
       },
     })
 
+    console.log(`Found ${existingAdmin.totalDocs} existing admin users`)
+
     if (existingAdmin.totalDocs === 0) {
+      console.log("Creating admin user...")
       await payload.create({
         collection: "users",
         data: {
@@ -87,6 +94,7 @@ export async function POST(req: NextRequest) {
           roles: ["admin"],
         },
       })
+      console.log("Admin user created successfully")
     }
 
     // Return success
