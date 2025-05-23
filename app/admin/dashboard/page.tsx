@@ -1,35 +1,30 @@
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
 
 export default function AdminDashboardPage() {
   return (
-    <div className="container mx-auto py-10">
-      <h1 className="text-3xl font-bold mb-6">Big Based Admin Dashboard</h1>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4">Content Management</h2>
-          <p className="text-gray-600 mb-4">Manage your website content including pages, blog posts, and media.</p>
-          <Link href="/admin/payload">
-            <Button className="w-full">Access CMS</Button>
+          <p className="text-gray-600 mb-4">Manage your website content using Payload CMS.</p>
+          <Link
+            href="/admin/payload"
+            className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+          >
+            Access Payload CMS
           </Link>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4">Database Management</h2>
           <p className="text-gray-600 mb-4">Initialize and manage CMS database tables.</p>
-          <Link href="/admin/init-db">
-            <Button className="w-full">Initialize Database</Button>
-          </Link>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Website Preview</h2>
-          <p className="text-gray-600 mb-4">View your website as visitors will see it.</p>
-          <Link href="/">
-            <Button className="w-full" variant="outline">
-              View Website
-            </Button>
+          <Link
+            href="/admin/init-db"
+            className="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+          >
+            Initialize Database
           </Link>
         </div>
       </div>

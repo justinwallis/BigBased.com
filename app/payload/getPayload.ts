@@ -1,10 +1,11 @@
-import { getPayloadClient } from "payload/dist/payload"
+import payload from "payload"
+import type { Payload } from "payload"
 import config from "./payload.config"
 
-// Cache the Payload instance
-let cachedPayload: any = null
+// Cache for the Payload instance
+let cachedPayload: Payload | null = null
 
-export const getPayload = async () => {
+export const getPayload = async (): Promise<Payload> => {
   if (!process.env.PAYLOAD_SECRET) {
     throw new Error("PAYLOAD_SECRET environment variable is missing")
   }
@@ -14,17 +15,17 @@ export const getPayload = async () => {
   }
 
   // Initialize Payload
-  const payload = await getPayloadClient({
-    // Pass the config object
-    config,
-    // Set the options
-    options: {
-      local: true,
+  try {
+    await payload.init({
       secret: process.env.PAYLOAD_SECRET,
-    },
-  })
+      config,
+      local: process.env.NODE_ENV !== "production",
+    })
 
-  cachedPayload = payload
-
-  return payload
+    cachedPayload = payload
+    return payload
+  } catch (error) {
+    console.error("Error initializing Payload:", error)
+    throw error
+  }
 }

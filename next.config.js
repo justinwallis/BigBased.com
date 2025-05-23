@@ -16,15 +16,21 @@ const nextConfig = {
   transpilePackages: ["payload", "@payloadcms/db-postgres", "@payloadcms/richtext-slate"],
   // Webpack configuration to handle specific issues
   webpack: (config, { isServer }) => {
-    // Fix for the "cloudflare:sockets" issue
+    // Fix for Node.js modules in browser
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
+        fs: false,
+        path: false,
+        os: false,
+        crypto: false,
+        stream: false,
+        http: false,
+        https: false,
+        zlib: false,
         net: false,
         dns: false,
         tls: false,
-        fs: false,
-        path: false,
       }
     }
 
