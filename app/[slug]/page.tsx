@@ -11,8 +11,8 @@ export async function generateStaticParams() {
 export const dynamic = "force-dynamic"
 
 export default async function CMSPage({ params }: { params: { slug: string } }) {
-  // Don't try to fetch for the homepage or known routes
-  if (params.slug === "" || params.slug === "admin" || params.slug === "api") {
+  // Don't try to fetch for the homepage
+  if (params.slug === "") {
     notFound()
   }
 

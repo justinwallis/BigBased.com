@@ -1,34 +1,35 @@
 import { NextResponse } from "next/server"
+import { getPayload } from "../../../payload/getPayload"
 
 export async function GET() {
   try {
-    // Simple health check that doesn't require full Payload initialization
-    if (!process.env.PAYLOAD_SECRET) {
-      return NextResponse.json(
-        { status: "unhealthy", error: "Missing PAYLOAD_SECRET environment variable" },
-        { status: 500 },
-      )
+    // Check if Payload is available
+    if (!process.env.PAYLOAD_SECRET || !process.env.POSTGRES_URL) {
+      return NextResponse.json({ status: "error", message: "Payload configuration missing" }, { status: 500 })
     }
 
-    if (!process.env.POSTGRES_URL) {
-      return NextResponse.json(
-        { status: "unhealthy", error: "Missing POSTGRES_URL environment variable" },
-        { status: 500 },
-      )
-    }
+    // Try to initialize Payload
+    const payload = await getPayload()
+
+    // Try a simple query to test database connection
+    await payload.find({
+      collection: "users",
+      limit: 1,
+    })
 
     return NextResponse.json({
       status: "healthy",
-      environment: {
-        hasSecret: !!process.env.PAYLOAD_SECRET,
-        hasDB: !!process.env.POSTGRES_URL,
-        hasBlobToken: !!process.env.BLOB_READ_WRITE_TOKEN,
-      },
+      message: "Payload CMS is running correctly",
+      timestamp: new Date().toISOString(),
     })
   } catch (error) {
-    console.error("Health check error:", error)
+    console.error("Payload health check failed:", error)
     return NextResponse.json(
-      { status: "unhealthy", error: error instanceof Error ? error.message : "Unknown error" },
+      {
+        status: "error",
+        message: "Payload CMS is not available",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 },
     )
   }
