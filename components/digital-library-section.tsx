@@ -8,21 +8,35 @@ export default function DigitalLibrarySection() {
   const [isLoading, setIsLoading] = useState(true)
   const [imageLoaded, setImageLoaded] = useState(false)
 
+  const retryImageLoad = () => {
+    const img = new Image()
+    img.onload = () => {
+      console.log("Wood table image loaded on retry")
+      setImageLoaded(true)
+    }
+    img.onerror = () => {
+      console.log("Wood table image still failed to load")
+    }
+    img.src = "/wood-table.png?" + Date.now() // Cache busting
+  }
+
   useEffect(() => {
     console.log("[DigitalLibrarySection] Component mounted")
     setIsLoading(false)
 
-    // Test if image loads
-    const img = new Image()
-    img.onload = () => {
-      console.log("Wood table image loaded successfully")
-      setImageLoaded(true)
-    }
-    img.onerror = () => {
-      console.log("Wood table image failed to load")
-      setImageLoaded(false)
-    }
-    img.src = "/wood-table.png"
+    // Test if image loads with a slight delay to ensure file is available
+    setTimeout(() => {
+      const img = new Image()
+      img.onload = () => {
+        console.log("Wood table image loaded successfully")
+        setImageLoaded(true)
+      }
+      img.onerror = () => {
+        console.log("Wood table image failed to load")
+        setImageLoaded(false)
+      }
+      img.src = "/wood-table.png"
+    }, 1000)
 
     return () => console.log("[DigitalLibrarySection] Component unmounted")
   }, [])
@@ -44,7 +58,12 @@ export default function DigitalLibrarySection() {
     >
       {/* Debug info - remove this later */}
       <div className="absolute top-4 right-4 bg-black/80 text-white p-2 rounded text-xs z-50">
-        Image loaded: {imageLoaded ? "✅" : "❌"}
+        <div>Image loaded: {imageLoaded ? "✅" : "❌"}</div>
+        {!imageLoaded && (
+          <button onClick={retryImageLoad} className="mt-1 px-2 py-1 bg-blue-600 text-white rounded text-xs">
+            Retry Load
+          </button>
+        )}
       </div>
 
       {/* Semi-transparent overlay */}
