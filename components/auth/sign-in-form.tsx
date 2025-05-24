@@ -1,112 +1,138 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { signIn } from "next-auth/react"
-import { useSearchParams } from "next/navigation"
-import Link from "next/link"
 
-const SignInForm = () => {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
+import { useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useAuth } from "@/contexts/auth-context"
+import { AlertCircle } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import Link from "next/link"
+import { Checkbox } from "@/components/ui/checkbox"
+
+export default function SignInForm() {
+  const { signIn } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get("callbackUrl") || "/"
+  const redirectUrl = searchParams.get("redirect") || "/profile"
+
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [rememberMe, setRememberMe] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError("")
-
-    if (!email || !password) {
-      setError("Please enter your email and password.")
-      return
-    }
+    setIsLoading(true)
+    setError(null)
 
     try {
-      const res = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-        callbackUrl,
-      })
+      const { error, data } = await signIn(email, password)
 
-      if (res?.error) {
-        setError("Invalid Credentials")
+      if (error) {
+        setError(error.message || "Failed to sign in")
         return
       }
 
-      if (res?.ok) {
-        // router.push(callbackUrl); // Replaced with Link
-        window.location.href = callbackUrl // Direct navigation to bypass interceptor after successful sign-in
+      if (data?.session) {
+        // Store remember me preference if checked
+        if (rememberMe) {
+          localStorage.setItem("rememberAuth", "true")
+        } else {
+          localStorage.removeItem("rememberAuth")
+        }
+
+        // Force a small delay to ensure the session is properly set
+        setTimeout(() => {
+          console.log("Authentication successful, redirecting to:", redirectUrl)
+          router.push(redirectUrl)
+        }, 500)
+      } else {
+        setError("Authentication failed. Please try again.")
       }
-    } catch (error: any) {
-      console.error("An error occurred during sign-in:", error)
-      setError(error.message || "An error occurred during sign-in.")
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred")
+    } finally {
+      setIsLoading(false)
     }
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Sign In</h2>
-        <form onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-              <strong className="font-bold">Error!</strong>
-              <span className="block sm:inline"> {error}</span>
-            </div>
-          )}
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
+    <div className="grid gap-6">
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="dark:text-white">{error}</AlertDescription>
+        </Alert>
+      )}
+      <form onSubmit={handleSubmit}>
+        <div className="grid gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="email" className="dark:text-white">
               Email
-            </label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            </Label>
+            <Input
               id="email"
               type="email"
-              placeholder="Email"
+              placeholder="name@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
+              autoCapitalize="none"
+              autoComplete="email"
+              autoCorrect="off"
+              disabled={isLoading}
+              className="dark:text-white dark:bg-gray-800 dark:border-gray-700"
             />
           </div>
-          <div className="mb-6">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
-              Password
-            </label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+          <div className="grid gap-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password" className="dark:text-white">
+                Password
+              </Label>
+              <Link
+                href="/auth/forgot-password"
+                className="text-sm font-medium text-primary underline-offset-4 hover:underline dark:text-blue-400"
+              >
+                Forgot password?
+              </Link>
+            </div>
+            <Input
               id="password"
               type="password"
-              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
+              autoCapitalize="none"
+              autoComplete="current-password"
+              autoCorrect="off"
+              disabled={isLoading}
+              className="dark:text-white dark:bg-gray-800 dark:border-gray-700"
             />
           </div>
-          <div className="flex items-center justify-between">
-            <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              type="submit"
+          <div className="flex items-center space-x-2 my-2">
+            <Checkbox
+              id="remember"
+              checked={rememberMe}
+              onCheckedChange={(checked) => setRememberMe(checked === true)}
+              className="dark:border-gray-500"
+            />
+            <Label
+              htmlFor="remember"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white"
             >
-              Sign In
-            </button>
-            <a className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800" href="#">
-              Forgot Password?
-            </a>
+              Remember me
+            </Label>
           </div>
-        </form>
-        <div className="mt-4 text-center">
-          <p>
-            Don't have an account?{" "}
-            <Link href="/register" className="text-blue-500 hover:text-blue-800">
-              Sign up
-            </Link>
-          </p>
+          <Button type="submit" disabled={isLoading} className="dark:text-black">
+            {isLoading ? "Loading... 🇺🇸" : "Sign In"}
+          </Button>
         </div>
-      </div>
+      </form>
     </div>
   )
 }
-
-export default SignInForm
