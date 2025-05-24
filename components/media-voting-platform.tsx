@@ -7,6 +7,7 @@ import { mediaPersonalities, type MediaPersonality } from "@/data/media-personal
 import MediaOutletCard from "./media-outlet-card"
 import PersonalityCard from "./personality-card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import VotingSectionBackground from "./voting-section-background"
 
 // Voting service to handle vote operations
 const VotingService = {
@@ -260,8 +261,9 @@ export default function MediaVotingPlatform() {
   }
 
   return (
-    <section className="py-16 px-4 md:px-8 bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto">
+    <section className="py-16 px-4 md:px-8 bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
+      <VotingSectionBackground />
+      <div className="max-w-7xl mx-auto relative z-10">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 dark:text-white">Media Truth Index</h2>
           <p className="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
