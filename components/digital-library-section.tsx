@@ -2,86 +2,29 @@
 import BookLibrary from "./book-library"
 import { ErrorBoundary } from "@/components/error-boundary"
 import { useState, useEffect } from "react"
+import { DigitalLibraryBackground } from "./digital-library-background"
 
 export default function DigitalLibrarySection() {
   const [libraryError, setLibraryError] = useState<Error | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [imageLoaded, setImageLoaded] = useState(false)
-
-  const retryImageLoad = () => {
-    const img = new Image()
-    img.onload = () => {
-      console.log("Wood table image loaded on retry")
-      setImageLoaded(true)
-    }
-    img.onerror = () => {
-      console.log("Wood table image still failed to load")
-    }
-    img.src = "/wood-table.png?" + Date.now() // Cache busting
-  }
 
   useEffect(() => {
     console.log("[DigitalLibrarySection] Component mounted")
     setIsLoading(false)
-
-    // Test if image loads with a slight delay to ensure file is available
-    setTimeout(() => {
-      const img = new Image()
-      img.onload = () => {
-        console.log("Wood table image loaded successfully")
-        setImageLoaded(true)
-      }
-      img.onerror = () => {
-        console.log("Wood table image failed to load")
-        setImageLoaded(false)
-      }
-      img.src = "/wood-table.png"
-    }, 1000)
-
     return () => console.log("[DigitalLibrarySection] Component unmounted")
   }, [])
 
   return (
-    <section
-      id="digital-library"
-      className="py-16 relative min-h-screen"
-      style={{
-        // Multiple background approaches for debugging
-        backgroundImage: imageLoaded
-          ? `url('/wood-table.png')`
-          : `linear-gradient(45deg, #8B4513 25%, #A0522D 25%, #A0522D 50%, #8B4513 50%, #8B4513 75%, #A0522D 75%, #A0522D)`,
-        backgroundSize: imageLoaded ? "cover" : "20px 20px",
-        backgroundPosition: "center",
-        backgroundRepeat: imageLoaded ? "no-repeat" : "repeat",
-        backgroundColor: "#D2B48C", // Tan fallback color
-      }}
-    >
-      {/* Debug info - remove this later */}
-      <div className="absolute top-4 right-4 bg-black/80 text-white p-2 rounded text-xs z-50">
-        <div>Image loaded: {imageLoaded ? "✅" : "❌"}</div>
-        {!imageLoaded && (
-          <button onClick={retryImageLoad} className="mt-1 px-2 py-1 bg-blue-600 text-white rounded text-xs">
-            Retry Load
-          </button>
-        )}
-      </div>
-
-      {/* Semi-transparent overlay */}
-      <div className="absolute inset-0 bg-white/60 dark:bg-gray-900/60"></div>
-
-      {/* Content container */}
+    <section id="digital-library" className="relative py-16 bg-white dark:bg-gray-900 overflow-hidden">
+      <DigitalLibraryBackground />
       <div className="container mx-auto px-4 relative z-10">
-        {/* Title area */}
-        <div className="text-center mb-12 py-8 rounded-lg bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border border-white/30 dark:border-gray-700/30">
-          <h2 className="text-3xl font-bold mb-4 dark:text-white text-gray-800">Digital Library</h2>
-          <p className="text-gray-700 dark:text-gray-200 max-w-3xl mx-auto leading-relaxed">
-            Access our curated collection of books, articles, and resources that promote traditional values,
-            constitutional principles, and a free society.
-          </p>
-        </div>
+        <h2 className="text-3xl font-bold text-center mb-8 dark:text-white">Digital Library</h2>
+        <p className="text-center text-gray-600 dark:text-gray-300 mb-12 max-w-3xl mx-auto">
+          Access our curated collection of books, articles, and resources that promote traditional values,
+          constitutional principles, and a free society.
+        </p>
 
-        {/* Library container */}
-        <div className="h-[600px] md:h-[700px] border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl overflow-hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-md">
+        <div className="h-[600px] md:h-[700px] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden backdrop-blur-sm bg-white/80 dark:bg-gray-900/80">
           {libraryError ? (
             <div className="flex items-center justify-center h-full bg-red-50 dark:bg-red-900/20 p-6">
               <div className="text-center">
@@ -115,26 +58,6 @@ export default function DigitalLibrarySection() {
               <BookLibrary />
             </ErrorBoundary>
           )}
-        </div>
-
-        {/* Bottom wood table area */}
-        <div
-          className="mt-8 h-32 rounded-lg border border-gray-300 dark:border-gray-600"
-          style={{
-            backgroundImage: imageLoaded
-              ? `url('/wood-table.png')`
-              : `linear-gradient(45deg, #8B4513 25%, #A0522D 25%, #A0522D 50%, #8B4513 50%, #8B4513 75%, #A0522D 75%, #A0522D)`,
-            backgroundSize: imageLoaded ? "cover" : "20px 20px",
-            backgroundPosition: "center",
-            backgroundRepeat: imageLoaded ? "no-repeat" : "repeat",
-            backgroundColor: "#D2B48C",
-          }}
-        >
-          <div className="h-full bg-white/30 dark:bg-gray-900/30 rounded-lg flex items-center justify-center">
-            <p className="text-gray-700 dark:text-gray-200 font-medium">
-              {imageLoaded ? "Wood Table Background" : "Wood Pattern Fallback"}
-            </p>
-          </div>
         </div>
       </div>
     </section>
