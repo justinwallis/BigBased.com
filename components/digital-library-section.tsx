@@ -15,77 +15,47 @@ export default function DigitalLibrarySection() {
 
   return (
     <section id="digital-library" className="py-16 bg-white dark:bg-gray-900 relative overflow-hidden">
-      {/* Dramatic Scrolling Background */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Matrix Rain Effect */}
-        <div className="absolute inset-0 opacity-5 dark:opacity-10">
-          {Array.from({ length: 20 }).map((_, i) => (
-            <div
-              key={`matrix-${i}`}
-              className="absolute text-xs font-mono text-gray-600 dark:text-green-400 whitespace-nowrap animate-pulse"
-              style={{
-                left: `${(i * 5) % 100}%`,
-                animationDelay: `${i * 0.5}s`,
-                animationDuration: `${3 + (i % 3)}s`,
-              }}
-            >
-              <div className="animate-bounce" style={{ animationDelay: `${i * 0.2}s` }}>
-                01001100 01101001 01100010 01110010 01100001 01110010 01111001
-              </div>
-            </div>
-          ))}
+      {/* Animated Scroll/Parchment Background */}
+      <div className="absolute inset-0 opacity-5 dark:opacity-10 pointer-events-none overflow-hidden">
+        {/* Floating Ancient Scrolls */}
+        <div className="absolute top-10 left-10 w-32 h-8 bg-gradient-to-r from-amber-100 to-amber-200 dark:from-amber-900 dark:to-amber-800 rounded-full transform rotate-12 animate-float-slow shadow-lg"></div>
+        <div className="absolute top-32 right-20 w-40 h-10 bg-gradient-to-r from-yellow-100 to-yellow-200 dark:from-yellow-900 dark:to-yellow-800 rounded-full transform -rotate-6 animate-float-delayed shadow-lg"></div>
+        <div className="absolute bottom-20 left-1/4 w-36 h-9 bg-gradient-to-r from-orange-100 to-orange-200 dark:from-orange-900 dark:to-orange-800 rounded-full transform rotate-3 animate-float-reverse shadow-lg"></div>
+
+        {/* Rolling Scroll Effect */}
+        <div className="absolute top-1/2 right-10 transform -translate-y-1/2">
+          <div className="w-6 h-40 bg-gradient-to-b from-amber-200 to-amber-300 dark:from-amber-800 dark:to-amber-700 rounded-full animate-scroll-roll shadow-md"></div>
+          <div className="w-6 h-40 bg-gradient-to-b from-amber-200 to-amber-300 dark:from-amber-800 dark:to-amber-700 rounded-full animate-scroll-roll-delayed ml-2 shadow-md"></div>
         </div>
 
-        {/* Floating Book Icons */}
-        <div className="absolute inset-0 opacity-10 dark:opacity-20">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div
-              key={`book-${i}`}
-              className="absolute text-2xl text-gray-400 dark:text-gray-600 animate-pulse"
-              style={{
-                left: `${(i * 12.5) % 100}%`,
-                top: `${(i * 15) % 80}%`,
-                animationDelay: `${i * 1.2}s`,
-                animationDuration: `${4 + (i % 2)}s`,
-              }}
-            >
-              📚
-            </div>
-          ))}
+        {/* Parchment Waves */}
+        <div className="absolute bottom-0 left-0 w-full h-32 opacity-30">
+          <svg className="w-full h-full" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path
+              d="M0,60 C300,120 600,0 900,60 C1050,90 1150,30 1200,60 L1200,120 L0,120 Z"
+              fill="url(#parchmentGradient)"
+              className="animate-wave"
+            />
+            <defs>
+              <linearGradient id="parchmentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#fef3c7" className="dark:stop-color-amber-900" />
+                <stop offset="50%" stopColor="#fde68a" className="dark:stop-color-amber-800" />
+                <stop offset="100%" stopColor="#fef3c7" className="dark:stop-color-amber-900" />
+              </linearGradient>
+            </defs>
+          </svg>
         </div>
 
-        {/* Scrolling Text Snippets */}
-        <div className="absolute inset-0 opacity-5 dark:opacity-15">
-          {["KNOWLEDGE", "WISDOM", "TRUTH", "FREEDOM", "LIBERTY", "FAITH"].map((word, i) => (
-            <div
-              key={`word-${i}`}
-              className="absolute text-lg font-bold text-gray-500 dark:text-gray-400 tracking-widest animate-pulse"
-              style={{
-                left: `${(i * 16) % 100}%`,
-                top: `${(i * 20) % 90}%`,
-                animationDelay: `${i * 2}s`,
-                animationDuration: `${5 + (i % 3)}s`,
-                transform: `rotate(${((i * 15) % 45) - 22.5}deg)`,
-              }}
-            >
-              {word}
-            </div>
-          ))}
-        </div>
+        {/* Floating Book Pages */}
+        <div className="absolute top-20 left-1/3 w-8 h-12 bg-white dark:bg-gray-800 transform rotate-45 animate-page-flutter shadow-sm border border-gray-200 dark:border-gray-700"></div>
+        <div className="absolute bottom-40 right-1/3 w-6 h-10 bg-white dark:bg-gray-800 transform -rotate-12 animate-page-flutter-delayed shadow-sm border border-gray-200 dark:border-gray-700"></div>
+        <div className="absolute top-1/3 left-1/2 w-7 h-11 bg-white dark:bg-gray-800 transform rotate-30 animate-page-flutter-reverse shadow-sm border border-gray-200 dark:border-gray-700"></div>
 
-        {/* Animated Grid Pattern */}
-        <div className="absolute inset-0 opacity-5 dark:opacity-10">
-          <div
-            className="w-full h-full bg-gradient-to-br from-transparent via-gray-200 dark:via-gray-700 to-transparent animate-pulse"
-            style={{
-              backgroundImage: `
-            linear-gradient(90deg, transparent 98%, rgba(128,128,128,0.1) 100%),
-            linear-gradient(0deg, transparent 98%, rgba(128,128,128,0.1) 100%)
-          `,
-              backgroundSize: "50px 50px",
-              animationDuration: "8s",
-            }}
-          />
+        {/* Ancient Text Lines */}
+        <div className="absolute top-1/4 left-20 opacity-20">
+          <div className="w-32 h-0.5 bg-amber-600 dark:bg-amber-400 mb-2 animate-text-reveal"></div>
+          <div className="w-28 h-0.5 bg-amber-600 dark:bg-amber-400 mb-2 animate-text-reveal-delayed"></div>
+          <div className="w-30 h-0.5 bg-amber-600 dark:bg-amber-400 animate-text-reveal-slow"></div>
         </div>
       </div>
 
