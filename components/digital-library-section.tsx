@@ -16,20 +16,21 @@ export default function DigitalLibrarySection() {
   return (
     <section id="digital-library" className="py-16 bg-white dark:bg-gray-900 relative overflow-hidden">
       {/* Animated Scroll/Parchment Background */}
-      <div className="absolute inset-0 opacity-5 dark:opacity-10 pointer-events-none overflow-hidden">
-        {/* Floating Ancient Scrolls */}
-        <div className="absolute top-10 left-10 w-32 h-8 bg-gradient-to-r from-amber-100 to-amber-200 dark:from-amber-900 dark:to-amber-800 rounded-full transform rotate-12 animate-float-slow shadow-lg"></div>
-        <div className="absolute top-32 right-20 w-40 h-10 bg-gradient-to-r from-yellow-100 to-yellow-200 dark:from-yellow-900 dark:to-yellow-800 rounded-full transform -rotate-6 animate-float-delayed shadow-lg"></div>
-        <div className="absolute bottom-20 left-1/4 w-36 h-9 bg-gradient-to-r from-orange-100 to-orange-200 dark:from-orange-900 dark:to-orange-800 rounded-full transform rotate-3 animate-float-reverse shadow-lg"></div>
+      <div className="absolute inset-0 opacity-20 dark:opacity-25 pointer-events-none overflow-hidden z-0">
+        {/* Large Floating Ancient Scrolls */}
+        <div className="absolute top-16 left-16 w-48 h-12 bg-gradient-to-r from-amber-200 to-amber-300 dark:from-amber-700 dark:to-amber-600 rounded-full transform rotate-12 animate-float-slow shadow-xl border border-amber-300 dark:border-amber-600"></div>
+        <div className="absolute top-40 right-24 w-56 h-14 bg-gradient-to-r from-yellow-200 to-yellow-300 dark:from-yellow-700 dark:to-yellow-600 rounded-full transform -rotate-6 animate-float-delayed shadow-xl border border-yellow-300 dark:border-yellow-600"></div>
+        <div className="absolute bottom-32 left-1/4 w-52 h-13 bg-gradient-to-r from-orange-200 to-orange-300 dark:from-orange-700 dark:to-orange-600 rounded-full transform rotate-3 animate-float-reverse shadow-xl border border-orange-300 dark:border-orange-600"></div>
+        <div className="absolute top-1/2 left-1/2 w-44 h-11 bg-gradient-to-r from-amber-200 to-yellow-200 dark:from-amber-700 dark:to-yellow-700 rounded-full transform -rotate-8 animate-float-slow shadow-xl border border-amber-300 dark:border-amber-600"></div>
 
-        {/* Rolling Scroll Effect */}
-        <div className="absolute top-1/2 right-10 transform -translate-y-1/2">
-          <div className="w-6 h-40 bg-gradient-to-b from-amber-200 to-amber-300 dark:from-amber-800 dark:to-amber-700 rounded-full animate-scroll-roll shadow-md"></div>
-          <div className="w-6 h-40 bg-gradient-to-b from-amber-200 to-amber-300 dark:from-amber-800 dark:to-amber-700 rounded-full animate-scroll-roll-delayed ml-2 shadow-md"></div>
+        {/* Large Rolling Scroll Effect */}
+        <div className="absolute top-1/3 right-12 transform -translate-y-1/2">
+          <div className="w-8 h-48 bg-gradient-to-b from-amber-300 to-amber-400 dark:from-amber-600 dark:to-amber-500 rounded-full animate-scroll-roll shadow-lg border-2 border-amber-400 dark:border-amber-500"></div>
+          <div className="w-8 h-48 bg-gradient-to-b from-yellow-300 to-yellow-400 dark:from-yellow-600 dark:to-yellow-500 rounded-full animate-scroll-roll-delayed ml-3 shadow-lg border-2 border-yellow-400 dark:border-yellow-500"></div>
         </div>
 
-        {/* Parchment Waves */}
-        <div className="absolute bottom-0 left-0 w-full h-32 opacity-30">
+        {/* Enhanced Parchment Waves */}
+        <div className="absolute bottom-0 left-0 w-full h-40 opacity-60">
           <svg className="w-full h-full" viewBox="0 0 1200 120" preserveAspectRatio="none">
             <path
               d="M0,60 C300,120 600,0 900,60 C1050,90 1150,30 1200,60 L1200,120 L0,120 Z"
@@ -38,24 +39,32 @@ export default function DigitalLibrarySection() {
             />
             <defs>
               <linearGradient id="parchmentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#fef3c7" className="dark:stop-color-amber-900" />
-                <stop offset="50%" stopColor="#fde68a" className="dark:stop-color-amber-800" />
-                <stop offset="100%" stopColor="#fef3c7" className="dark:stop-color-amber-900" />
+                <stop offset="0%" stopColor="#fde68a" className="dark:stop-color-amber-600" />
+                <stop offset="50%" stopColor="#fbbf24" className="dark:stop-color-amber-500" />
+                <stop offset="100%" stopColor="#fde68a" className="dark:stop-color-amber-600" />
               </linearGradient>
             </defs>
           </svg>
         </div>
 
-        {/* Floating Book Pages */}
-        <div className="absolute top-20 left-1/3 w-8 h-12 bg-white dark:bg-gray-800 transform rotate-45 animate-page-flutter shadow-sm border border-gray-200 dark:border-gray-700"></div>
-        <div className="absolute bottom-40 right-1/3 w-6 h-10 bg-white dark:bg-gray-800 transform -rotate-12 animate-page-flutter-delayed shadow-sm border border-gray-200 dark:border-gray-700"></div>
-        <div className="absolute top-1/3 left-1/2 w-7 h-11 bg-white dark:bg-gray-800 transform rotate-30 animate-page-flutter-reverse shadow-sm border border-gray-200 dark:border-gray-700"></div>
+        {/* Larger Floating Book Pages */}
+        <div className="absolute top-24 left-1/3 w-12 h-16 bg-white dark:bg-gray-700 transform rotate-45 animate-page-flutter shadow-md border-2 border-gray-300 dark:border-gray-600 rounded-sm"></div>
+        <div className="absolute bottom-48 right-1/3 w-10 h-14 bg-white dark:bg-gray-700 transform -rotate-12 animate-page-flutter-delayed shadow-md border-2 border-gray-300 dark:border-gray-600 rounded-sm"></div>
+        <div className="absolute top-1/3 left-1/2 w-11 h-15 bg-white dark:bg-gray-700 transform rotate-30 animate-page-flutter-reverse shadow-md border-2 border-gray-300 dark:border-gray-600 rounded-sm"></div>
+        <div className="absolute top-2/3 right-1/4 w-9 h-13 bg-white dark:bg-gray-700 transform -rotate-25 animate-page-flutter shadow-md border-2 border-gray-300 dark:border-gray-600 rounded-sm"></div>
 
-        {/* Ancient Text Lines */}
-        <div className="absolute top-1/4 left-20 opacity-20">
-          <div className="w-32 h-0.5 bg-amber-600 dark:bg-amber-400 mb-2 animate-text-reveal"></div>
-          <div className="w-28 h-0.5 bg-amber-600 dark:bg-amber-400 mb-2 animate-text-reveal-delayed"></div>
-          <div className="w-30 h-0.5 bg-amber-600 dark:bg-amber-400 animate-text-reveal-slow"></div>
+        {/* More Visible Ancient Text Lines */}
+        <div className="absolute top-1/4 left-20 opacity-40">
+          <div className="w-40 h-1 bg-amber-600 dark:bg-amber-400 mb-3 animate-text-reveal rounded-full"></div>
+          <div className="w-36 h-1 bg-amber-600 dark:bg-amber-400 mb-3 animate-text-reveal-delayed rounded-full"></div>
+          <div className="w-38 h-1 bg-amber-600 dark:bg-amber-400 animate-text-reveal-slow rounded-full"></div>
+        </div>
+
+        {/* Additional Scroll Elements */}
+        <div className="absolute bottom-1/4 right-20 opacity-40">
+          <div className="w-32 h-1 bg-yellow-600 dark:bg-yellow-400 mb-3 animate-text-reveal-slow rounded-full"></div>
+          <div className="w-28 h-1 bg-yellow-600 dark:bg-yellow-400 mb-3 animate-text-reveal rounded-full"></div>
+          <div className="w-30 h-1 bg-yellow-600 dark:bg-yellow-400 animate-text-reveal-delayed rounded-full"></div>
         </div>
       </div>
 
