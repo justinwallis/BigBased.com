@@ -16,25 +16,31 @@ export default function DigitalLibrarySection() {
   return (
     <section
       id="digital-library"
-      className="py-16 relative overflow-hidden"
+      className="py-16 relative min-h-screen"
       style={{
-        backgroundImage: "url('/old-wood-table-background.png')",
+        backgroundImage: `url('/vintage-wood-table-background.png')`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed",
       }}
     >
-      {/* Overlay to ensure readability while keeping the wood table visible */}
-      <div className="absolute inset-0 bg-white/85 dark:bg-gray-900/85" />
+      {/* Semi-transparent overlay for readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-white/80 to-white/70 dark:from-gray-900/70 dark:via-gray-900/80 dark:to-gray-900/70"></div>
 
+      {/* Content container */}
       <div className="container mx-auto px-4 relative z-10">
-        <h2 className="text-3xl font-bold text-center mb-8 dark:text-white">Digital Library</h2>
-        <p className="text-center text-gray-600 dark:text-gray-300 mb-12 max-w-3xl mx-auto">
-          Access our curated collection of books, articles, and resources that promote traditional values,
-          constitutional principles, and a free society.
-        </p>
+        {/* Title area with wood table background visible */}
+        <div className="text-center mb-12 py-8 rounded-lg bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border border-white/20 dark:border-gray-700/20">
+          <h2 className="text-3xl font-bold mb-4 dark:text-white text-gray-800">Digital Library</h2>
+          <p className="text-gray-700 dark:text-gray-200 max-w-3xl mx-auto leading-relaxed">
+            Access our curated collection of books, articles, and resources that promote traditional values,
+            constitutional principles, and a free society.
+          </p>
+        </div>
 
-        <div className="h-[600px] md:h-[700px] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
+        {/* Library container */}
+        <div className="h-[600px] md:h-[700px] border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl overflow-hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-md">
           {libraryError ? (
             <div className="flex items-center justify-center h-full bg-red-50 dark:bg-red-900/20 p-6">
               <div className="text-center">
