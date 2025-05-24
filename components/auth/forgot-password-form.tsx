@@ -26,14 +26,21 @@ export default function ForgotPasswordForm() {
     <form
       className="space-y-4"
       action={async (formData) => {
-        const result = await resetPasswordRequest(formData)
+        try {
+          const result = await resetPasswordRequest(formData)
 
-        if (result?.error) {
-          setState({ message: result.error, success: false })
-        } else if (result?.success) {
+          if (result?.error) {
+            setState({ message: result.error, success: false })
+          } else {
+            setState({
+              message: "Password reset instructions have been sent to your email.",
+              success: true,
+            })
+          }
+        } catch (error) {
           setState({
-            message: "Password reset instructions have been sent to your email.",
-            success: true,
+            message: "An unexpected error occurred. Please try again.",
+            success: false,
           })
         }
       }}
@@ -46,10 +53,12 @@ export default function ForgotPasswordForm() {
       )}
 
       <div className="space-y-2">
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
           Enter your email address and we'll send you a link to reset your password.
         </p>
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email" className="text-gray-900 dark:text-white">
+          Email
+        </Label>
         <Input id="email" name="email" type="email" autoComplete="email" required placeholder="you@example.com" />
       </div>
 
