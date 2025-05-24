@@ -1,7 +1,8 @@
 const DigitalLibrarySection = () => {
   return (
     <section
-      className="py-16 px-4 relative overflow-hidden bg-cover bg-center bg-no-repeat"
+      id="digital-library"
+      className="py-16 relative overflow-hidden bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: "url(/vintage-wooden-table.png)" }}
     >
       <div className="absolute inset-0 bg-white/85 dark:bg-gray-900/85 backdrop-blur-[1px]"></div>
