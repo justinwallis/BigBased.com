@@ -14,16 +14,16 @@ export default function FloatingNavigation() {
   const [animatingDot, setAnimatingDot] = useState<string | null>(null)
   const prevActiveSectionRef = useRef(activeSection)
 
-  // Define section IDs and their corresponding labels - Updated to match actual page
+  // Use the EXACT same section IDs as in ClientPage.tsx
   const navItems: NavItem[] = [
     { id: "top", label: "Welcome!" },
-    { id: "fundraising-and-prayer-section", label: "Fundraising" },
-    { id: "digital-library-section", label: "Digital Library" },
-    { id: "about-section", label: "About Big Based" },
-    { id: "media-voting-platform", label: "Index & Voting" },
+    { id: "fundraising", label: "Fundraising" },
+    { id: "library", label: "Digital Library" },
+    { id: "about", label: "About Big Based" },
+    { id: "media", label: "Index & Voting" },
     { id: "website-showcase", label: "Website Showcase" },
     { id: "x-share-widget", label: "Share on X!" },
-    { id: "domain-collection", label: "Based Domains & Profile" },
+    { id: "domains", label: "Based Domains & Profile" },
     { id: "based-quiz", label: "How Based Are You?" },
   ]
 
@@ -62,7 +62,7 @@ export default function FloatingNavigation() {
 
     window.addEventListener("scroll", handleScroll, { passive: true })
 
-    // Set initial active section - ensure it's called after a small delay to work properly
+    // Set initial active section
     setTimeout(() => {
       handleScroll()
     }, 100)
@@ -84,10 +84,9 @@ export default function FloatingNavigation() {
     if (activeSection && activeSection !== prevActiveSectionRef.current) {
       setAnimatingDot(activeSection)
 
-      // Stop animation after it plays once
       const timer = setTimeout(() => {
         setAnimatingDot(null)
-      }, 1000) // Animation duration
+      }, 1000)
 
       prevActiveSectionRef.current = activeSection
 
@@ -108,7 +107,7 @@ export default function FloatingNavigation() {
     const element = document.getElementById(id)
     if (element) {
       window.scrollTo({
-        top: element.offsetTop,
+        top: element.offsetTop - 80, // Account for header
         behavior: "smooth",
       })
     }
@@ -133,16 +132,9 @@ export default function FloatingNavigation() {
                 style={{ pointerEvents: "none" }}
               >
                 <div className="relative px-3 py-1.5 text-xs font-medium">
-                  {/* Gradient background */}
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 opacity-90"></div>
-
-                  {/* Glass effect overlay */}
                   <div className="absolute inset-0 bg-white dark:bg-gray-900 opacity-20"></div>
-
-                  {/* Border glow */}
                   <div className="absolute inset-0 rounded-md border border-white dark:border-gray-700 opacity-30"></div>
-
-                  {/* Text with shadow */}
                   <span className="relative z-10 text-white drop-shadow-sm">{item.label}</span>
                 </div>
               </motion.div>

@@ -2,203 +2,117 @@
 
 import { useEffect } from "react"
 
-// Define the scrollTimer type on the Window interface
-declare global {
-  interface Window {
-    scrollTimer: ReturnType<typeof setTimeout> | null
-  }
-}
-
 export default function SectionPersistence() {
-  // Save current section on scroll
-  useEffect(() => {
-    // Initialize scrollTimer if it doesn't exist
-    if (typeof window !== "undefined" && window.scrollTimer === undefined) {
-      window.scrollTimer = null
-    }
-
-    const handleScroll = () => {
-      // Debounce the scroll event to avoid excessive localStorage writes
-      if (typeof window !== "undefined" && window.scrollY > 0) {
-        if (window.scrollTimer) clearTimeout(window.scrollTimer)
-
-        window.scrollTimer = setTimeout(() => {
-          try {
-            localStorage.setItem("scrollPosition", window.scrollY.toString())
-
-            // Also save which section is currently active
-            const navItems = [
-              { id: "hero", threshold: 0 },
-              { id: "fundraising-and-prayer-section", threshold: 0 },
-              { id: "digital-library-section", threshold: 0 },
-              { id: "about-section", threshold: 0 },
-              { id: "media-voting-platform", threshold: 0 },
-              { id: "website-showcase", threshold: 0 },
-              { id: "x-share-widget", threshold: 0 },
-              { id: "domain-collection", threshold: 0 },
-              { id: "based-quiz", threshold: 0 },
-            ]
-
-            // Find all sections and their positions
-            navItems.forEach((item) => {
-              const element = document.getElementById(item.id)
-              if (element) {
-                item.threshold = element.offsetTop
-              }
-            })
-
-            // Sort by position (top to bottom)
-            navItems.sort((a, b) => a.threshold - b.threshold)
-
-            // Find current section
-            const scrollPosition = window.scrollY + window.innerHeight / 3
-            let currentSection = navItems[0].id
-
-            for (let i = navItems.length - 1; i >= 0; i--) {
-              if (scrollPosition >= navItems[i].threshold) {
-                currentSection = navItems[i].id
-                break
-              }
-            }
-
-            localStorage.setItem("currentSection", currentSection)
-          } catch (error) {
-            console.error("Error saving scroll position:", error)
-          }
-        }, 200)
-      }
-    }
-
-    if (typeof window !== "undefined") {
-      window.addEventListener("scroll", handleScroll, { passive: true })
-    }
-
-    return () => {
-      if (typeof window !== "undefined") {
-        window.removeEventListener("scroll", handleScroll)
-        if (window.scrollTimer) clearTimeout(window.scrollTimer)
-      }
-    }
-  }, [])
-
-  // Restore scroll position on page load - Enhanced version
+  // Save scroll position and current section
   useEffect(() => {
     if (typeof window === "undefined") return
 
-    const restoreScrollPosition = () => {
+    let scrollTimer: NodeJS.Timeout | null = null
+
+    const handleScroll = () => {
+      if (scrollTimer) clearTimeout(scrollTimer)
+
+      scrollTimer = setTimeout(() => {
+        try {
+          const scrollY = window.scrollY
+          localStorage.setItem("scrollPosition", scrollY.toString())
+
+          // Define sections with their IDs
+          const sections = [
+            "hero",
+            "fundraising",
+            "library",
+            "about",
+            "media",
+            "website-showcase",
+            "x-share-widget",
+            "domains",
+            "based-quiz",
+          ]
+
+          // Find current section
+          let currentSection = "hero"
+          const viewportOffset = window.innerHeight / 3
+
+          for (const sectionId of sections) {
+            const element = document.getElementById(sectionId)
+            if (element && scrollY + viewportOffset >= element.offsetTop) {
+              currentSection = sectionId
+            }
+          }
+
+          localStorage.setItem("currentSection", currentSection)
+          console.log("💾 Saved section:", currentSection, "at scroll:", scrollY)
+        } catch (error) {
+          console.error("Error saving scroll state:", error)
+        }
+      }, 150)
+    }
+
+    window.addEventListener("scroll", handleScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      if (scrollTimer) clearTimeout(scrollTimer)
+    }
+  }, [])
+
+  // Restore scroll position on mount
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    const restoreScroll = () => {
       try {
         const savedSection = localStorage.getItem("currentSection")
         const savedPosition = localStorage.getItem("scrollPosition")
 
-        console.log("Attempting to restore - Section:", savedSection, "Position:", savedPosition)
+        console.log("🔄 Attempting restore - Section:", savedSection, "Position:", savedPosition)
 
-        // First, let's check what sections actually exist on the page
-        const availableSections = [
-          "hero",
-          "fundraising-and-prayer-section",
-          "digital-library-section",
-          "about-section",
-          "media-voting-platform",
-          "website-showcase",
-          "x-share-widget",
-          "domain-collection",
-          "based-quiz",
-        ].filter((id) => document.getElementById(id))
-
-        console.log("Available sections on page:", availableSections)
-
-        if (savedSection && savedSection !== "hero" && savedSection !== "top") {
+        if (savedSection && savedSection !== "hero") {
           const element = document.getElementById(savedSection)
           if (element) {
-            console.log("Found element for section:", savedSection, "at position:", element.offsetTop)
+            const targetY = element.offsetTop - 80
+            console.log("✅ Scrolling to section:", savedSection, "position:", targetY)
 
-            // Force scroll to the element
             window.scrollTo({
-              top: element.offsetTop - 100, // Offset for header
+              top: targetY,
               behavior: "auto",
             })
-
-            // Double-check the scroll happened
-            setTimeout(() => {
-              console.log("Current scroll position after restore:", window.scrollY)
-              console.log("Target was:", element.offsetTop - 100)
-            }, 100)
-
-            return true
+            return
           } else {
-            console.log("Element not found for section:", savedSection)
+            console.log("❌ Section not found:", savedSection)
           }
         }
 
-        // Fall back to exact scroll position
+        // Fallback to exact position
         if (savedPosition) {
-          const position = Number.parseInt(savedPosition, 10)
-          if (!isNaN(position) && position > 100) {
-            // Only restore if meaningful scroll
-            console.log("Restoring to exact position:", position)
-            window.scrollTo({
-              top: position,
-              behavior: "auto",
-            })
-            return true
+          const pos = Number.parseInt(savedPosition, 10)
+          if (!isNaN(pos) && pos > 50) {
+            console.log("📍 Using exact position:", pos)
+            window.scrollTo({ top: pos, behavior: "auto" })
           }
         }
-
-        return false
       } catch (error) {
-        console.error("Error restoring scroll position:", error)
-        return false
+        console.error("❌ Restore error:", error)
       }
     }
 
-    // Wait for everything to be loaded, then restore
-    const performRestore = () => {
-      console.log("Document ready state:", document.readyState)
+    // Try multiple times with increasing delays
+    const attempts = [100, 300, 600, 1000]
 
-      // Wait a bit more to ensure all components are mounted
+    attempts.forEach((delay, index) => {
       setTimeout(() => {
-        console.log("Attempting scroll restoration...")
-        const success = restoreScrollPosition()
-
-        if (!success) {
-          // Try again after more time
-          setTimeout(() => {
-            console.log("Retry scroll restoration...")
-            restoreScrollPosition()
-          }, 500)
-        }
-      }, 200)
-    }
-
-    // Multiple triggers to ensure it works
-    if (document.readyState === "complete") {
-      performRestore()
-    } else {
-      window.addEventListener("load", performRestore)
-      document.addEventListener("DOMContentLoaded", performRestore)
-    }
-
-    // Also try after a longer delay as final fallback
-    setTimeout(() => {
-      const savedSection = localStorage.getItem("currentSection")
-      if (savedSection && window.scrollY < 100) {
-        console.log("Final fallback restore attempt for:", savedSection)
-        restoreScrollPosition()
-      }
-    }, 1000)
-
-    return () => {
-      window.removeEventListener("load", performRestore)
-      document.removeEventListener("DOMContentLoaded", performRestore)
-    }
+        console.log(`🚀 Restore attempt ${index + 1}/${attempts.length}`)
+        restoreScroll()
+      }, delay)
+    })
   }, [])
 
-  // Create a global event to save menu state
+  // Save menu state helper
   useEffect(() => {
     if (typeof window === "undefined") return
 
-    // Create a custom event for saving menu state
-    const saveMenuState = (isOpen) => {
+    window.saveMenuState = (isOpen: boolean) => {
       try {
         localStorage.setItem("menuIsOpen", isOpen ? "true" : "false")
       } catch (error) {
@@ -206,19 +120,15 @@ export default function SectionPersistence() {
       }
     }
 
-    // Expose the function globally so other components can use it
-    window.saveMenuState = saveMenuState
-
-    // Clean up
     return () => {
       delete window.saveMenuState
     }
   }, [])
 
-  return null // This component doesn't render anything
+  return null
 }
 
-// Add the saveMenuState function to the Window interface
+// Global type declaration
 declare global {
   interface Window {
     saveMenuState?: (isOpen: boolean) => void
