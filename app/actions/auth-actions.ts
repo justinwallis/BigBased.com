@@ -4,8 +4,34 @@ import { cookies } from "next/headers"
 import { createClient } from "@supabase/supabase-js"
 import { generateRandomString } from "@/lib/utils"
 import { validatePassword } from "@/lib/password-validation"
-import { logAuthEvent } from "./auth-log-actions"
-import { AUTH_EVENTS, AUTH_STATUS } from "@/app/constants/auth-log-constants"
+
+// Auth event constants (duplicated here to avoid import issues)
+const AUTH_EVENTS = {
+  LOGIN_ATTEMPT: "login_attempt",
+  LOGIN_SUCCESS: "login_success",
+  LOGOUT: "logout",
+  SIGNUP_ATTEMPT: "signup_attempt",
+  PASSWORD_RESET_REQUEST: "password_reset_request",
+  PASSWORD_RESET_SUCCESS: "password_reset_success",
+  BACKUP_CODE_GENERATION: "backup_code_generation",
+  BACKUP_CODE_USAGE: "backup_code_usage",
+} as const
+
+const AUTH_STATUS = {
+  PENDING: "pending",
+  SUCCESS: "success",
+  FAILURE: "failure",
+} as const
+
+// Simple logging function to avoid import issues
+async function logAuthEvent(userId: string | null, event: string, status: string, metadata: any) {
+  try {
+    // Simple console log for now - can be enhanced later
+    console.log("Auth Event:", { userId, event, status, metadata, timestamp: new Date().toISOString() })
+  } catch (error) {
+    console.error("Error logging auth event:", error)
+  }
+}
 
 // Create a Supabase client for server actions
 async function getSupabase() {
@@ -35,11 +61,7 @@ export async function signIn(formData: FormData) {
     const supabase = await getSupabase()
 
     // Log login attempt
-    try {
-      await logAuthEvent(null, AUTH_EVENTS.LOGIN_ATTEMPT, AUTH_STATUS.PENDING, { email })
-    } catch (logError) {
-      console.error("Error logging auth event:", logError)
-    }
+    await logAuthEvent(null, AUTH_EVENTS.LOGIN_ATTEMPT, AUTH_STATUS.PENDING, { email })
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -48,14 +70,10 @@ export async function signIn(formData: FormData) {
 
     if (error) {
       // Log login failure
-      try {
-        await logAuthEvent(null, AUTH_EVENTS.LOGIN_ATTEMPT, AUTH_STATUS.FAILURE, {
-          email,
-          error: error.message,
-        })
-      } catch (logError) {
-        console.error("Error logging auth failure:", logError)
-      }
+      await logAuthEvent(null, AUTH_EVENTS.LOGIN_ATTEMPT, AUTH_STATUS.FAILURE, {
+        email,
+        error: error.message,
+      })
       return { error: error.message }
     }
 
@@ -82,12 +100,8 @@ export async function signIn(formData: FormData) {
     }
 
     // Log login success
-    try {
-      if (data.user) {
-        await logAuthEvent(data.user.id, AUTH_EVENTS.LOGIN_SUCCESS, AUTH_STATUS.SUCCESS, { email })
-      }
-    } catch (logError) {
-      console.error("Error logging auth success:", logError)
+    if (data.user) {
+      await logAuthEvent(data.user.id, AUTH_EVENTS.LOGIN_SUCCESS, AUTH_STATUS.SUCCESS, { email })
     }
 
     return { success: true }
@@ -153,11 +167,7 @@ export async function register(formData: FormData) {
     const supabase = await getSupabase()
 
     // Log signup attempt
-    try {
-      await logAuthEvent(null, AUTH_EVENTS.SIGNUP_ATTEMPT, AUTH_STATUS.PENDING, { email })
-    } catch (logError) {
-      console.error("Error logging signup attempt:", logError)
-    }
+    await logAuthEvent(null, AUTH_EVENTS.SIGNUP_ATTEMPT, AUTH_STATUS.PENDING, { email })
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -169,23 +179,15 @@ export async function register(formData: FormData) {
 
     if (error) {
       // Log signup failure
-      try {
-        await logAuthEvent(null, AUTH_EVENTS.SIGNUP_ATTEMPT, AUTH_STATUS.FAILURE, {
-          email,
-          error: error.message,
-        })
-      } catch (logError) {
-        console.error("Error logging signup failure:", logError)
-      }
+      await logAuthEvent(null, AUTH_EVENTS.SIGNUP_ATTEMPT, AUTH_STATUS.FAILURE, {
+        email,
+        error: error.message,
+      })
       return { error: error.message }
     }
 
     // Log signup success
-    try {
-      await logAuthEvent(null, AUTH_EVENTS.SIGNUP_ATTEMPT, AUTH_STATUS.SUCCESS, { email })
-    } catch (logError) {
-      console.error("Error logging signup success:", logError)
-    }
+    await logAuthEvent(null, AUTH_EVENTS.SIGNUP_ATTEMPT, AUTH_STATUS.SUCCESS, { email })
 
     return { success: true }
   } catch (error) {
