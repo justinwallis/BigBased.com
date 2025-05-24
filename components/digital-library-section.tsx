@@ -15,17 +15,13 @@ export default function DigitalLibrarySection() {
   }, [])
 
   return (
-    <section id="digital-library" className="py-16 bg-white dark:bg-gray-900 relative overflow-hidden">
-      {/* Parchment background animation */}
+    <section id="digital-library" className="py-16 bg-white dark:bg-gray-900 relative">
+      {/* Parchment background - only in light mode */}
       <div className="absolute inset-0 dark:hidden">
         <ParchmentBackground />
       </div>
 
-      {/* Dark mode alternative - subtle paper texture */}
-      <div className="absolute inset-0 hidden dark:block opacity-20">
-        <div className="w-full h-full bg-gradient-to-br from-amber-50/10 via-yellow-50/5 to-orange-50/10"></div>
-      </div>
-
+      {/* Content container with higher z-index */}
       <div className="container mx-auto px-4 relative z-10">
         <h2 className="text-3xl font-bold text-center mb-8 dark:text-white">Digital Library</h2>
         <p className="text-center text-gray-600 dark:text-gray-300 mb-12 max-w-3xl mx-auto">
@@ -33,7 +29,7 @@ export default function DigitalLibrarySection() {
           constitutional principles, and a free society.
         </p>
 
-        <div className="h-[600px] md:h-[700px] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
+        <div className="h-[600px] md:h-[700px] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm">
           {libraryError ? (
             <div className="flex items-center justify-center h-full bg-red-50 dark:bg-red-900/20 p-6">
               <div className="text-center">
