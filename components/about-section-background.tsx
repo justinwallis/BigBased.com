@@ -33,6 +33,12 @@ export function AboutSectionBackground() {
     const resizeCanvas = () => {
       canvas.width = canvas.offsetWidth
       canvas.height = canvas.offsetHeight
+
+      // Ensure minimum size
+      canvas.width = Math.max(canvas.width, 300)
+      canvas.height = Math.max(canvas.height, 200)
+
+      console.log("Canvas dimensions:", canvas.width, canvas.height)
     }
 
     resizeCanvas()
@@ -41,7 +47,7 @@ export function AboutSectionBackground() {
     // Initialize floating shapes
     const initShapes = () => {
       shapesRef.current = []
-      const shapeCount = Math.floor((canvas.width * canvas.height) / 25000) // Much fewer shapes
+      const shapeCount = Math.floor((canvas.width * canvas.height) / 15000) // Much fewer shapes
 
       for (let i = 0; i < shapeCount; i++) {
         const types: ("circle" | "hexagon" | "triangle")[] = ["circle", "hexagon", "triangle"]
@@ -49,10 +55,10 @@ export function AboutSectionBackground() {
         shapesRef.current.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * 0.2, // Much slower movement
-          vy: (Math.random() - 0.5) * 0.2,
-          size: 20 + Math.random() * 40,
-          opacity: 0.02 + Math.random() * 0.03, // Very subtle
+          vx: (Math.random() - 0.5) * 0.5, // Much slower movement
+          vy: (Math.random() - 0.5) * 0.5,
+          size: 30 + Math.random() * 60,
+          opacity: 0.1 + Math.random() * 0.15, // Very subtle
           rotation: Math.random() * Math.PI * 2,
           rotationSpeed: (Math.random() - 0.5) * 0.005, // Very slow rotation
           type: types[Math.floor(Math.random() * types.length)],
@@ -66,7 +72,7 @@ export function AboutSectionBackground() {
       const isDark = resolvedTheme === "dark"
       const time = Date.now() * 0.0005 // Very slow animation
 
-      ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.015)" : "rgba(0, 0, 0, 0.015)"
+      ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.05)"
       ctx.lineWidth = 1
 
       const gridSize = 80
@@ -99,13 +105,13 @@ export function AboutSectionBackground() {
         const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
 
         if (isDark) {
-          gradient.addColorStop(0, "rgba(255, 255, 255, 0.005)")
-          gradient.addColorStop(0.5, "rgba(255, 255, 255, 0.01)")
-          gradient.addColorStop(1, "rgba(255, 255, 255, 0.005)")
+          gradient.addColorStop(0, "rgba(255, 255, 255, 0.03)")
+          gradient.addColorStop(0.5, "rgba(255, 255, 255, 0.06)")
+          gradient.addColorStop(1, "rgba(255, 255, 255, 0.03)")
         } else {
-          gradient.addColorStop(0, "rgba(0, 0, 0, 0.005)")
-          gradient.addColorStop(0.5, "rgba(0, 0, 0, 0.01)")
-          gradient.addColorStop(1, "rgba(0, 0, 0, 0.005)")
+          gradient.addColorStop(0, "rgba(0, 0, 0, 0.03)")
+          gradient.addColorStop(0.5, "rgba(0, 0, 0, 0.06)")
+          gradient.addColorStop(1, "rgba(0, 0, 0, 0.03)")
         }
 
         ctx.fillStyle = gradient
@@ -212,6 +218,7 @@ export function AboutSectionBackground() {
     // Animation loop
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
+      canvas.style.backgroundColor = resolvedTheme === "dark" ? "#111" : "#f9f9f9"
 
       drawSubtleGrid()
       drawGradientWaves()

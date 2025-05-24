@@ -123,6 +123,9 @@ export default function SideMenu({
     if (typeof window === "undefined") return
 
     if (isOpen) {
+      // Save current scroll position
+      const scrollY = window.scrollY
+
       // Save current body styles
       previousBodyOverflowRef.current = document.body.style.overflow
       previousBodyPositionRef.current = document.body.style.position
@@ -133,10 +136,10 @@ export default function SideMenu({
       // Calculate scrollbar width
       const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
 
-      // Lock body scroll
+      // Lock body scroll and maintain position
       document.body.style.overflow = "hidden"
       document.body.style.position = "fixed"
-      document.body.style.top = `-${window.scrollY}px`
+      document.body.style.top = `-${scrollY}px`
       document.body.style.left = "0"
       document.body.style.width = "100%"
 
@@ -144,10 +147,15 @@ export default function SideMenu({
       if (scrollbarWidth > 0) {
         document.body.style.paddingRight = `${scrollbarWidth}px`
       }
-    } else {
-      // Restore body scroll
-      const scrollY = document.body.style.top ? Number.parseInt(document.body.style.top) * -1 : 0
 
+      // Store the scroll position for restoration
+      document.body.setAttribute("data-scroll-y", scrollY.toString())
+    } else {
+      // Get the stored scroll position
+      const storedScrollY = document.body.getAttribute("data-scroll-y")
+      const scrollY = storedScrollY ? Number.parseInt(storedScrollY) : 0
+
+      // Restore body styles
       document.body.style.overflow = previousBodyOverflowRef.current
       document.body.style.position = previousBodyPositionRef.current
       document.body.style.top = previousBodyTopRef.current
@@ -155,8 +163,24 @@ export default function SideMenu({
       document.body.style.width = previousBodyWidthRef.current
       document.body.style.paddingRight = ""
 
-      // Restore scroll position
-      window.scrollTo(0, scrollY)
+      // Remove the stored scroll position
+      document.body.removeAttribute("data-scroll-y")
+
+      // Restore scroll position without jumping
+      if (scrollY > 0) {
+        window.scrollTo({ top: scrollY, behavior: "instant" })
+      }
+    }
+  }, [isOpen])
+
+  // Prevent any scroll restoration flash
+  useEffect(() => {
+    if (!isOpen) {
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        document.body.style.transition = ""
+      }, 100)
+      return () => clearTimeout(timer)
     }
   }, [isOpen])
 
