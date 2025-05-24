@@ -47,7 +47,7 @@ export default function RevolutionPage() {
   return (
     <>
       <div
-        className="min-h-screen w-full text-white flex flex-col items-center justify-center px-4 py-16 revolution-page relative"
+        className="min-h-screen w-full text-white flex flex-col items-center justify-center px-4 py-32 revolution-page relative"
         style={{
           backgroundColor: "#000000",
           backgroundImage: `
@@ -55,6 +55,8 @@ export default function RevolutionPage() {
             linear-gradient(90deg, rgba(30, 30, 30, 0.3) 1px, transparent 1px)
           `,
           backgroundSize: "20px 20px",
+          minHeight: "100vh",
+          paddingBottom: "0",
         }}
       >
         {/* Background image with 10% opacity */}
@@ -68,11 +70,13 @@ export default function RevolutionPage() {
           }}
         />
 
-        {/* Digital Landscape - positioned behind everything */}
-        <DigitalLandscape />
+        {/* Digital Landscape - positioned behind everything, full height */}
+        <div className="absolute inset-0 w-full h-full" style={{ zIndex: 5 }}>
+          <DigitalLandscape />
+        </div>
 
         {/* Main Content */}
-        <div className="max-w-4xl mx-auto text-center z-20 relative">
+        <div className="max-w-4xl mx-auto text-center z-20 relative flex-1 flex flex-col justify-center">
           <p className="text-lg mb-4">The Revolution</p>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-12 leading-tight">
