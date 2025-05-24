@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { MatrixLink } from "@/components/matrix-link"
+import Link from "next/link"
 import { supabaseClient } from "@/lib/supabase/client"
 import SignUpForm from "@/components/auth/sign-up-form"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -46,13 +46,13 @@ export default function SignUpPage() {
           <Alert className="mb-6 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-900">
             <AlertDescription className="text-green-800 dark:text-green-300">
               You are already logged in.{" "}
-              <MatrixLink href="/profile" className="font-medium underline">
+              <Link href="/profile" className="font-medium underline">
                 Go to your profile
-              </MatrixLink>{" "}
+              </Link>{" "}
               or{" "}
-              <MatrixLink href="/" className="font-medium underline">
+              <Link href="/" className="font-medium underline">
                 return to home
-              </MatrixLink>
+              </Link>
             </AlertDescription>
           </Alert>
         </div>
@@ -66,12 +66,12 @@ export default function SignUpPage() {
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Create your account</h2>
         <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
           Already have an account?{" "}
-          <MatrixLink
+          <Link
             href="/auth/sign-in"
             className="font-medium text-primary hover:underline dark:text-blue-400 dark:hover:text-blue-300"
           >
             Sign in
-          </MatrixLink>
+          </Link>
         </p>
       </div>
       <SignUpForm />
