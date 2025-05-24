@@ -3,7 +3,6 @@ import { viewportConfig, generateMetadata } from "../metadata-config"
 import { getWebPageData, getBreadcrumbData, getArticleData } from "@/lib/structured-data"
 import StructuredData from "@/components/structured-data"
 import DigitalCross from "@/components/digital-cross"
-import DigitalLandscape from "@/components/digital-landscape"
 
 export const metadata: Metadata = generateMetadata(
   "Revolution",
@@ -70,9 +69,84 @@ export default function RevolutionPage() {
           }}
         />
 
-        {/* Digital Landscape - positioned behind everything, full height */}
-        <div className="absolute inset-0 w-full h-full" style={{ zIndex: 5 }}>
-          <DigitalLandscape />
+        {/* INLINE DIGITAL LANDSCAPE - This should definitely show up */}
+        <div
+          className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden"
+          style={{
+            zIndex: 5,
+            background: "linear-gradient(to bottom, rgba(0,100,0,0.1) 0%, rgba(0,50,0,0.2) 100%)",
+          }}
+        >
+          {/* Clouds */}
+          <div className="absolute top-10 left-0 w-full">
+            <div className="absolute top-8 left-[10%] w-20 h-10 bg-white/30 rounded-full animate-pulse" />
+            <div
+              className="absolute top-12 left-[25%] w-16 h-8 bg-white/25 rounded-full animate-pulse"
+              style={{ animationDelay: "1s" }}
+            />
+            <div
+              className="absolute top-6 left-[45%] w-24 h-12 bg-white/35 rounded-full animate-pulse"
+              style={{ animationDelay: "2s" }}
+            />
+            <div
+              className="absolute top-14 left-[65%] w-18 h-9 bg-white/28 rounded-full animate-pulse"
+              style={{ animationDelay: "0.5s" }}
+            />
+            <div
+              className="absolute top-10 left-[80%] w-22 h-11 bg-white/32 rounded-full animate-pulse"
+              style={{ animationDelay: "1.5s" }}
+            />
+          </div>
+
+          {/* Hills - Using simple shapes that should definitely render */}
+          <div className="absolute bottom-0 left-0 w-full">
+            {/* Back hill */}
+            <div
+              className="absolute bottom-0 w-full h-64 bg-green-800/40"
+              style={{
+                clipPath: "polygon(0 60%, 20% 40%, 40% 50%, 60% 30%, 80% 45%, 100% 35%, 100% 100%, 0 100%)",
+              }}
+            />
+
+            {/* Middle hill */}
+            <div
+              className="absolute bottom-0 w-full h-48 bg-green-700/50"
+              style={{
+                clipPath: "polygon(0 70%, 25% 50%, 50% 60%, 75% 40%, 100% 55%, 100% 100%, 0 100%)",
+              }}
+            />
+
+            {/* Front hill */}
+            <div
+              className="absolute bottom-0 w-full h-32 bg-green-600/60"
+              style={{
+                clipPath: "polygon(0 80%, 30% 60%, 60% 70%, 90% 50%, 100% 65%, 100% 100%, 0 100%)",
+              }}
+            />
+          </div>
+
+          {/* Grass - Simple vertical lines */}
+          <div className="absolute bottom-0 left-0 w-full h-20">
+            {Array.from({ length: 30 }, (_, i) => (
+              <div
+                key={i}
+                className="absolute bottom-0 bg-green-400/70 animate-pulse"
+                style={{
+                  left: `${i * 3.33}%`,
+                  width: "2px",
+                  height: `${12 + (i % 3) * 8}px`,
+                  animationDelay: `${i * 0.1}s`,
+                  animationDuration: "3s",
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Test element - bright red dot to confirm the layer is working */}
+          <div
+            className="absolute top-1/2 left-1/2 w-4 h-4 bg-red-500 rounded-full animate-ping"
+            style={{ transform: "translate(-50%, -50%)" }}
+          />
         </div>
 
         {/* Main Content */}
