@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next/types"
 import { viewportConfig, generateMetadata } from "../metadata-config"
 import { getWebPageData, getBreadcrumbData, getArticleData } from "@/lib/structured-data"
 import StructuredData from "@/components/structured-data"
-import DigitalCross from "@/components/digital-cross"
 
 export const metadata: Metadata = generateMetadata(
   "Revolution",
@@ -46,7 +45,7 @@ export default function RevolutionPage() {
   return (
     <>
       <div
-        className="min-h-screen w-full text-white flex flex-col items-center justify-center px-4 py-32 revolution-page relative"
+        className="min-h-screen w-full text-white flex flex-col items-center justify-center px-4 py-16 revolution-page"
         style={{
           backgroundColor: "#000000",
           backgroundImage: `
@@ -54,8 +53,7 @@ export default function RevolutionPage() {
             linear-gradient(90deg, rgba(30, 30, 30, 0.3) 1px, transparent 1px)
           `,
           backgroundSize: "20px 20px",
-          minHeight: "100vh",
-          paddingBottom: "0",
+          position: "relative",
         }}
       >
         {/* Background image with 10% opacity */}
@@ -69,13 +67,7 @@ export default function RevolutionPage() {
           }}
         />
 
-        {/* Digital Cross - positioned above landscape but below text */}
-        <div className="absolute inset-0 z-10">
-          <DigitalCross />
-        </div>
-
-        {/* Main Content */}
-        <div className="max-w-4xl mx-auto text-center z-20 relative flex-1 flex flex-col justify-center">
+        <div className="max-w-4xl mx-auto text-center z-10 relative">
           <p className="text-lg mb-4">The Revolution</p>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-12 leading-tight">
@@ -98,30 +90,6 @@ export default function RevolutionPage() {
               and digital renaissance.
             </p>
           </div>
-        </div>
-
-        {/* LANDSCAPE TEST - HIGHEST Z-INDEX TO FORCE VISIBILITY */}
-        <div
-          className="fixed inset-0 w-full h-full pointer-events-none"
-          style={{
-            zIndex: 9999,
-            background: "rgba(255, 0, 0, 0.3)", // RED BACKGROUND - should be impossible to miss
-          }}
-        >
-          {/* Giant test element */}
-          <div
-            className="absolute top-1/4 left-1/4 w-1/2 h-1/2 bg-yellow-500 opacity-80 flex items-center justify-center text-black text-4xl font-bold"
-            style={{ zIndex: 10000 }}
-          >
-            LANDSCAPE TEST
-          </div>
-
-          {/* Hills at bottom */}
-          <div className="absolute bottom-0 left-0 w-full h-64 bg-green-500 opacity-70" />
-
-          {/* Clouds at top */}
-          <div className="absolute top-20 left-20 w-32 h-16 bg-white opacity-80 rounded-full" />
-          <div className="absolute top-16 left-60 w-24 h-12 bg-white opacity-80 rounded-full" />
         </div>
       </div>
       <StructuredData data={structuredData} />

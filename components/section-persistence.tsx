@@ -81,64 +81,102 @@ export default function SectionPersistence() {
     }
   }, [])
 
-  // Restore scroll position on page load
+  // Restore scroll position on page load - Enhanced version
   useEffect(() => {
     if (typeof window === "undefined") return
 
-    const handleLoad = () => {
-      setTimeout(() => {
-        try {
-          const savedSection = localStorage.getItem("currentSection")
-          const savedPosition = localStorage.getItem("scrollPosition")
-
-          if (savedSection) {
-            // First try to scroll to the saved section
-            const element = document.getElementById(savedSection)
-            if (element) {
-              window.scrollTo({
-                top: element.offsetTop,
-                behavior: "auto", // Use auto to avoid animation on initial load
-              })
-              return
-            }
-          }
-
-          // Fall back to exact scroll position if section not found
-          if (savedPosition) {
-            const position = Number.parseInt(savedPosition, 10)
-            if (!isNaN(position)) {
-              window.scrollTo({
-                top: position,
-                behavior: "auto",
-              })
-            }
-          }
-        } catch (error) {
-          console.error("Error restoring scroll position:", error)
-        }
-      }, 100) // Small delay to ensure DOM is ready
-    }
-
-    // Also try immediately for faster response
-    setTimeout(() => {
+    const restoreScrollPosition = () => {
       try {
         const savedSection = localStorage.getItem("currentSection")
+        const savedPosition = localStorage.getItem("scrollPosition")
+
+        console.log("Restoring scroll - Section:", savedSection, "Position:", savedPosition)
+
         if (savedSection && savedSection !== "hero") {
+          // Wait for DOM to be fully loaded
           const element = document.getElementById(savedSection)
           if (element) {
-            window.scrollTo({
-              top: element.offsetTop,
+            console.log("Found element for section:", savedSection)
+            // Use smooth scroll to the section
+            element.scrollIntoView({
               behavior: "auto",
+              block: "start",
             })
+            return true
+          } else {
+            console.log("Element not found for section:", savedSection, "- will retry")
+            return false
           }
         }
+
+        // Fall back to exact scroll position if section not found
+        if (savedPosition) {
+          const position = Number.parseInt(savedPosition, 10)
+          if (!isNaN(position) && position > 0) {
+            console.log("Restoring to exact position:", position)
+            window.scrollTo({
+              top: position,
+              behavior: "auto",
+            })
+            return true
+          }
+        }
+
+        return false
       } catch (error) {
-        console.error("Error in immediate scroll restoration:", error)
+        console.error("Error restoring scroll position:", error)
+        return false
       }
-    }, 200)
+    }
+
+    // Multiple attempts to restore scroll position
+    let attempts = 0
+    const maxAttempts = 10
+
+    const attemptRestore = () => {
+      attempts++
+      console.log(`Scroll restore attempt ${attempts}/${maxAttempts}`)
+
+      const success = restoreScrollPosition()
+
+      if (!success && attempts < maxAttempts) {
+        // Try again after a short delay
+        setTimeout(attemptRestore, 100 * attempts) // Increasing delay
+      } else if (success) {
+        console.log("Scroll position restored successfully")
+      } else {
+        console.log("Failed to restore scroll position after all attempts")
+      }
+    }
+
+    // Start attempting to restore scroll position
+    setTimeout(attemptRestore, 100) // Initial delay to let page load
+
+    // Also listen for the load event
+    const handleLoad = () => {
+      console.log("Window load event fired")
+      setTimeout(attemptRestore, 50)
+    }
+
+    // Listen for DOMContentLoaded as well
+    const handleDOMContentLoaded = () => {
+      console.log("DOMContentLoaded event fired")
+      setTimeout(attemptRestore, 50)
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", handleDOMContentLoaded)
+    } else {
+      // DOM is already loaded
+      setTimeout(attemptRestore, 50)
+    }
 
     window.addEventListener("load", handleLoad)
-    return () => window.removeEventListener("load", handleLoad)
+
+    return () => {
+      window.removeEventListener("load", handleLoad)
+      document.removeEventListener("DOMContentLoaded", handleDOMContentLoaded)
+    }
   }, [])
 
   // Create a global event to save menu state
