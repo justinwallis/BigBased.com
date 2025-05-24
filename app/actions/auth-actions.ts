@@ -3,11 +3,12 @@
 import { cookies } from "next/headers"
 import { createClient } from "@supabase/supabase-js"
 import { generateRandomString } from "@/lib/utils"
+import { validatePassword } from "@/lib/password-validation"
 import { logAuthEvent } from "./auth-log-actions"
 import { AUTH_EVENTS, AUTH_STATUS } from "@/app/constants/auth-log-constants"
 
 // Create a Supabase client for server actions
-const getSupabase = () => {
+async function getSupabase() {
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
@@ -22,36 +23,6 @@ const getSupabase = () => {
   })
 }
 
-// Validate password strength
-async function validatePassword(password: string): Promise<{ valid: boolean; message?: string }> {
-  // Check minimum length
-  if (password.length < 10) {
-    return { valid: false, message: "Password must be at least 10 characters long" }
-  }
-
-  // Check for uppercase letter
-  if (!/[A-Z]/.test(password)) {
-    return { valid: false, message: "Password must contain at least one uppercase letter" }
-  }
-
-  // Check for lowercase letter
-  if (!/[a-z]/.test(password)) {
-    return { valid: false, message: "Password must contain at least one lowercase letter" }
-  }
-
-  // Check for number
-  if (!/[0-9]/.test(password)) {
-    return { valid: false, message: "Password must contain at least one number" }
-  }
-
-  // Check for special character
-  if (!/[^A-Za-z0-9]/.test(password)) {
-    return { valid: false, message: "Password must contain at least one special character" }
-  }
-
-  return { valid: true }
-}
-
 export async function signIn(formData: FormData) {
   try {
     const email = formData.get("email") as string
@@ -61,7 +32,7 @@ export async function signIn(formData: FormData) {
       return { error: "Email and password are required" }
     }
 
-    const supabase = getSupabase()
+    const supabase = await getSupabase()
 
     // Log login attempt
     try {
@@ -128,7 +99,7 @@ export async function signIn(formData: FormData) {
 
 export async function signOut() {
   try {
-    const supabase = getSupabase()
+    const supabase = await getSupabase()
 
     // Get the current user
     const {
@@ -174,12 +145,12 @@ export async function register(formData: FormData) {
     }
 
     // Validate password strength
-    const passwordValidation = await validatePassword(password)
+    const passwordValidation = validatePassword(password)
     if (!passwordValidation.valid) {
       return { error: passwordValidation.message }
     }
 
-    const supabase = getSupabase()
+    const supabase = await getSupabase()
 
     // Log signup attempt
     try {
@@ -223,7 +194,6 @@ export async function register(formData: FormData) {
   }
 }
 
-// Reset password request
 export async function resetPasswordRequest(formData: FormData) {
   const email = formData.get("email") as string
 
@@ -232,7 +202,7 @@ export async function resetPasswordRequest(formData: FormData) {
   }
 
   try {
-    const supabase = getSupabase()
+    const supabase = await getSupabase()
 
     // Log password reset request
     await logAuthEvent(null, AUTH_EVENTS.PASSWORD_RESET_REQUEST, AUTH_STATUS.PENDING, { email })
@@ -260,7 +230,6 @@ export async function resetPasswordRequest(formData: FormData) {
   }
 }
 
-// Reset password
 export async function resetPassword(formData: FormData) {
   const password = formData.get("password") as string
   const confirmPassword = formData.get("confirmPassword") as string
@@ -275,13 +244,13 @@ export async function resetPassword(formData: FormData) {
   }
 
   // Validate password strength
-  const passwordValidation = await validatePassword(password)
+  const passwordValidation = validatePassword(password)
   if (!passwordValidation.valid) {
     return { error: passwordValidation.message }
   }
 
   try {
-    const supabase = getSupabase()
+    const supabase = await getSupabase()
 
     // Get the current user
     const {
@@ -317,10 +286,9 @@ export async function resetPassword(formData: FormData) {
   }
 }
 
-// Generate backup codes
 export async function generateBackupCodes() {
   try {
-    const supabase = getSupabase()
+    const supabase = await getSupabase()
 
     // Get the current user
     const {
@@ -365,10 +333,9 @@ export async function generateBackupCodes() {
   }
 }
 
-// Verify backup code
 export async function verifyBackupCode(code: string) {
   try {
-    const supabase = getSupabase()
+    const supabase = await getSupabase()
 
     // Get the current user
     const {
