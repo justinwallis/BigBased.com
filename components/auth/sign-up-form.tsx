@@ -162,7 +162,7 @@ export default function SignUpForm() {
           autoComplete="email"
           required
           placeholder="you@example.com"
-          className="w-full bg-gray-50 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:focus:border-blue-400"
+          className="text-gray-900 dark:text-white dark:bg-gray-800 dark:border-gray-700 bg-gray-50"
         />
       </div>
 
@@ -177,7 +177,7 @@ export default function SignUpForm() {
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="new-password"
           required
-          className="w-full bg-gray-50 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:focus:border-blue-400"
+          className="text-gray-900 dark:text-white dark:bg-gray-800 dark:border-gray-700 bg-gray-50"
         />
 
         {/* Password strength indicator */}
@@ -254,7 +254,7 @@ export default function SignUpForm() {
           onChange={(e) => setConfirmPassword(e.target.value)}
           autoComplete="new-password"
           required
-          className={`w-full bg-gray-50 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:focus:border-blue-400 ${confirmPassword && !passwordsMatch ? "border-red-500" : ""}`}
+          className={`text-gray-900 dark:text-white dark:bg-gray-800 dark:border-gray-700 bg-gray-50 ${confirmPassword && !passwordsMatch ? "border-red-500" : ""}`}
         />
         {confirmPassword && !passwordsMatch && <p className="text-xs text-red-500 mt-1">Passwords do not match</p>}
       </div>
