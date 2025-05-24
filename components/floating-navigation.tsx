@@ -14,7 +14,7 @@ export default function FloatingNavigation() {
   const [animatingDot, setAnimatingDot] = useState<string | null>(null)
   const prevActiveSectionRef = useRef(activeSection)
 
-  // Use the EXACT same section IDs as in ClientPage.tsx
+  // Define section IDs and their corresponding labels
   const navItems: NavItem[] = [
     { id: "top", label: "Welcome!" },
     { id: "fundraising", label: "Fundraising" },
@@ -62,7 +62,7 @@ export default function FloatingNavigation() {
 
     window.addEventListener("scroll", handleScroll, { passive: true })
 
-    // Set initial active section
+    // Set initial active section - ensure it's called after a small delay to work properly
     setTimeout(() => {
       handleScroll()
     }, 100)
@@ -84,9 +84,10 @@ export default function FloatingNavigation() {
     if (activeSection && activeSection !== prevActiveSectionRef.current) {
       setAnimatingDot(activeSection)
 
+      // Stop animation after it plays once
       const timer = setTimeout(() => {
         setAnimatingDot(null)
-      }, 1000)
+      }, 1000) // Animation duration
 
       prevActiveSectionRef.current = activeSection
 
@@ -107,7 +108,7 @@ export default function FloatingNavigation() {
     const element = document.getElementById(id)
     if (element) {
       window.scrollTo({
-        top: element.offsetTop - 80, // Account for header
+        top: element.offsetTop,
         behavior: "smooth",
       })
     }
@@ -132,9 +133,16 @@ export default function FloatingNavigation() {
                 style={{ pointerEvents: "none" }}
               >
                 <div className="relative px-3 py-1.5 text-xs font-medium">
+                  {/* Gradient background */}
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 opacity-90"></div>
+
+                  {/* Glass effect overlay */}
                   <div className="absolute inset-0 bg-white dark:bg-gray-900 opacity-20"></div>
+
+                  {/* Border glow */}
                   <div className="absolute inset-0 rounded-md border border-white dark:border-gray-700 opacity-30"></div>
+
+                  {/* Text with shadow */}
                   <span className="relative z-10 text-white drop-shadow-sm">{item.label}</span>
                 </div>
               </motion.div>

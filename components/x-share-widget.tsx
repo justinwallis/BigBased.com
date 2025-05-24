@@ -5,7 +5,6 @@ import { Share, XIcon, ImageIcon, Sparkles, Copy, Download, Info, Hash } from "l
 import Image from "next/image"
 import { useTheme } from "@/components/theme-provider"
 import Script from "next/script"
-import XShareBackground from "./x-share-background"
 
 // Gallery of images users can choose from
 const tweetImages = [
@@ -251,8 +250,6 @@ export default function XShareWidget() {
     <section
       className={`py-8 px-4 ${isDarkMode ? "bg-gray-900" : "bg-white"} border-t border-b ${isDarkMode ? "border-gray-800" : "border-gray-200"} relative overflow-hidden`}
     >
-      <XShareBackground />
-
       {/* Twitter Widget Script */}
       <Script src="https://platform.twitter.com/widgets.js" strategy="lazyOnload" onLoad={handleTwitterScriptLoad} />
 

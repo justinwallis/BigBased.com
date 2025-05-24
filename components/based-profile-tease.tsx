@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useAuth } from "@/contexts/auth-context"
 import Link from "next/link"
-import IdentitySectionBackground from "./identity-section-background"
 
 export default function BasedProfileTease() {
   const { user } = useAuth()
@@ -46,9 +45,6 @@ export default function BasedProfileTease() {
 
   return (
     <section className="py-16 px-8 md:px-16 relative overflow-hidden border-t border-gray-200 dark:border-gray-800">
-      {/* Add the unique identity background */}
-      <IdentitySectionBackground />
-
       {/* Background pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0 bg-grid-pattern"></div>
