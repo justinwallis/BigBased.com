@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import VerticalLogoScroller from "./vertical-logo-scroller"
 import WebsitePreview from "./website-preview"
 import { websiteShowcaseData, type WebsiteShowcaseItem } from "@/data/website-showcase-data"
+import WebsiteShowcaseBackground from "./website-showcase-background"
 
 export default function WebsiteShowcase() {
   // Initialize with the first website instead of null
@@ -15,8 +16,9 @@ export default function WebsiteShowcase() {
   }
 
   return (
-    <section className="py-16 px-4 md:px-8 lg:px-16 bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto">
+    <section className="py-16 px-4 md:px-8 lg:px-16 bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
+      <WebsiteShowcaseBackground />
+      <div className="max-w-7xl mx-auto relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
