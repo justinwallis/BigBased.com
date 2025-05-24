@@ -4,153 +4,81 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
+import { useAuth } from "@/context/auth-context"
 import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { AlertCircle } from "lucide-react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
+import { useToast } from "@/components/ui/use-toast"
+import { Link } from "@/components/ui/link"
 
-export default function SignUpForm() {
+export function SignUpForm({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const { signUp } = useAuth()
   const router = useRouter()
+  const { toast } = useToast()
+  const [isLoading, setIsLoading] = useState(false)
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    // Reset states
-    setError("")
-    setSuccess(false)
-    setLoading(true)
-
-    // Basic validation
-    if (!email || !password || !confirmPassword) {
-      setError("All fields are required")
-      setLoading(false)
-      return
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match")
-      setLoading(false)
-      return
-    }
-
+    setIsLoading(true)
     try {
-      // Create the user with Supabase directly
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-      if (!supabaseUrl || !supabaseAnonKey) {
-        setError("Missing Supabase configuration")
-        setLoading(false)
-        return
-      }
-
-      const { createClient } = await import("@supabase/supabase-js")
-      const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
-      const { error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL || window.location.origin}/auth/callback`,
-        },
+      await signUp(email, password)
+      toast({
+        title: "Success",
+        description: "Account created successfully!",
       })
-
-      if (signUpError) {
-        setError(signUpError.message)
-        setLoading(false)
-        return
-      }
-
-      // Success
-      setSuccess(true)
-      setLoading(false)
-      localStorage.setItem("hasLoggedInBefore", "true")
-
-      // Redirect to sign-in page after a delay
-      setTimeout(() => {
-        router.push("/auth/sign-in")
-      }, 3000)
-    } catch (err) {
-      console.error("Sign up form error:", err)
-      setError("An unexpected error occurred")
-      setLoading(false)
+      router.push("/dashboard")
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Something went wrong. Please try again.",
+      })
+    } finally {
+      setIsLoading(false)
     }
   }
 
   return (
-    <form className="space-y-6" onSubmit={handleSubmit}>
-      {error && (
-        <Alert variant="destructive" className="dark:bg-gray-800 dark:border-gray-700">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription className="dark:text-white">{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {success && (
-        <Alert className="dark:bg-gray-800 dark:border-gray-700">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription className="dark:text-white">
-            Account created successfully! Please check your email to verify your account.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      <div className="space-y-2">
-        <Label htmlFor="email" className="text-sm font-medium text-gray-900 dark:text-white">
-          Email
-        </Label>
-        <Input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-          required
-          placeholder="you@example.com"
-          className="w-full dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:focus:border-blue-400"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="password" className="text-sm font-medium text-gray-900 dark:text-white">
-          Password
-        </Label>
-        <Input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="new-password"
-          required
-          className="w-full dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:focus:border-blue-400"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-900 dark:text-white">
-          Confirm Password
-        </Label>
-        <Input
-          id="confirmPassword"
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          autoComplete="new-password"
-          required
-          className="w-full dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:focus:border-blue-400"
-        />
-      </div>
-
-      <Button type="submit" className="w-full" disabled={loading}>
-        <span className="text-white dark:text-black">{loading ? "Loading... 🇺🇸" : "Create account"}</span>
-      </Button>
-    </form>
+    <Card className={cn("w-[350px]", className)}>
+      <CardHeader>
+        <CardTitle>Create an account</CardTitle>
+        <CardDescription>Enter your email and password to register.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              placeholder="m@example.com"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <Button disabled={isLoading} type="submit" className="w-full">
+            {isLoading ? "Creating account..." : "Sign Up"}
+          </Button>
+        </form>
+        <div className="mt-4 text-sm text-center">
+          Already have an account? <Link href="/sign-in">Sign in</Link>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
