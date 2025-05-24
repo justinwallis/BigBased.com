@@ -10,8 +10,80 @@ export default function CallToAction() {
 
   return (
     <section className="py-24 px-8 md:px-16 relative overflow-hidden">
+      {/* Digital Landscape Background */}
+      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
+        {/* Test visibility - red background */}
+        <div className="absolute inset-0 bg-red-500/20" />
+
+        {/* Clouds */}
+        <div className="absolute top-0 left-0 w-full h-1/3">
+          {Array.from({ length: 8 }, (_, i) => (
+            <div
+              key={i}
+              className="absolute bg-white/30 rounded-full animate-pulse"
+              style={{
+                left: `${i * 15 + 5}%`,
+                top: `${10 + i * 8}%`,
+                width: `${40 + i * 15}px`,
+                height: `${20 + i * 8}px`,
+                animationDelay: `${i * 0.5}s`,
+                animationDuration: "4s",
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Hills */}
+        <div className="absolute bottom-0 left-0 w-full h-2/3">
+          {/* Back hill */}
+          <div
+            className="absolute bottom-0 w-full bg-green-800/40"
+            style={{
+              height: "50%",
+              clipPath: "polygon(0 60%, 20% 40%, 40% 50%, 60% 30%, 80% 45%, 100% 35%, 100% 100%, 0 100%)",
+            }}
+          />
+
+          {/* Middle hill */}
+          <div
+            className="absolute bottom-0 w-full bg-green-700/50"
+            style={{
+              height: "35%",
+              clipPath: "polygon(0 70%, 25% 50%, 50% 60%, 75% 40%, 100% 55%, 100% 100%, 0 100%)",
+            }}
+          />
+
+          {/* Front hill */}
+          <div
+            className="absolute bottom-0 w-full bg-green-600/60"
+            style={{
+              height: "25%",
+              clipPath: "polygon(0 80%, 30% 60%, 60% 70%, 90% 50%, 100% 65%, 100% 100%, 0 100%)",
+            }}
+          />
+        </div>
+
+        {/* Grass */}
+        <div className="absolute bottom-0 left-0 w-full h-24">
+          {Array.from({ length: 60 }, (_, i) => (
+            <div
+              key={i}
+              className="absolute bottom-0 bg-green-400/70 animate-pulse"
+              style={{
+                left: `${i * 1.6}%`,
+                width: "2px",
+                height: `${12 + Math.random() * 16}px`,
+                animationDelay: `${i * 0.05}s`,
+                animationDuration: "3s",
+                transform: `rotate(${-3 + Math.random() * 6}deg)`,
+              }}
+            />
+          ))}
+        </div>
+      </div>
+
       {/* Digital cross background */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 5 }}>
         <div className="w-[90%] h-[90%] digital-cross-pulse">
           {/* Light mode cross */}
           <div className="block dark:hidden w-full h-full">
@@ -32,7 +104,10 @@ export default function CallToAction() {
       </div>
 
       {/* Binary code background */}
-      <div className="binary-background absolute inset-0 opacity-10 select-none pointer-events-none">
+      <div
+        className="binary-background absolute inset-0 opacity-10 select-none pointer-events-none"
+        style={{ zIndex: 3 }}
+      >
         {Array.from({ length: 20 }).map((_, i) => (
           <div key={i} className="binary-row" style={{ top: `${i * 5}%`, animationDelay: `${i * 0.1}s` }}>
             {Array.from({ length: 10 }).map((_, j) => (
