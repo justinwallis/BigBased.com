@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect, useRef } from "react"
 import { InteractiveLearningCenter } from "./interactive-learning-center"
+import { AboutSectionBackground } from "./about-section-background"
 
 export function AboutSection() {
   const [currentQuote, setCurrentQuote] = useState(0)
@@ -68,8 +69,9 @@ export function AboutSection() {
   }, [quotes.length])
 
   return (
-    <section className="pt-6 pb-2 bg-gray-50 dark:bg-gray-900 about-section">
-      <div className="container mx-auto px-3 md:px-4">
+    <section className="pt-6 pb-2 bg-gray-50 dark:bg-gray-900 about-section relative overflow-hidden">
+      <AboutSectionBackground />
+      <div className="container mx-auto px-3 md:px-4 relative z-10">
         {/* Doubled the top padding in the title area */}
         <div className="text-center mb-3 pt-6 pb-3">
           <h2 className="text-4xl md:text-5xl font-bold mb-2 text-gray-900 dark:text-white">About Big Based</h2>
