@@ -86,7 +86,7 @@ export default function SignInForm() {
               autoComplete="email"
               autoCorrect="off"
               disabled={isLoading}
-              className="dark:text-white !bg-gray-50 dark:!bg-gray-800 dark:border-gray-700"
+              className="dark:text-white dark:bg-gray-800 dark:border-gray-700"
             />
           </div>
           <div className="grid gap-2">
@@ -111,7 +111,7 @@ export default function SignInForm() {
               autoComplete="current-password"
               autoCorrect="off"
               disabled={isLoading}
-              className="dark:text-white !bg-gray-50 dark:!bg-gray-800 dark:border-gray-700"
+              className="dark:text-white dark:bg-gray-800 dark:border-gray-700"
             />
           </div>
           <div className="flex items-center space-x-2 my-2">
@@ -129,7 +129,7 @@ export default function SignInForm() {
             </Label>
           </div>
           <Button type="submit" disabled={isLoading} className="dark:text-black">
-            {isLoading ? <span className="text-white dark:text-white">Loading... 🇺🇸</span> : "Sign In 🇺🇸"}
+            {isLoading ? "Loading... 🇺🇸" : "Sign In"}
           </Button>
         </div>
       </form>
