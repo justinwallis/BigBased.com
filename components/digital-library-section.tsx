@@ -1,23 +1,76 @@
-const DigitalLibrarySection = () => {
+"use client"
+import BookLibrary from "./book-library"
+import { ErrorBoundary } from "@/components/error-boundary"
+import { useState, useEffect } from "react"
+
+export default function DigitalLibrarySection() {
+  const [libraryError, setLibraryError] = useState<Error | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    console.log("[DigitalLibrarySection] Component mounted")
+    setIsLoading(false)
+    return () => console.log("[DigitalLibrarySection] Component unmounted")
+  }, [])
+
   return (
-    <section
-      id="digital-library"
-      className="py-16 relative overflow-hidden bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: "url(/vintage-wooden-table.png)" }}
-    >
-      <div className="absolute inset-0 bg-white/85 dark:bg-gray-900/85 backdrop-blur-[1px]"></div>
-      <div className="max-w-7xl mx-auto relative z-10">
-        <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white sm:text-4xl">
-          Explore Our Digital Library
-        </h2>
-        <p className="mt-4 text-lg text-gray-700 dark:text-gray-300">
-          Discover a wealth of knowledge at your fingertips. Access a vast collection of digital resources, including
-          books, articles, and multimedia content.
+    <section id="digital-library" className="py-16 bg-white dark:bg-gray-900 relative overflow-hidden">
+      {/* Wood table background */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20 dark:opacity-15"
+        style={{
+          backgroundImage: "url('/old-wood-table-background.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      />
+
+      {/* Overlay to ensure readability */}
+      <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80" />
+
+      <div className="container mx-auto px-4 relative z-10">
+        <h2 className="text-3xl font-bold text-center mb-8 dark:text-white">Digital Library</h2>
+        <p className="text-center text-gray-600 dark:text-gray-300 mb-12 max-w-3xl mx-auto">
+          Access our curated collection of books, articles, and resources that promote traditional values,
+          constitutional principles, and a free society.
         </p>
-        {/* Add more content here, such as search bar, featured items, etc. */}
+
+        <div className="h-[600px] md:h-[700px] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm">
+          {libraryError ? (
+            <div className="flex items-center justify-center h-full bg-red-50 dark:bg-red-900/20 p-6">
+              <div className="text-center">
+                <h3 className="text-xl font-bold text-red-600 dark:text-red-400 mb-2">Error Loading Library</h3>
+                <p className="text-red-500 dark:text-red-300 mb-4">{libraryError.message}</p>
+                <button
+                  onClick={() => {
+                    console.log("[DigitalLibrarySection] Retrying library load")
+                    setLibraryError(null)
+                    setIsLoading(true)
+                    setTimeout(() => setIsLoading(false), 500)
+                  }}
+                  className="px-4 py-2 bg-red-100 dark:bg-red-800 text-red-700 dark:text-red-200 rounded hover:bg-red-200 dark:hover:bg-red-700"
+                >
+                  Retry Loading
+                </button>
+              </div>
+            </div>
+          ) : isLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-gray-100"></div>
+            </div>
+          ) : (
+            <ErrorBoundary
+              fallback={(error) => {
+                console.error("[DigitalLibrarySection] Error in BookLibrary:", error)
+                setLibraryError(error)
+                return null
+              }}
+            >
+              <BookLibrary />
+            </ErrorBoundary>
+          )}
+        </div>
       </div>
     </section>
   )
 }
-
-export default DigitalLibrarySection
