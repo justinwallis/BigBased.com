@@ -23,7 +23,7 @@ const getSupabase = () => {
 }
 
 // Validate password strength
-function validatePassword(password: string): { valid: boolean; message?: string } {
+async function validatePassword(password: string): Promise<{ valid: boolean; message?: string }> {
   // Check minimum length
   if (password.length < 10) {
     return { valid: false, message: "Password must be at least 10 characters long" }
@@ -174,7 +174,7 @@ export async function register(formData: FormData) {
     }
 
     // Validate password strength
-    const passwordValidation = validatePassword(password)
+    const passwordValidation = await validatePassword(password)
     if (!passwordValidation.valid) {
       return { error: passwordValidation.message }
     }
@@ -275,7 +275,7 @@ export async function resetPassword(formData: FormData) {
   }
 
   // Validate password strength
-  const passwordValidation = validatePassword(password)
+  const passwordValidation = await validatePassword(password)
   if (!passwordValidation.valid) {
     return { error: passwordValidation.message }
   }
