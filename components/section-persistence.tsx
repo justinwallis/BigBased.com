@@ -29,13 +29,13 @@ export default function SectionPersistence() {
             // Also save which section is currently active
             const navItems = [
               { id: "hero", threshold: 0 },
-              { id: "fundraising", threshold: 0 },
-              { id: "library", threshold: 0 },
-              { id: "about", threshold: 0 },
-              { id: "media", threshold: 0 },
+              { id: "fundraising-and-prayer-section", threshold: 0 },
+              { id: "digital-library-section", threshold: 0 },
+              { id: "about-section", threshold: 0 },
+              { id: "media-voting-platform", threshold: 0 },
               { id: "website-showcase", threshold: 0 },
               { id: "x-share-widget", threshold: 0 },
-              { id: "domains", threshold: 0 },
+              { id: "domain-collection", threshold: 0 },
               { id: "based-quiz", threshold: 0 },
             ]
 
@@ -90,29 +90,51 @@ export default function SectionPersistence() {
         const savedSection = localStorage.getItem("currentSection")
         const savedPosition = localStorage.getItem("scrollPosition")
 
-        console.log("Restoring scroll - Section:", savedSection, "Position:", savedPosition)
+        console.log("Attempting to restore - Section:", savedSection, "Position:", savedPosition)
 
-        if (savedSection && savedSection !== "hero") {
-          // Wait for DOM to be fully loaded
+        // First, let's check what sections actually exist on the page
+        const availableSections = [
+          "hero",
+          "fundraising-and-prayer-section",
+          "digital-library-section",
+          "about-section",
+          "media-voting-platform",
+          "website-showcase",
+          "x-share-widget",
+          "domain-collection",
+          "based-quiz",
+        ].filter((id) => document.getElementById(id))
+
+        console.log("Available sections on page:", availableSections)
+
+        if (savedSection && savedSection !== "hero" && savedSection !== "top") {
           const element = document.getElementById(savedSection)
           if (element) {
-            console.log("Found element for section:", savedSection)
-            // Use smooth scroll to the section
-            element.scrollIntoView({
+            console.log("Found element for section:", savedSection, "at position:", element.offsetTop)
+
+            // Force scroll to the element
+            window.scrollTo({
+              top: element.offsetTop - 100, // Offset for header
               behavior: "auto",
-              block: "start",
             })
+
+            // Double-check the scroll happened
+            setTimeout(() => {
+              console.log("Current scroll position after restore:", window.scrollY)
+              console.log("Target was:", element.offsetTop - 100)
+            }, 100)
+
             return true
           } else {
-            console.log("Element not found for section:", savedSection, "- will retry")
-            return false
+            console.log("Element not found for section:", savedSection)
           }
         }
 
-        // Fall back to exact scroll position if section not found
+        // Fall back to exact scroll position
         if (savedPosition) {
           const position = Number.parseInt(savedPosition, 10)
-          if (!isNaN(position) && position > 0) {
+          if (!isNaN(position) && position > 100) {
+            // Only restore if meaningful scroll
             console.log("Restoring to exact position:", position)
             window.scrollTo({
               top: position,
@@ -129,53 +151,45 @@ export default function SectionPersistence() {
       }
     }
 
-    // Multiple attempts to restore scroll position
-    let attempts = 0
-    const maxAttempts = 10
+    // Wait for everything to be loaded, then restore
+    const performRestore = () => {
+      console.log("Document ready state:", document.readyState)
 
-    const attemptRestore = () => {
-      attempts++
-      console.log(`Scroll restore attempt ${attempts}/${maxAttempts}`)
+      // Wait a bit more to ensure all components are mounted
+      setTimeout(() => {
+        console.log("Attempting scroll restoration...")
+        const success = restoreScrollPosition()
 
-      const success = restoreScrollPosition()
-
-      if (!success && attempts < maxAttempts) {
-        // Try again after a short delay
-        setTimeout(attemptRestore, 100 * attempts) // Increasing delay
-      } else if (success) {
-        console.log("Scroll position restored successfully")
-      } else {
-        console.log("Failed to restore scroll position after all attempts")
-      }
+        if (!success) {
+          // Try again after more time
+          setTimeout(() => {
+            console.log("Retry scroll restoration...")
+            restoreScrollPosition()
+          }, 500)
+        }
+      }, 200)
     }
 
-    // Start attempting to restore scroll position
-    setTimeout(attemptRestore, 100) // Initial delay to let page load
-
-    // Also listen for the load event
-    const handleLoad = () => {
-      console.log("Window load event fired")
-      setTimeout(attemptRestore, 50)
-    }
-
-    // Listen for DOMContentLoaded as well
-    const handleDOMContentLoaded = () => {
-      console.log("DOMContentLoaded event fired")
-      setTimeout(attemptRestore, 50)
-    }
-
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", handleDOMContentLoaded)
+    // Multiple triggers to ensure it works
+    if (document.readyState === "complete") {
+      performRestore()
     } else {
-      // DOM is already loaded
-      setTimeout(attemptRestore, 50)
+      window.addEventListener("load", performRestore)
+      document.addEventListener("DOMContentLoaded", performRestore)
     }
 
-    window.addEventListener("load", handleLoad)
+    // Also try after a longer delay as final fallback
+    setTimeout(() => {
+      const savedSection = localStorage.getItem("currentSection")
+      if (savedSection && window.scrollY < 100) {
+        console.log("Final fallback restore attempt for:", savedSection)
+        restoreScrollPosition()
+      }
+    }, 1000)
 
     return () => {
-      window.removeEventListener("load", handleLoad)
-      document.removeEventListener("DOMContentLoaded", handleDOMContentLoaded)
+      window.removeEventListener("load", performRestore)
+      document.removeEventListener("DOMContentLoaded", performRestore)
     }
   }, [])
 

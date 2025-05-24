@@ -14,16 +14,16 @@ export default function FloatingNavigation() {
   const [animatingDot, setAnimatingDot] = useState<string | null>(null)
   const prevActiveSectionRef = useRef(activeSection)
 
-  // Define section IDs and their corresponding labels
+  // Define section IDs and their corresponding labels - Updated to match actual page
   const navItems: NavItem[] = [
     { id: "top", label: "Welcome!" },
-    { id: "fundraising", label: "Fundraising" },
-    { id: "library", label: "Digital Library" },
-    { id: "about", label: "About Big Based" },
-    { id: "media", label: "Index & Voting" },
+    { id: "fundraising-and-prayer-section", label: "Fundraising" },
+    { id: "digital-library-section", label: "Digital Library" },
+    { id: "about-section", label: "About Big Based" },
+    { id: "media-voting-platform", label: "Index & Voting" },
     { id: "website-showcase", label: "Website Showcase" },
     { id: "x-share-widget", label: "Share on X!" },
-    { id: "domains", label: "Based Domains & Profile" },
+    { id: "domain-collection", label: "Based Domains & Profile" },
     { id: "based-quiz", label: "How Based Are You?" },
   ]
 
