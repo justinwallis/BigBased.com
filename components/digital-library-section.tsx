@@ -14,19 +14,18 @@ export default function DigitalLibrarySection() {
   }, [])
 
   return (
-    <section id="digital-library" className="py-16 bg-white dark:bg-gray-900 relative overflow-hidden">
-      {/* Wood table background */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20 dark:opacity-15"
-        style={{
-          backgroundImage: "url('/old-wood-table-background.png')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      />
-
-      {/* Overlay to ensure readability */}
-      <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80" />
+    <section
+      id="digital-library"
+      className="py-16 relative overflow-hidden"
+      style={{
+        backgroundImage: "url('/old-wood-table-background.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      {/* Overlay to ensure readability while keeping the wood table visible */}
+      <div className="absolute inset-0 bg-white/85 dark:bg-gray-900/85" />
 
       <div className="container mx-auto px-4 relative z-10">
         <h2 className="text-3xl font-bold text-center mb-8 dark:text-white">Digital Library</h2>
@@ -35,7 +34,7 @@ export default function DigitalLibrarySection() {
           constitutional principles, and a free society.
         </p>
 
-        <div className="h-[600px] md:h-[700px] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm">
+        <div className="h-[600px] md:h-[700px] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
           {libraryError ? (
             <div className="flex items-center justify-center h-full bg-red-50 dark:bg-red-900/20 p-6">
               <div className="text-center">
