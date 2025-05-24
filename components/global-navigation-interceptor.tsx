@@ -47,17 +47,25 @@ export function GlobalNavigationInterceptor({ children }: { children: React.Reac
         target = target.parentElement
       }
 
-      // Skip if not a link or is an external link or auth page
+      // Skip if not a link or is an external link
       if (
         !href ||
         href.startsWith("http") ||
         href.startsWith("#") ||
         href.startsWith("javascript:") ||
         href.startsWith("mailto:") ||
-        href.startsWith("tel:") ||
-        href.startsWith("/auth") ||
-        window.location.pathname.startsWith("/auth")
+        href.startsWith("tel:")
       ) {
+        return
+      }
+
+      // Skip transition only when switching between login and register pages
+      const currentPath = window.location.pathname
+      const isCurrentAuth = currentPath.startsWith("/auth")
+      const isTargetAuth = href.startsWith("/auth")
+
+      if (isCurrentAuth && isTargetAuth) {
+        // Both current and target are auth pages - skip transition
         return
       }
 
