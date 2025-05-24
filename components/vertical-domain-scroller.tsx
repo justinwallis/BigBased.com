@@ -7,6 +7,7 @@ import { useVirtualizer } from "@tanstack/react-virtual"
 import { generateAllDomains } from "@/utils/domain-generator"
 import { motion } from "framer-motion"
 import { Search, Filter, X, ChevronDown } from "lucide-react"
+import DomainCollectionBackground from "./domain-collection-background"
 
 interface DomainItemProps {
   domain: { name: string; category: string }
@@ -493,8 +494,9 @@ export default function VerticalDomainScroller() {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-900 py-12">
-      <div className="max-w-4xl mx-auto px-4">
+    <div className="bg-white dark:bg-gray-900 py-12 relative">
+      <DomainCollectionBackground />
+      <div className="max-w-4xl mx-auto px-4 relative z-10">
         <h2 className="text-2xl md:text-3xl font-bold text-center mb-4 text-gray-900 dark:text-white">
           My Domain Collection
         </h2>
