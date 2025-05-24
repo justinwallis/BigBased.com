@@ -8,7 +8,19 @@ interface VotingParticle {
   y: number
   vx: number
   vy: number
-  type: "thumbsUp" | "thumbsDown" | "checkmark" | "x" | "chart" | "signal" | "scale" | "vote"
+  type:
+    | "thumbsUp"
+    | "thumbsDown"
+    | "checkmark"
+    | "x"
+    | "chart"
+    | "signal"
+    | "scale"
+    | "vote"
+    | "star"
+    | "diamond"
+    | "arrow"
+    | "target"
   opacity: number
   size: number
   rotation: number
@@ -63,7 +75,7 @@ export default function VotingSectionBackground() {
 
     // Initialize particles
     const initParticles = () => {
-      const particleCount = Math.min(25, Math.floor((canvas.width * canvas.height) / 50000))
+      const particleCount = Math.min(40, Math.floor((canvas.width * canvas.height) / 40000))
       particlesRef.current = []
 
       for (let i = 0; i < particleCount; i++) {
@@ -73,7 +85,7 @@ export default function VotingSectionBackground() {
 
     // Initialize data visualizations
     const initDataVizs = () => {
-      const vizCount = Math.min(8, Math.floor((canvas.width * canvas.height) / 100000))
+      const vizCount = Math.min(15, Math.floor((canvas.width * canvas.height) / 80000))
       dataVizsRef.current = []
 
       for (let i = 0; i < vizCount; i++) {
@@ -84,7 +96,7 @@ export default function VotingSectionBackground() {
     // Initialize signal waves
     const initSignalWaves = () => {
       signalWavesRef.current = []
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 6; i++) {
         signalWavesRef.current.push(createSignalWave())
       }
     }
@@ -99,6 +111,10 @@ export default function VotingSectionBackground() {
         "signal",
         "scale",
         "vote",
+        "star",
+        "diamond",
+        "arrow",
+        "target",
       ]
       return {
         x: Math.random() * (canvas.width / window.devicePixelRatio),
@@ -106,8 +122,8 @@ export default function VotingSectionBackground() {
         vx: (Math.random() - 0.5) * 0.3,
         vy: (Math.random() - 0.5) * 0.3,
         type: types[Math.floor(Math.random() * types.length)],
-        opacity: Math.random() * 0.15 + 0.05,
-        size: Math.random() * 15 + 8,
+        opacity: Math.random() * 0.25 + 0.1,
+        size: Math.random() * 18 + 10,
         rotation: Math.random() * Math.PI * 2,
         rotationSpeed: (Math.random() - 0.5) * 0.02,
         life: 0,
@@ -121,7 +137,7 @@ export default function VotingSectionBackground() {
         x: Math.random() * (canvas.width / window.devicePixelRatio),
         y: Math.random() * (canvas.height / window.devicePixelRatio),
         type: types[Math.floor(Math.random() * types.length)],
-        opacity: Math.random() * 0.08 + 0.02,
+        opacity: Math.random() * 0.15 + 0.05,
         scale: Math.random() * 0.5 + 0.3,
         animationPhase: Math.random() * Math.PI * 2,
       }
@@ -131,7 +147,7 @@ export default function VotingSectionBackground() {
       x: Math.random() * (canvas.width / window.devicePixelRatio),
       y: Math.random() * (canvas.height / window.devicePixelRatio),
       radius: 0,
-      opacity: 0.1,
+      opacity: 0.2,
       speed: Math.random() * 0.5 + 0.3,
     })
 
@@ -231,6 +247,58 @@ export default function VotingSectionBackground() {
           ctx.moveTo(-particle.size * 0.1, -particle.size * 0.3)
           ctx.lineTo(particle.size * 0.1, -particle.size * 0.3)
           ctx.lineTo(0, -particle.size * 0.1)
+          ctx.stroke()
+          break
+
+        case "star":
+          // Star symbol
+          ctx.beginPath()
+          for (let i = 0; i < 5; i++) {
+            const angle = (i * Math.PI * 2) / 5 - Math.PI / 2
+            const x = Math.cos(angle) * particle.size * 0.3
+            const y = Math.sin(angle) * particle.size * 0.3
+            if (i === 0) ctx.moveTo(x, y)
+            else ctx.lineTo(x, y)
+          }
+          ctx.closePath()
+          ctx.stroke()
+          break
+
+        case "diamond":
+          // Diamond shape
+          ctx.beginPath()
+          ctx.moveTo(0, -particle.size * 0.3)
+          ctx.lineTo(particle.size * 0.2, 0)
+          ctx.lineTo(0, particle.size * 0.3)
+          ctx.lineTo(-particle.size * 0.2, 0)
+          ctx.closePath()
+          ctx.stroke()
+          break
+
+        case "arrow":
+          // Arrow pointing up
+          ctx.beginPath()
+          ctx.moveTo(0, -particle.size * 0.3)
+          ctx.lineTo(particle.size * 0.2, -particle.size * 0.1)
+          ctx.lineTo(particle.size * 0.1, -particle.size * 0.1)
+          ctx.lineTo(particle.size * 0.1, particle.size * 0.3)
+          ctx.lineTo(-particle.size * 0.1, particle.size * 0.3)
+          ctx.lineTo(-particle.size * 0.1, -particle.size * 0.1)
+          ctx.lineTo(-particle.size * 0.2, -particle.size * 0.1)
+          ctx.closePath()
+          ctx.stroke()
+          break
+
+        case "target":
+          // Target/bullseye
+          ctx.beginPath()
+          ctx.arc(0, 0, particle.size * 0.3, 0, Math.PI * 2)
+          ctx.stroke()
+          ctx.beginPath()
+          ctx.arc(0, 0, particle.size * 0.2, 0, Math.PI * 2)
+          ctx.stroke()
+          ctx.beginPath()
+          ctx.arc(0, 0, particle.size * 0.1, 0, Math.PI * 2)
           ctx.stroke()
           break
       }
