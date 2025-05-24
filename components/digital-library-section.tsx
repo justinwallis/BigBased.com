@@ -14,8 +14,82 @@ export default function DigitalLibrarySection() {
   }, [])
 
   return (
-    <section id="digital-library" className="py-16 bg-white dark:bg-gray-900">
-      <div className="container mx-auto px-4">
+    <section id="digital-library" className="py-16 bg-white dark:bg-gray-900 relative overflow-hidden">
+      {/* Dramatic Scrolling Background */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Matrix Rain Effect */}
+        <div className="absolute inset-0 opacity-5 dark:opacity-10">
+          {Array.from({ length: 20 }).map((_, i) => (
+            <div
+              key={`matrix-${i}`}
+              className="absolute text-xs font-mono text-gray-600 dark:text-green-400 whitespace-nowrap animate-pulse"
+              style={{
+                left: `${(i * 5) % 100}%`,
+                animationDelay: `${i * 0.5}s`,
+                animationDuration: `${3 + (i % 3)}s`,
+              }}
+            >
+              <div className="animate-bounce" style={{ animationDelay: `${i * 0.2}s` }}>
+                01001100 01101001 01100010 01110010 01100001 01110010 01111001
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Floating Book Icons */}
+        <div className="absolute inset-0 opacity-10 dark:opacity-20">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={`book-${i}`}
+              className="absolute text-2xl text-gray-400 dark:text-gray-600 animate-pulse"
+              style={{
+                left: `${(i * 12.5) % 100}%`,
+                top: `${(i * 15) % 80}%`,
+                animationDelay: `${i * 1.2}s`,
+                animationDuration: `${4 + (i % 2)}s`,
+              }}
+            >
+              📚
+            </div>
+          ))}
+        </div>
+
+        {/* Scrolling Text Snippets */}
+        <div className="absolute inset-0 opacity-5 dark:opacity-15">
+          {["KNOWLEDGE", "WISDOM", "TRUTH", "FREEDOM", "LIBERTY", "FAITH"].map((word, i) => (
+            <div
+              key={`word-${i}`}
+              className="absolute text-lg font-bold text-gray-500 dark:text-gray-400 tracking-widest animate-pulse"
+              style={{
+                left: `${(i * 16) % 100}%`,
+                top: `${(i * 20) % 90}%`,
+                animationDelay: `${i * 2}s`,
+                animationDuration: `${5 + (i % 3)}s`,
+                transform: `rotate(${((i * 15) % 45) - 22.5}deg)`,
+              }}
+            >
+              {word}
+            </div>
+          ))}
+        </div>
+
+        {/* Animated Grid Pattern */}
+        <div className="absolute inset-0 opacity-5 dark:opacity-10">
+          <div
+            className="w-full h-full bg-gradient-to-br from-transparent via-gray-200 dark:via-gray-700 to-transparent animate-pulse"
+            style={{
+              backgroundImage: `
+            linear-gradient(90deg, transparent 98%, rgba(128,128,128,0.1) 100%),
+            linear-gradient(0deg, transparent 98%, rgba(128,128,128,0.1) 100%)
+          `,
+              backgroundSize: "50px 50px",
+              animationDuration: "8s",
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
         <h2 className="text-3xl font-bold text-center mb-8 dark:text-white">Digital Library</h2>
         <p className="text-center text-gray-600 dark:text-gray-300 mb-12 max-w-3xl mx-auto">
           Access our curated collection of books, articles, and resources that promote traditional values,
