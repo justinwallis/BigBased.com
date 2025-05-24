@@ -399,7 +399,7 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
         >
           <div className="relative">
             {/* Binary code background animation */}
-            <div className="absolute -inset-20 opacity-20 select-none pointer-events-none overflow-hidden">
+            <div className="absolute -inset-20 opacity-10 select-none pointer-events-none overflow-hidden">
               {Array.from({ length: 10 }).map((_, i) => (
                 <div
                   key={i}
@@ -413,7 +413,7 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
                   {Array.from({ length: 20 }).map((_, j) => (
                     <span
                       key={j}
-                      className={`inline-block mx-1 ${isDarkMode ? "text-green-400" : "text-black"} opacity-50`}
+                      className={`inline-block mx-1 ${isDarkMode ? "text-white" : "text-black"} opacity-50`}
                       style={{ animationDelay: `${j * 0.05}s` }}
                     >
                       {Math.random() > 0.5 ? "1" : "0"}

@@ -189,13 +189,13 @@ body {
 /* Binary code animation for preloader */
 @keyframes binaryFade {
   0% {
-    opacity: 0.1;
+    opacity: 0.3; /* Changed from 0.1 */
   }
   50% {
-    opacity: 0.3;
+    opacity: 0.6; /* Changed from 0.3 */
   }
   100% {
-    opacity: 0.1;
+    opacity: 0.3; /* Changed from 0.1 */
   }
 }
 
@@ -204,7 +204,12 @@ body {
   white-space: nowrap;
   font-family: monospace;
   font-size: 14px;
-  animation: binaryFade 3s infinite;
+  opacity: 0.8; /* Changed from 0.7 */
+}
+
+.dark .binary-row {
+  color: #00ff00; /* Green color for dark mode */
+  opacity: 0.8;
 }
 
 /* Marquee Animation */
@@ -263,14 +268,6 @@ body {
 .binary-background {
   width: 100%;
   height: 100%;
-}
-
-.binary-row {
-  position: absolute;
-  white-space: nowrap;
-  font-family: monospace;
-  font-size: 14px;
-  opacity: 0.7;
 }
 
 /* Binary pulse animation for button */
@@ -754,13 +751,13 @@ body {
 /* Binary code animation */
 @keyframes binaryPulse {
   0% {
-    opacity: 0.1;
+    opacity: 0.3; /* Changed from 0.1 */
   }
   50% {
-    opacity: 0.3;
+    opacity: 0.6; /* Changed from 0.3 */
   }
   100% {
-    opacity: 0.1;
+    opacity: 0.3; /* Changed from 0.1 */
   }
 }
 
