@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next/types"
 import { viewportConfig, generateMetadata } from "../metadata-config"
 import { getWebPageData, getBreadcrumbData, getArticleData } from "@/lib/structured-data"
 import StructuredData from "@/components/structured-data"
+import DigitalCross from "@/components/digital-cross"
+import DigitalLandscape from "@/components/digital-landscape"
 
 export const metadata: Metadata = generateMetadata(
   "Revolution",
@@ -45,7 +47,7 @@ export default function RevolutionPage() {
   return (
     <>
       <div
-        className="min-h-screen w-full text-white flex flex-col items-center justify-center px-4 py-16 revolution-page"
+        className="min-h-screen w-full text-white flex flex-col items-center justify-center px-4 py-16 revolution-page relative"
         style={{
           backgroundColor: "#000000",
           backgroundImage: `
@@ -53,7 +55,6 @@ export default function RevolutionPage() {
             linear-gradient(90deg, rgba(30, 30, 30, 0.3) 1px, transparent 1px)
           `,
           backgroundSize: "20px 20px",
-          position: "relative",
         }}
       >
         {/* Background image with 10% opacity */}
@@ -67,7 +68,11 @@ export default function RevolutionPage() {
           }}
         />
 
-        <div className="max-w-4xl mx-auto text-center z-10 relative">
+        {/* Digital Landscape - positioned behind everything */}
+        <DigitalLandscape />
+
+        {/* Main Content */}
+        <div className="max-w-4xl mx-auto text-center z-20 relative">
           <p className="text-lg mb-4">The Revolution</p>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-12 leading-tight">
@@ -90,6 +95,11 @@ export default function RevolutionPage() {
               and digital renaissance.
             </p>
           </div>
+        </div>
+
+        {/* Digital Cross - positioned above landscape but below text */}
+        <div className="absolute inset-0 z-10">
+          <DigitalCross />
         </div>
       </div>
       <StructuredData data={structuredData} />
