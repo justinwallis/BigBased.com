@@ -1,11 +1,26 @@
-import type { Metadata, Viewport } from "next/types"
-import { viewportConfig, generateMetadata } from "../metadata-config"
+import { Suspense } from "react"
 import ProfileClientPage from "./ProfileClientPage"
-
-export const metadata: Metadata = generateMetadata("Profile", "Manage your Big Based profile and account settings.")
-
-export const viewport: Viewport = viewportConfig
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function ProfilePage() {
-  return <ProfileClientPage />
+  return (
+    <div className="min-h-screen bg-background">
+      <Suspense
+        fallback={
+          <div className="container mx-auto py-10">
+            <Card>
+              <CardHeader>
+                <CardTitle>Loading Profile...</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>Please wait while we load your profile information.</p>
+              </CardContent>
+            </Card>
+          </div>
+        }
+      >
+        <ProfileClientPage />
+      </Suspense>
+    </div>
+  )
 }
