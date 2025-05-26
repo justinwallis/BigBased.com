@@ -292,11 +292,6 @@ export default function ProfileClientPage() {
 
   return (
     <div className="container mx-auto py-10 space-y-8">
-      {/* Theme Toggle */}
-      <div className="flex justify-end">
-        <ThemeToggle variant="button" className="mb-4" />
-      </div>
-
       {/* Debug Info */}
       {process.env.NODE_ENV === "development" && (
         <Card className="border-yellow-200 bg-yellow-50">
@@ -331,7 +326,10 @@ export default function ProfileClientPage() {
           <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6">
             <AvatarUpload
               currentAvatarUrl={formData.avatar_url}
-              onAvatarChange={(newUrl) => handleInputChange("avatar_url", newUrl)}
+              onAvatarChange={(newUrl) => {
+                console.log("Avatar changed to:", newUrl)
+                handleInputChange("avatar_url", newUrl)
+              }}
               userInitials={getInitials(formData.full_name || formData.username || user.email || "U")}
               className="h-16 w-16 md:h-20 md:w-20 border-4 border-white shadow-lg"
             />
@@ -360,6 +358,9 @@ export default function ProfileClientPage() {
                 <Badge variant="secondary">Active</Badge>
               </div>
             )}
+          </div>
+          <div className="flex justify-end">
+            <ThemeToggle variant="button" />
           </div>
         </CardHeader>
       </Card>

@@ -132,11 +132,6 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <div className="container mx-auto py-10 space-y-8">
-        {/* Theme Toggle */}
-        <div className="flex justify-end">
-          <ThemeToggle variant="button" className="mb-4" />
-        </div>
-
         {/* Profile Header with Banner */}
         <Card className="border-0 shadow-lg overflow-hidden">
           {/* Banner Section */}
@@ -245,6 +240,9 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   })}
                 </div>
               )}
+            </div>
+            <div className="flex justify-end pt-4">
+              <ThemeToggle variant="button" />
             </div>
           </CardHeader>
 
