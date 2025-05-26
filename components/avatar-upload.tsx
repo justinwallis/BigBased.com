@@ -1,21 +1,21 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Label } from "@/components/ui/label"
-import { uploadAvatar, deleteAvatar } from "@/app/actions/avatar-actions"
+import { uploadImageClient, deleteImageClient } from "@/lib/upload-client"
 import { Upload, Trash2, Loader2 } from "lucide-react"
 
 interface AvatarUploadProps {
   currentAvatarUrl: string
   onAvatarChange: (newUrl: string) => void
   userInitials: string
+  className?: string
 }
 
-export function AvatarUpload({ currentAvatarUrl, onAvatarChange, userInitials }: AvatarUploadProps) {
+export function AvatarUpload({ currentAvatarUrl, onAvatarChange, userInitials, className }: AvatarUploadProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [uploadError, setUploadError] = useState("")
@@ -29,10 +29,7 @@ export function AvatarUpload({ currentAvatarUrl, onAvatarChange, userInitials }:
     setUploadError("")
 
     try {
-      const formData = new FormData()
-      formData.append("avatar", file)
-
-      const result = await uploadAvatar(formData)
+      const result = await uploadImageClient(file, "avatar")
 
       if (result.success && result.url) {
         onAvatarChange(result.url)
@@ -61,7 +58,7 @@ export function AvatarUpload({ currentAvatarUrl, onAvatarChange, userInitials }:
     setUploadError("")
 
     try {
-      const result = await deleteAvatar(currentAvatarUrl)
+      const result = await deleteImageClient(currentAvatarUrl)
 
       if (result.success) {
         // Set back to default avatar
@@ -87,7 +84,7 @@ export function AvatarUpload({ currentAvatarUrl, onAvatarChange, userInitials }:
   return (
     <div className="space-y-4">
       <div className="flex items-center space-x-4">
-        <Avatar className="h-24 w-24">
+        <Avatar className={className || "h-24 w-24"}>
           <AvatarImage src={currentAvatarUrl || "/placeholder.svg"} alt="Profile picture" />
           <AvatarFallback className="text-lg">{userInitials}</AvatarFallback>
         </Avatar>
