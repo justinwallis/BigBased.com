@@ -9,12 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { getCurrentUserProfile, updateCurrentUserProfile } from "@/app/actions/profile-actions"
-import { User, Shield, Bell, CreditCard, RefreshCw } from "lucide-react"
+import { User, Shield, Bell, CreditCard, RefreshCw, Twitter, Linkedin, Github, Globe } from "lucide-react"
 import { AvatarUpload } from "@/components/avatar-upload"
 
 interface ProfileData {
@@ -24,6 +23,7 @@ interface ProfileData {
   bio: string
   website: string
   avatar_url: string
+  social_links: any
   created_at: string
   updated_at: string
 }
@@ -44,7 +44,29 @@ export default function ProfileClientPage() {
     bio: "",
     website: "",
     avatar_url: "",
+    social_links: {
+      twitter: "",
+      linkedin: "",
+      github: "",
+      website: "",
+    },
   })
+
+  // Activity state
+  const [activities] = useState([
+    {
+      id: 1,
+      type: "profile_update",
+      description: "Updated profile information",
+      timestamp: new Date().toISOString(),
+    },
+    {
+      id: 2,
+      type: "joined",
+      description: "Joined Big Based",
+      timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+  ])
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -76,6 +98,12 @@ export default function ProfileClientPage() {
           bio: profileData.bio || "",
           website: profileData.website || "",
           avatar_url: profileData.avatar_url || "",
+          social_links: profileData.social_links || {
+            twitter: "",
+            linkedin: "",
+            github: "",
+            website: "",
+          },
         })
       } else {
         setLoadError("Failed to load profile data")
@@ -86,6 +114,12 @@ export default function ProfileClientPage() {
           bio: "",
           website: "",
           avatar_url: "",
+          social_links: {
+            twitter: "",
+            linkedin: "",
+            github: "",
+            website: "",
+          },
         })
       }
     } catch (error) {
@@ -100,6 +134,16 @@ export default function ProfileClientPage() {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
+    }))
+  }
+
+  const handleSocialLinkChange = (platform: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      social_links: {
+        ...prev.social_links,
+        [platform]: value,
+      },
     }))
   }
 
@@ -162,6 +206,18 @@ export default function ProfileClientPage() {
       .slice(0, 2)
   }
 
+  const formatTimeAgo = (timestamp: string) => {
+    const now = new Date()
+    const time = new Date(timestamp)
+    const diffInHours = Math.floor((now.getTime() - time.getTime()) / (1000 * 60 * 60))
+
+    if (diffInHours < 1) return "Just now"
+    if (diffInHours < 24) return `${diffInHours}h ago`
+    const diffInDays = Math.floor(diffInHours / 24)
+    if (diffInDays < 7) return `${diffInDays}d ago`
+    return time.toLocaleDateString()
+  }
+
   return (
     <div className="container mx-auto py-10 space-y-8">
       {/* Debug Info */}
@@ -187,24 +243,13 @@ export default function ProfileClientPage() {
       {/* Profile Header */}
       <Card>
         <CardHeader>
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <Avatar className="h-20 w-20">
-                <AvatarImage
-                  src={formData.avatar_url || "/placeholder.svg"}
-                  alt={formData.full_name || formData.username}
-                />
-                <AvatarFallback className="text-lg">
-                  {getInitials(formData.full_name || formData.username || user.email || "U")}
-                </AvatarFallback>
-              </Avatar>
-              <div className="mt-2">
-                <AvatarUpload
-                  currentAvatarUrl={formData.avatar_url}
-                  onAvatarChange={(newUrl) => handleInputChange("avatar_url", newUrl)}
-                  userInitials={getInitials(formData.full_name || formData.username || user.email || "U")}
-                />
-              </div>
+          <div className="flex items-start space-x-6">
+            <div className="flex flex-col items-center space-y-3">
+              <AvatarUpload
+                currentAvatarUrl={formData.avatar_url}
+                onAvatarChange={(newUrl) => handleInputChange("avatar_url", newUrl)}
+                userInitials={getInitials(formData.full_name || formData.username || user.email || "U")}
+              />
             </div>
             <div className="space-y-1 flex-1">
               <CardTitle className="text-2xl">{formData.full_name || formData.username || "User"}</CardTitle>
@@ -256,98 +301,207 @@ export default function ProfileClientPage() {
 
         {/* General Tab */}
         <TabsContent value="general">
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
-              <CardDescription>Update your profile information and personal details.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {isLoadingProfile ? (
-                <div className="flex items-center justify-center py-8">
-                  <RefreshCw className="h-6 w-6 animate-spin mr-2" />
-                  Loading profile data...
-                </div>
-              ) : (
-                <form onSubmit={handleSaveProfile} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
-                      <Input id="email" value={user.email || ""} disabled />
-                      <p className="text-sm text-muted-foreground">Your email address cannot be changed.</p>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Profile Form */}
+            <div className="lg:col-span-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Profile Information</CardTitle>
+                  <CardDescription>Update your profile information and personal details.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingProfile ? (
+                    <div className="flex items-center justify-center py-8">
+                      <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+                      Loading profile data...
                     </div>
+                  ) : (
+                    <form onSubmit={handleSaveProfile} className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="email">Email Address</Label>
+                          <Input id="email" value={user.email || ""} disabled />
+                          <p className="text-sm text-muted-foreground">Your email address cannot be changed.</p>
+                        </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="username">Username</Label>
-                      <Input
-                        id="username"
-                        value={formData.username}
-                        onChange={(e) => handleInputChange("username", e.target.value)}
-                        placeholder="Choose a username"
-                      />
-                    </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="username">Username</Label>
+                          <Input
+                            id="username"
+                            value={formData.username}
+                            onChange={(e) => handleInputChange("username", e.target.value)}
+                            placeholder="Choose a username"
+                          />
+                        </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="full_name">Full Name</Label>
-                      <Input
-                        id="full_name"
-                        value={formData.full_name}
-                        onChange={(e) => handleInputChange("full_name", e.target.value)}
-                        placeholder="Your full name"
-                      />
-                    </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="full_name">Full Name</Label>
+                          <Input
+                            id="full_name"
+                            value={formData.full_name}
+                            onChange={(e) => handleInputChange("full_name", e.target.value)}
+                            placeholder="Your full name"
+                          />
+                        </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="website">Website</Label>
-                      <Input
-                        id="website"
-                        value={formData.website}
-                        onChange={(e) => handleInputChange("website", e.target.value)}
-                        placeholder="https://yourwebsite.com"
-                      />
-                    </div>
-                  </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="website">Website</Label>
+                          <Input
+                            id="website"
+                            value={formData.website}
+                            onChange={(e) => handleInputChange("website", e.target.value)}
+                            placeholder="https://yourwebsite.com"
+                          />
+                        </div>
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="bio">Bio</Label>
-                    <Textarea
-                      id="bio"
-                      value={formData.bio}
-                      onChange={(e) => handleInputChange("bio", e.target.value)}
-                      placeholder="Tell us about yourself..."
-                      rows={4}
-                    />
-                  </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="bio">Bio</Label>
+                        <Textarea
+                          id="bio"
+                          value={formData.bio}
+                          onChange={(e) => handleInputChange("bio", e.target.value)}
+                          placeholder="Tell us about yourself..."
+                          rows={4}
+                        />
+                      </div>
 
-                  {saveMessage && (
-                    <div
-                      className={`p-3 rounded-md text-sm ${
-                        saveMessage.includes("Error")
-                          ? "bg-red-50 text-red-700 border border-red-200"
-                          : "bg-green-50 text-green-700 border border-green-200"
-                      }`}
-                    >
-                      {saveMessage}
-                    </div>
+                      {/* Social Links Section */}
+                      <div className="space-y-4">
+                        <Label className="text-base font-medium">Social Links</Label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="twitter" className="flex items-center space-x-2">
+                              <Twitter className="h-4 w-4" />
+                              <span>Twitter</span>
+                            </Label>
+                            <Input
+                              id="twitter"
+                              value={formData.social_links.twitter}
+                              onChange={(e) => handleSocialLinkChange("twitter", e.target.value)}
+                              placeholder="https://twitter.com/username"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="linkedin" className="flex items-center space-x-2">
+                              <Linkedin className="h-4 w-4" />
+                              <span>LinkedIn</span>
+                            </Label>
+                            <Input
+                              id="linkedin"
+                              value={formData.social_links.linkedin}
+                              onChange={(e) => handleSocialLinkChange("linkedin", e.target.value)}
+                              placeholder="https://linkedin.com/in/username"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="github" className="flex items-center space-x-2">
+                              <Github className="h-4 w-4" />
+                              <span>GitHub</span>
+                            </Label>
+                            <Input
+                              id="github"
+                              value={formData.social_links.github}
+                              onChange={(e) => handleSocialLinkChange("github", e.target.value)}
+                              placeholder="https://github.com/username"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="personal_website" className="flex items-center space-x-2">
+                              <Globe className="h-4 w-4" />
+                              <span>Personal Website</span>
+                            </Label>
+                            <Input
+                              id="personal_website"
+                              value={formData.social_links.website}
+                              onChange={(e) => handleSocialLinkChange("website", e.target.value)}
+                              placeholder="https://yoursite.com"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {saveMessage && (
+                        <div
+                          className={`p-3 rounded-md text-sm ${
+                            saveMessage.includes("Error")
+                              ? "bg-red-50 text-red-700 border border-red-200"
+                              : "bg-green-50 text-green-700 border border-green-200"
+                          }`}
+                        >
+                          {saveMessage}
+                        </div>
+                      )}
+
+                      {loadError && (
+                        <div className="p-3 rounded-md text-sm bg-yellow-50 text-yellow-700 border border-yellow-200">
+                          {loadError}
+                        </div>
+                      )}
+
+                      <div className="flex justify-between">
+                        <Button type="submit" disabled={isSaving}>
+                          {isSaving ? "Saving..." : "Save Changes"}
+                        </Button>
+                        <Button variant="outline" onClick={handleSignOut}>
+                          Sign Out
+                        </Button>
+                      </div>
+                    </form>
                   )}
+                </CardContent>
+              </Card>
+            </div>
 
-                  {loadError && (
-                    <div className="p-3 rounded-md text-sm bg-yellow-50 text-yellow-700 border border-yellow-200">
-                      {loadError}
-                    </div>
-                  )}
-
-                  <div className="flex justify-between">
-                    <Button type="submit" disabled={isSaving}>
-                      {isSaving ? "Saving..." : "Save Changes"}
-                    </Button>
-                    <Button variant="outline" onClick={handleSignOut}>
-                      Sign Out
-                    </Button>
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Recent Activity */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Recent Activity</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {activities.map((activity) => (
+                      <div key={activity.id} className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-gray-900 dark:text-gray-100">{activity.description}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {formatTimeAgo(activity.timestamp)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </form>
-              )}
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+
+              {/* Quick Stats */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Profile Stats</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600 dark:text-gray-400">Profile Views</span>
+                    <span className="font-medium">Coming Soon</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600 dark:text-gray-400">Connections</span>
+                    <span className="font-medium">Coming Soon</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600 dark:text-gray-400">Contributions</span>
+                    <span className="font-medium">Coming Soon</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </TabsContent>
 
         {/* Security Tab */}

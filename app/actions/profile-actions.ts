@@ -50,6 +50,7 @@ export async function updateCurrentUserProfile(profileData: {
   avatar_url?: string
   website?: string
   bio?: string
+  social_links?: any
 }): Promise<{ success: boolean; error?: string; debug?: any }> {
   try {
     const supabase = createServerSupabaseClient()
@@ -85,6 +86,7 @@ export async function updateCurrentUserProfile(profileData: {
         avatar_url: profileData.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
         bio: profileData.bio || "",
         website: profileData.website || "",
+        social_links: profileData.social_links || {},
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
@@ -103,6 +105,7 @@ export async function updateCurrentUserProfile(profileData: {
           avatar_url: profileData.avatar_url,
           bio: profileData.bio,
           website: profileData.website,
+          social_links: profileData.social_links,
           updated_at: new Date().toISOString(),
         })
         .eq("id", user.id)
@@ -133,6 +136,7 @@ export async function updateUserProfile(
     avatar_url?: string
     website?: string
     bio?: string
+    social_links?: any
   },
 ): Promise<{ success: boolean; error?: string }> {
   try {
@@ -146,6 +150,7 @@ export async function updateUserProfile(
         avatar_url: profileData.avatar_url,
         bio: profileData.bio,
         website: profileData.website,
+        social_links: profileData.social_links,
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)
@@ -218,6 +223,7 @@ export async function getCurrentUserProfile(): Promise<any> {
           avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
           bio: "",
           website: "",
+          social_links: {},
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         }
