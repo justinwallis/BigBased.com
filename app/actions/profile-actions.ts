@@ -48,6 +48,7 @@ export async function updateCurrentUserProfile(profileData: {
   username?: string
   full_name?: string
   avatar_url?: string
+  banner_url?: string
   bio?: string
   social_links?: any
 }): Promise<{ success: boolean; error?: string; debug?: any }> {
@@ -83,6 +84,7 @@ export async function updateCurrentUserProfile(profileData: {
         username: profileData.username || user.email?.split("@")[0] || "",
         full_name: profileData.full_name || "",
         avatar_url: profileData.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
+        banner_url: profileData.banner_url || "",
         bio: profileData.bio || "",
         social_links: profileData.social_links || {},
         created_at: new Date().toISOString(),
@@ -101,6 +103,7 @@ export async function updateCurrentUserProfile(profileData: {
           username: profileData.username,
           full_name: profileData.full_name,
           avatar_url: profileData.avatar_url,
+          banner_url: profileData.banner_url,
           bio: profileData.bio,
           social_links: profileData.social_links,
           updated_at: new Date().toISOString(),
@@ -131,6 +134,7 @@ export async function updateUserProfile(
     username?: string
     full_name?: string
     avatar_url?: string
+    banner_url?: string
     bio?: string
     social_links?: any
   },
@@ -144,6 +148,7 @@ export async function updateUserProfile(
         username: profileData.username,
         full_name: profileData.full_name,
         avatar_url: profileData.avatar_url,
+        banner_url: profileData.banner_url,
         bio: profileData.bio,
         social_links: profileData.social_links,
         updated_at: new Date().toISOString(),
@@ -216,6 +221,7 @@ export async function getCurrentUserProfile(): Promise<any> {
           username: user.email?.split("@")[0] || "",
           full_name: "",
           avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
+          banner_url: "",
           bio: "",
           social_links: {},
           created_at: new Date().toISOString(),

@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { getCurrentUserProfile, updateCurrentUserProfile } from "@/app/actions/profile-actions"
-import { User, Shield, Bell, CreditCard, RefreshCw, Linkedin, Github, Globe } from "lucide-react"
+import { User, Shield, Bell, CreditCard, RefreshCw, Linkedin, Github, Globe, Upload } from "lucide-react"
 import { AvatarUpload } from "@/components/avatar-upload"
 
 interface ProfileData {
@@ -22,6 +22,7 @@ interface ProfileData {
   full_name: string
   bio: string
   avatar_url: string
+  banner_url: string
   social_links: any
   created_at: string
   updated_at: string
@@ -42,6 +43,7 @@ export default function ProfileClientPage() {
     full_name: "",
     bio: "",
     avatar_url: "",
+    banner_url: "",
     social_links: {
       x: "",
       linkedin: "",
@@ -95,6 +97,7 @@ export default function ProfileClientPage() {
           full_name: profileData.full_name || "",
           bio: profileData.bio || "",
           avatar_url: profileData.avatar_url || "",
+          banner_url: profileData.banner_url || "",
           social_links: profileData.social_links || {
             x: "",
             linkedin: "",
@@ -110,6 +113,7 @@ export default function ProfileClientPage() {
           full_name: "",
           bio: "",
           avatar_url: "",
+          banner_url: "",
           social_links: {
             x: "",
             linkedin: "",
@@ -243,40 +247,52 @@ export default function ProfileClientPage() {
         </Card>
       )}
 
-      {/* Profile Header */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-start space-x-6">
-            <div className="flex flex-col items-center space-y-3">
+      {/* Profile Header with Banner Preview */}
+      <Card className="overflow-hidden">
+        <div className="relative">
+          {/* Banner */}
+          <div
+            className="h-32 md:h-48 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative"
+            style={{
+              backgroundImage: formData.banner_url ? `url(${formData.banner_url})` : undefined,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          >
+            <div className="absolute inset-0 bg-black/20"></div>
+            <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6">
               <AvatarUpload
                 currentAvatarUrl={formData.avatar_url}
                 onAvatarChange={(newUrl) => handleInputChange("avatar_url", newUrl)}
                 userInitials={getInitials(formData.full_name || formData.username || user.email || "U")}
+                className="h-16 w-16 md:h-20 md:w-20 border-4 border-white shadow-lg"
               />
             </div>
-            <div className="space-y-1 flex-1">
-              <CardTitle className="text-2xl">{formData.full_name || formData.username || "User"}</CardTitle>
-              <CardDescription className="text-base">{user.email}</CardDescription>
-              {formData.username && (
-                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                  <span>Public profile:</span>
-                  <a
-                    href={`/${formData.username}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 underline"
-                  >
-                    bigbased.com/{formData.username}
-                  </a>
-                </div>
-              )}
-              {profile && (
-                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                  <span>Member since {new Date(profile.created_at).toLocaleDateString()}</span>
-                  <Badge variant="secondary">Active</Badge>
-                </div>
-              )}
-            </div>
+          </div>
+        </div>
+        <CardHeader className="pt-4">
+          <div className="space-y-1">
+            <CardTitle className="text-2xl">{formData.full_name || formData.username || "User"}</CardTitle>
+            <CardDescription className="text-base">{user.email}</CardDescription>
+            {formData.username && (
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <span>Public profile:</span>
+                <a
+                  href={`/${formData.username}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800 underline"
+                >
+                  bigbased.com/{formData.username}
+                </a>
+              </div>
+            )}
+            {profile && (
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <span>Member since {new Date(profile.created_at).toLocaleDateString()}</span>
+                <Badge variant="secondary">Active</Badge>
+              </div>
+            )}
           </div>
         </CardHeader>
       </Card>
@@ -357,6 +373,23 @@ export default function ProfileClientPage() {
                           placeholder="Tell us about yourself..."
                           rows={4}
                         />
+                      </div>
+
+                      {/* Banner Upload */}
+                      <div className="space-y-2">
+                        <Label htmlFor="banner_url" className="flex items-center space-x-2">
+                          <Upload className="h-4 w-4" />
+                          <span>Profile Banner URL</span>
+                        </Label>
+                        <Input
+                          id="banner_url"
+                          value={formData.banner_url}
+                          onChange={(e) => handleInputChange("banner_url", e.target.value)}
+                          placeholder="https://example.com/banner.jpg"
+                        />
+                        <p className="text-sm text-muted-foreground">
+                          Add a banner image URL for your profile header. Recommended size: 1200x400px
+                        </p>
                       </div>
 
                       {/* Social Links Section */}
