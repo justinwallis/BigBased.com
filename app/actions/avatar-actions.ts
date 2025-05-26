@@ -1,12 +1,14 @@
-"use server"
-
 import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { revalidatePath } from "next/cache"
 
-export async function uploadAvatar(formData: FormData): Promise<{ success: boolean; url?: string; error?: string }> {
+export async function uploadAvatar(
+  formData: FormData,
+  type: "avatar" | "banner" = "avatar",
+): Promise<{ success: boolean; url?: string; error?: string }> {
   try {
     const supabase = createServerSupabaseClient()
 
-    // Get the current user
+    // Get current user
     const {
       data: { user },
       error: userError,
@@ -16,58 +18,60 @@ export async function uploadAvatar(formData: FormData): Promise<{ success: boole
       return { success: false, error: "User not authenticated" }
     }
 
-    const file = formData.get("avatar") as File
+    const file = formData.get("avatar") as File | null
+
     if (!file) {
-      return { success: false, error: "No file provided" }
+      return { success: false, error: "No file selected" }
     }
 
-    // Validate file type
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+    const maxSize = type === "banner" ? 10 * 1024 * 1024 : 5 * 1024 * 1024 // 10MB for banner, 5MB for avatar
+
+    if (file.size > maxSize) {
+      return { success: false, error: "File size exceeds the limit" }
+    }
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+
     if (!allowedTypes.includes(file.type)) {
-      return { success: false, error: "Invalid file type. Please upload a JPEG, PNG, WebP, or GIF image." }
+      return { success: false, error: "Invalid file type" }
     }
 
-    // Validate file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      return { success: false, error: "File too large. Please upload an image smaller than 5MB." }
-    }
-
-    // Create unique filename
+    // Upload file
     const fileExt = file.name.split(".").pop()
-    const fileName = `${user.id}/avatar-${Date.now()}.${fileExt}`
+    const fileName = `${user.id}/${type}-${Date.now()}.${fileExt}`
 
-    // Upload file to Supabase Storage
     const { data, error } = await supabase.storage.from("avatars").upload(fileName, file, {
       cacheControl: "3600",
-      upsert: true,
+      upsert: false,
     })
 
     if (error) {
-      console.error("Storage upload error:", error)
+      console.error("Error uploading avatar:", error)
       return { success: false, error: error.message }
     }
 
-    // Get public URL
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("avatars").getPublicUrl(fileName)
+    const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${data.path}`
 
-    console.log("Avatar uploaded successfully:", publicUrl)
-    return { success: true, url: publicUrl }
+    revalidatePath("/account")
+    return { success: true, url }
   } catch (error) {
     console.error("Error in uploadAvatar:", error)
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error uploading avatar",
+      error: error instanceof Error ? error.message : "Unknown error occurred",
     }
   }
+}
+
+export async function uploadBanner(formData: FormData): Promise<{ success: boolean; url?: string; error?: string }> {
+  return uploadAvatar(formData, "banner")
 }
 
 export async function deleteAvatar(avatarUrl: string): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = createServerSupabaseClient()
 
-    // Get the current user
+    // Get current user
     const {
       data: { user },
       error: userError,
@@ -78,19 +82,16 @@ export async function deleteAvatar(avatarUrl: string): Promise<{ success: boolea
     }
 
     // Extract file path from URL
-    const urlParts = avatarUrl.split("/avatars/")
-    if (urlParts.length !== 2) {
-      return { success: false, error: "Invalid avatar URL" }
-    }
+    const urlParts = avatarUrl.split("/")
+    const fileName = urlParts[urlParts.length - 1]
+    const filePath = `${user.id}/${fileName}`
 
-    const filePath = urlParts[1]
+    // Delete from storage
+    const { error: deleteError } = await supabase.storage.from("avatars").remove([filePath])
 
-    // Delete file from storage
-    const { error } = await supabase.storage.from("avatars").remove([filePath])
-
-    if (error) {
-      console.error("Storage delete error:", error)
-      return { success: false, error: error.message }
+    if (deleteError) {
+      console.error("Error deleting avatar:", deleteError)
+      return { success: false, error: deleteError.message }
     }
 
     return { success: true }
@@ -98,7 +99,44 @@ export async function deleteAvatar(avatarUrl: string): Promise<{ success: boolea
     console.error("Error in deleteAvatar:", error)
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error deleting avatar",
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    }
+  }
+}
+
+export async function deleteBanner(bannerUrl: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = createServerSupabaseClient()
+
+    // Get current user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser()
+
+    if (userError || !user) {
+      return { success: false, error: "User not authenticated" }
+    }
+
+    // Extract file path from URL
+    const urlParts = bannerUrl.split("/")
+    const fileName = urlParts[urlParts.length - 1]
+    const filePath = `${user.id}/${fileName}`
+
+    // Delete from storage
+    const { error: deleteError } = await supabase.storage.from("avatars").remove([filePath])
+
+    if (deleteError) {
+      console.error("Error deleting banner:", deleteError)
+      return { success: false, error: deleteError.message }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error("Error in deleteBanner:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
     }
   }
 }

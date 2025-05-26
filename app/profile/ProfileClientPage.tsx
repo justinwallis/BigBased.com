@@ -13,8 +13,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { getCurrentUserProfile, updateCurrentUserProfile } from "@/app/actions/profile-actions"
-import { User, Shield, Bell, CreditCard, RefreshCw, Linkedin, Github, Globe, Upload } from "lucide-react"
+import { User, Shield, Bell, CreditCard, RefreshCw, Linkedin, Github, Globe } from "lucide-react"
 import { AvatarUpload } from "@/components/avatar-upload"
+import { BannerUpload } from "@/components/banner-upload"
 
 interface ProfileData {
   id: string
@@ -376,21 +377,10 @@ export default function ProfileClientPage() {
                       </div>
 
                       {/* Banner Upload */}
-                      <div className="space-y-2">
-                        <Label htmlFor="banner_url" className="flex items-center space-x-2">
-                          <Upload className="h-4 w-4" />
-                          <span>Profile Banner URL</span>
-                        </Label>
-                        <Input
-                          id="banner_url"
-                          value={formData.banner_url}
-                          onChange={(e) => handleInputChange("banner_url", e.target.value)}
-                          placeholder="https://example.com/banner.jpg"
-                        />
-                        <p className="text-sm text-muted-foreground">
-                          Add a banner image URL for your profile header. Recommended size: 1200x400px
-                        </p>
-                      </div>
+                      <BannerUpload
+                        currentBannerUrl={formData.banner_url}
+                        onBannerChange={(newUrl) => handleInputChange("banner_url", newUrl)}
+                      />
 
                       {/* Social Links Section */}
                       <div className="space-y-4">
