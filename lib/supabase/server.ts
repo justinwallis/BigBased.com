@@ -36,5 +36,8 @@ export function createServerSupabaseClient() {
   })
 }
 
+// Export the function with the expected name for backward compatibility
+export { createServerSupabaseClient as createServerClient }
+
 // Keep the old function name for backward compatibility
 export const createClient = createServerSupabaseClient

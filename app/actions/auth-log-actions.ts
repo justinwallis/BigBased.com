@@ -1,6 +1,6 @@
 "use server"
 
-import { createServerClient } from "@/lib/supabase/server"
+import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { cookies, headers } from "next/headers"
 import { AUTH_EVENTS as EVENTS, AUTH_STATUS as STATUS } from "@/app/constants/auth-log-constants"
 
@@ -17,7 +17,7 @@ export async function logAuthEvent(
 ) {
   try {
     const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    const supabase = createServerSupabaseClient()
 
     // Get IP address and user agent
     const headersList = headers()
@@ -54,7 +54,7 @@ export async function getUserAuthLogs(
 ) {
   try {
     const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    const supabase = createServerSupabaseClient()
 
     // Get the current user
     const {

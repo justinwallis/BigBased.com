@@ -1,6 +1,6 @@
 "use server"
 
-import { createServerClient } from "@/lib/supabase/server"
+import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { cookies, headers } from "next/headers"
 import { randomBytes, createHash } from "crypto"
 import { logAuthEvent, AUTH_EVENTS, AUTH_STATUS } from "./auth-log-actions"
@@ -8,7 +8,7 @@ import { logAuthEvent, AUTH_EVENTS, AUTH_STATUS } from "./auth-log-actions"
 // Helper to get authenticated user
 async function getAuthenticatedUser() {
   const cookieStore = cookies()
-  const supabase = createServerClient(cookieStore)
+  const supabase = createServerSupabaseClient()
 
   const {
     data: { session },
@@ -395,7 +395,7 @@ async function hashSecurityAnswer(answer: string): Promise<string> {
 export async function initiateAccountRecovery(email: string) {
   try {
     const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    const supabase = createServerSupabaseClient()
 
     // Get IP and user agent for logging
     const headersList = headers()
@@ -493,7 +493,7 @@ export async function initiateAccountRecovery(email: string) {
 export async function verifyRecoveryToken(token: string) {
   try {
     const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    const supabase = createServerSupabaseClient()
 
     // Get IP and user agent for logging
     const headersList = headers()
@@ -573,7 +573,7 @@ export async function verifyRecoveryToken(token: string) {
 export async function getSecurityQuestions(userId: string, recoveryMethodId: number) {
   try {
     const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    const supabase = createServerSupabaseClient()
 
     // Get the security questions
     const { data: questions, error } = await supabase
@@ -600,7 +600,7 @@ export async function getSecurityQuestions(userId: string, recoveryMethodId: num
 export async function verifySecurityQuestions(token: string, answers: { questionId: number; answer: string }[]) {
   try {
     const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    const supabase = createServerSupabaseClient()
 
     // Get IP and user agent for logging
     const headersList = headers()
@@ -722,7 +722,7 @@ export async function verifySecurityQuestions(token: string, answers: { question
 export async function resetPasswordAfterRecovery(token: string, newPassword: string) {
   try {
     const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    const supabase = createServerSupabaseClient()
 
     // Get IP and user agent for logging
     const headersList = headers()
