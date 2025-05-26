@@ -188,18 +188,40 @@ export default function ProfileClientPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center space-x-4">
-            <Avatar className="h-20 w-20">
-              <AvatarImage
-                src={formData.avatar_url || "/placeholder.svg"}
-                alt={formData.full_name || formData.username}
-              />
-              <AvatarFallback className="text-lg">
-                {getInitials(formData.full_name || formData.username || user.email || "U")}
-              </AvatarFallback>
-            </Avatar>
-            <div className="space-y-1">
+            <div className="relative">
+              <Avatar className="h-20 w-20">
+                <AvatarImage
+                  src={formData.avatar_url || "/placeholder.svg"}
+                  alt={formData.full_name || formData.username}
+                />
+                <AvatarFallback className="text-lg">
+                  {getInitials(formData.full_name || formData.username || user.email || "U")}
+                </AvatarFallback>
+              </Avatar>
+              <div className="mt-2">
+                <AvatarUpload
+                  currentAvatarUrl={formData.avatar_url}
+                  onAvatarChange={(newUrl) => handleInputChange("avatar_url", newUrl)}
+                  userInitials={getInitials(formData.full_name || formData.username || user.email || "U")}
+                />
+              </div>
+            </div>
+            <div className="space-y-1 flex-1">
               <CardTitle className="text-2xl">{formData.full_name || formData.username || "User"}</CardTitle>
               <CardDescription className="text-base">{user.email}</CardDescription>
+              {formData.username && (
+                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                  <span>Public profile:</span>
+                  <a
+                    href={`/${formData.username}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    bigbased.com/{formData.username}
+                  </a>
+                </div>
+              )}
               {profile && (
                 <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                   <span>Member since {new Date(profile.created_at).toLocaleDateString()}</span>
@@ -295,12 +317,6 @@ export default function ProfileClientPage() {
                       rows={4}
                     />
                   </div>
-
-                  <AvatarUpload
-                    currentAvatarUrl={formData.avatar_url}
-                    onAvatarChange={(newUrl) => handleInputChange("avatar_url", newUrl)}
-                    userInitials={getInitials(formData.full_name || formData.username || user.email || "U")}
-                  />
 
                   {saveMessage && (
                     <div
