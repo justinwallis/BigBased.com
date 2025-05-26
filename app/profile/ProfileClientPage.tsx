@@ -15,7 +15,7 @@ import { Separator } from "@/components/ui/separator"
 import { getCurrentUserProfile, updateCurrentUserProfile } from "@/app/actions/profile-actions"
 import { User, Shield, Bell, CreditCard, RefreshCw, Linkedin, Github, Globe } from "lucide-react"
 import { AvatarUpload } from "@/components/avatar-upload"
-import { BannerUpload } from "@/components/banner-upload"
+import { InteractiveBannerUpload } from "@/components/interactive-banner-upload"
 
 interface ProfileData {
   id: string
@@ -45,6 +45,7 @@ export default function ProfileClientPage() {
     bio: "",
     avatar_url: "",
     banner_url: "",
+    banner_position: "center",
     social_links: {
       x: "",
       linkedin: "",
@@ -99,6 +100,7 @@ export default function ProfileClientPage() {
           bio: profileData.bio || "",
           avatar_url: profileData.avatar_url || "",
           banner_url: profileData.banner_url || "",
+          banner_position: profileData.banner_position || "center",
           social_links: profileData.social_links || {
             x: "",
             linkedin: "",
@@ -115,6 +117,7 @@ export default function ProfileClientPage() {
           bio: "",
           avatar_url: "",
           banner_url: "",
+          banner_position: "center",
           social_links: {
             x: "",
             linkedin: "",
@@ -252,23 +255,20 @@ export default function ProfileClientPage() {
       <Card className="overflow-hidden">
         <div className="relative">
           {/* Banner */}
-          <div
-            className="h-32 md:h-48 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative"
-            style={{
-              backgroundImage: formData.banner_url ? `url(${formData.banner_url})` : undefined,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          >
-            <div className="absolute inset-0 bg-black/20"></div>
-            <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6">
-              <AvatarUpload
-                currentAvatarUrl={formData.avatar_url}
-                onAvatarChange={(newUrl) => handleInputChange("avatar_url", newUrl)}
-                userInitials={getInitials(formData.full_name || formData.username || user.email || "U")}
-                className="h-16 w-16 md:h-20 md:w-20 border-4 border-white shadow-lg"
-              />
-            </div>
+          <InteractiveBannerUpload
+            currentBannerUrl={formData.banner_url}
+            onBannerChange={(newUrl) => handleInputChange("banner_url", newUrl)}
+            bannerPosition={formData.banner_position}
+            onPositionChange={(position) => handleInputChange("banner_position", position)}
+            className="h-32 md:h-48"
+          />
+          <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6">
+            <AvatarUpload
+              currentAvatarUrl={formData.avatar_url}
+              onAvatarChange={(newUrl) => handleInputChange("avatar_url", newUrl)}
+              userInitials={getInitials(formData.full_name || formData.username || user.email || "U")}
+              className="h-16 w-16 md:h-20 md:w-20 border-4 border-white shadow-lg"
+            />
           </div>
         </div>
         <CardHeader className="pt-4">
@@ -375,12 +375,6 @@ export default function ProfileClientPage() {
                           rows={4}
                         />
                       </div>
-
-                      {/* Banner Upload */}
-                      <BannerUpload
-                        currentBannerUrl={formData.banner_url}
-                        onBannerChange={(newUrl) => handleInputChange("banner_url", newUrl)}
-                      />
 
                       {/* Social Links Section */}
                       <div className="space-y-4">
