@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { CalendarDays, Linkedin, Github, Globe, Instagram, Youtube } from "lucide-react"
 import type { Profile } from "@/app/actions/profile-actions"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 interface PublicProfilePageClientProps {
   profile: Profile | null
@@ -130,6 +131,11 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      {/* Floating Theme Toggle */}
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle variant="button" className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-lg border" />
+      </div>
+
       <div className="container mx-auto py-10 space-y-8">
         {/* Profile Header with Banner */}
         <Card className="border-0 shadow-lg overflow-hidden">

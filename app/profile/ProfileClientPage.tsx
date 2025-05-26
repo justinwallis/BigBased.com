@@ -16,6 +16,7 @@ import { getCurrentUserProfile, updateCurrentUserProfile } from "@/app/actions/p
 import { User, Shield, Bell, CreditCard, RefreshCw, Linkedin, Github, Globe, Instagram, Youtube } from "lucide-react"
 import { AvatarUpload } from "@/components/avatar-upload"
 import { InteractiveBannerUpload } from "@/components/interactive-banner-upload"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 interface ProfileData {
   id: string
@@ -349,9 +350,12 @@ export default function ProfileClientPage() {
               </div>
             )}
             {profile && (
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <span>Member since {new Date(profile.created_at).toLocaleDateString()}</span>
-                <Badge variant="secondary">Active</Badge>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                  <span>Member since {new Date(profile.created_at).toLocaleDateString()}</span>
+                  <Badge variant="secondary">Active</Badge>
+                </div>
+                <ThemeToggle variant="button" className="ml-auto" />
               </div>
             )}
           </div>
