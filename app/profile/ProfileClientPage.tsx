@@ -292,6 +292,11 @@ export default function ProfileClientPage() {
 
   return (
     <div className="container mx-auto py-10 space-y-8">
+      {/* Theme Toggle */}
+      <div className="flex justify-end">
+        <ThemeToggle variant="button" className="mb-4" />
+      </div>
+
       {/* Debug Info */}
       {process.env.NODE_ENV === "development" && (
         <Card className="border-yellow-200 bg-yellow-50">
@@ -350,12 +355,9 @@ export default function ProfileClientPage() {
               </div>
             )}
             {profile && (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                  <span>Member since {new Date(profile.created_at).toLocaleDateString()}</span>
-                  <Badge variant="secondary">Active</Badge>
-                </div>
-                <ThemeToggle variant="button" className="ml-auto" />
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <span>Member since {new Date(profile.created_at).toLocaleDateString()}</span>
+                <Badge variant="secondary">Active</Badge>
               </div>
             )}
           </div>
