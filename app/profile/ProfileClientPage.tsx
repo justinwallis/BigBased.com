@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { getCurrentUserProfile, updateCurrentUserProfile } from "@/app/actions/profile-actions"
 import { User, Shield, Bell, CreditCard, RefreshCw } from "lucide-react"
+import { AvatarUpload } from "@/components/avatar-upload"
 
 interface ProfileData {
   id: string
@@ -295,16 +296,11 @@ export default function ProfileClientPage() {
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="avatar_url">Avatar URL</Label>
-                    <Input
-                      id="avatar_url"
-                      value={formData.avatar_url}
-                      onChange={(e) => handleInputChange("avatar_url", e.target.value)}
-                      placeholder="https://example.com/avatar.jpg"
-                    />
-                    <p className="text-sm text-muted-foreground">Provide a URL to your profile picture.</p>
-                  </div>
+                  <AvatarUpload
+                    currentAvatarUrl={formData.avatar_url}
+                    onAvatarChange={(newUrl) => handleInputChange("avatar_url", newUrl)}
+                    userInitials={getInitials(formData.full_name || formData.username || user.email || "U")}
+                  />
 
                   {saveMessage && (
                     <div
