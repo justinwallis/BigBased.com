@@ -440,7 +440,7 @@ export default function ProfileClientPage() {
                       <div className="space-y-4">
                         <Label className="text-base font-medium">Social Links</Label>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {/* Primary Social Platforms */}
+                          {/* Primary Social Platforms - Username Only */}
                           <div className="space-y-2">
                             <Label htmlFor="x" className="flex items-center space-x-2">
                               <XIcon className="h-4 w-4" />
@@ -450,8 +450,9 @@ export default function ProfileClientPage() {
                               id="x"
                               value={formData.social_links.x}
                               onChange={(e) => handleSocialLinkChange("x", e.target.value)}
-                              placeholder="https://x.com/username"
+                              placeholder="username"
                             />
+                            <p className="text-xs text-muted-foreground">Just add username</p>
                           </div>
 
                           <div className="space-y-2">
@@ -463,8 +464,9 @@ export default function ProfileClientPage() {
                               id="instagram"
                               value={formData.social_links.instagram}
                               onChange={(e) => handleSocialLinkChange("instagram", e.target.value)}
-                              placeholder="https://instagram.com/username"
+                              placeholder="username"
                             />
+                            <p className="text-xs text-muted-foreground">Just add username</p>
                           </div>
 
                           <div className="space-y-2">
@@ -476,8 +478,9 @@ export default function ProfileClientPage() {
                               id="youtube"
                               value={formData.social_links.youtube}
                               onChange={(e) => handleSocialLinkChange("youtube", e.target.value)}
-                              placeholder="https://youtube.com/@username"
+                              placeholder="username"
                             />
+                            <p className="text-xs text-muted-foreground">Just add username</p>
                           </div>
 
                           <div className="space-y-2">
@@ -489,8 +492,9 @@ export default function ProfileClientPage() {
                               id="tiktok"
                               value={formData.social_links.tiktok}
                               onChange={(e) => handleSocialLinkChange("tiktok", e.target.value)}
-                              placeholder="https://tiktok.com/@username"
+                              placeholder="username"
                             />
+                            <p className="text-xs text-muted-foreground">Just add username</p>
                           </div>
 
                           <div className="space-y-2">
@@ -502,8 +506,9 @@ export default function ProfileClientPage() {
                               id="facebook"
                               value={formData.social_links.facebook}
                               onChange={(e) => handleSocialLinkChange("facebook", e.target.value)}
-                              placeholder="https://facebook.com/username"
+                              placeholder="username"
                             />
+                            <p className="text-xs text-muted-foreground">Just add username</p>
                           </div>
 
                           <div className="space-y-2">
@@ -515,11 +520,12 @@ export default function ProfileClientPage() {
                               id="rumble"
                               value={formData.social_links.rumble}
                               onChange={(e) => handleSocialLinkChange("rumble", e.target.value)}
-                              placeholder="https://rumble.com/c/username"
+                              placeholder="username"
                             />
+                            <p className="text-xs text-muted-foreground">Just add username</p>
                           </div>
 
-                          {/* Professional Platforms */}
+                          {/* Professional Platforms - Username Only */}
                           <div className="space-y-2">
                             <Label htmlFor="linkedin" className="flex items-center space-x-2">
                               <Linkedin className="h-4 w-4" />
@@ -529,8 +535,9 @@ export default function ProfileClientPage() {
                               id="linkedin"
                               value={formData.social_links.linkedin}
                               onChange={(e) => handleSocialLinkChange("linkedin", e.target.value)}
-                              placeholder="https://linkedin.com/in/username"
+                              placeholder="username"
                             />
+                            <p className="text-xs text-muted-foreground">Just add username</p>
                           </div>
 
                           <div className="space-y-2">
@@ -542,11 +549,12 @@ export default function ProfileClientPage() {
                               id="github"
                               value={formData.social_links.github}
                               onChange={(e) => handleSocialLinkChange("github", e.target.value)}
-                              placeholder="https://github.com/username"
+                              placeholder="username"
                             />
+                            <p className="text-xs text-muted-foreground">Just add username</p>
                           </div>
 
-                          {/* Communication Platforms */}
+                          {/* Communication Platforms - Username Only */}
                           <div className="space-y-2">
                             <Label htmlFor="telegram" className="flex items-center space-x-2">
                               <TelegramIcon className="h-4 w-4" />
@@ -556,10 +564,12 @@ export default function ProfileClientPage() {
                               id="telegram"
                               value={formData.social_links.telegram}
                               onChange={(e) => handleSocialLinkChange("telegram", e.target.value)}
-                              placeholder="https://t.me/username"
+                              placeholder="username"
                             />
+                            <p className="text-xs text-muted-foreground">Just add username</p>
                           </div>
 
+                          {/* Special Cases - Full Input */}
                           <div className="space-y-2">
                             <Label htmlFor="discord" className="flex items-center space-x-2">
                               <DiscordIcon className="h-4 w-4" />
@@ -573,7 +583,6 @@ export default function ProfileClientPage() {
                             />
                           </div>
 
-                          {/* Special Platforms */}
                           <div className="space-y-2">
                             <Label htmlFor="therealworld" className="flex items-center space-x-2">
                               <TheRealWorldIcon className="h-4 w-4" />
@@ -583,11 +592,9 @@ export default function ProfileClientPage() {
                               id="therealworld"
                               value={formData.social_links.therealworld}
                               onChange={(e) => handleSocialLinkChange("therealworld", e.target.value)}
-                              placeholder="username (will link to therealworld.ai/username)"
+                              placeholder="Your TRW username"
                             />
-                            <p className="text-xs text-muted-foreground">
-                              Just enter your username, we'll create the link automatically
-                            </p>
+                            <p className="text-xs text-muted-foreground">Shows info popup instead of linking</p>
                           </div>
 
                           <div className="space-y-2">

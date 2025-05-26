@@ -1,10 +1,13 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import { notFound } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { CalendarDays, Linkedin, Github, Globe, Instagram, Youtube } from "lucide-react"
 import { getUserProfileByUsername } from "@/app/actions/profile-actions"
-import type { Metadata } from "next"
+import { TheRealWorldPopup } from "@/components/the-real-world-popup"
 
 interface PublicProfilePageProps {
   params: {
@@ -12,29 +15,44 @@ interface PublicProfilePageProps {
   }
 }
 
-export async function generateMetadata({ params }: PublicProfilePageProps): Promise<Metadata> {
-  const profile = await getUserProfileByUsername(params.username)
+export default function PublicProfilePage({ params }: PublicProfilePageProps) {
+  const [profile, setProfile] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [showTRWPopup, setShowTRWPopup] = useState(false)
 
-  if (!profile) {
-    return {
-      title: "Profile Not Found - Big Based",
-      description: "The requested profile could not be found.",
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        const profileData = await getUserProfileByUsername(params.username)
+        if (!profileData) {
+          notFound()
+        }
+        setProfile(profileData)
+      } catch (error) {
+        console.error("Error loading profile:", error)
+        notFound()
+      } finally {
+        setLoading(false)
+      }
     }
-  }
 
-  return {
-    title: `${profile.full_name || profile.username} - Big Based`,
-    description: profile.bio || `View ${profile.full_name || profile.username}'s profile on Big Based.`,
-    openGraph: {
-      title: `${profile.full_name || profile.username} - Big Based`,
-      description: profile.bio || `View ${profile.full_name || profile.username}'s profile on Big Based.`,
-      images: profile.avatar_url ? [profile.avatar_url] : [],
-    },
-  }
-}
+    loadProfile()
+  }, [params.username])
 
-export default async function PublicProfilePage({ params }: PublicProfilePageProps) {
-  const profile = await getUserProfileByUsername(params.username)
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="container mx-auto py-10">
+          <Card>
+            <CardHeader>
+              <CardTitle>Loading Profile...</CardTitle>
+              <CardDescription>Please wait while we load the profile information.</CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      </div>
+    )
+  }
 
   if (!profile) {
     notFound()
@@ -98,23 +116,35 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
   const getSocialUrl = (platform: string, value: string) => {
     if (!value) return null
 
+    // Clean the value (remove @ if present)
+    const cleanValue = value.replace(/^@/, "")
+
     switch (platform) {
-      case "therealworld":
-        return `https://therealworld.ai/${value.replace(/^@/, "")}`
       case "x":
-        return value.startsWith("http") ? value : `https://x.com/${value.replace(/^@/, "")}`
+        return `https://x.com/${cleanValue}`
       case "instagram":
-        return value.startsWith("http") ? value : `https://instagram.com/${value.replace(/^@/, "")}`
+        return `https://instagram.com/${cleanValue}`
       case "youtube":
-        return value.startsWith("http") ? value : `https://youtube.com/@${value.replace(/^@/, "")}`
+        return `https://youtube.com/@${cleanValue}`
       case "tiktok":
-        return value.startsWith("http") ? value : `https://tiktok.com/@${value.replace(/^@/, "")}`
+        return `https://tiktok.com/@${cleanValue}`
+      case "facebook":
+        return `https://facebook.com/${cleanValue}`
+      case "linkedin":
+        return `https://linkedin.com/in/${cleanValue}`
+      case "github":
+        return `https://github.com/${cleanValue}`
       case "telegram":
-        return value.startsWith("http") ? value : `https://t.me/${value.replace(/^@/, "")}`
+        return `https://t.me/${cleanValue}`
       case "rumble":
-        return value.startsWith("http") ? value : `https://rumble.com/c/${value}`
-      default:
+        return `https://rumble.com/c/${cleanValue}`
+      case "discord":
+        // Discord can be username#1234 or invite link
+        return value.includes("discord.gg") ? value : null
+      case "website":
         return value.startsWith("http") ? value : `https://${value}`
+      default:
+        return null
     }
   }
 
@@ -129,7 +159,6 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
     { key: "telegram", icon: TelegramIcon, label: "Telegram" },
     { key: "discord", icon: DiscordIcon, label: "Discord" },
     { key: "rumble", icon: RumbleIcon, label: "Rumble" },
-    { key: "therealworld", icon: TheRealWorldIcon, label: "The Real World" },
     { key: "website", icon: Globe, label: "Website" },
   ]
 
@@ -193,7 +222,7 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
               </div>
 
               {/* Social Links */}
-              {socialPlatforms.some((platform) => socialLinks[platform.key]) && (
+              {(socialPlatforms.some((platform) => socialLinks[platform.key]) || socialLinks.therealworld) && (
                 <div className="flex flex-wrap items-center gap-3 pt-2">
                   {socialPlatforms.map(({ key, icon: Icon, label }) => {
                     const url = getSocialUrl(key, socialLinks[key])
@@ -212,6 +241,17 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
                       </a>
                     )
                   })}
+
+                  {/* The Real World - Special handling */}
+                  {socialLinks.therealworld && (
+                    <button
+                      onClick={() => setShowTRWPopup(true)}
+                      className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors"
+                      title="The Real World"
+                    >
+                      <TheRealWorldIcon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -279,6 +319,14 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
             </Card>
           </div>
         </div>
+
+        {/* The Real World Popup */}
+        <TheRealWorldPopup
+          isOpen={showTRWPopup}
+          onClose={() => setShowTRWPopup(false)}
+          username={socialLinks.therealworld}
+          profileName={profile.full_name || profile.username}
+        />
       </div>
     </div>
   )
