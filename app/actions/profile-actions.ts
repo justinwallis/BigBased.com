@@ -50,9 +50,22 @@ export async function updateCurrentUserProfile(profileData: {
   avatar_url?: string
   website?: string
   bio?: string
-}): Promise<{ success: boolean; error?: string }> {
+}): Promise<{ success: boolean; error?: string; debug?: any }> {
   try {
     const supabase = createServerSupabaseClient()
+
+    // Debug: Log available cookies
+    console.log(
+      "Available cookies:",
+      Object.fromEntries(
+        Array.from(
+          require("next/headers")
+            .cookies()
+            .getAll()
+            .map((cookie) => [cookie.name, cookie.value.substring(0, 20) + "..."]),
+        ),
+      ),
+    )
 
     // Get the current user
     const {
@@ -60,12 +73,20 @@ export async function updateCurrentUserProfile(profileData: {
       error: userError,
     } = await supabase.auth.getUser()
 
+    console.log("Auth user result:", { user: user?.id, error: userError?.message })
+
     if (userError || !user) {
       console.error("Auth error:", userError)
-      return { success: false, error: "User not authenticated. Please sign in again." }
+      return {
+        success: false,
+        error: "User not authenticated. Please sign in again.",
+        debug: { userError: userError?.message, hasUser: !!user },
+      }
     }
 
-    const { error } = await supabase
+    console.log("Updating profile for user:", user.id)
+
+    const { error, data } = await supabase
       .from("profiles")
       .update({
         username: profileData.username,
@@ -76,12 +97,14 @@ export async function updateCurrentUserProfile(profileData: {
         updated_at: new Date().toISOString(),
       })
       .eq("id", user.id)
+      .select()
 
     if (error) {
       console.error("Error updating profile:", error)
       return { success: false, error: error.message }
     }
 
+    console.log("Profile updated successfully:", data)
     revalidatePath("/profile")
     return { success: true }
   } catch (error) {

@@ -92,21 +92,28 @@ export default function ProfileClientPage() {
     setSaveMessage("")
 
     try {
+      console.log("Saving profile with data:", formData)
+      console.log("Current user:", user?.id)
+
       const result = await updateCurrentUserProfile(formData)
+      console.log("Save result:", result)
 
       if (result.success) {
         setSaveMessage("Profile updated successfully!")
         await loadProfile() // Reload the profile data
       } else {
         setSaveMessage(`Error: ${result.error}`)
+        if (result.debug) {
+          console.log("Debug info:", result.debug)
+        }
       }
     } catch (error) {
       setSaveMessage("An unexpected error occurred")
       console.error("Error saving profile:", error)
     } finally {
       setIsSaving(false)
-      // Clear message after 3 seconds
-      setTimeout(() => setSaveMessage(""), 3000)
+      // Clear message after 5 seconds
+      setTimeout(() => setSaveMessage(""), 5000)
     }
   }
 
@@ -139,6 +146,20 @@ export default function ProfileClientPage() {
 
   return (
     <div className="container mx-auto py-10 space-y-8">
+      {/* Debug Info */}
+      {process.env.NODE_ENV === "development" && (
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardHeader>
+            <CardTitle className="text-sm">Debug Info</CardTitle>
+          </CardHeader>
+          <CardContent className="text-xs">
+            <p>User ID: {user?.id}</p>
+            <p>User Email: {user?.email}</p>
+            <p>Profile Loaded: {profile ? "Yes" : "No"}</p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Profile Header */}
       <Card>
         <CardHeader>
