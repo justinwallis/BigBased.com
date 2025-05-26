@@ -48,7 +48,6 @@ export async function updateCurrentUserProfile(profileData: {
   username?: string
   full_name?: string
   avatar_url?: string
-  website?: string
   bio?: string
   social_links?: any
 }): Promise<{ success: boolean; error?: string; debug?: any }> {
@@ -85,7 +84,6 @@ export async function updateCurrentUserProfile(profileData: {
         full_name: profileData.full_name || "",
         avatar_url: profileData.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
         bio: profileData.bio || "",
-        website: profileData.website || "",
         social_links: profileData.social_links || {},
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -104,7 +102,6 @@ export async function updateCurrentUserProfile(profileData: {
           full_name: profileData.full_name,
           avatar_url: profileData.avatar_url,
           bio: profileData.bio,
-          website: profileData.website,
           social_links: profileData.social_links,
           updated_at: new Date().toISOString(),
         })
@@ -134,7 +131,6 @@ export async function updateUserProfile(
     username?: string
     full_name?: string
     avatar_url?: string
-    website?: string
     bio?: string
     social_links?: any
   },
@@ -149,7 +145,6 @@ export async function updateUserProfile(
         full_name: profileData.full_name,
         avatar_url: profileData.avatar_url,
         bio: profileData.bio,
-        website: profileData.website,
         social_links: profileData.social_links,
         updated_at: new Date().toISOString(),
       })
@@ -222,7 +217,6 @@ export async function getCurrentUserProfile(): Promise<any> {
           full_name: "",
           avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
           bio: "",
-          website: "",
           social_links: {},
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),

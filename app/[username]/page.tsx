@@ -2,7 +2,7 @@ import { notFound } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { CalendarDays, Globe } from "lucide-react"
+import { CalendarDays, Globe, Linkedin, Github } from "lucide-react"
 import { getUserProfileByUsername } from "@/app/actions/profile-actions"
 import type { Metadata } from "next"
 
@@ -49,6 +49,15 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
       .slice(0, 2)
   }
 
+  // X (Twitter) icon component
+  const XIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  )
+
+  const socialLinks = profile.social_links || {}
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <div className="container mx-auto py-10 space-y-8">
@@ -88,20 +97,6 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
                     </span>
                   </div>
 
-                  {profile.website && (
-                    <div className="flex items-center space-x-1">
-                      <Globe className="h-4 w-4" />
-                      <a
-                        href={profile.website.startsWith("http") ? profile.website : `https://${profile.website}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline"
-                      >
-                        {profile.website.replace(/^https?:\/\//, "")}
-                      </a>
-                    </div>
-                  )}
-
                   <Badge
                     variant="secondary"
                     className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
@@ -109,6 +104,69 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
                     Active Member
                   </Badge>
                 </div>
+
+                {/* Social Links */}
+                {(socialLinks.x || socialLinks.linkedin || socialLinks.github || socialLinks.website) && (
+                  <div className="flex flex-wrap items-center gap-3 pt-2">
+                    {socialLinks.x && (
+                      <a
+                        href={socialLinks.x.startsWith("http") ? socialLinks.x : `https://${socialLinks.x}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-1 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                      >
+                        <XIcon className="h-4 w-4" />
+                        <span className="text-sm">X</span>
+                      </a>
+                    )}
+
+                    {socialLinks.linkedin && (
+                      <a
+                        href={
+                          socialLinks.linkedin.startsWith("http")
+                            ? socialLinks.linkedin
+                            : `https://${socialLinks.linkedin}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-1 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                      >
+                        <Linkedin className="h-4 w-4" />
+                        <span className="text-sm">LinkedIn</span>
+                      </a>
+                    )}
+
+                    {socialLinks.github && (
+                      <a
+                        href={
+                          socialLinks.github.startsWith("http") ? socialLinks.github : `https://${socialLinks.github}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-1 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                      >
+                        <Github className="h-4 w-4" />
+                        <span className="text-sm">GitHub</span>
+                      </a>
+                    )}
+
+                    {socialLinks.website && (
+                      <a
+                        href={
+                          socialLinks.website.startsWith("http")
+                            ? socialLinks.website
+                            : `https://${socialLinks.website}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-1 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                      >
+                        <Globe className="h-4 w-4" />
+                        <span className="text-sm">Website</span>
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </CardHeader>
@@ -169,7 +227,7 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
               </CardHeader>
               <CardContent>
                 <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-                  <p className="text-sm">Social links coming soon!</p>
+                  <p className="text-sm">Follow and connect with this user!</p>
                 </div>
               </CardContent>
             </Card>

@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { getCurrentUserProfile, updateCurrentUserProfile } from "@/app/actions/profile-actions"
-import { User, Shield, Bell, CreditCard, RefreshCw, Twitter, Linkedin, Github, Globe } from "lucide-react"
+import { User, Shield, Bell, CreditCard, RefreshCw, Linkedin, Github, Globe } from "lucide-react"
 import { AvatarUpload } from "@/components/avatar-upload"
 
 interface ProfileData {
@@ -21,7 +21,6 @@ interface ProfileData {
   username: string
   full_name: string
   bio: string
-  website: string
   avatar_url: string
   social_links: any
   created_at: string
@@ -42,10 +41,9 @@ export default function ProfileClientPage() {
     username: "",
     full_name: "",
     bio: "",
-    website: "",
     avatar_url: "",
     social_links: {
-      twitter: "",
+      x: "",
       linkedin: "",
       github: "",
       website: "",
@@ -96,10 +94,9 @@ export default function ProfileClientPage() {
           username: profileData.username || "",
           full_name: profileData.full_name || "",
           bio: profileData.bio || "",
-          website: profileData.website || "",
           avatar_url: profileData.avatar_url || "",
           social_links: profileData.social_links || {
-            twitter: "",
+            x: "",
             linkedin: "",
             github: "",
             website: "",
@@ -112,10 +109,9 @@ export default function ProfileClientPage() {
           username: user?.email?.split("@")[0] || "",
           full_name: "",
           bio: "",
-          website: "",
           avatar_url: "",
           social_links: {
-            twitter: "",
+            x: "",
             linkedin: "",
             github: "",
             website: "",
@@ -217,6 +213,13 @@ export default function ProfileClientPage() {
     if (diffInDays < 7) return `${diffInDays}d ago`
     return time.toLocaleDateString()
   }
+
+  // X (Twitter) icon component
+  const XIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  )
 
   return (
     <div className="container mx-auto py-10 space-y-8">
@@ -334,23 +337,13 @@ export default function ProfileClientPage() {
                           />
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-2 md:col-span-2">
                           <Label htmlFor="full_name">Full Name</Label>
                           <Input
                             id="full_name"
                             value={formData.full_name}
                             onChange={(e) => handleInputChange("full_name", e.target.value)}
                             placeholder="Your full name"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="website">Website</Label>
-                          <Input
-                            id="website"
-                            value={formData.website}
-                            onChange={(e) => handleInputChange("website", e.target.value)}
-                            placeholder="https://yourwebsite.com"
                           />
                         </div>
                       </div>
@@ -371,15 +364,15 @@ export default function ProfileClientPage() {
                         <Label className="text-base font-medium">Social Links</Label>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label htmlFor="twitter" className="flex items-center space-x-2">
-                              <Twitter className="h-4 w-4" />
-                              <span>Twitter</span>
+                            <Label htmlFor="x" className="flex items-center space-x-2">
+                              <XIcon className="h-4 w-4" />
+                              <span>X (Twitter)</span>
                             </Label>
                             <Input
-                              id="twitter"
-                              value={formData.social_links.twitter}
-                              onChange={(e) => handleSocialLinkChange("twitter", e.target.value)}
-                              placeholder="https://twitter.com/username"
+                              id="x"
+                              value={formData.social_links.x}
+                              onChange={(e) => handleSocialLinkChange("x", e.target.value)}
+                              placeholder="https://x.com/username"
                             />
                           </div>
 
@@ -410,12 +403,12 @@ export default function ProfileClientPage() {
                           </div>
 
                           <div className="space-y-2">
-                            <Label htmlFor="personal_website" className="flex items-center space-x-2">
+                            <Label htmlFor="website" className="flex items-center space-x-2">
                               <Globe className="h-4 w-4" />
-                              <span>Personal Website</span>
+                              <span>Website</span>
                             </Label>
                             <Input
-                              id="personal_website"
+                              id="website"
                               value={formData.social_links.website}
                               onChange={(e) => handleSocialLinkChange("website", e.target.value)}
                               placeholder="https://yoursite.com"
