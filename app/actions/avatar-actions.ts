@@ -1,5 +1,4 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server"
-import { revalidatePath } from "next/cache"
 
 export async function uploadAvatar(
   formData: FormData,
@@ -52,7 +51,6 @@ export async function uploadAvatar(
 
     const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${data.path}`
 
-    revalidatePath("/account")
     return { success: true, url }
   } catch (error) {
     console.error("Error in uploadAvatar:", error)
