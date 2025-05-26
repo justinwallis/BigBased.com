@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { getCurrentUserProfile, updateCurrentUserProfile } from "@/app/actions/profile-actions"
-import { User, Shield, Bell, CreditCard } from "lucide-react"
+import { User, Shield, Bell, CreditCard, RefreshCw } from "lucide-react"
 
 interface ProfileData {
   id: string
@@ -34,6 +34,7 @@ export default function ProfileClientPage() {
   const [isLoadingProfile, setIsLoadingProfile] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState("")
+  const [loadError, setLoadError] = useState("")
 
   // Form states
   const [formData, setFormData] = useState({
@@ -60,7 +61,11 @@ export default function ProfileClientPage() {
   const loadProfile = async () => {
     try {
       setIsLoadingProfile(true)
+      setLoadError("")
+      console.log("Loading profile for user:", user?.id)
+
       const profileData = await getCurrentUserProfile()
+      console.log("Profile data received:", profileData)
 
       if (profileData) {
         setProfile(profileData)
@@ -71,9 +76,20 @@ export default function ProfileClientPage() {
           website: profileData.website || "",
           avatar_url: profileData.avatar_url || "",
         })
+      } else {
+        setLoadError("Failed to load profile data")
+        // Set default form data if no profile exists
+        setFormData({
+          username: user?.email?.split("@")[0] || "",
+          full_name: "",
+          bio: "",
+          website: "",
+          avatar_url: "",
+        })
       }
     } catch (error) {
       console.error("Error loading profile:", error)
+      setLoadError("An error occurred while loading your profile")
     } finally {
       setIsLoadingProfile(false)
     }
@@ -100,7 +116,8 @@ export default function ProfileClientPage() {
 
       if (result.success) {
         setSaveMessage("Profile updated successfully!")
-        await loadProfile() // Reload the profile data
+        // Reload the profile data to reflect changes
+        await loadProfile()
       } else {
         setSaveMessage(`Error: ${result.error}`)
         if (result.debug) {
@@ -156,6 +173,12 @@ export default function ProfileClientPage() {
             <p>User ID: {user?.id}</p>
             <p>User Email: {user?.email}</p>
             <p>Profile Loaded: {profile ? "Yes" : "No"}</p>
+            <p>Loading Profile: {isLoadingProfile ? "Yes" : "No"}</p>
+            {loadError && <p className="text-red-600">Load Error: {loadError}</p>}
+            <Button size="sm" variant="outline" onClick={loadProfile} className="mt-2" disabled={isLoadingProfile}>
+              <RefreshCw className={`h-3 w-3 mr-1 ${isLoadingProfile ? "animate-spin" : ""}`} />
+              Reload Profile
+            </Button>
           </CardContent>
         </Card>
       )}
@@ -216,88 +239,101 @@ export default function ProfileClientPage() {
               <CardDescription>Update your profile information and personal details.</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSaveProfile} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input id="email" value={user.email || ""} disabled />
-                    <p className="text-sm text-muted-foreground">Your email address cannot be changed.</p>
+              {isLoadingProfile ? (
+                <div className="flex items-center justify-center py-8">
+                  <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+                  Loading profile data...
+                </div>
+              ) : (
+                <form onSubmit={handleSaveProfile} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email Address</Label>
+                      <Input id="email" value={user.email || ""} disabled />
+                      <p className="text-sm text-muted-foreground">Your email address cannot be changed.</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="username">Username</Label>
+                      <Input
+                        id="username"
+                        value={formData.username}
+                        onChange={(e) => handleInputChange("username", e.target.value)}
+                        placeholder="Choose a username"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="full_name">Full Name</Label>
+                      <Input
+                        id="full_name"
+                        value={formData.full_name}
+                        onChange={(e) => handleInputChange("full_name", e.target.value)}
+                        placeholder="Your full name"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="website">Website</Label>
+                      <Input
+                        id="website"
+                        value={formData.website}
+                        onChange={(e) => handleInputChange("website", e.target.value)}
+                        placeholder="https://yourwebsite.com"
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="username">Username</Label>
-                    <Input
-                      id="username"
-                      value={formData.username}
-                      onChange={(e) => handleInputChange("username", e.target.value)}
-                      placeholder="Choose a username"
+                    <Label htmlFor="bio">Bio</Label>
+                    <Textarea
+                      id="bio"
+                      value={formData.bio}
+                      onChange={(e) => handleInputChange("bio", e.target.value)}
+                      placeholder="Tell us about yourself..."
+                      rows={4}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="full_name">Full Name</Label>
+                    <Label htmlFor="avatar_url">Avatar URL</Label>
                     <Input
-                      id="full_name"
-                      value={formData.full_name}
-                      onChange={(e) => handleInputChange("full_name", e.target.value)}
-                      placeholder="Your full name"
+                      id="avatar_url"
+                      value={formData.avatar_url}
+                      onChange={(e) => handleInputChange("avatar_url", e.target.value)}
+                      placeholder="https://example.com/avatar.jpg"
                     />
+                    <p className="text-sm text-muted-foreground">Provide a URL to your profile picture.</p>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="website">Website</Label>
-                    <Input
-                      id="website"
-                      value={formData.website}
-                      onChange={(e) => handleInputChange("website", e.target.value)}
-                      placeholder="https://yourwebsite.com"
-                    />
+                  {saveMessage && (
+                    <div
+                      className={`p-3 rounded-md text-sm ${
+                        saveMessage.includes("Error")
+                          ? "bg-red-50 text-red-700 border border-red-200"
+                          : "bg-green-50 text-green-700 border border-green-200"
+                      }`}
+                    >
+                      {saveMessage}
+                    </div>
+                  )}
+
+                  {loadError && (
+                    <div className="p-3 rounded-md text-sm bg-yellow-50 text-yellow-700 border border-yellow-200">
+                      {loadError}
+                    </div>
+                  )}
+
+                  <div className="flex justify-between">
+                    <Button type="submit" disabled={isSaving}>
+                      {isSaving ? "Saving..." : "Save Changes"}
+                    </Button>
+                    <Button variant="outline" onClick={handleSignOut}>
+                      Sign Out
+                    </Button>
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="bio">Bio</Label>
-                  <Textarea
-                    id="bio"
-                    value={formData.bio}
-                    onChange={(e) => handleInputChange("bio", e.target.value)}
-                    placeholder="Tell us about yourself..."
-                    rows={4}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="avatar_url">Avatar URL</Label>
-                  <Input
-                    id="avatar_url"
-                    value={formData.avatar_url}
-                    onChange={(e) => handleInputChange("avatar_url", e.target.value)}
-                    placeholder="https://example.com/avatar.jpg"
-                  />
-                  <p className="text-sm text-muted-foreground">Provide a URL to your profile picture.</p>
-                </div>
-
-                {saveMessage && (
-                  <div
-                    className={`p-3 rounded-md text-sm ${
-                      saveMessage.includes("Error")
-                        ? "bg-red-50 text-red-700 border border-red-200"
-                        : "bg-green-50 text-green-700 border border-green-200"
-                    }`}
-                  >
-                    {saveMessage}
-                  </div>
-                )}
-
-                <div className="flex justify-between">
-                  <Button type="submit" disabled={isSaving}>
-                    {isSaving ? "Saving..." : "Save Changes"}
-                  </Button>
-                  <Button variant="outline" onClick={handleSignOut}>
-                    Sign Out
-                  </Button>
-                </div>
-              </form>
+                </form>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

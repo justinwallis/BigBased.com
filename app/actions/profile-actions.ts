@@ -54,19 +54,6 @@ export async function updateCurrentUserProfile(profileData: {
   try {
     const supabase = createServerSupabaseClient()
 
-    // Debug: Log available cookies
-    console.log(
-      "Available cookies:",
-      Object.fromEntries(
-        Array.from(
-          require("next/headers")
-            .cookies()
-            .getAll()
-            .map((cookie) => [cookie.name, cookie.value.substring(0, 20) + "..."]),
-        ),
-      ),
-    )
-
     // Get the current user
     const {
       data: { user },
@@ -86,25 +73,47 @@ export async function updateCurrentUserProfile(profileData: {
 
     console.log("Updating profile for user:", user.id)
 
-    const { error, data } = await supabase
-      .from("profiles")
-      .update({
-        username: profileData.username,
-        full_name: profileData.full_name,
-        avatar_url: profileData.avatar_url,
-        bio: profileData.bio,
-        website: profileData.website,
+    // First, check if profile exists
+    const { data: existingProfile } = await supabase.from("profiles").select("id").eq("id", user.id).single()
+
+    if (!existingProfile) {
+      // Create profile if it doesn't exist
+      const { error: insertError } = await supabase.from("profiles").insert({
+        id: user.id,
+        username: profileData.username || user.email?.split("@")[0] || "",
+        full_name: profileData.full_name || "",
+        avatar_url: profileData.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
+        bio: profileData.bio || "",
+        website: profileData.website || "",
+        created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
-      .eq("id", user.id)
-      .select()
 
-    if (error) {
-      console.error("Error updating profile:", error)
-      return { success: false, error: error.message }
+      if (insertError) {
+        console.error("Error creating profile:", insertError)
+        return { success: false, error: insertError.message }
+      }
+    } else {
+      // Update existing profile
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({
+          username: profileData.username,
+          full_name: profileData.full_name,
+          avatar_url: profileData.avatar_url,
+          bio: profileData.bio,
+          website: profileData.website,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id)
+
+      if (updateError) {
+        console.error("Error updating profile:", updateError)
+        return { success: false, error: updateError.message }
+      }
     }
 
-    console.log("Profile updated successfully:", data)
+    console.log("Profile operation completed successfully")
     revalidatePath("/profile")
     return { success: true }
   } catch (error) {
@@ -185,6 +194,8 @@ export async function getCurrentUserProfile(): Promise<any> {
       error: userError,
     } = await supabase.auth.getUser()
 
+    console.log("getCurrentUserProfile - Auth user result:", { user: user?.id, error: userError?.message })
+
     if (userError || !user) {
       console.error("Error getting current user:", userError)
       return null
@@ -195,9 +206,36 @@ export async function getCurrentUserProfile(): Promise<any> {
 
     if (error) {
       console.error("Error fetching current user profile:", error)
+
+      // If profile doesn't exist, create a default one
+      if (error.code === "PGRST116") {
+        // No rows returned
+        console.log("Profile doesn't exist, creating default profile")
+        const defaultProfile = {
+          id: user.id,
+          username: user.email?.split("@")[0] || "",
+          full_name: "",
+          avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
+          bio: "",
+          website: "",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }
+
+        const { error: insertError } = await supabase.from("profiles").insert(defaultProfile)
+
+        if (insertError) {
+          console.error("Error creating default profile:", insertError)
+          return null
+        }
+
+        return defaultProfile
+      }
+
       return null
     }
 
+    console.log("Profile fetched successfully:", data)
     return data
   } catch (error) {
     console.error("Error in getCurrentUserProfile:", error)
