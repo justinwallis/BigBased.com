@@ -1,26 +1,7 @@
 "use server"
 
-import { createServerClient } from "@/lib/supabase/server"
-import { cookies } from "next/headers"
-
-// Create a Supabase client for server-side operations
-function createServerSupabaseClient() {
-  const cookieStore = cookies()
-
-  return createServerClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!, {
-    cookies: {
-      get(name: string) {
-        return cookieStore.get(name)?.value
-      },
-      set(name: string, value: string, options: any) {
-        cookieStore.set({ name, value, ...options })
-      },
-      remove(name: string, options: any) {
-        cookieStore.set({ name, value: "", ...options })
-      },
-    },
-  })
-}
+import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { revalidatePath } from "next/cache"
 
 export async function createProfile(profileData: {
   id: string
@@ -52,6 +33,7 @@ export async function createProfile(profileData: {
       return { success: false, error: error.message }
     }
 
+    revalidatePath("/profile")
     return { success: true }
   } catch (error) {
     console.error("Error in createProfile:", error)
@@ -79,7 +61,8 @@ export async function updateCurrentUserProfile(profileData: {
     } = await supabase.auth.getUser()
 
     if (userError || !user) {
-      return { success: false, error: "User not authenticated" }
+      console.error("Auth error:", userError)
+      return { success: false, error: "User not authenticated. Please sign in again." }
     }
 
     const { error } = await supabase
@@ -99,6 +82,7 @@ export async function updateCurrentUserProfile(profileData: {
       return { success: false, error: error.message }
     }
 
+    revalidatePath("/profile")
     return { success: true }
   } catch (error) {
     console.error("Error in updateCurrentUserProfile:", error)
@@ -139,6 +123,7 @@ export async function updateUserProfile(
       return { success: false, error: error.message }
     }
 
+    revalidatePath("/profile")
     return { success: true }
   } catch (error) {
     console.error("Error in updateUserProfile:", error)

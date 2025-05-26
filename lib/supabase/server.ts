@@ -1,8 +1,8 @@
-import { createClient } from "@supabase/supabase-js"
+import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import type { Database } from "@/types/supabase"
 
-export function createServerClient() {
+export function createServerSupabaseClient() {
   const cookieStore = cookies()
 
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -12,7 +12,7 @@ export function createServerClient() {
     throw new Error("Missing Supabase environment variables")
   }
 
-  return createClient<Database>(supabaseUrl, supabaseKey, {
+  return createServerClient<Database>(supabaseUrl, supabaseKey, {
     cookies: {
       get(name: string) {
         return cookieStore.get(name)?.value
@@ -35,3 +35,6 @@ export function createServerClient() {
     },
   })
 }
+
+// Keep the old function name for backward compatibility
+export const createClient = createServerSupabaseClient
