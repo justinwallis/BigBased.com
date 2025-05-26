@@ -62,6 +62,53 @@ export async function createProfile(profileData: {
   }
 }
 
+export async function updateCurrentUserProfile(profileData: {
+  username?: string
+  full_name?: string
+  avatar_url?: string
+  website?: string
+  bio?: string
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = createServerSupabaseClient()
+
+    // Get the current user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser()
+
+    if (userError || !user) {
+      return { success: false, error: "User not authenticated" }
+    }
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        username: profileData.username,
+        full_name: profileData.full_name,
+        avatar_url: profileData.avatar_url,
+        bio: profileData.bio,
+        website: profileData.website,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", user.id)
+
+    if (error) {
+      console.error("Error updating profile:", error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error("Error in updateCurrentUserProfile:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error updating profile",
+    }
+  }
+}
+
 export async function updateUserProfile(
   id: string,
   profileData: {
@@ -116,6 +163,36 @@ export async function getUserProfile(userId: string): Promise<any> {
     return data
   } catch (error) {
     console.error("Error in getUserProfile:", error)
+    return null
+  }
+}
+
+export async function getCurrentUserProfile(): Promise<any> {
+  try {
+    const supabase = createServerSupabaseClient()
+
+    // Get the current user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser()
+
+    if (userError || !user) {
+      console.error("Error getting current user:", userError)
+      return null
+    }
+
+    // Get their profile
+    const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).single()
+
+    if (error) {
+      console.error("Error fetching current user profile:", error)
+      return null
+    }
+
+    return data
+  } catch (error) {
+    console.error("Error in getCurrentUserProfile:", error)
     return null
   }
 }
