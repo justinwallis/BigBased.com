@@ -64,7 +64,14 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
         {/* Profile Header with Banner */}
         <Card className="border-0 shadow-lg overflow-hidden">
           {/* Banner Section */}
-          <div className="h-48 md:h-64 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative">
+          <div
+            className="h-48 md:h-64 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative"
+            style={{
+              backgroundImage: profile.banner_url ? `url(${profile.banner_url})` : undefined,
+              backgroundSize: "cover",
+              backgroundPosition: profile.banner_position || "center",
+            }}
+          >
             <div className="absolute inset-0 bg-black/20"></div>
             <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6">
               <Avatar className="h-20 w-20 md:h-24 md:w-24 border-4 border-white shadow-lg">
