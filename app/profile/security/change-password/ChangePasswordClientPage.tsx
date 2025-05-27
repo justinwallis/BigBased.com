@@ -48,7 +48,7 @@ export default function ChangePasswordClientPage() {
   if (success) {
     return (
       <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors">
-        <div className="container mx-auto px-4 py-8 max-w-2xl">
+        <div className="container mx-auto px-4 pb-8 pt-4 max-w-2xl">
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
@@ -67,7 +67,7 @@ export default function ChangePasswordClientPage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors">
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="container mx-auto px-4 pb-8 pt-4 max-w-2xl">
         {/* Header with navigation and theme toggle */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
