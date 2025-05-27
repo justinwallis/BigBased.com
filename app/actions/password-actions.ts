@@ -1,12 +1,20 @@
 "use server"
 
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
+import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { validatePassword } from "@/lib/password-validation"
 
 export async function changePassword(formData: FormData) {
   try {
-    const supabase = createServerComponentClient({ cookies })
+    const cookieStore = cookies()
+
+    const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+      },
+    })
 
     // Get the current user
     const {
@@ -15,6 +23,7 @@ export async function changePassword(formData: FormData) {
     } = await supabase.auth.getUser()
 
     if (userError || !user) {
+      console.error("User error:", userError)
       return { error: "Not authenticated" }
     }
 
@@ -42,8 +51,21 @@ export async function changePassword(formData: FormData) {
       return { error: "New password must be different from current password" }
     }
 
+    // Create a client-side supabase instance for password verification
+    const clientSupabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          },
+        },
+      },
+    )
+
     // Verify current password by attempting to sign in
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    const { error: signInError } = await clientSupabase.auth.signInWithPassword({
       email: user.email!,
       password: currentPassword,
     })
@@ -52,12 +74,13 @@ export async function changePassword(formData: FormData) {
       return { error: "Current password is incorrect" }
     }
 
-    // Update password
-    const { error: updateError } = await supabase.auth.updateUser({
+    // Update password using the service role client
+    const { error: updateError } = await supabase.auth.admin.updateUserById(user.id, {
       password: newPassword,
     })
 
     if (updateError) {
+      console.error("Update error:", updateError)
       return { error: "Failed to update password. Please try again." }
     }
 
