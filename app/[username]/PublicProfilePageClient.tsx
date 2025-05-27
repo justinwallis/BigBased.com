@@ -4,9 +4,11 @@ import { notFound } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { CalendarDays, Linkedin, Github, Globe, Instagram, Youtube } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { CalendarDays, Linkedin, Github, Globe, Instagram, Youtube, Home } from "lucide-react"
 import type { Profile } from "@/app/actions/profile-actions"
 import { ThemeToggle } from "@/components/theme-toggle"
+import Link from "next/link"
 
 interface PublicProfilePageClientProps {
   profile: Profile | null
@@ -164,7 +166,15 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   <CardTitle className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
                     {profile?.full_name || profile?.username}
                   </CardTitle>
-                  <ThemeToggle variant="button" />
+                  <div className="flex items-center space-x-2">
+                    <Link href="/">
+                      <Button variant="outline" size="sm" className="flex items-center space-x-2">
+                        <Home className="h-4 w-4" />
+                        <span>Back to Big Based</span>
+                      </Button>
+                    </Link>
+                    <ThemeToggle variant="button" />
+                  </div>
                 </div>
                 <CardDescription className="text-lg text-gray-600 dark:text-gray-400">
                   @{profile?.username}

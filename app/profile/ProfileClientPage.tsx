@@ -13,10 +13,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { getCurrentUserProfile, updateCurrentUserProfile } from "@/app/actions/profile-actions"
-import { User, Shield, Bell, CreditCard, RefreshCw, Linkedin, Github, Globe, Instagram, Youtube } from "lucide-react"
+import {
+  User,
+  Shield,
+  Bell,
+  CreditCard,
+  RefreshCw,
+  Linkedin,
+  Github,
+  Globe,
+  Instagram,
+  Youtube,
+  Home,
+} from "lucide-react"
 import { AvatarUpload } from "@/components/avatar-upload"
 import { InteractiveBannerUpload } from "@/components/interactive-banner-upload"
 import { ThemeToggle } from "@/components/theme-toggle"
+import Link from "next/link"
 
 interface ProfileData {
   id: string
@@ -340,7 +353,15 @@ export default function ProfileClientPage() {
             <div className="space-y-1">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-2xl">{formData.full_name || formData.username || "User"}</CardTitle>
-                <ThemeToggle variant="button" />
+                <div className="flex items-center space-x-2">
+                  <Link href="/">
+                    <Button variant="outline" size="sm" className="flex items-center space-x-2">
+                      <Home className="h-4 w-4" />
+                      <span>Back to Big Based</span>
+                    </Button>
+                  </Link>
+                  <ThemeToggle variant="button" />
+                </div>
               </div>
               <CardDescription className="text-base">{user.email}</CardDescription>
               {formData.username && (
