@@ -55,6 +55,7 @@ export default function ProfileClientPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState("")
   const [loadError, setLoadError] = useState("")
+  const timeoutIdRef = useRef<NodeJS.Timeout | null>(null)
 
   // Form states
   const [formData, setFormData] = useState({
@@ -132,6 +133,21 @@ export default function ProfileClientPage() {
 
       if (profileData) {
         setProfile(profileData)
+        const defaultSocialLinks = {
+          x: "",
+          linkedin: "",
+          github: "",
+          website: "",
+          instagram: "",
+          youtube: "",
+          telegram: "",
+          discord: "",
+          tiktok: "",
+          facebook: "",
+          therealworld: "",
+          rumble: "",
+        }
+
         setFormData({
           username: profileData.username || "",
           full_name: profileData.full_name || "",
@@ -139,20 +155,7 @@ export default function ProfileClientPage() {
           avatar_url: profileData.avatar_url || "",
           banner_url: profileData.banner_url || "",
           banner_position: profileData.banner_position || "center",
-          social_links: profileData.social_links || {
-            x: "",
-            linkedin: "",
-            github: "",
-            website: "",
-            instagram: "",
-            youtube: "",
-            telegram: "",
-            discord: "",
-            tiktok: "",
-            facebook: "",
-            therealworld: "",
-            rumble: "",
-          },
+          social_links: { ...defaultSocialLinks, ...(profileData.social_links || {}) },
         })
         setUsernameStatus((prev) => ({
           ...prev,
@@ -161,8 +164,9 @@ export default function ProfileClientPage() {
       } else {
         setLoadError("Failed to load profile data")
         // Set default form data if no profile exists
+        const defaultUsername = user?.email?.split("@")[0] || ""
         setFormData({
-          username: user?.email?.split("@")[0] || "",
+          username: defaultUsername,
           full_name: "",
           bio: "",
           avatar_url: "",
@@ -183,6 +187,10 @@ export default function ProfileClientPage() {
             rumble: "",
           },
         })
+        setUsernameStatus((prev) => ({
+          ...prev,
+          originalUsername: defaultUsername,
+        }))
       }
     } catch (error) {
       console.error("Error loading profile:", error)
@@ -246,6 +254,66 @@ export default function ProfileClientPage() {
     router.push("/")
   }
 
+  // Debounced username check
+  const checkUsername = async (username: string) => {
+    if (!username || username === usernameStatus.originalUsername) {
+      setUsernameStatus((prev) => ({ ...prev, checking: false, available: null, error: null }))
+      return
+    }
+
+    setUsernameStatus((prev) => ({ ...prev, checking: true, error: null }))
+
+    try {
+      const result = await checkUsernameAvailability(username, user?.id)
+      setUsernameStatus((prev) => ({
+        ...prev,
+        checking: false,
+        available: result.available,
+        error: result.error || null,
+      }))
+    } catch (error) {
+      setUsernameStatus((prev) => ({
+        ...prev,
+        checking: false,
+        available: false,
+        error: "Error checking username availability",
+      }))
+    }
+  }
+
+  // Debounce the username check
+  useEffect(() => {
+    if (timeoutIdRef.current) {
+      clearTimeout(timeoutIdRef.current)
+    }
+
+    timeoutIdRef.current = setTimeout(() => {
+      if (formData.username && formData.username.length >= 3) {
+        checkUsername(formData.username)
+      } else if (formData.username && formData.username.length > 0) {
+        setUsernameStatus((prev) => ({
+          ...prev,
+          checking: false,
+          available: false,
+          error: "Username must be at least 3 characters long",
+        }))
+      } else {
+        setUsernameStatus((prev) => ({
+          ...prev,
+          checking: false,
+          available: null,
+          error: null,
+        }))
+      }
+    }, 500)
+
+    return () => {
+      if (timeoutIdRef.current) {
+        clearTimeout(timeoutIdRef.current)
+      }
+    }
+  }, [formData.username, usernameStatus.originalUsername, user?.id])
+
   if (isLoading || !user) {
     return (
       <div className="container mx-auto py-10">
@@ -279,68 +347,6 @@ export default function ProfileClientPage() {
     if (diffInDays < 7) return `${diffInDays}d ago`
     return time.toLocaleDateString()
   }
-
-  // Debounced username check
-  const checkUsername = async (username: string) => {
-    if (!username || username === usernameStatus.originalUsername) {
-      setUsernameStatus((prev) => ({ ...prev, checking: false, available: null, error: null }))
-      return
-    }
-
-    setUsernameStatus((prev) => ({ ...prev, checking: true, error: null }))
-
-    try {
-      const result = await checkUsernameAvailability(username, user?.id)
-      setUsernameStatus((prev) => ({
-        ...prev,
-        checking: false,
-        available: result.available,
-        error: result.error || null,
-      }))
-    } catch (error) {
-      setUsernameStatus((prev) => ({
-        ...prev,
-        checking: false,
-        available: false,
-        error: "Error checking username availability",
-      }))
-    }
-  }
-
-  const timeoutIdRef = useRef<NodeJS.Timeout | null>(null)
-
-  // Debounce the username check
-  useEffect(() => {
-    if (timeoutIdRef.current) {
-      clearTimeout(timeoutIdRef.current)
-    }
-
-    timeoutIdRef.current = setTimeout(() => {
-      if (formData.username && formData.username.length >= 3) {
-        checkUsername(formData.username)
-      } else if (formData.username && formData.username.length > 0) {
-        setUsernameStatus((prev) => ({
-          ...prev,
-          checking: false,
-          available: false,
-          error: "Username must be at least 3 characters long",
-        }))
-      } else {
-        setUsernameStatus((prev) => ({
-          ...prev,
-          checking: false,
-          available: null,
-          error: null,
-        }))
-      }
-    }, 500)
-
-    return () => {
-      if (timeoutIdRef.current) {
-        clearTimeout(timeoutIdRef.current)
-      }
-    }
-  }, [formData.username, usernameStatus.originalUsername])
 
   // Social media icon components
   const XIcon = ({ className }: { className?: string }) => (
@@ -384,6 +390,13 @@ export default function ProfileClientPage() {
       <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
     </svg>
   )
+
+  const isUsernameValid = () => {
+    if (formData.username === usernameStatus.originalUsername) {
+      return true // Current username is always valid
+    }
+    return usernameStatus.available === true && !usernameStatus.error && !usernameStatus.checking
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
@@ -525,7 +538,8 @@ export default function ProfileClientPage() {
                               className={
                                 usernameStatus.error
                                   ? "border-red-500 focus:border-red-500"
-                                  : usernameStatus.available === true
+                                  : usernameStatus.available === true &&
+                                      formData.username !== usernameStatus.originalUsername
                                     ? "border-green-500 focus:border-green-500"
                                     : ""
                               }
@@ -793,20 +807,14 @@ export default function ProfileClientPage() {
                           </div>
                         )}
 
-                        <Button
-                          type="submit"
-                          disabled={
-                            isSaving ||
-                            usernameStatus.available === false ||
-                            usernameStatus.checking ||
-                            (formData.username !== usernameStatus.originalUsername && usernameStatus.available !== true)
-                          }
-                        >
-                          {isSaving ? "Saving..." : "Save Changes"}
-                        </Button>
-                        <Button variant="outline" onClick={handleSignOut}>
-                          Sign Out
-                        </Button>
+                        <div className="flex justify-between">
+                          <Button type="submit" disabled={isSaving || !isUsernameValid()}>
+                            {isSaving ? "Saving..." : "Save Changes"}
+                          </Button>
+                          <Button variant="outline" onClick={handleSignOut}>
+                            Sign Out
+                          </Button>
+                        </div>
                       </form>
                     )}
                   </CardContent>
