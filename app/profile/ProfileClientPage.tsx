@@ -2,11 +2,11 @@
 
 import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useSearchParams } from "next/navigation"
 import { Overview } from "./components/Overview"
 import { Security } from "./components/Security"
 import { Billing } from "./components/Billing"
 import { Notifications } from "./components/Notifications"
-import { useSearchParams } from "next/navigation"
 
 export default function ProfileClientPage() {
   const [isLoading, setIsLoading] = useState(false)
