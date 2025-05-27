@@ -1,30 +1,28 @@
 "use server"
 
-import { createClient } from "@supabase/supabase-js"
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
+import { cookies } from "next/headers"
 import { validatePassword } from "@/lib/password-validation"
-
-// Create a Supabase client for server actions
-async function getSupabase() {
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error("Missing Supabase environment variables")
-  }
-
-  return createClient(supabaseUrl, supabaseKey, {
-    auth: {
-      persistSession: false,
-    },
-  })
-}
 
 export async function changePassword(formData: FormData) {
   try {
+    const supabase = createServerComponentClient({ cookies })
+
+    // Get the current user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser()
+
+    if (userError || !user) {
+      return { error: "Not authenticated" }
+    }
+
     const currentPassword = formData.get("currentPassword") as string
     const newPassword = formData.get("newPassword") as string
     const confirmPassword = formData.get("confirmPassword") as string
 
+    // Validate inputs
     if (!currentPassword || !newPassword || !confirmPassword) {
       return { error: "All fields are required" }
     }
@@ -33,49 +31,39 @@ export async function changePassword(formData: FormData) {
       return { error: "New passwords do not match" }
     }
 
-    if (currentPassword === newPassword) {
-      return { error: "New password must be different from current password" }
-    }
-
     // Validate new password strength
     const passwordValidation = validatePassword(newPassword)
     if (!passwordValidation.valid) {
       return { error: passwordValidation.message }
     }
 
-    const supabase = await getSupabase()
-
-    // Get the current user
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-
-    if (!session?.user) {
-      return { error: "Not authenticated" }
+    // Check if new password is different from current
+    if (currentPassword === newPassword) {
+      return { error: "New password must be different from current password" }
     }
 
-    // First, verify the current password by attempting to sign in
-    const { error: verifyError } = await supabase.auth.signInWithPassword({
-      email: session.user.email!,
+    // Verify current password by attempting to sign in
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email!,
       password: currentPassword,
     })
 
-    if (verifyError) {
+    if (signInError) {
       return { error: "Current password is incorrect" }
     }
 
-    // Update the password
+    // Update password
     const { error: updateError } = await supabase.auth.updateUser({
       password: newPassword,
     })
 
     if (updateError) {
-      return { error: updateError.message }
+      return { error: "Failed to update password. Please try again." }
     }
 
     return { success: true }
   } catch (error) {
-    console.error("Change password error:", error)
+    console.error("Password change error:", error)
     return { error: "An unexpected error occurred" }
   }
 }

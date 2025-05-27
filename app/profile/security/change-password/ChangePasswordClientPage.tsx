@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowLeft, Eye, EyeOff, Shield, CheckCircle } from "lucide-react"
+import { ArrowLeft, Eye, EyeOff, Shield, CheckCircle, Home } from "lucide-react"
 import Link from "next/link"
 import { changePassword } from "@/app/actions/password-actions"
 import { validatePassword } from "@/lib/password-validation"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function ChangePasswordClientPage() {
   const router = useRouter()
@@ -37,7 +38,7 @@ export default function ChangePasswordClientPage() {
     } else {
       setSuccess(true)
       setTimeout(() => {
-        router.push("/profile/security")
+        router.push("/profile?tab=security")
       }, 2000)
     }
 
@@ -64,14 +65,23 @@ export default function ChangePasswordClientPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <Link href="/profile/security">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Security
-          </Button>
-        </Link>
+      {/* Header with navigation and theme toggle */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <Link href="/profile?tab=security">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Security
+            </Button>
+          </Link>
+          <Link href="/">
+            <Button variant="ghost" size="sm">
+              <Home className="h-4 w-4 mr-2" />
+              Back to Big Based
+            </Button>
+          </Link>
+        </div>
+        <ThemeToggle />
       </div>
 
       <Card>
@@ -180,9 +190,9 @@ export default function ChangePasswordClientPage() {
             </div>
 
             {/* Password Requirements */}
-            <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
               <h4 className="font-medium text-sm mb-2">Password Requirements:</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
+              <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                 <li>• At least 8 characters long</li>
                 <li>• Contains at least one uppercase letter</li>
                 <li>• Contains at least one lowercase letter</li>
@@ -199,7 +209,7 @@ export default function ChangePasswordClientPage() {
               >
                 {isLoading ? "Changing Password..." : "Change Password"}
               </Button>
-              <Link href="/profile/security">
+              <Link href="/profile?tab=security">
                 <Button type="button" variant="outline">
                   Cancel
                 </Button>
