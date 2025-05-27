@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
@@ -12,7 +12,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { getCurrentUserProfile, updateCurrentUserProfile } from "@/app/actions/profile-actions"
+import {
+  getCurrentUserProfile,
+  updateCurrentUserProfile,
+  checkUsernameAvailability,
+} from "@/app/actions/profile-actions"
 import {
   User,
   Shield,
@@ -74,6 +78,18 @@ export default function ProfileClientPage() {
       therealworld: "",
       rumble: "",
     },
+  })
+
+  const [usernameStatus, setUsernameStatus] = useState<{
+    checking: boolean
+    available: boolean | null
+    error: string | null
+    originalUsername: string
+  }>({
+    checking: false,
+    available: null,
+    error: null,
+    originalUsername: "",
   })
 
   // Activity state
@@ -138,6 +154,10 @@ export default function ProfileClientPage() {
             rumble: "",
           },
         })
+        setUsernameStatus((prev) => ({
+          ...prev,
+          originalUsername: profileData?.username || user?.email?.split("@")[0] || "",
+        }))
       } else {
         setLoadError("Failed to load profile data")
         // Set default form data if no profile exists
@@ -259,6 +279,68 @@ export default function ProfileClientPage() {
     if (diffInDays < 7) return `${diffInDays}d ago`
     return time.toLocaleDateString()
   }
+
+  // Debounced username check
+  const checkUsername = async (username: string) => {
+    if (!username || username === usernameStatus.originalUsername) {
+      setUsernameStatus((prev) => ({ ...prev, checking: false, available: null, error: null }))
+      return
+    }
+
+    setUsernameStatus((prev) => ({ ...prev, checking: true, error: null }))
+
+    try {
+      const result = await checkUsernameAvailability(username, user?.id)
+      setUsernameStatus((prev) => ({
+        ...prev,
+        checking: false,
+        available: result.available,
+        error: result.error || null,
+      }))
+    } catch (error) {
+      setUsernameStatus((prev) => ({
+        ...prev,
+        checking: false,
+        available: false,
+        error: "Error checking username availability",
+      }))
+    }
+  }
+
+  const timeoutIdRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Debounce the username check
+  useEffect(() => {
+    if (timeoutIdRef.current) {
+      clearTimeout(timeoutIdRef.current)
+    }
+
+    timeoutIdRef.current = setTimeout(() => {
+      if (formData.username && formData.username.length >= 3) {
+        checkUsername(formData.username)
+      } else if (formData.username && formData.username.length > 0) {
+        setUsernameStatus((prev) => ({
+          ...prev,
+          checking: false,
+          available: false,
+          error: "Username must be at least 3 characters long",
+        }))
+      } else {
+        setUsernameStatus((prev) => ({
+          ...prev,
+          checking: false,
+          available: null,
+          error: null,
+        }))
+      }
+    }, 500)
+
+    return () => {
+      if (timeoutIdRef.current) {
+        clearTimeout(timeoutIdRef.current)
+      }
+    }
+  }, [formData.username, usernameStatus.originalUsername])
 
   // Social media icon components
   const XIcon = ({ className }: { className?: string }) => (
@@ -440,7 +522,28 @@ export default function ProfileClientPage() {
                               value={formData.username}
                               onChange={(e) => handleInputChange("username", e.target.value)}
                               placeholder="Choose a username"
+                              className={
+                                usernameStatus.error
+                                  ? "border-red-500 focus:border-red-500"
+                                  : usernameStatus.available === true
+                                    ? "border-green-500 focus:border-green-500"
+                                    : ""
+                              }
                             />
+                            {usernameStatus.checking && (
+                              <p className="text-sm text-blue-600 flex items-center">
+                                <RefreshCw className="h-3 w-3 animate-spin mr-1" />
+                                Checking availability...
+                              </p>
+                            )}
+                            {usernameStatus.error && <p className="text-sm text-red-600">{usernameStatus.error}</p>}
+                            {usernameStatus.available === true &&
+                              formData.username !== usernameStatus.originalUsername && (
+                                <p className="text-sm text-green-600">✓ Username is available</p>
+                              )}
+                            {usernameStatus.available === false && !usernameStatus.error && (
+                              <p className="text-sm text-red-600">✗ Username is already taken</p>
+                            )}
                           </div>
 
                           <div className="space-y-2 md:col-span-2">
@@ -690,14 +793,20 @@ export default function ProfileClientPage() {
                           </div>
                         )}
 
-                        <div className="flex justify-between">
-                          <Button type="submit" disabled={isSaving}>
-                            {isSaving ? "Saving..." : "Save Changes"}
-                          </Button>
-                          <Button variant="outline" onClick={handleSignOut}>
-                            Sign Out
-                          </Button>
-                        </div>
+                        <Button
+                          type="submit"
+                          disabled={
+                            isSaving ||
+                            usernameStatus.available === false ||
+                            usernameStatus.checking ||
+                            (formData.username !== usernameStatus.originalUsername && usernameStatus.available !== true)
+                          }
+                        >
+                          {isSaving ? "Saving..." : "Save Changes"}
+                        </Button>
+                        <Button variant="outline" onClick={handleSignOut}>
+                          Sign Out
+                        </Button>
                       </form>
                     )}
                   </CardContent>

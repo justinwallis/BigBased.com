@@ -44,6 +44,62 @@ export async function createProfile(profileData: {
   }
 }
 
+export async function checkUsernameAvailability(
+  username: string,
+  currentUserId?: string,
+): Promise<{
+  available: boolean
+  error?: string
+}> {
+  try {
+    if (!username || username.trim().length === 0) {
+      return { available: false, error: "Username cannot be empty" }
+    }
+
+    // Basic username validation
+    const usernameRegex = /^[a-zA-Z0-9_-]+$/
+    if (!usernameRegex.test(username)) {
+      return { available: false, error: "Username can only contain letters, numbers, hyphens, and underscores" }
+    }
+
+    if (username.length < 3) {
+      return { available: false, error: "Username must be at least 3 characters long" }
+    }
+
+    if (username.length > 30) {
+      return { available: false, error: "Username must be less than 30 characters long" }
+    }
+
+    const supabase = createServerSupabaseClient()
+
+    // Check if username exists (excluding current user if provided)
+    let query = supabase.from("profiles").select("id").eq("username", username)
+
+    if (currentUserId) {
+      query = query.neq("id", currentUserId)
+    }
+
+    const { data, error } = await query.single()
+
+    if (error && error.code !== "PGRST116") {
+      // PGRST116 means no rows returned
+      console.error("Error checking username availability:", error)
+      return { available: false, error: "Error checking username availability" }
+    }
+
+    // If data exists, username is taken
+    const available = !data
+
+    return { available }
+  } catch (error) {
+    console.error("Error in checkUsernameAvailability:", error)
+    return {
+      available: false,
+      error: error instanceof Error ? error.message : "Unknown error checking username",
+    }
+  }
+}
+
 export async function updateCurrentUserProfile(profileData: {
   username?: string
   full_name?: string
@@ -69,6 +125,17 @@ export async function updateCurrentUserProfile(profileData: {
         success: false,
         error: "User not authenticated. Please sign in again.",
         debug: { userError: userError?.message, hasUser: !!user },
+      }
+    }
+
+    // Check username availability if username is being updated
+    if (profileData.username) {
+      const usernameCheck = await checkUsernameAvailability(profileData.username, user.id)
+      if (!usernameCheck.available) {
+        return {
+          success: false,
+          error: usernameCheck.error || "Username is already taken",
+        }
       }
     }
 
