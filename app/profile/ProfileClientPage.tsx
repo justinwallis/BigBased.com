@@ -292,7 +292,7 @@ export default function ProfileClientPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto py-10 space-y-8">
+      <div className="container mx-auto py-4 space-y-8">
         {/* Debug Info */}
         {process.env.NODE_ENV === "development" && (
           <Card className="border-yellow-200 bg-yellow-50">
@@ -338,7 +338,10 @@ export default function ProfileClientPage() {
           </div>
           <CardHeader className="pt-4">
             <div className="space-y-1">
-              <CardTitle className="text-2xl">{formData.full_name || formData.username || "User"}</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-2xl">{formData.full_name || formData.username || "User"}</CardTitle>
+                <ThemeToggle variant="button" />
+              </div>
               <CardDescription className="text-base">{user.email}</CardDescription>
               {formData.username && (
                 <div className="flex items-center space-x-2 text-sm text-muted-foreground">
@@ -359,9 +362,6 @@ export default function ProfileClientPage() {
                   <Badge variant="secondary">Active</Badge>
                 </div>
               )}
-            </div>
-            <div className="flex justify-end">
-              <ThemeToggle variant="button" />
             </div>
           </CardHeader>
         </Card>

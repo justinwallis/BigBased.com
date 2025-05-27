@@ -131,7 +131,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto py-10 space-y-8">
+      <div className="container mx-auto py-4 space-y-8">
         {/* Profile Header with Banner */}
         <Card className="border-0 shadow-lg overflow-hidden">
           {/* Banner Section */}
@@ -160,9 +160,12 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
           <CardHeader className="pt-4 pb-6">
             <div className="space-y-4">
               <div>
-                <CardTitle className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                  {profile?.full_name || profile?.username}
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                    {profile?.full_name || profile?.username}
+                  </CardTitle>
+                  <ThemeToggle variant="button" />
+                </div>
                 <CardDescription className="text-lg text-gray-600 dark:text-gray-400">
                   @{profile?.username}
                 </CardDescription>
@@ -240,9 +243,6 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   })}
                 </div>
               )}
-            </div>
-            <div className="flex justify-end pt-4">
-              <ThemeToggle variant="button" />
             </div>
           </CardHeader>
 
