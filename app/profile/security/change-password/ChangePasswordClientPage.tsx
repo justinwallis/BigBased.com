@@ -72,13 +72,21 @@ export default function ChangePasswordClientPage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <Link href="/profile?tab=security">
-              <Button variant="ghost" size="sm">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Security
               </Button>
             </Link>
             <Link href="/">
-              <Button variant="ghost" size="sm">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              >
                 <Home className="h-4 w-4 mr-2" />
                 Back to Big Based
               </Button>
