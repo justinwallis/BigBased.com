@@ -291,548 +291,550 @@ export default function ProfileClientPage() {
   )
 
   return (
-    <div className="container mx-auto py-10 space-y-8">
-      {/* Debug Info */}
-      {process.env.NODE_ENV === "development" && (
-        <Card className="border-yellow-200 bg-yellow-50">
-          <CardHeader>
-            <CardTitle className="text-sm">Debug Info</CardTitle>
-          </CardHeader>
-          <CardContent className="text-xs">
-            <p>User ID: {user?.id}</p>
-            <p>User Email: {user?.email}</p>
-            <p>Profile Loaded: {profile ? "Yes" : "No"}</p>
-            <p>Loading Profile: {isLoadingProfile ? "Yes" : "No"}</p>
-            {loadError && <p className="text-red-600">Load Error: {loadError}</p>}
-            <Button size="sm" variant="outline" onClick={loadProfile} className="mt-2" disabled={isLoadingProfile}>
-              <RefreshCw className={`h-3 w-3 mr-1 ${isLoadingProfile ? "animate-spin" : ""}`} />
-              Reload Profile
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+      <div className="container mx-auto py-10 space-y-8">
+        {/* Debug Info */}
+        {process.env.NODE_ENV === "development" && (
+          <Card className="border-yellow-200 bg-yellow-50">
+            <CardHeader>
+              <CardTitle className="text-sm">Debug Info</CardTitle>
+            </CardHeader>
+            <CardContent className="text-xs">
+              <p>User ID: {user?.id}</p>
+              <p>User Email: {user?.email}</p>
+              <p>Profile Loaded: {profile ? "Yes" : "No"}</p>
+              <p>Loading Profile: {isLoadingProfile ? "Yes" : "No"}</p>
+              {loadError && <p className="text-red-600">Load Error: {loadError}</p>}
+              <Button size="sm" variant="outline" onClick={loadProfile} className="mt-2" disabled={isLoadingProfile}>
+                <RefreshCw className={`h-3 w-3 mr-1 ${isLoadingProfile ? "animate-spin" : ""}`} />
+                Reload Profile
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
-      {/* Profile Header with Banner Preview */}
-      <Card className="overflow-hidden">
-        <div className="relative">
-          {/* Banner */}
-          <InteractiveBannerUpload
-            currentBannerUrl={formData.banner_url}
-            onBannerChange={(newUrl) => handleInputChange("banner_url", newUrl)}
-            bannerPosition={formData.banner_position}
-            onPositionChange={(position) => handleInputChange("banner_position", position)}
-            className="h-32 md:h-48"
-          />
-          <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6">
-            <AvatarUpload
-              currentAvatarUrl={formData.avatar_url}
-              onAvatarChange={(newUrl) => {
-                console.log("Avatar changed to:", newUrl)
-                handleInputChange("avatar_url", newUrl)
-              }}
-              userInitials={getInitials(formData.full_name || formData.username || user.email || "U")}
-              className="h-16 w-16 md:h-20 md:w-20 border-4 border-white shadow-lg"
+        {/* Profile Header with Banner Preview */}
+        <Card className="overflow-hidden">
+          <div className="relative">
+            {/* Banner */}
+            <InteractiveBannerUpload
+              currentBannerUrl={formData.banner_url}
+              onBannerChange={(newUrl) => handleInputChange("banner_url", newUrl)}
+              bannerPosition={formData.banner_position}
+              onPositionChange={(position) => handleInputChange("banner_position", position)}
+              className="h-32 md:h-48"
             />
+            <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6">
+              <AvatarUpload
+                currentAvatarUrl={formData.avatar_url}
+                onAvatarChange={(newUrl) => {
+                  console.log("Avatar changed to:", newUrl)
+                  handleInputChange("avatar_url", newUrl)
+                }}
+                userInitials={getInitials(formData.full_name || formData.username || user.email || "U")}
+                className="h-16 w-16 md:h-20 md:w-20 border-4 border-white shadow-lg"
+              />
+            </div>
           </div>
-        </div>
-        <CardHeader className="pt-4">
-          <div className="space-y-1">
-            <CardTitle className="text-2xl">{formData.full_name || formData.username || "User"}</CardTitle>
-            <CardDescription className="text-base">{user.email}</CardDescription>
-            {formData.username && (
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <span>Public profile:</span>
-                <a
-                  href={`/${formData.username}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800 underline"
-                >
-                  bigbased.com/{formData.username}
-                </a>
-              </div>
-            )}
-            {profile && (
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <span>Member since {new Date(profile.created_at).toLocaleDateString()}</span>
-                <Badge variant="secondary">Active</Badge>
-              </div>
-            )}
-          </div>
-          <div className="flex justify-end">
-            <ThemeToggle variant="button" />
-          </div>
-        </CardHeader>
-      </Card>
+          <CardHeader className="pt-4">
+            <div className="space-y-1">
+              <CardTitle className="text-2xl">{formData.full_name || formData.username || "User"}</CardTitle>
+              <CardDescription className="text-base">{user.email}</CardDescription>
+              {formData.username && (
+                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                  <span>Public profile:</span>
+                  <a
+                    href={`/${formData.username}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    bigbased.com/{formData.username}
+                  </a>
+                </div>
+              )}
+              {profile && (
+                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                  <span>Member since {new Date(profile.created_at).toLocaleDateString()}</span>
+                  <Badge variant="secondary">Active</Badge>
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end">
+              <ThemeToggle variant="button" />
+            </div>
+          </CardHeader>
+        </Card>
 
-      {/* Profile Tabs */}
-      <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="general" className="flex items-center space-x-2">
-            <User className="h-4 w-4" />
-            <span>General</span>
-          </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center space-x-2">
-            <Shield className="h-4 w-4" />
-            <span>Security</span>
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center space-x-2">
-            <Bell className="h-4 w-4" />
-            <span>Notifications</span>
-          </TabsTrigger>
-          <TabsTrigger value="billing" className="flex items-center space-x-2">
-            <CreditCard className="h-4 w-4" />
-            <span>Billing</span>
-          </TabsTrigger>
-        </TabsList>
+        {/* Profile Tabs */}
+        <Tabs defaultValue="general" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="general" className="flex items-center space-x-2">
+              <User className="h-4 w-4" />
+              <span>General</span>
+            </TabsTrigger>
+            <TabsTrigger value="security" className="flex items-center space-x-2">
+              <Shield className="h-4 w-4" />
+              <span>Security</span>
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="flex items-center space-x-2">
+              <Bell className="h-4 w-4" />
+              <span>Notifications</span>
+            </TabsTrigger>
+            <TabsTrigger value="billing" className="flex items-center space-x-2">
+              <CreditCard className="h-4 w-4" />
+              <span>Billing</span>
+            </TabsTrigger>
+          </TabsList>
 
-        {/* General Tab */}
-        <TabsContent value="general">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Profile Form */}
-            <div className="lg:col-span-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Profile Information</CardTitle>
-                  <CardDescription>Update your profile information and personal details.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {isLoadingProfile ? (
-                    <div className="flex items-center justify-center py-8">
-                      <RefreshCw className="h-6 w-6 animate-spin mr-2" />
-                      Loading profile data...
+          {/* General Tab */}
+          <TabsContent value="general">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Main Profile Form */}
+              <div className="lg:col-span-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Profile Information</CardTitle>
+                    <CardDescription>Update your profile information and personal details.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {isLoadingProfile ? (
+                      <div className="flex items-center justify-center py-8">
+                        <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+                        Loading profile data...
+                      </div>
+                    ) : (
+                      <form onSubmit={handleSaveProfile} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="email">Email Address</Label>
+                            <Input id="email" value={user.email || ""} disabled />
+                            <p className="text-sm text-muted-foreground">Your email address cannot be changed.</p>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="username">Username</Label>
+                            <Input
+                              id="username"
+                              value={formData.username}
+                              onChange={(e) => handleInputChange("username", e.target.value)}
+                              placeholder="Choose a username"
+                            />
+                          </div>
+
+                          <div className="space-y-2 md:col-span-2">
+                            <Label htmlFor="full_name">Full Name</Label>
+                            <Input
+                              id="full_name"
+                              value={formData.full_name}
+                              onChange={(e) => handleInputChange("full_name", e.target.value)}
+                              placeholder="Your full name"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="bio">Bio</Label>
+                          <Textarea
+                            id="bio"
+                            value={formData.bio}
+                            onChange={(e) => handleInputChange("bio", e.target.value)}
+                            placeholder="Tell us about yourself..."
+                            rows={4}
+                          />
+                        </div>
+
+                        {/* Social Links Section */}
+                        <div className="space-y-4">
+                          <Label className="text-base font-medium">Social Links</Label>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Primary Social Platforms */}
+                            <div className="space-y-2">
+                              <Label htmlFor="x" className="flex items-center space-x-2">
+                                <XIcon className="h-4 w-4" />
+                                <span>X (Twitter)</span>
+                              </Label>
+                              <Input
+                                id="x"
+                                value={formData.social_links.x}
+                                onChange={(e) => handleSocialLinkChange("x", e.target.value)}
+                                placeholder="username"
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Just enter your username, we'll create the link automatically
+                              </p>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="instagram" className="flex items-center space-x-2">
+                                <Instagram className="h-4 w-4" />
+                                <span>Instagram</span>
+                              </Label>
+                              <Input
+                                id="instagram"
+                                value={formData.social_links.instagram}
+                                onChange={(e) => handleSocialLinkChange("instagram", e.target.value)}
+                                placeholder="username"
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Just enter your username, we'll create the link automatically
+                              </p>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="youtube" className="flex items-center space-x-2">
+                                <Youtube className="h-4 w-4" />
+                                <span>YouTube</span>
+                              </Label>
+                              <Input
+                                id="youtube"
+                                value={formData.social_links.youtube}
+                                onChange={(e) => handleSocialLinkChange("youtube", e.target.value)}
+                                placeholder="username"
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Just enter your username, we'll create the link automatically
+                              </p>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="tiktok" className="flex items-center space-x-2">
+                                <TikTokIcon className="h-4 w-4" />
+                                <span>TikTok</span>
+                              </Label>
+                              <Input
+                                id="tiktok"
+                                value={formData.social_links.tiktok}
+                                onChange={(e) => handleSocialLinkChange("tiktok", e.target.value)}
+                                placeholder="username"
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Just enter your username, we'll create the link automatically
+                              </p>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="facebook" className="flex items-center space-x-2">
+                                <FacebookIcon className="h-4 w-4" />
+                                <span>Facebook</span>
+                              </Label>
+                              <Input
+                                id="facebook"
+                                value={formData.social_links.facebook}
+                                onChange={(e) => handleSocialLinkChange("facebook", e.target.value)}
+                                placeholder="username"
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Just enter your username, we'll create the link automatically
+                              </p>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="rumble" className="flex items-center space-x-2">
+                                <RumbleIcon className="h-4 w-4" />
+                                <span>Rumble</span>
+                              </Label>
+                              <Input
+                                id="rumble"
+                                value={formData.social_links.rumble}
+                                onChange={(e) => handleSocialLinkChange("rumble", e.target.value)}
+                                placeholder="username"
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Just enter your username, we'll create the link automatically
+                              </p>
+                            </div>
+
+                            {/* Professional Platforms */}
+                            <div className="space-y-2">
+                              <Label htmlFor="linkedin" className="flex items-center space-x-2">
+                                <Linkedin className="h-4 w-4" />
+                                <span>LinkedIn</span>
+                              </Label>
+                              <Input
+                                id="linkedin"
+                                value={formData.social_links.linkedin}
+                                onChange={(e) => handleSocialLinkChange("linkedin", e.target.value)}
+                                placeholder="username"
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Just enter your username, we'll create the link automatically
+                              </p>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="github" className="flex items-center space-x-2">
+                                <Github className="h-4 w-4" />
+                                <span>GitHub</span>
+                              </Label>
+                              <Input
+                                id="github"
+                                value={formData.social_links.github}
+                                onChange={(e) => handleSocialLinkChange("github", e.target.value)}
+                                placeholder="username"
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Just enter your username, we'll create the link automatically
+                              </p>
+                            </div>
+
+                            {/* Communication Platforms */}
+                            <div className="space-y-2">
+                              <Label htmlFor="telegram" className="flex items-center space-x-2">
+                                <TelegramIcon className="h-4 w-4" />
+                                <span>Telegram</span>
+                              </Label>
+                              <Input
+                                id="telegram"
+                                value={formData.social_links.telegram}
+                                onChange={(e) => handleSocialLinkChange("telegram", e.target.value)}
+                                placeholder="username"
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Just enter your username, we'll create the link automatically
+                              </p>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="discord" className="flex items-center space-x-2">
+                                <DiscordIcon className="h-4 w-4" />
+                                <span>Discord</span>
+                              </Label>
+                              <Input
+                                id="discord"
+                                value={formData.social_links.discord}
+                                onChange={(e) => handleSocialLinkChange("discord", e.target.value)}
+                                placeholder="username#1234 or discord.gg/invite"
+                              />
+                            </div>
+
+                            {/* Special Platforms */}
+                            <div className="space-y-2">
+                              <Label htmlFor="therealworld" className="flex items-center space-x-2">
+                                <TheRealWorldIcon className="h-4 w-4" />
+                                <span>The Real World</span>
+                                <button
+                                  type="button"
+                                  className="ml-1 text-xs text-blue-600 hover:text-blue-800"
+                                  onClick={() =>
+                                    alert(
+                                      "The Real World is Andrew Tate's exclusive community platform for entrepreneurs and high-achievers. Members get access to courses, networking, and mentorship opportunities.",
+                                    )
+                                  }
+                                >
+                                  (what's this?)
+                                </button>
+                              </Label>
+                              <Input
+                                id="therealworld"
+                                value={formData.social_links.therealworld}
+                                onChange={(e) => handleSocialLinkChange("therealworld", e.target.value)}
+                                placeholder="username"
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Just enter your username - this will show on your profile for networking
+                              </p>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="website" className="flex items-center space-x-2">
+                                <Globe className="h-4 w-4" />
+                                <span>Website</span>
+                              </Label>
+                              <Input
+                                id="website"
+                                value={formData.social_links.website}
+                                onChange={(e) => handleSocialLinkChange("website", e.target.value)}
+                                placeholder="https://yoursite.com"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {saveMessage && (
+                          <div
+                            className={`p-3 rounded-md text-sm ${
+                              saveMessage.includes("Error")
+                                ? "bg-red-50 text-red-700 border border-red-200"
+                                : "bg-green-50 text-green-700 border border-green-200"
+                            }`}
+                          >
+                            {saveMessage}
+                          </div>
+                        )}
+
+                        {loadError && (
+                          <div className="p-3 rounded-md text-sm bg-yellow-50 text-yellow-700 border border-yellow-200">
+                            {loadError}
+                          </div>
+                        )}
+
+                        <div className="flex justify-between">
+                          <Button type="submit" disabled={isSaving}>
+                            {isSaving ? "Saving..." : "Save Changes"}
+                          </Button>
+                          <Button variant="outline" onClick={handleSignOut}>
+                            Sign Out
+                          </Button>
+                        </div>
+                      </form>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Sidebar */}
+              <div className="space-y-6">
+                {/* Recent Activity */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Recent Activity</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {activities.map((activity) => (
+                        <div key={activity.id} className="flex items-start space-x-3">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-gray-900 dark:text-gray-100">{activity.description}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              {formatTimeAgo(activity.timestamp)}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ) : (
-                    <form onSubmit={handleSaveProfile} className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <Label htmlFor="email">Email Address</Label>
-                          <Input id="email" value={user.email || ""} disabled />
-                          <p className="text-sm text-muted-foreground">Your email address cannot be changed.</p>
-                        </div>
+                  </CardContent>
+                </Card>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="username">Username</Label>
-                          <Input
-                            id="username"
-                            value={formData.username}
-                            onChange={(e) => handleInputChange("username", e.target.value)}
-                            placeholder="Choose a username"
-                          />
-                        </div>
-
-                        <div className="space-y-2 md:col-span-2">
-                          <Label htmlFor="full_name">Full Name</Label>
-                          <Input
-                            id="full_name"
-                            value={formData.full_name}
-                            onChange={(e) => handleInputChange("full_name", e.target.value)}
-                            placeholder="Your full name"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="bio">Bio</Label>
-                        <Textarea
-                          id="bio"
-                          value={formData.bio}
-                          onChange={(e) => handleInputChange("bio", e.target.value)}
-                          placeholder="Tell us about yourself..."
-                          rows={4}
-                        />
-                      </div>
-
-                      {/* Social Links Section */}
-                      <div className="space-y-4">
-                        <Label className="text-base font-medium">Social Links</Label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {/* Primary Social Platforms */}
-                          <div className="space-y-2">
-                            <Label htmlFor="x" className="flex items-center space-x-2">
-                              <XIcon className="h-4 w-4" />
-                              <span>X (Twitter)</span>
-                            </Label>
-                            <Input
-                              id="x"
-                              value={formData.social_links.x}
-                              onChange={(e) => handleSocialLinkChange("x", e.target.value)}
-                              placeholder="username"
-                            />
-                            <p className="text-xs text-muted-foreground">
-                              Just enter your username, we'll create the link automatically
-                            </p>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="instagram" className="flex items-center space-x-2">
-                              <Instagram className="h-4 w-4" />
-                              <span>Instagram</span>
-                            </Label>
-                            <Input
-                              id="instagram"
-                              value={formData.social_links.instagram}
-                              onChange={(e) => handleSocialLinkChange("instagram", e.target.value)}
-                              placeholder="username"
-                            />
-                            <p className="text-xs text-muted-foreground">
-                              Just enter your username, we'll create the link automatically
-                            </p>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="youtube" className="flex items-center space-x-2">
-                              <Youtube className="h-4 w-4" />
-                              <span>YouTube</span>
-                            </Label>
-                            <Input
-                              id="youtube"
-                              value={formData.social_links.youtube}
-                              onChange={(e) => handleSocialLinkChange("youtube", e.target.value)}
-                              placeholder="username"
-                            />
-                            <p className="text-xs text-muted-foreground">
-                              Just enter your username, we'll create the link automatically
-                            </p>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="tiktok" className="flex items-center space-x-2">
-                              <TikTokIcon className="h-4 w-4" />
-                              <span>TikTok</span>
-                            </Label>
-                            <Input
-                              id="tiktok"
-                              value={formData.social_links.tiktok}
-                              onChange={(e) => handleSocialLinkChange("tiktok", e.target.value)}
-                              placeholder="username"
-                            />
-                            <p className="text-xs text-muted-foreground">
-                              Just enter your username, we'll create the link automatically
-                            </p>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="facebook" className="flex items-center space-x-2">
-                              <FacebookIcon className="h-4 w-4" />
-                              <span>Facebook</span>
-                            </Label>
-                            <Input
-                              id="facebook"
-                              value={formData.social_links.facebook}
-                              onChange={(e) => handleSocialLinkChange("facebook", e.target.value)}
-                              placeholder="username"
-                            />
-                            <p className="text-xs text-muted-foreground">
-                              Just enter your username, we'll create the link automatically
-                            </p>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="rumble" className="flex items-center space-x-2">
-                              <RumbleIcon className="h-4 w-4" />
-                              <span>Rumble</span>
-                            </Label>
-                            <Input
-                              id="rumble"
-                              value={formData.social_links.rumble}
-                              onChange={(e) => handleSocialLinkChange("rumble", e.target.value)}
-                              placeholder="username"
-                            />
-                            <p className="text-xs text-muted-foreground">
-                              Just enter your username, we'll create the link automatically
-                            </p>
-                          </div>
-
-                          {/* Professional Platforms */}
-                          <div className="space-y-2">
-                            <Label htmlFor="linkedin" className="flex items-center space-x-2">
-                              <Linkedin className="h-4 w-4" />
-                              <span>LinkedIn</span>
-                            </Label>
-                            <Input
-                              id="linkedin"
-                              value={formData.social_links.linkedin}
-                              onChange={(e) => handleSocialLinkChange("linkedin", e.target.value)}
-                              placeholder="username"
-                            />
-                            <p className="text-xs text-muted-foreground">
-                              Just enter your username, we'll create the link automatically
-                            </p>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="github" className="flex items-center space-x-2">
-                              <Github className="h-4 w-4" />
-                              <span>GitHub</span>
-                            </Label>
-                            <Input
-                              id="github"
-                              value={formData.social_links.github}
-                              onChange={(e) => handleSocialLinkChange("github", e.target.value)}
-                              placeholder="username"
-                            />
-                            <p className="text-xs text-muted-foreground">
-                              Just enter your username, we'll create the link automatically
-                            </p>
-                          </div>
-
-                          {/* Communication Platforms */}
-                          <div className="space-y-2">
-                            <Label htmlFor="telegram" className="flex items-center space-x-2">
-                              <TelegramIcon className="h-4 w-4" />
-                              <span>Telegram</span>
-                            </Label>
-                            <Input
-                              id="telegram"
-                              value={formData.social_links.telegram}
-                              onChange={(e) => handleSocialLinkChange("telegram", e.target.value)}
-                              placeholder="username"
-                            />
-                            <p className="text-xs text-muted-foreground">
-                              Just enter your username, we'll create the link automatically
-                            </p>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="discord" className="flex items-center space-x-2">
-                              <DiscordIcon className="h-4 w-4" />
-                              <span>Discord</span>
-                            </Label>
-                            <Input
-                              id="discord"
-                              value={formData.social_links.discord}
-                              onChange={(e) => handleSocialLinkChange("discord", e.target.value)}
-                              placeholder="username#1234 or discord.gg/invite"
-                            />
-                          </div>
-
-                          {/* Special Platforms */}
-                          <div className="space-y-2">
-                            <Label htmlFor="therealworld" className="flex items-center space-x-2">
-                              <TheRealWorldIcon className="h-4 w-4" />
-                              <span>The Real World</span>
-                              <button
-                                type="button"
-                                className="ml-1 text-xs text-blue-600 hover:text-blue-800"
-                                onClick={() =>
-                                  alert(
-                                    "The Real World is Andrew Tate's exclusive community platform for entrepreneurs and high-achievers. Members get access to courses, networking, and mentorship opportunities.",
-                                  )
-                                }
-                              >
-                                (what's this?)
-                              </button>
-                            </Label>
-                            <Input
-                              id="therealworld"
-                              value={formData.social_links.therealworld}
-                              onChange={(e) => handleSocialLinkChange("therealworld", e.target.value)}
-                              placeholder="username"
-                            />
-                            <p className="text-xs text-muted-foreground">
-                              Just enter your username - this will show on your profile for networking
-                            </p>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="website" className="flex items-center space-x-2">
-                              <Globe className="h-4 w-4" />
-                              <span>Website</span>
-                            </Label>
-                            <Input
-                              id="website"
-                              value={formData.social_links.website}
-                              onChange={(e) => handleSocialLinkChange("website", e.target.value)}
-                              placeholder="https://yoursite.com"
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      {saveMessage && (
-                        <div
-                          className={`p-3 rounded-md text-sm ${
-                            saveMessage.includes("Error")
-                              ? "bg-red-50 text-red-700 border border-red-200"
-                              : "bg-green-50 text-green-700 border border-green-200"
-                          }`}
-                        >
-                          {saveMessage}
-                        </div>
-                      )}
-
-                      {loadError && (
-                        <div className="p-3 rounded-md text-sm bg-yellow-50 text-yellow-700 border border-yellow-200">
-                          {loadError}
-                        </div>
-                      )}
-
-                      <div className="flex justify-between">
-                        <Button type="submit" disabled={isSaving}>
-                          {isSaving ? "Saving..." : "Save Changes"}
-                        </Button>
-                        <Button variant="outline" onClick={handleSignOut}>
-                          Sign Out
-                        </Button>
-                      </div>
-                    </form>
-                  )}
-                </CardContent>
-              </Card>
+                {/* Quick Stats */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Profile Stats</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 dark:text-gray-400">Profile Views</span>
+                      <span className="font-medium">Coming Soon</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 dark:text-gray-400">Connections</span>
+                      <span className="font-medium">Coming Soon</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 dark:text-gray-400">Contributions</span>
+                      <span className="font-medium">Coming Soon</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
+          </TabsContent>
 
-            {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Recent Activity */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Recent Activity</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {activities.map((activity) => (
-                      <div key={activity.id} className="flex items-start space-x-3">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm text-gray-900 dark:text-gray-100">{activity.description}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                            {formatTimeAgo(activity.timestamp)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+          {/* Security Tab */}
+          <TabsContent value="security">
+            <Card>
+              <CardHeader>
+                <CardTitle>Security Settings</CardTitle>
+                <CardDescription>Manage your account security and authentication methods.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Password</h4>
+                      <p className="text-sm text-muted-foreground">Last changed 30 days ago</p>
+                    </div>
+                    <Button variant="outline">Change Password</Button>
                   </div>
-                </CardContent>
-              </Card>
 
-              {/* Quick Stats */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Profile Stats</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">Profile Views</span>
-                    <span className="font-medium">Coming Soon</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">Connections</span>
-                    <span className="font-medium">Coming Soon</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">Contributions</span>
-                    <span className="font-medium">Coming Soon</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </TabsContent>
+                  <Separator />
 
-        {/* Security Tab */}
-        <TabsContent value="security">
-          <Card>
-            <CardHeader>
-              <CardTitle>Security Settings</CardTitle>
-              <CardDescription>Manage your account security and authentication methods.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium">Password</h4>
-                    <p className="text-sm text-muted-foreground">Last changed 30 days ago</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Two-Factor Authentication</h4>
+                      <p className="text-sm text-muted-foreground">Add an extra layer of security to your account</p>
+                    </div>
+                    <Button variant="outline">Enable 2FA</Button>
                   </div>
-                  <Button variant="outline">Change Password</Button>
+
+                  <Separator />
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Active Sessions</h4>
+                      <p className="text-sm text-muted-foreground">Manage your active login sessions</p>
+                    </div>
+                    <Button variant="outline">View Sessions</Button>
+                  </div>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-                <Separator />
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium">Two-Factor Authentication</h4>
-                    <p className="text-sm text-muted-foreground">Add an extra layer of security to your account</p>
+          {/* Notifications Tab */}
+          <TabsContent value="notifications">
+            <Card>
+              <CardHeader>
+                <CardTitle>Notification Preferences</CardTitle>
+                <CardDescription>Choose how you want to be notified about activity.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Email Notifications</h4>
+                      <p className="text-sm text-muted-foreground">Receive updates via email</p>
+                    </div>
+                    <Button variant="outline">Configure</Button>
                   </div>
-                  <Button variant="outline">Enable 2FA</Button>
-                </div>
 
-                <Separator />
+                  <Separator />
 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium">Active Sessions</h4>
-                    <p className="text-sm text-muted-foreground">Manage your active login sessions</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Push Notifications</h4>
+                      <p className="text-sm text-muted-foreground">Get notified on your devices</p>
+                    </div>
+                    <Button variant="outline">Configure</Button>
                   </div>
-                  <Button variant="outline">View Sessions</Button>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        {/* Notifications Tab */}
-        <TabsContent value="notifications">
-          <Card>
-            <CardHeader>
-              <CardTitle>Notification Preferences</CardTitle>
-              <CardDescription>Choose how you want to be notified about activity.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium">Email Notifications</h4>
-                    <p className="text-sm text-muted-foreground">Receive updates via email</p>
+          {/* Billing Tab */}
+          <TabsContent value="billing">
+            <Card>
+              <CardHeader>
+                <CardTitle>Billing & Subscription</CardTitle>
+                <CardDescription>Manage your subscription and billing information.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Current Plan</h4>
+                      <p className="text-sm text-muted-foreground">Free Plan - No active subscription</p>
+                    </div>
+                    <Button>Upgrade Plan</Button>
                   </div>
-                  <Button variant="outline">Configure</Button>
-                </div>
 
-                <Separator />
+                  <Separator />
 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium">Push Notifications</h4>
-                    <p className="text-sm text-muted-foreground">Get notified on your devices</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Payment Methods</h4>
+                      <p className="text-sm text-muted-foreground">No payment methods on file</p>
+                    </div>
+                    <Button variant="outline">Add Payment Method</Button>
                   </div>
-                  <Button variant="outline">Configure</Button>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Billing Tab */}
-        <TabsContent value="billing">
-          <Card>
-            <CardHeader>
-              <CardTitle>Billing & Subscription</CardTitle>
-              <CardDescription>Manage your subscription and billing information.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium">Current Plan</h4>
-                    <p className="text-sm text-muted-foreground">Free Plan - No active subscription</p>
-                  </div>
-                  <Button>Upgrade Plan</Button>
-                </div>
-
-                <Separator />
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium">Payment Methods</h4>
-                    <p className="text-sm text-muted-foreground">No payment methods on file</p>
-                  </div>
-                  <Button variant="outline">Add Payment Method</Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   )
 }
