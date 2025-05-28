@@ -1,19 +1,22 @@
 "use client"
 
 import type React from "react"
+
 import { useEffect, useState, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
-import { Button } from "@/components/ui/button"
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import {
   getCurrentUserProfile,
   updateCurrentUserProfile,
   checkUsernameAvailability,
 } from "@/app/actions/profile-actions"
-import { Linkedin, Github, Globe, Instagram, Youtube, Home } from "lucide-react"
+import { AlertCircle } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
-import Link from "next/link"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface ProfileData {
   id: string
@@ -248,7 +251,7 @@ export default function ProfileClientPage() {
     setUsernameStatus((prev) => ({ ...prev, checking: true, error: null }))
 
     try {
-      const result = await checkUsernameAvailability(username, user.id)
+      const result = await checkUsernameAvailability(username, user?.id)
       setUsernameStatus((prev) => ({
         ...prev,
         checking: false,
@@ -296,7 +299,7 @@ export default function ProfileClientPage() {
         clearTimeout(timeoutIdRef.current)
       }
     }
-  }, [formData.username, usernameStatus.originalUsername, user.id])
+  }, [formData.username, usernameStatus.originalUsername, user?.id])
 
   const getInitials = (name: string) => {
     return name
@@ -362,94 +365,101 @@ export default function ProfileClientPage() {
     </svg>
   )
 
-  const socialLinks = profile?.social_links || {}
-
-  // Helper function to get the correct URL for social links
-  const getSocialUrl = (platform: string, value: string) => {
-    if (!value) return null
-
-    // Clean the value by removing @ symbols and trimming
-    const cleanValue = value.replace(/^@/, "").trim()
-
-    switch (platform) {
-      case "therealworld":
-        // For The Real World, we don't return a URL since there's no public profile link
-        return null
-      case "x":
-        return value.startsWith("http") ? value : `https://x.com/${cleanValue}`
-      case "instagram":
-        return value.startsWith("http") ? value : `https://instagram.com/${cleanValue}`
-      case "youtube":
-        return value.startsWith("http") ? value : `https://youtube.com/@${cleanValue}`
-      case "tiktok":
-        return value.startsWith("http") ? value : `https://tiktok.com/@${cleanValue}`
-      case "facebook":
-        return value.startsWith("http") ? value : `https://facebook.com/${cleanValue}`
-      case "linkedin":
-        return value.startsWith("http") ? value : `https://linkedin.com/in/${cleanValue}`
-      case "github":
-        return value.startsWith("http") ? value : `https://github.com/${cleanValue}`
-      case "telegram":
-        return value.startsWith("http") ? value : `https://t.me/${cleanValue}`
-      case "rumble":
-        return value.startsWith("http") ? value : `https://rumble.com/c/${cleanValue}`
-      case "discord":
-        // Discord doesn't have direct profile links, so we return null
-        return null
-      case "website":
-        return value.startsWith("http") ? value : `https://${value}`
-      default:
-        return value.startsWith("http") ? value : `https://${value}`
-    }
-  }
-
-  const socialPlatforms = [
-    { key: "x", icon: XIcon, label: "X (Twitter)" },
-    { key: "instagram", icon: Instagram, label: "Instagram" },
-    { key: "youtube", icon: Youtube, label: "YouTube" },
-    { key: "tiktok", icon: TikTokIcon, label: "TikTok" },
-    { key: "facebook", icon: FacebookIcon, label: "Facebook" },
-    { key: "linkedin", icon: Linkedin, label: "LinkedIn" },
-    { key: "github", icon: Github, label: "GitHub" },
-    { key: "telegram", icon: TelegramIcon, label: "Telegram" },
-    { key: "rumble", icon: RumbleIcon, label: "Rumble" },
-    { key: "website", icon: Globe, label: "Website" },
-  ]
-
-  // Special platforms that show but don't link
-  const specialPlatforms = [
-    { key: "discord", icon: DiscordIcon, label: "Discord" },
-    { key: "therealworld", icon: TheRealWorldIcon, label: "The Real World" },
-  ]
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto py-4 space-y-8">
-        {/* Profile Header with Banner */}
-        <Card className="border-0 shadow-lg overflow-hidden">
-          <CardHeader className="pt-4 pb-6">
+    <div className="container mx-auto py-10">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-2xl font-bold">Your Profile</CardTitle>
+            <ThemeToggle />
+          </div>
+          <CardDescription>Manage your profile information and settings.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {loadError && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{loadError}</AlertDescription>
+            </Alert>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* General Information */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                  {profile?.full_name || profile?.username}
-                </CardTitle>
-                <div className="flex items-center space-x-2">
-                  <Link href="/">
-                    <Button variant="outline" size="sm" className="flex items-center space-x-2">
-                      <Home className="h-4 w-4" />
-                      <span>Back to Big Based</span>
-                    </Button>
-                  </Link>
-                  <ThemeToggle />
-                </div>
+              <h3 className="text-xl font-medium">General Information</h3>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <Input id="email" value={user?.email || ""} disabled />
               </div>
-              <CardDescription className="text-lg text-gray-600 dark:text-gray-400">
-                @{profile?.username}
-              </CardDescription>
+              <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
+                <Input id="username" value={profile?.username || ""} disabled />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="full_name">Full Name</Label>
+                <Input id="full_name" value={profile?.full_name || ""} disabled />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="bio">Bio</Label>
+                <Textarea id="bio" value={profile?.bio || ""} disabled rows={4} />
+              </div>
             </div>
-          </CardHeader>
-        </Card>
-      </div>
+
+            {/* Social Links */}
+            <div className="space-y-4">
+              <h3 className="text-xl font-medium">Social Links</h3>
+              <div className="space-y-2">
+                <Label htmlFor="x">X (Twitter)</Label>
+                <Input id="x" value={profile?.social_links?.x || ""} disabled />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="instagram">Instagram</Label>
+                <Input id="instagram" value={profile?.social_links?.instagram || ""} disabled />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="youtube">YouTube</Label>
+                <Input id="youtube" value={profile?.social_links?.youtube || ""} disabled />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="tiktok">TikTok</Label>
+                <Input id="tiktok" value={profile?.social_links?.tiktok || ""} disabled />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="facebook">Facebook</Label>
+                <Input id="facebook" value={profile?.social_links?.facebook || ""} disabled />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="rumble">Rumble</Label>
+                <Input id="rumble" value={profile?.social_links?.rumble || ""} disabled />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="linkedin">LinkedIn</Label>
+                <Input id="linkedin" value={profile?.social_links?.linkedin || ""} disabled />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="github">GitHub</Label>
+                <Input id="github" value={profile?.social_links?.github || ""} disabled />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="telegram">Telegram</Label>
+                <Input id="telegram" value={profile?.social_links?.telegram || ""} disabled />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="discord">Discord</Label>
+                <Input id="discord" value={profile?.social_links?.discord || ""} disabled />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="therealworld">The Real World</Label>
+                <Input id="therealworld" value={profile?.social_links?.therealworld || ""} disabled />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="website">Website</Label>
+                <Input id="website" value={profile?.social_links?.website || ""} disabled />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
