@@ -306,7 +306,7 @@ export async function generateBackupCodes() {
     const hashedCodes = codes.map((code) => {
       return {
         user_id: userId,
-        code: createHash("sha256").update(code).digest("hex"),
+        code: createHash("sha256").update(code).digest("hex").substring(0, 20),
         is_used: false,
         created_at: new Date().toISOString(),
       }
@@ -436,7 +436,6 @@ export async function checkUserMfaStatus(email: string) {
     const user = userData.users.find((u) => u.email === email)
 
     if (!user) {
-      console.log("User not found for email:", email)
       return {
         success: false,
         error: "User not found",
