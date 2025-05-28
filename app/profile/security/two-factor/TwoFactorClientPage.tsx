@@ -166,22 +166,35 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
 
   const downloadBackupCodes = () => {
     try {
-      const codesText = backupCodes.join("\n")
-      const blob = new Blob([codesText], { type: "text/plain;charset=utf-8" })
-      const url = URL.createObjectURL(blob)
+      // Format the backup codes with a title and instructions
+      const timestamp = new Date().toLocaleString()
+      const content = [
+        "BIG BASED - BACKUP CODES",
+        "Generated: " + timestamp,
+        "",
+        "IMPORTANT: Store these codes in a safe place. Each code can only be used once.",
+        "",
+        ...backupCodes,
+        "",
+        "If you lose access to your authenticator app, you can use one of these codes to sign in.",
+      ].join("\n")
 
-      const a = document.createElement("a")
-      a.href = url
-      a.download = "backup_codes.txt"
-      a.style.display = "none"
+      // Create a data URL directly (works better in some browsers than blob)
+      const dataUrl = `data:text/plain;charset=utf-8,${encodeURIComponent(content)}`
 
-      document.body.appendChild(a)
-      a.click()
+      // Create a link element and trigger the download
+      const link = document.createElement("a")
+      link.setAttribute("href", dataUrl)
+      link.setAttribute("download", `bigbased-backup-codes-${Date.now()}.txt`)
+      link.style.display = "none"
 
-      // Clean up after a short delay to ensure download starts
+      // Add to DOM, click and remove
+      document.body.appendChild(link)
+      link.click()
+
+      // Small delay before removing
       setTimeout(() => {
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
+        document.body.removeChild(link)
       }, 100)
 
       toast({

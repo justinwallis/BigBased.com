@@ -5,6 +5,11 @@ export async function middleware(request: NextRequest) {
   // Get the pathname of the request
   const path = request.nextUrl.pathname
 
+  // Handle specific redirects
+  if (path === "/profile/security") {
+    return NextResponse.redirect(new URL("/profile?tab=security", request.url))
+  }
+
   // Public paths that don't require authentication
   const isPublicPath =
     path === "/" ||
