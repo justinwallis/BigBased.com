@@ -1,5 +1,6 @@
 "use server"
 
+import { createClient } from "@supabase/supabase-js"
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { generateSecret, verifyToken } from "node-2fa"
@@ -68,13 +69,13 @@ async function getAuthenticatedUser() {
   }
 }
 
-// Helper to create service role client
+// Helper to create service role client using direct Supabase client
 function createServiceRoleClient() {
   try {
     const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-    console.log("Creating service role client:", {
+    console.log("Creating direct service role client:", {
       hasUrl: !!supabaseUrl,
       hasServiceKey: !!serviceRoleKey,
       serviceKeyPrefix: serviceRoleKey?.substring(0, 20) + "...",
@@ -84,31 +85,15 @@ function createServiceRoleClient() {
       throw new Error("Missing Supabase service role environment variables")
     }
 
-    const cookieStore = cookies()
-
-    const client = createServerClient<Database>(supabaseUrl, serviceRoleKey, {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
-        },
-        set(name: string, value: string, options: any) {
-          try {
-            cookieStore.set({ name, value, ...options })
-          } catch (error) {
-            console.error("Error setting cookie:", error)
-          }
-        },
-        remove(name: string, options: any) {
-          try {
-            cookieStore.set({ name, value: "", ...options, maxAge: 0 })
-          } catch (error) {
-            console.error("Error removing cookie:", error)
-          }
-        },
+    // Use the direct Supabase client instead of SSR wrapper
+    const client = createClient<Database>(supabaseUrl, serviceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
       },
     })
 
-    console.log("Service role client created successfully")
+    console.log("Direct service role client created successfully")
     return client
   } catch (error) {
     console.error("Error creating service role client:", error)
@@ -184,9 +169,9 @@ export async function generateAuthenticatorSecret(email: string) {
     const { userId } = await getAuthenticatedUser()
     console.log("Authenticated user ID:", userId)
 
-    console.log("Step 2: Creating service role client...")
+    console.log("Step 2: Creating direct service role client...")
     const serviceSupabase = createServiceRoleClient()
-    console.log("Service role client created")
+    console.log("Direct service role client created")
 
     console.log("Step 3: Generating secret...")
     const secretData = generateSecret({
@@ -224,12 +209,17 @@ export async function generateAuthenticatorSecret(email: string) {
       length: qrCodeDataUrl.length,
     })
 
-    console.log("Step 5: Checking for existing MFA settings...")
+    console.log("Step 5: Testing service role client with simple query...")
+    const { data: testData, error: testError } = await serviceSupabase.from("mfa_settings").select("count").limit(1)
+
+    console.log("Service role test query result:", { testData, testError })
+
+    console.log("Step 6: Checking for existing MFA settings...")
     const { data: existingSettings, error: selectError } = await serviceSupabase
       .from("mfa_settings")
       .select("id")
       .eq("id", userId)
-      .single()
+      .maybeSingle() // Use maybeSingle instead of single to avoid error when no rows
 
     console.log("Existing settings check:", {
       hasData: !!existingSettings,
@@ -237,29 +227,49 @@ export async function generateAuthenticatorSecret(email: string) {
     })
 
     if (!existingSettings) {
-      console.log("Step 6a: Creating new MFA settings record for user:", userId)
+      console.log("Step 7a: Creating new MFA settings record for user:", userId)
+
+      // Try a direct insert with explicit values
+      const insertPayload = {
+        id: userId,
+        mfa_enabled: false,
+        mfa_type: null,
+        authenticator_secret: secretData.secret,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+
+      console.log("Insert payload:", insertPayload)
+
       const { data: insertData, error: insertError } = await serviceSupabase
         .from("mfa_settings")
-        .insert({
-          id: userId,
-          mfa_enabled: false,
-          mfa_type: null,
-          authenticator_secret: secretData.secret,
-        })
+        .insert(insertPayload)
         .select()
 
       console.log("Insert result:", { insertData, insertError })
 
       if (insertError) {
         console.error("Failed to create MFA settings:", insertError)
-        throw insertError
+
+        // Try alternative approach: raw SQL
+        console.log("Trying raw SQL insert...")
+        const { data: sqlData, error: sqlError } = await serviceSupabase.rpc("exec_sql", {
+          sql: `INSERT INTO mfa_settings (id, mfa_enabled, mfa_type, authenticator_secret) VALUES ('${userId}', false, null, '${secretData.secret}') ON CONFLICT (id) DO UPDATE SET authenticator_secret = '${secretData.secret}'`,
+        })
+
+        console.log("Raw SQL result:", { sqlData, sqlError })
+
+        if (sqlError) {
+          throw insertError // Throw original error if SQL also fails
+        }
       }
     } else {
-      console.log("Step 6b: Updating existing MFA settings record for user:", userId)
+      console.log("Step 7b: Updating existing MFA settings record for user:", userId)
       const { data: updateData, error: updateError } = await serviceSupabase
         .from("mfa_settings")
         .update({
           authenticator_secret: secretData.secret,
+          updated_at: new Date().toISOString(),
         })
         .eq("id", userId)
         .select()
@@ -272,7 +282,7 @@ export async function generateAuthenticatorSecret(email: string) {
       }
     }
 
-    console.log("Step 7: Secret stored successfully for user:", userId)
+    console.log("Step 8: Secret stored successfully for user:", userId)
 
     return {
       success: true,
