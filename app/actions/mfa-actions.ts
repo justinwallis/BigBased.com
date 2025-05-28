@@ -4,6 +4,7 @@ import { createServerClient } from "@/lib/supabase/server"
 import { cookies } from "next/headers"
 import { generateSecret, verifyToken } from "node-2fa"
 import { randomBytes, createHash } from "crypto"
+import QRCode from "qrcode"
 
 // Helper to get authenticated user
 async function getAuthenticatedUser() {
@@ -56,7 +57,7 @@ export async function generateAuthenticatorSecret(email: string) {
 
     console.log("Generating secret for email:", email)
 
-    // Generate a new secret with proper options
+    // Generate a new secret
     const secretData = generateSecret({
       name: "Big Based",
       account: email,
@@ -65,13 +66,30 @@ export async function generateAuthenticatorSecret(email: string) {
 
     console.log("Generated secret data:", {
       hasSecret: !!secretData.secret,
-      hasQr: !!secretData.qr,
-      qrLength: secretData.qr?.length,
+      hasUri: !!secretData.uri,
     })
 
-    if (!secretData.secret || !secretData.qr) {
-      throw new Error("Failed to generate secret or QR code")
+    if (!secretData.secret || !secretData.uri) {
+      throw new Error("Failed to generate secret or URI")
     }
+
+    // Generate QR code as data URL using qrcode library
+    const qrCodeDataUrl = await QRCode.toDataURL(secretData.uri, {
+      errorCorrectionLevel: "M",
+      type: "image/png",
+      quality: 0.92,
+      margin: 1,
+      color: {
+        dark: "#000000",
+        light: "#FFFFFF",
+      },
+      width: 256,
+    })
+
+    console.log("Generated QR code:", {
+      isDataUrl: qrCodeDataUrl.startsWith("data:"),
+      length: qrCodeDataUrl.length,
+    })
 
     // Store the secret in the database
     const { error } = await supabase
@@ -92,7 +110,7 @@ export async function generateAuthenticatorSecret(email: string) {
       success: true,
       data: {
         secret: secretData.secret,
-        qrCode: secretData.qr,
+        qrCode: qrCodeDataUrl,
       },
     }
   } catch (error) {

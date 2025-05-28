@@ -62,6 +62,7 @@
     "node-2fa": "latest",
     "nodemailer": "latest",
     "path": "latest",
+    "qrcode": "latest",
     "react": "^19",
     "react-day-picker": "8.10.1",
     "react-dom": "^19",
