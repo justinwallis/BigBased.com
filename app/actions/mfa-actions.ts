@@ -1,15 +1,44 @@
 "use server"
 
-import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { createServerClient } from "@supabase/ssr"
+import { cookies } from "next/headers"
 import { generateSecret, verifyToken } from "node-2fa"
 import { randomBytes, createHash } from "crypto"
 import QRCode from "qrcode"
+import type { Database } from "@/types/supabase"
 
-// Helper to get authenticated user
-async function getAuthenticatedUser(useServiceRole = false) {
-  const supabase = createServerSupabaseClient(useServiceRole)
+// Helper to get authenticated user with regular client
+async function getAuthenticatedUser() {
+  const cookieStore = cookies()
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  // Use getUser() instead of getSession() for better security
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error("Missing Supabase environment variables")
+  }
+
+  const supabase = createServerClient<Database>(supabaseUrl, supabaseKey, {
+    cookies: {
+      get(name: string) {
+        return cookieStore.get(name)?.value
+      },
+      set(name: string, value: string, options: any) {
+        try {
+          cookieStore.set({ name, value, ...options })
+        } catch (error) {
+          console.error("Error setting cookie:", error)
+        }
+      },
+      remove(name: string, options: any) {
+        try {
+          cookieStore.set({ name, value: "", ...options, maxAge: 0 })
+        } catch (error) {
+          console.error("Error removing cookie:", error)
+        }
+      },
+    },
+  })
+
   const {
     data: { user },
     error,
@@ -19,30 +48,67 @@ async function getAuthenticatedUser(useServiceRole = false) {
     throw new Error("Not authenticated")
   }
 
-  return { userId: user.id, supabase, user }
+  return { userId: user.id, user }
+}
+
+// Helper to create service role client
+function createServiceRoleClient() {
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  console.log("Creating service role client:", {
+    hasUrl: !!supabaseUrl,
+    hasServiceKey: !!serviceRoleKey,
+    serviceKeyPrefix: serviceRoleKey?.substring(0, 20) + "...",
+  })
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error("Missing Supabase service role environment variables")
+  }
+
+  const cookieStore = cookies()
+
+  return createServerClient<Database>(supabaseUrl, serviceRoleKey, {
+    cookies: {
+      get(name: string) {
+        return cookieStore.get(name)?.value
+      },
+      set(name: string, value: string, options: any) {
+        try {
+          cookieStore.set({ name, value, ...options })
+        } catch (error) {
+          console.error("Error setting cookie:", error)
+        }
+      },
+      remove(name: string, options: any) {
+        try {
+          cookieStore.set({ name, value: "", ...options, maxAge: 0 })
+        } catch (error) {
+          console.error("Error removing cookie:", error)
+        }
+      },
+    },
+  })
 }
 
 // Get MFA status for the current user
 export async function getMfaStatus() {
   try {
-    // Use regular client for reading
-    const { userId, supabase } = await getAuthenticatedUser(false)
+    const { userId } = await getAuthenticatedUser()
+    const serviceSupabase = createServiceRoleClient()
 
-    const { data, error } = await supabase
+    const { data, error } = await serviceSupabase
       .from("mfa_settings")
       .select("mfa_enabled, mfa_type")
       .eq("id", userId)
       .single()
 
     if (error) {
-      console.log("MFA settings not found, will create with service role")
-
-      // Use service role for writing
-      const { userId: serviceUserId, supabase: serviceSupabase } = await getAuthenticatedUser(true)
+      console.log("MFA settings not found, will create new record")
 
       // Create MFA settings if they don't exist
       const { error: insertError } = await serviceSupabase.from("mfa_settings").insert({
-        id: serviceUserId,
+        id: userId,
         mfa_enabled: false,
         mfa_type: null,
       })
@@ -80,11 +146,8 @@ export async function getMfaStatus() {
 // Generate a new authenticator secret
 export async function generateAuthenticatorSecret(email: string) {
   try {
-    // Get user with regular client
-    const { userId, user } = await getAuthenticatedUser(false)
-
-    // But use service role for database operations
-    const serviceSupabase = createServerSupabaseClient(true)
+    const { userId } = await getAuthenticatedUser()
+    const serviceSupabase = createServiceRoleClient()
 
     console.log("Generating secret for user:", userId, "email:", email)
 
@@ -122,7 +185,7 @@ export async function generateAuthenticatorSecret(email: string) {
       length: qrCodeDataUrl.length,
     })
 
-    // First, ensure MFA settings record exists
+    // Check if MFA settings record exists
     const { data: existingSettings } = await serviceSupabase.from("mfa_settings").select("id").eq("id", userId).single()
 
     if (!existingSettings) {
@@ -139,6 +202,7 @@ export async function generateAuthenticatorSecret(email: string) {
         throw insertError
       }
     } else {
+      console.log("Updating existing MFA settings record for user:", userId)
       // Update existing record
       const { error: updateError } = await serviceSupabase
         .from("mfa_settings")
@@ -174,11 +238,8 @@ export async function generateAuthenticatorSecret(email: string) {
 // Verify authenticator token and enable MFA
 export async function verifyAndEnableMfa(token: string) {
   try {
-    // Get user with regular client
-    const { userId } = await getAuthenticatedUser(false)
-
-    // But use service role for database operations
-    const serviceSupabase = createServerSupabaseClient(true)
+    const { userId } = await getAuthenticatedUser()
+    const serviceSupabase = createServiceRoleClient()
 
     console.log("Verifying MFA for user:", userId, "with token:", token)
 
@@ -240,11 +301,8 @@ export async function verifyAndEnableMfa(token: string) {
 // Generate backup codes
 export async function generateBackupCodes() {
   try {
-    // Get user with regular client
-    const { userId } = await getAuthenticatedUser(false)
-
-    // But use service role for database operations
-    const serviceSupabase = createServerSupabaseClient(true)
+    const { userId } = await getAuthenticatedUser()
+    const serviceSupabase = createServiceRoleClient()
 
     // Delete existing backup codes
     await serviceSupabase.from("backup_codes").delete().eq("user_id", userId)
@@ -289,11 +347,8 @@ export async function generateBackupCodes() {
 // Verify backup code
 export async function verifyBackupCode(code: string) {
   try {
-    // Get user with regular client
-    const { userId } = await getAuthenticatedUser(false)
-
-    // But use service role for database operations
-    const serviceSupabase = createServerSupabaseClient(true)
+    const { userId } = await getAuthenticatedUser()
+    const serviceSupabase = createServiceRoleClient()
 
     // Hash the provided code
     const hashedCode = createHash("sha256").update(code).digest("hex")
@@ -336,11 +391,8 @@ export async function verifyBackupCode(code: string) {
 // Disable MFA
 export async function disableMfa() {
   try {
-    // Get user with regular client
-    const { userId } = await getAuthenticatedUser(false)
-
-    // But use service role for database operations
-    const serviceSupabase = createServerSupabaseClient(true)
+    const { userId } = await getAuthenticatedUser()
+    const serviceSupabase = createServiceRoleClient()
 
     // Disable MFA
     const { error } = await serviceSupabase
