@@ -30,7 +30,6 @@ interface AuthContextType {
     data?: any
     error?: AuthError | null
   }>
-  refreshSession: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -42,35 +41,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-  const refreshSession = async () => {
-    try {
-      const { data, error } = await supabase.auth.refreshSession()
-      if (error) {
-        console.error("Error refreshing session:", error)
-      } else {
-        console.log("Session refreshed successfully")
-      }
-    } catch (error) {
-      console.error("Error in refreshSession:", error)
-    }
-  }
-
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
 
-        console.log("Initial session:", session?.user?.email)
-        setSession(session)
-        setUser(session?.user ?? null)
-      } catch (error) {
-        console.error("Error getting initial session:", error)
-      } finally {
-        setIsLoading(false)
-      }
+      setSession(session)
+      setUser(session?.user ?? null)
+      setIsLoading(false)
     }
 
     getInitialSession()
@@ -80,12 +60,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session?.user?.email)
-
       setSession(session)
       setUser(session?.user ?? null)
       setIsLoading(false)
-
-      // No automatic redirects - let the UI handle the state changes
     })
 
     return () => subscription.unsubscribe()
@@ -173,24 +150,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
-    try {
-      console.log("Starting sign out process...")
-
-      // Clear local state first for immediate UI update
-      setUser(null)
-      setSession(null)
-
-      // Then sign out from Supabase
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        console.error("Sign out error:", error)
-        // If there's an error, we might want to restore the session
-        // but for now, we'll keep the user signed out locally
-      } else {
-        console.log("Sign out successful")
-      }
-    } catch (error) {
-      console.error("Unexpected sign out error:", error)
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      console.error("Sign out error:", error)
     }
   }
 
@@ -209,7 +171,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signUp,
     signOut,
     resetPassword,
-    refreshSession,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

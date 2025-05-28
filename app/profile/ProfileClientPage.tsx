@@ -49,7 +49,7 @@ interface ProfileData {
 }
 
 export default function ProfileClientPage() {
-  const { user, isLoading: authLoading, signOut } = useAuth()
+  const { user, isLoading, signOut } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [profile, setProfile] = useState<ProfileData | null>(null)
@@ -58,7 +58,6 @@ export default function ProfileClientPage() {
   const [saveMessage, setSaveMessage] = useState("")
   const [loadError, setLoadError] = useState("")
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null)
-  const [retryCount, setRetryCount] = useState(0)
 
   // Get initial tab from URL parameter
   const initialTab = searchParams.get("tab") || "general"
@@ -115,21 +114,18 @@ export default function ProfileClientPage() {
     },
   ])
 
-  // Redirect if not authenticated
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (!isLoading && !user) {
       console.log("No user found, redirecting to sign in")
       router.push("/auth/sign-in?redirect=/profile")
     }
-  }, [authLoading, user, router])
+  }, [isLoading, user, router])
 
-  // Load profile when user is available
   useEffect(() => {
-    if (user && !authLoading) {
-      console.log("User available, loading profile:", user.email)
+    if (user) {
       loadProfile()
     }
-  }, [user, authLoading])
+  }, [user])
 
   const loadProfile = async () => {
     try {
@@ -170,16 +166,7 @@ export default function ProfileClientPage() {
           ...prev,
           originalUsername: profileData?.username || user?.email?.split("@")[0] || "",
         }))
-        setRetryCount(0) // Reset retry count on success
       } else {
-        // Retry logic for failed profile loads
-        if (retryCount < 3) {
-          console.log(`Profile load failed, retrying... (${retryCount + 1}/3)`)
-          setRetryCount((prev) => prev + 1)
-          setTimeout(() => loadProfile(), 2000) // Retry after 2 seconds
-          return
-        }
-
         setLoadError("Failed to load profile data")
         // Set default form data if no profile exists
         const defaultUsername = user?.email?.split("@")[0] || ""
@@ -269,6 +256,7 @@ export default function ProfileClientPage() {
 
   const handleSignOut = async () => {
     await signOut()
+    router.push("/")
   }
 
   // Debounced username check
@@ -331,8 +319,7 @@ export default function ProfileClientPage() {
     }
   }, [formData.username, usernameStatus.originalUsername, user?.id])
 
-  // Show loading state while auth is loading or user is not available
-  if (authLoading || !user) {
+  if (isLoading || !user) {
     return (
       <div className="container mx-auto py-10">
         <Card>
@@ -340,12 +327,6 @@ export default function ProfileClientPage() {
             <CardTitle>Loading Profile...</CardTitle>
             <CardDescription>Please wait while we load your profile information.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-center py-8">
-              <RefreshCw className="h-6 w-6 animate-spin mr-2" />
-              Authenticating...
-            </div>
-          </CardContent>
         </Card>
       </div>
     )
@@ -436,7 +417,6 @@ export default function ProfileClientPage() {
               <p>User Email: {user?.email}</p>
               <p>Profile Loaded: {profile ? "Yes" : "No"}</p>
               <p>Loading Profile: {isLoadingProfile ? "Yes" : "No"}</p>
-              <p>Retry Count: {retryCount}</p>
               {loadError && <p className="text-red-600">Load Error: {loadError}</p>}
               <Button size="sm" variant="outline" onClick={loadProfile} className="mt-2" disabled={isLoadingProfile}>
                 <RefreshCw className={`h-3 w-3 mr-1 ${isLoadingProfile ? "animate-spin" : ""}`} />

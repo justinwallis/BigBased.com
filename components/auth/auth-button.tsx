@@ -11,12 +11,77 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useAuth } from "@/contexts/auth-context"
+import { supabaseClient } from "@/lib/supabase/client"
 
 export default function AuthButton() {
-  const { user, signOut, isLoading } = useAuth()
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const [buttonText, setButtonText] = useState("")
   const [fadeState, setFadeState] = useState("fade-in")
+
+  // Force a more reliable check for authentication status
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const supabase = supabaseClient()
+        if (!supabase) {
+          console.error("No Supabase client available")
+          setLoading(false)
+          return
+        }
+
+        // Check if user has logged in before
+        const hasLoggedInBefore = localStorage.getItem("hasLoggedInBefore") === "true"
+        if (hasLoggedInBefore) {
+          setButtonText("Login")
+        } else {
+          setButtonText("Join")
+        }
+
+        // Force a fresh check of the session
+        const { data, error } = await supabase.auth.getSession()
+
+        if (error) {
+          console.error("Error checking auth status:", error)
+          setLoading(false)
+          return
+        }
+
+        console.log("Auth session data:", data)
+        setUser(data.session?.user || null)
+
+        // If user logs in, remember this for future visits
+        if (data.session?.user) {
+          localStorage.setItem("hasLoggedInBefore", "true")
+        }
+
+        setLoading(false)
+      } catch (error) {
+        console.error("Error checking auth status:", error)
+        setLoading(false)
+      }
+    }
+
+    checkUser()
+
+    // Set up auth state change listener
+    const supabase = supabaseClient()
+    if (!supabase) return
+
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth state changed:", _event, session?.user?.email)
+      setUser(session?.user || null)
+
+      // If user logs in, remember this for future visits
+      if (session?.user) {
+        localStorage.setItem("hasLoggedInBefore", "true")
+      }
+    })
+
+    return () => {
+      data.subscription.unsubscribe()
+    }
+  }, [])
 
   // Alternate button text between Join and Login if not logged in and never logged in before
   useEffect(() => {
@@ -27,9 +92,6 @@ export default function AuthButton() {
       setButtonText("Login")
       return // Don't alternate if they've logged in before
     }
-
-    // Set initial text
-    setButtonText("Join")
 
     const interval = setInterval(() => {
       // Start fade out
@@ -45,19 +107,15 @@ export default function AuthButton() {
     return () => clearInterval(interval)
   }, [user])
 
-  // Remember when user has logged in
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem("hasLoggedInBefore", "true")
-    }
-  }, [user])
-
   const handleSignOut = async () => {
-    await signOut()
-    // No need to redirect - the auth context will handle the state change
+    const supabase = supabaseClient()
+    if (!supabase) return
+
+    await supabase.auth.signOut()
+    window.location.href = "/"
   }
 
-  if (isLoading) {
+  if (loading) {
     return <div className="w-[90px] h-[40px] bg-gray-300 dark:bg-gray-700 rounded-full animate-pulse"></div>
   }
 
