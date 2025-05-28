@@ -49,13 +49,12 @@ export async function POST(request: Request) {
       error: mfaError,
     })
 
-    if (mfaError || !mfaData) {
-      console.log("No MFA data found for user")
+    if (mfaError) {
+      console.log("No MFA data found for user, but there was an error:", mfaError)
       return NextResponse.json({ success: false, error: "MFA not set up" }, { status: 400 })
     }
 
-    // Check if MFA is enabled
-    if (!mfaData.mfa_enabled) {
+    if (!mfaData || !mfaData.mfa_enabled) {
       console.log("MFA not enabled for user")
       return NextResponse.json({ success: false, error: "MFA not enabled" }, { status: 400 })
     }
