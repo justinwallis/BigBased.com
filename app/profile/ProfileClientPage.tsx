@@ -924,7 +924,9 @@ export default function ProfileClientPage() {
                       <h4 className="font-medium">Active Sessions</h4>
                       <p className="text-sm text-muted-foreground">Manage your active login sessions</p>
                     </div>
-                    <Button variant="outline">View Sessions</Button>
+                    <Link href="/profile/security/sessions">
+                      <Button variant="outline">View Sessions</Button>
+                    </Link>
                   </div>
                 </div>
               </CardContent>
