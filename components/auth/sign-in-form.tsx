@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,14 +12,13 @@ import { AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
 import { Checkbox } from "@/components/ui/checkbox"
-import { createClient } from "@/lib/supabase"
+import { supabase } from "@/lib/supabase"
 
 function SignInFormComponent() {
   const { signIn } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectUrl = searchParams.get("redirect") || "/profile"
-  const [supabase, setSupabase] = useState<any>(null)
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -29,11 +28,6 @@ function SignInFormComponent() {
   const [rememberMe, setRememberMe] = useState(false)
   const [showMfaInput, setShowMfaInput] = useState(false)
   const [mfaRequired, setMfaRequired] = useState(false)
-
-  // Initialize Supabase client
-  useEffect(() => {
-    setSupabase(createClient())
-  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -93,13 +87,6 @@ function SignInFormComponent() {
 
       // Proceed with normal sign in
       console.log("Proceeding with Supabase sign in...")
-
-      if (!supabase) {
-        setError("Authentication client not initialized")
-        setIsLoading(false)
-        return
-      }
-
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,

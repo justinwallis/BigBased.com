@@ -30,6 +30,7 @@ interface AuthContextType {
     data?: any
     error?: AuthError | null
   }>
+  refreshSession: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -41,16 +42,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
+  const refreshSession = async () => {
+    try {
+      const { data, error } = await supabase.auth.refreshSession()
+      if (error) {
+        console.error("Error refreshing session:", error)
+      } else {
+        console.log("Session refreshed successfully")
+      }
+    } catch (error) {
+      console.error("Error in refreshSession:", error)
+    }
+  }
+
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
 
-      setSession(session)
-      setUser(session?.user ?? null)
-      setIsLoading(false)
+        console.log("Initial session:", session?.user?.email)
+        setSession(session)
+        setUser(session?.user ?? null)
+      } catch (error) {
+        console.error("Error getting initial session:", error)
+      } finally {
+        setIsLoading(false)
+      }
     }
 
     getInitialSession()
@@ -60,9 +80,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session?.user?.email)
+
       setSession(session)
       setUser(session?.user ?? null)
       setIsLoading(false)
+
+      // Force a page refresh on sign in to sync server state
+      if (event === "SIGNED_IN" && session) {
+        console.log("User signed in, refreshing page to sync server state")
+        window.location.reload()
+      }
     })
 
     return () => subscription.unsubscribe()
@@ -132,6 +159,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error }
       }
 
+      // Force session refresh after successful login
+      await refreshSession()
+
       return { data, error: null }
     } catch (err) {
       console.error("Sign in error:", err)
@@ -153,6 +183,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { error } = await supabase.auth.signOut()
     if (error) {
       console.error("Sign out error:", error)
+    } else {
+      // Force page refresh to clear server state
+      window.location.href = "/"
     }
   }
 
@@ -171,6 +204,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signUp,
     signOut,
     resetPassword,
+    refreshSession,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
