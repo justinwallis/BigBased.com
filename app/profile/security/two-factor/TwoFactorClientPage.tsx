@@ -165,16 +165,37 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
   }
 
   const downloadBackupCodes = () => {
-    const codesText = backupCodes.join("\n")
-    const blob = new Blob([codesText], { type: "text/plain" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = "backup_codes.txt"
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    try {
+      const codesText = backupCodes.join("\n")
+      const blob = new Blob([codesText], { type: "text/plain;charset=utf-8" })
+      const url = URL.createObjectURL(blob)
+
+      const a = document.createElement("a")
+      a.href = url
+      a.download = "backup_codes.txt"
+      a.style.display = "none"
+
+      document.body.appendChild(a)
+      a.click()
+
+      // Clean up after a short delay to ensure download starts
+      setTimeout(() => {
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      }, 100)
+
+      toast({
+        title: "Download Started",
+        description: "Your backup codes are being downloaded",
+      })
+    } catch (error) {
+      console.error("Download failed:", error)
+      toast({
+        title: "Download Failed",
+        description: "Failed to download backup codes. Try copying them instead.",
+        variant: "destructive",
+      })
+    }
   }
 
   return (
