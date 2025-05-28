@@ -1,67 +1,81 @@
-import { createClient } from "@supabase/supabase-js"
-import { verifyToken } from "node-2fa"
+import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
+import { authenticator } from "otplib"
 
 export async function POST(request: Request) {
   try {
     const { email, token } = await request.json()
 
     console.log("=== MFA Verify API called ===")
-    console.log("Email:", email, "Token length:", token?.length)
+    console.log("Email:", email)
+    console.log("Token provided:", !!token)
 
     if (!email || !token) {
       return NextResponse.json({ success: false, error: "Email and token are required" }, { status: 400 })
     }
 
-    const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-    if (!supabaseUrl || !serviceRoleKey) {
-      return NextResponse.json({ success: false, error: "Server configuration error" }, { status: 500 })
-    }
-
-    // Create service role client
-    const supabase = createClient(supabaseUrl, serviceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    })
+    // Use service role client
+    const supabase = createServerSupabaseClient(true)
 
     // Get user by email
-    const { data: userData, error: userError } = await supabase.auth.admin.getUserByEmail(email)
+    const { data: userData, error: userError } = await supabase.auth.admin.listUsers()
 
-    if (userError || !userData.user) {
+    if (userError) {
+      console.error("Error listing users:", userError)
+      return NextResponse.json({ success: false, error: "Failed to check user" }, { status: 500 })
+    }
+
+    const user = userData.users.find((u) => u.email === email)
+
+    if (!user) {
       return NextResponse.json({ success: false, error: "User not found" }, { status: 404 })
     }
 
-    console.log("Getting MFA secret for user:", userData.user.id)
-    // Get MFA secret
+    console.log("Getting MFA settings for user:", user.id)
+
+    // Get MFA settings
     const { data: mfaData, error: mfaError } = await supabase
       .from("mfa_settings")
-      .select("authenticator_secret")
-      .eq("id", userData.user.id)
+      .select("mfa_enabled, mfa_secret, backup_codes")
+      .eq("id", user.id)
       .single()
 
-    console.log("MFA secret lookup:", {
-      hasData: !!mfaData,
-      hasSecret: !!mfaData?.authenticator_secret,
-      error: mfaError,
-    })
-
-    if (mfaError || !mfaData?.authenticator_secret) {
-      return NextResponse.json({ success: false, error: "MFA not set up" }, { status: 400 })
+    if (mfaError || !mfaData || !mfaData.mfa_enabled) {
+      console.log("MFA not enabled for user")
+      return NextResponse.json({ success: false, error: "MFA not enabled" }, { status: 400 })
     }
 
-    // Verify the token
-    const verified = verifyToken(mfaData.authenticator_secret, token)
-    console.log("Token verification result:", verified)
+    // Check if it's a backup code
+    if (mfaData.backup_codes && Array.isArray(mfaData.backup_codes)) {
+      const backupCodes = mfaData.backup_codes as string[]
+      if (backupCodes.includes(token)) {
+        console.log("Valid backup code used")
 
-    if (!verified || verified.delta !== 0) {
-      return NextResponse.json({ success: false, error: "Invalid verification code" }, { status: 400 })
+        // Remove the used backup code
+        const updatedBackupCodes = backupCodes.filter((code) => code !== token)
+        await supabase.from("mfa_settings").update({ backup_codes: updatedBackupCodes }).eq("id", user.id)
+
+        return NextResponse.json({ success: true }, { status: 200 })
+      }
     }
 
-    return NextResponse.json({ success: true }, { status: 200 })
+    // Verify TOTP token
+    if (mfaData.mfa_secret) {
+      const isValid = authenticator.verify({
+        token: token,
+        secret: mfaData.mfa_secret,
+        window: 2, // Allow 2 time steps before/after for clock drift
+      })
+
+      console.log("TOTP verification result:", isValid)
+
+      if (isValid) {
+        return NextResponse.json({ success: true }, { status: 200 })
+      }
+    }
+
+    console.log("Invalid MFA token")
+    return NextResponse.json({ success: false, error: "Invalid token" }, { status: 400 })
   } catch (error) {
     console.error("Error verifying MFA:", error)
     return NextResponse.json({ success: false, error: "Failed to verify MFA" }, { status: 500 })

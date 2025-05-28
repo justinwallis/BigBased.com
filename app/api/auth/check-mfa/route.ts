@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js"
+import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
@@ -12,46 +12,38 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Email is required" }, { status: 400 })
     }
 
-    const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-    console.log("Environment check:", {
-      hasUrl: !!supabaseUrl,
-      hasServiceKey: !!serviceRoleKey,
-    })
-
-    if (!supabaseUrl || !serviceRoleKey) {
-      return NextResponse.json({ success: false, error: "Server configuration error" }, { status: 500 })
-    }
-
-    // Create service role client
-    const supabase = createClient(supabaseUrl, serviceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    })
+    // Use service role client to access admin functions
+    const supabase = createServerSupabaseClient(true)
 
     console.log("Getting user by email...")
-    // Get user by email
-    const { data: userData, error: userError } = await supabase.auth.admin.getUserByEmail(email)
+
+    // Get user by email using admin API
+    const { data: userData, error: userError } = await supabase.auth.admin.listUsers()
+
+    if (userError) {
+      console.error("Error listing users:", userError)
+      return NextResponse.json({ success: false, error: "Failed to check user" }, { status: 500 })
+    }
+
+    // Find user by email
+    const user = userData.users.find((u) => u.email === email)
 
     console.log("User lookup result:", {
-      hasUser: !!userData?.user,
-      userId: userData?.user?.id,
-      error: userError?.message,
+      hasUser: !!user,
+      userId: user?.id,
     })
 
-    if (userError || !userData.user) {
+    if (!user) {
       return NextResponse.json({ success: false, error: "User not found" }, { status: 404 })
     }
 
-    console.log("Checking MFA settings for user:", userData.user.id)
+    console.log("Checking MFA settings for user:", user.id)
+
     // Check MFA status
     const { data: mfaData, error: mfaError } = await supabase
       .from("mfa_settings")
       .select("mfa_enabled, mfa_type")
-      .eq("id", userData.user.id)
+      .eq("id", user.id)
       .maybeSingle()
 
     console.log("MFA settings result:", {

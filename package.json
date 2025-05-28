@@ -61,6 +61,7 @@
     "next-themes": "latest",
     "node-2fa": "latest",
     "nodemailer": "latest",
+    "otplib": "latest",
     "path": "latest",
     "qrcode": "latest",
     "react": "^19",
