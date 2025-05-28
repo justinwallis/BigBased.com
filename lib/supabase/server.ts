@@ -1,4 +1,4 @@
-import { createServerClient } from "@supabase/ssr"
+import { createServerClient as createSupabaseServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import type { Database } from "@/types/supabase"
 
@@ -14,7 +14,7 @@ export function createServerSupabaseClient(useServiceRole = false) {
     throw new Error("Missing Supabase environment variables")
   }
 
-  return createServerClient<Database>(supabaseUrl, supabaseKey, {
+  return createSupabaseServerClient<Database>(supabaseUrl, supabaseKey, {
     cookies: {
       get(name: string) {
         return cookieStore.get(name)?.value
