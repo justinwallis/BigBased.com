@@ -33,14 +33,32 @@ export async function POST(request: Request) {
 
     console.log("Getting MFA settings for user:", user.id)
 
-    // Get MFA settings
+    // Get MFA settings - check both old and new field names
     const { data: mfaData, error: mfaError } = await supabase
       .from("mfa_settings")
-      .select("mfa_enabled, mfa_secret, backup_codes")
+      .select("mfa_enabled, authenticator_enabled, mfa_secret, authenticator_secret, backup_codes")
       .eq("id", user.id)
       .single()
 
-    if (mfaError || !mfaData || !mfaData.mfa_enabled) {
+    console.log("MFA data retrieved:", {
+      hasData: !!mfaData,
+      mfaEnabled: mfaData?.mfa_enabled,
+      authenticatorEnabled: mfaData?.authenticator_enabled,
+      hasSecret: !!(mfaData?.mfa_secret || mfaData?.authenticator_secret),
+      hasBackupCodes: !!mfaData?.backup_codes,
+      error: mfaError,
+    })
+
+    if (mfaError || !mfaData) {
+      console.log("No MFA data found for user")
+      return NextResponse.json({ success: false, error: "MFA not set up" }, { status: 400 })
+    }
+
+    // Check if MFA is enabled (check both field names for compatibility)
+    const isMfaEnabled = mfaData.mfa_enabled || mfaData.authenticator_enabled
+    const mfaSecret = mfaData.mfa_secret || mfaData.authenticator_secret
+
+    if (!isMfaEnabled) {
       console.log("MFA not enabled for user")
       return NextResponse.json({ success: false, error: "MFA not enabled" }, { status: 400 })
     }
@@ -60,10 +78,11 @@ export async function POST(request: Request) {
     }
 
     // Verify TOTP token
-    if (mfaData.mfa_secret) {
+    if (mfaSecret) {
+      console.log("Verifying TOTP token with secret")
       const isValid = authenticator.verify({
         token: token,
-        secret: mfaData.mfa_secret,
+        secret: mfaSecret,
         window: 2, // Allow 2 time steps before/after for clock drift
       })
 
@@ -72,6 +91,8 @@ export async function POST(request: Request) {
       if (isValid) {
         return NextResponse.json({ success: true }, { status: 200 })
       }
+    } else {
+      console.log("No MFA secret found")
     }
 
     console.log("Invalid MFA token")
