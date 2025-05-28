@@ -9,99 +9,129 @@ import type { Database } from "@/types/supabase"
 
 // Helper to get authenticated user with regular client
 async function getAuthenticatedUser() {
-  const cookieStore = cookies()
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  try {
+    const cookieStore = cookies()
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error("Missing Supabase environment variables")
+    console.log("Auth check - Environment variables:", {
+      hasUrl: !!supabaseUrl,
+      hasAnonKey: !!supabaseKey,
+    })
+
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error("Missing Supabase environment variables")
+    }
+
+    const supabase = createServerClient<Database>(supabaseUrl, supabaseKey, {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+        set(name: string, value: string, options: any) {
+          try {
+            cookieStore.set({ name, value, ...options })
+          } catch (error) {
+            console.error("Error setting cookie:", error)
+          }
+        },
+        remove(name: string, options: any) {
+          try {
+            cookieStore.set({ name, value: "", ...options, maxAge: 0 })
+          } catch (error) {
+            console.error("Error removing cookie:", error)
+          }
+        },
+      },
+    })
+
+    console.log("Getting user with auth client...")
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser()
+
+    console.log("Auth result:", {
+      hasUser: !!user,
+      userId: user?.id,
+      error: error?.message,
+    })
+
+    if (error || !user) {
+      throw new Error(`Not authenticated: ${error?.message || "No user found"}`)
+    }
+
+    return { userId: user.id, user }
+  } catch (error) {
+    console.error("Error in getAuthenticatedUser:", error)
+    throw error
   }
-
-  const supabase = createServerClient<Database>(supabaseUrl, supabaseKey, {
-    cookies: {
-      get(name: string) {
-        return cookieStore.get(name)?.value
-      },
-      set(name: string, value: string, options: any) {
-        try {
-          cookieStore.set({ name, value, ...options })
-        } catch (error) {
-          console.error("Error setting cookie:", error)
-        }
-      },
-      remove(name: string, options: any) {
-        try {
-          cookieStore.set({ name, value: "", ...options, maxAge: 0 })
-        } catch (error) {
-          console.error("Error removing cookie:", error)
-        }
-      },
-    },
-  })
-
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser()
-
-  if (error || !user) {
-    throw new Error("Not authenticated")
-  }
-
-  return { userId: user.id, user }
 }
 
 // Helper to create service role client
 function createServiceRoleClient() {
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  try {
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-  console.log("Creating service role client:", {
-    hasUrl: !!supabaseUrl,
-    hasServiceKey: !!serviceRoleKey,
-    serviceKeyPrefix: serviceRoleKey?.substring(0, 20) + "...",
-  })
+    console.log("Creating service role client:", {
+      hasUrl: !!supabaseUrl,
+      hasServiceKey: !!serviceRoleKey,
+      serviceKeyPrefix: serviceRoleKey?.substring(0, 20) + "...",
+    })
 
-  if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error("Missing Supabase service role environment variables")
+    if (!supabaseUrl || !serviceRoleKey) {
+      throw new Error("Missing Supabase service role environment variables")
+    }
+
+    const cookieStore = cookies()
+
+    const client = createServerClient<Database>(supabaseUrl, serviceRoleKey, {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+        set(name: string, value: string, options: any) {
+          try {
+            cookieStore.set({ name, value, ...options })
+          } catch (error) {
+            console.error("Error setting cookie:", error)
+          }
+        },
+        remove(name: string, options: any) {
+          try {
+            cookieStore.set({ name, value: "", ...options, maxAge: 0 })
+          } catch (error) {
+            console.error("Error removing cookie:", error)
+          }
+        },
+      },
+    })
+
+    console.log("Service role client created successfully")
+    return client
+  } catch (error) {
+    console.error("Error creating service role client:", error)
+    throw error
   }
-
-  const cookieStore = cookies()
-
-  return createServerClient<Database>(supabaseUrl, serviceRoleKey, {
-    cookies: {
-      get(name: string) {
-        return cookieStore.get(name)?.value
-      },
-      set(name: string, value: string, options: any) {
-        try {
-          cookieStore.set({ name, value, ...options })
-        } catch (error) {
-          console.error("Error setting cookie:", error)
-        }
-      },
-      remove(name: string, options: any) {
-        try {
-          cookieStore.set({ name, value: "", ...options, maxAge: 0 })
-        } catch (error) {
-          console.error("Error removing cookie:", error)
-        }
-      },
-    },
-  })
 }
 
 // Get MFA status for the current user
 export async function getMfaStatus() {
   try {
+    console.log("=== getMfaStatus called ===")
     const { userId } = await getAuthenticatedUser()
     const serviceSupabase = createServiceRoleClient()
+
+    console.log("Checking MFA status for user:", userId)
 
     const { data, error } = await serviceSupabase
       .from("mfa_settings")
       .select("mfa_enabled, mfa_type")
       .eq("id", userId)
       .single()
+
+    console.log("MFA status query result:", { data, error })
 
     if (error) {
       console.log("MFA settings not found, will create new record")
@@ -118,6 +148,7 @@ export async function getMfaStatus() {
         throw insertError
       }
 
+      console.log("Created new MFA settings record")
       return {
         success: true,
         data: {
@@ -138,7 +169,7 @@ export async function getMfaStatus() {
     console.error("Error getting MFA status:", error)
     return {
       success: false,
-      error: "Failed to get MFA status",
+      error: error instanceof Error ? error.message : "Failed to get MFA status",
     }
   }
 }
@@ -146,12 +177,18 @@ export async function getMfaStatus() {
 // Generate a new authenticator secret
 export async function generateAuthenticatorSecret(email: string) {
   try {
+    console.log("=== generateAuthenticatorSecret called ===")
+    console.log("Input email:", email)
+
+    console.log("Step 1: Getting authenticated user...")
     const { userId } = await getAuthenticatedUser()
+    console.log("Authenticated user ID:", userId)
+
+    console.log("Step 2: Creating service role client...")
     const serviceSupabase = createServiceRoleClient()
+    console.log("Service role client created")
 
-    console.log("Generating secret for user:", userId, "email:", email)
-
-    // Generate a new secret
+    console.log("Step 3: Generating secret...")
     const secretData = generateSecret({
       name: "Big Based",
       account: email,
@@ -161,13 +198,15 @@ export async function generateAuthenticatorSecret(email: string) {
     console.log("Generated secret data:", {
       hasSecret: !!secretData.secret,
       hasUri: !!secretData.uri,
+      secretLength: secretData.secret?.length,
+      uriLength: secretData.uri?.length,
     })
 
     if (!secretData.secret || !secretData.uri) {
       throw new Error("Failed to generate secret or URI")
     }
 
-    // Generate QR code as data URL using qrcode library
+    console.log("Step 4: Generating QR code...")
     const qrCodeDataUrl = await QRCode.toDataURL(secretData.uri, {
       errorCorrectionLevel: "M",
       type: "image/png",
@@ -185,31 +224,47 @@ export async function generateAuthenticatorSecret(email: string) {
       length: qrCodeDataUrl.length,
     })
 
-    // Check if MFA settings record exists
-    const { data: existingSettings } = await serviceSupabase.from("mfa_settings").select("id").eq("id", userId).single()
+    console.log("Step 5: Checking for existing MFA settings...")
+    const { data: existingSettings, error: selectError } = await serviceSupabase
+      .from("mfa_settings")
+      .select("id")
+      .eq("id", userId)
+      .single()
+
+    console.log("Existing settings check:", {
+      hasData: !!existingSettings,
+      error: selectError,
+    })
 
     if (!existingSettings) {
-      console.log("Creating MFA settings record for user:", userId)
-      const { error: insertError } = await serviceSupabase.from("mfa_settings").insert({
-        id: userId,
-        mfa_enabled: false,
-        mfa_type: null,
-        authenticator_secret: secretData.secret,
-      })
+      console.log("Step 6a: Creating new MFA settings record for user:", userId)
+      const { data: insertData, error: insertError } = await serviceSupabase
+        .from("mfa_settings")
+        .insert({
+          id: userId,
+          mfa_enabled: false,
+          mfa_type: null,
+          authenticator_secret: secretData.secret,
+        })
+        .select()
+
+      console.log("Insert result:", { insertData, insertError })
 
       if (insertError) {
         console.error("Failed to create MFA settings:", insertError)
         throw insertError
       }
     } else {
-      console.log("Updating existing MFA settings record for user:", userId)
-      // Update existing record
-      const { error: updateError } = await serviceSupabase
+      console.log("Step 6b: Updating existing MFA settings record for user:", userId)
+      const { data: updateData, error: updateError } = await serviceSupabase
         .from("mfa_settings")
         .update({
           authenticator_secret: secretData.secret,
         })
         .eq("id", userId)
+        .select()
+
+      console.log("Update result:", { updateData, updateError })
 
       if (updateError) {
         console.error("Failed to update MFA settings:", updateError)
@@ -217,7 +272,7 @@ export async function generateAuthenticatorSecret(email: string) {
       }
     }
 
-    console.log("Secret stored successfully for user:", userId)
+    console.log("Step 7: Secret stored successfully for user:", userId)
 
     return {
       success: true,
@@ -227,7 +282,8 @@ export async function generateAuthenticatorSecret(email: string) {
       },
     }
   } catch (error) {
-    console.error("Error generating authenticator secret:", error)
+    console.error("Error in generateAuthenticatorSecret:", error)
+    console.error("Error stack:", error instanceof Error ? error.stack : "No stack trace")
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to generate authenticator secret",
@@ -238,6 +294,7 @@ export async function generateAuthenticatorSecret(email: string) {
 // Verify authenticator token and enable MFA
 export async function verifyAndEnableMfa(token: string) {
   try {
+    console.log("=== verifyAndEnableMfa called ===")
     const { userId } = await getAuthenticatedUser()
     const serviceSupabase = createServiceRoleClient()
 
@@ -301,6 +358,7 @@ export async function verifyAndEnableMfa(token: string) {
 // Generate backup codes
 export async function generateBackupCodes() {
   try {
+    console.log("=== generateBackupCodes called ===")
     const { userId } = await getAuthenticatedUser()
     const serviceSupabase = createServiceRoleClient()
 
