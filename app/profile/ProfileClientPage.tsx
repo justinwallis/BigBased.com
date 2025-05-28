@@ -453,18 +453,13 @@ export default function ProfileClientPage() {
             <div className="space-y-1">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-2xl">{formData.full_name || formData.username || "User"}</CardTitle>
-                <div className="flex flex-col items-end space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Link href="/">
-                      <Button variant="outline" size="sm" className="flex items-center space-x-2">
-                        <Home className="h-4 w-4" />
-                        <span>Back to Big Based</span>
-                      </Button>
-                    </Link>
-                    <Button variant="outline" onClick={handleSignOut}>
-                      Sign Out
+                <div className="flex items-center space-x-2">
+                  <Link href="/">
+                    <Button variant="outline" size="sm" className="flex items-center space-x-2">
+                      <Home className="h-4 w-4" />
+                      <span>Back to Big Based</span>
                     </Button>
-                  </div>
+                  </Link>
                   <ThemeToggle variant="button" />
                 </div>
               </div>

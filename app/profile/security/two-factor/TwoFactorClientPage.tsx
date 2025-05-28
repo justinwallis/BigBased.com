@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useTransition, useEffect } from "react"
 import Link from "next/link"
-import { ArrowLeft, Shield, Smartphone, Key, Download, Copy, Check, Home, AlertTriangle } from "lucide-react"
+import { ArrowLeft, Shield, Smartphone, Key, Download, Copy, Check, Home } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,12 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
-import {
-  generateAuthenticatorSecret,
-  verifyAndEnableMfa,
-  generateBackupCodes,
-  disableMfa,
-} from "@/app/actions/mfa-actions"
+import { generateAuthenticatorSecret, verifyAndEnableMfa, generateBackupCodes } from "@/app/actions/mfa-actions"
 import type { User } from "@supabase/supabase-js"
 import { ThemeToggle } from "@/components/theme-toggle"
 
@@ -31,7 +26,7 @@ interface TwoFactorClientPageProps {
 
 export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFactorClientPageProps) {
   const [isPending, startTransition] = useTransition()
-  const [step, setStep] = useState<"overview" | "setup" | "verify" | "backup-codes" | "disable-confirm">("overview")
+  const [step, setStep] = useState<"overview" | "setup" | "verify" | "backup-codes">("overview")
   const [qrCode, setQrCode] = useState<string>("")
   const [secret, setSecret] = useState<string>("")
   const [verificationCode, setVerificationCode] = useState("")
@@ -143,7 +138,6 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
       if (result.success && result.data) {
         setBackupCodes(result.data.codes)
         setCopiedCodes(false)
-        setStep("backup-codes")
         toast({
           title: "Success",
           description: "New backup codes generated",
@@ -152,27 +146,6 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
         toast({
           title: "Error",
           description: result.error || "Failed to generate backup codes",
-          variant: "destructive",
-        })
-      }
-    })
-  }
-
-  const handleDisableMfa = () => {
-    startTransition(async () => {
-      const result = await disableMfa()
-
-      if (result.success) {
-        setMfaStatus({ enabled: false, type: null })
-        setStep("overview")
-        toast({
-          title: "Success",
-          description: "Two-factor authentication has been disabled",
-        })
-      } else {
-        toast({
-          title: "Error",
-          description: result.error || "Failed to disable MFA",
           variant: "destructive",
         })
       }
@@ -314,59 +287,13 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
                             </div>
                           </div>
                           <Button variant="outline" onClick={handleGenerateNewBackupCodes} disabled={isPending}>
-                            {isPending ? "Generating..." : "Generate New"}
-                          </Button>
-                        </div>
-
-                        <div className="flex items-center justify-between p-4 border border-red-200 dark:border-red-800 rounded-lg bg-red-50 dark:bg-red-900/20">
-                          <div className="flex items-center gap-3">
-                            <AlertTriangle className="h-5 w-5 text-red-600" />
-                            <div>
-                              <p className="font-medium text-red-800 dark:text-red-200">Disable 2FA</p>
-                              <p className="text-sm text-red-600 dark:text-red-400">
-                                Remove two-factor authentication from your account
-                              </p>
-                            </div>
-                          </div>
-                          <Button variant="destructive" onClick={() => setStep("disable-confirm")} disabled={isPending}>
-                            Disable
+                            Generate New
                           </Button>
                         </div>
                       </div>
                     </div>
                   </>
                 )}
-              </CardContent>
-            </Card>
-          )}
-
-          {step === "disable-confirm" && (
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <AlertTriangle className="h-6 w-6 text-red-600" />
-                  <div>
-                    <CardTitle className="text-red-800 dark:text-red-200">Disable Two-Factor Authentication</CardTitle>
-                    <CardDescription>This will remove the extra security layer from your account</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                  <p className="text-sm text-red-800 dark:text-red-200">
-                    <strong>Warning:</strong> Disabling two-factor authentication will make your account less secure.
-                    You will no longer need to provide a verification code when signing in.
-                  </p>
-                </div>
-
-                <div className="flex gap-3">
-                  <Button variant="outline" onClick={() => setStep("overview")} className="flex-1">
-                    Cancel
-                  </Button>
-                  <Button variant="destructive" onClick={handleDisableMfa} disabled={isPending} className="flex-1">
-                    {isPending ? "Disabling..." : "Yes, Disable 2FA"}
-                  </Button>
-                </div>
               </CardContent>
             </Card>
           )}
@@ -413,6 +340,19 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
                     )}
                   </div>
                 </div>
+
+                {/* Debug info - only in development */}
+                {process.env.NODE_ENV === "development" && qrCode && (
+                  <div className="text-xs text-gray-500 p-3 bg-gray-100 dark:bg-gray-800 rounded font-mono">
+                    <p>
+                      <strong>Debug Info:</strong>
+                    </p>
+                    <p>QR Length: {qrCode.length}</p>
+                    <p>Starts with data: {qrCode.startsWith("data:") ? "✓" : "✗"}</p>
+                    <p>Format: {qrCode.substring(0, 30)}...</p>
+                    {qrError && <p className="text-red-500">Error: {qrError}</p>}
+                  </div>
+                )}
 
                 {/* Manual Entry */}
                 <div className="space-y-2">
@@ -526,21 +466,13 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
                     </div>
                   </div>
 
-                  {backupCodes.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-2 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg font-mono text-sm">
-                      {backupCodes.map((code, index) => (
-                        <div key={index} className="p-2 bg-white dark:bg-gray-700 rounded border">
-                          {code}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                      <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                        No backup codes available. Click "Generate New" to create backup codes.
-                      </p>
-                    </div>
-                  )}
+                  <div className="grid grid-cols-2 gap-2 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg font-mono text-sm">
+                    {backupCodes.map((code, index) => (
+                      <div key={index} className="p-2 bg-white dark:bg-gray-700 rounded border">
+                        {code}
+                      </div>
+                    ))}
+                  </div>
 
                   <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                     <p className="text-sm text-yellow-800 dark:text-yellow-200">
