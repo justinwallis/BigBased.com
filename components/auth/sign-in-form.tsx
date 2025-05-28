@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,13 +12,14 @@ import { AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
 import { Checkbox } from "@/components/ui/checkbox"
-import { supabase } from "@/lib/supabase"
+import { createClient } from "@/lib/supabase"
 
 function SignInFormComponent() {
   const { signIn } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectUrl = searchParams.get("redirect") || "/profile"
+  const [supabase, setSupabase] = useState<any>(null)
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -28,6 +29,11 @@ function SignInFormComponent() {
   const [rememberMe, setRememberMe] = useState(false)
   const [showMfaInput, setShowMfaInput] = useState(false)
   const [mfaRequired, setMfaRequired] = useState(false)
+
+  // Initialize Supabase client
+  useEffect(() => {
+    setSupabase(createClient())
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,32 +47,28 @@ function SignInFormComponent() {
       console.log("Has MFA Code:", !!mfaCode)
       console.log("Show MFA Input:", showMfaInput)
 
-      // First, check if MFA is required for this user
-      if (!showMfaInput) {
-        // Try initial sign in to check if MFA is required
-        const checkMfaResponse = await fetch("/api/auth/check-mfa", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email }),
-        })
+      // Attempt sign in
+      const result = await signIn(email, password, mfaCode)
+      console.log("Sign in result:", result)
 
-        const checkMfaResult = await checkMfaResponse.json()
-        console.log("MFA Check Result:", checkMfaResult)
+      if (result.error) {
+        setError(result.error.message || "Failed to sign in")
+        setIsLoading(false)
+        return
+      }
 
-        if (checkMfaResult.mfaRequired) {
-          console.log("MFA required, showing MFA input")
-          setMfaRequired(true)
-          setShowMfaInput(true)
-          setError("Please enter your 6-digit verification code")
-          setIsLoading(false)
-          return
-        }
+      // If MFA is required but no code was provided
+      if (result.mfaRequired && !mfaCode) {
+        console.log("MFA required, showing MFA input")
+        setMfaRequired(true)
+        setShowMfaInput(true)
+        setError("Please enter your 6-digit verification code")
+        setIsLoading(false)
+        return
       }
 
       // If MFA code is provided, verify it first
-      if (mfaCode && showMfaInput) {
+      if (mfaCode) {
         console.log("Verifying MFA code...")
         const mfaVerifyResponse = await fetch("/api/auth/verify-mfa", {
           method: "POST",
@@ -85,11 +87,19 @@ function SignInFormComponent() {
           return
         }
 
+        // MFA verification successful, now proceed with Supabase sign in
         console.log("MFA verified successfully, proceeding with sign in...")
       }
 
-      // Proceed with Supabase sign in
+      // Proceed with normal sign in
       console.log("Proceeding with Supabase sign in...")
+
+      if (!supabase) {
+        setError("Authentication client not initialized")
+        setIsLoading(false)
+        return
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -118,7 +128,6 @@ function SignInFormComponent() {
         setTimeout(() => {
           console.log("Authentication successful, redirecting to:", redirectUrl)
           router.push(redirectUrl)
-          router.refresh()
         }, 500)
       } else {
         setError("Authentication failed. Please try again.")
