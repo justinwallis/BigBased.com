@@ -1,10 +1,13 @@
 import { createClient } from "@supabase/supabase-js"
-import { NextResponse } from "next/server"
 import { verifyToken } from "node-2fa"
+import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
   try {
     const { email, token } = await request.json()
+
+    console.log("=== MFA Verify API called ===")
+    console.log("Email:", email, "Token length:", token?.length)
 
     if (!email || !token) {
       return NextResponse.json({ success: false, error: "Email and token are required" }, { status: 400 })
@@ -32,6 +35,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "User not found" }, { status: 404 })
     }
 
+    console.log("Getting MFA secret for user:", userData.user.id)
     // Get MFA secret
     const { data: mfaData, error: mfaError } = await supabase
       .from("mfa_settings")
@@ -39,12 +43,19 @@ export async function POST(request: Request) {
       .eq("id", userData.user.id)
       .single()
 
+    console.log("MFA secret lookup:", {
+      hasData: !!mfaData,
+      hasSecret: !!mfaData?.authenticator_secret,
+      error: mfaError,
+    })
+
     if (mfaError || !mfaData?.authenticator_secret) {
       return NextResponse.json({ success: false, error: "MFA not set up" }, { status: 400 })
     }
 
     // Verify the token
     const verified = verifyToken(mfaData.authenticator_secret, token)
+    console.log("Token verification result:", verified)
 
     if (!verified || verified.delta !== 0) {
       return NextResponse.json({ success: false, error: "Invalid verification code" }, { status: 400 })
