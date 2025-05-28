@@ -39,6 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isSigningOut, setIsSigningOut] = useState(false)
 
   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -85,15 +86,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null)
       setIsLoading(false)
 
-      // Force a page refresh on sign in to sync server state
-      if (event === "SIGNED_IN" && session) {
+      // Handle different auth events
+      if (event === "SIGNED_IN" && session && !isSigningOut) {
         console.log("User signed in, refreshing page to sync server state")
-        window.location.reload()
+        // Small delay to ensure state is updated
+        setTimeout(() => {
+          window.location.reload()
+        }, 100)
+      }
+
+      if (event === "SIGNED_OUT") {
+        console.log("User signed out")
+        setIsSigningOut(false)
+        // Redirect to home page after sign out
+        window.location.href = "/"
       }
     })
 
     return () => subscription.unsubscribe()
-  }, [supabase.auth])
+  }, [supabase.auth, isSigningOut])
 
   const signIn = async (email: string, password: string, mfaCode?: string) => {
     try {
@@ -159,9 +170,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error }
       }
 
-      // Force session refresh after successful login
-      await refreshSession()
-
       return { data, error: null }
     } catch (err) {
       console.error("Sign in error:", err)
@@ -180,12 +188,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) {
-      console.error("Sign out error:", error)
-    } else {
-      // Force page refresh to clear server state
-      window.location.href = "/"
+    try {
+      console.log("Starting sign out process...")
+      setIsSigningOut(true)
+
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error("Sign out error:", error)
+        setIsSigningOut(false)
+      } else {
+        console.log("Sign out successful")
+        // The auth state change listener will handle the redirect
+      }
+    } catch (error) {
+      console.error("Unexpected sign out error:", error)
+      setIsSigningOut(false)
     }
   }
 
