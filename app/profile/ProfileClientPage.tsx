@@ -461,11 +461,11 @@ export default function ProfileClientPage() {
                         <span>Back to Big Based</span>
                       </Button>
                     </Link>
-                    <ThemeToggle variant="button" />
+                    <Button variant="outline" onClick={handleSignOut}>
+                      Sign Out
+                    </Button>
                   </div>
-                  <Button variant="outline" onClick={handleSignOut}>
-                    Sign Out
-                  </Button>
+                  <ThemeToggle variant="button" />
                 </div>
               </div>
               <CardDescription className="text-base">{user.email}</CardDescription>

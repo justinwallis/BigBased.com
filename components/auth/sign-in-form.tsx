@@ -34,24 +34,36 @@ function SignInFormComponent() {
     setError(null)
 
     try {
-      // First attempt sign in
-      const { error, data, mfaRequired: requiresMfa } = await signIn(email, password, mfaCode)
+      console.log("=== Form Submit ===")
+      console.log("Email:", email)
+      console.log("Has Password:", !!password)
+      console.log("Has MFA Code:", !!mfaCode)
+      console.log("Show MFA Input:", showMfaInput)
 
-      if (error) {
-        setError(error.message || "Failed to sign in")
+      // Attempt sign in
+      const result = await signIn(email, password, mfaCode)
+      console.log("Sign in result:", result)
+
+      if (result.error) {
+        setError(result.error.message || "Failed to sign in")
         setIsLoading(false)
         return
       }
 
       // If MFA is required but no code was provided
-      if (requiresMfa && !mfaCode) {
+      if (result.mfaRequired && !mfaCode) {
+        console.log("MFA required, showing MFA input")
         setMfaRequired(true)
         setShowMfaInput(true)
+        setError("Please enter your 6-digit verification code")
         setIsLoading(false)
         return
       }
 
-      if (data?.session) {
+      // If we have a successful session
+      if (result.data?.session) {
+        console.log("Sign in successful!")
+
         // Store remember me preference if checked
         if (rememberMe) {
           localStorage.setItem("rememberAuth", "true")
@@ -69,6 +81,7 @@ function SignInFormComponent() {
         setIsLoading(false)
       }
     } catch (err: any) {
+      console.error("Form submit error:", err)
       setError(err.message || "An unexpected error occurred")
       setIsLoading(false)
     }
@@ -78,6 +91,11 @@ function SignInFormComponent() {
     if (e.key === "Enter" && !isLoading) {
       handleSubmit(e as unknown as React.FormEvent)
     }
+  }
+
+  const handleMfaCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, "").slice(0, 6) // Only allow digits, max 6
+    setMfaCode(value)
   }
 
   return (
@@ -147,17 +165,31 @@ function SignInFormComponent() {
                 maxLength={6}
                 placeholder="6-digit code"
                 value={mfaCode}
-                onChange={(e) => setMfaCode(e.target.value)}
+                onChange={handleMfaCodeChange}
                 required
                 autoFocus
                 autoComplete="one-time-code"
                 disabled={isLoading}
                 onKeyDown={handleKeyDown}
-                className="dark:text-white dark:bg-gray-800 dark:border-gray-700"
+                className="dark:text-white dark:bg-gray-800 dark:border-gray-700 text-center text-lg tracking-widest"
               />
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Enter the 6-digit code from your authenticator app
               </p>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setShowMfaInput(false)
+                  setMfaRequired(false)
+                  setMfaCode("")
+                  setError(null)
+                }}
+                className="text-sm"
+              >
+                ← Back to login
+              </Button>
             </div>
           )}
 
@@ -179,7 +211,7 @@ function SignInFormComponent() {
           )}
 
           <Button type="submit" disabled={isLoading} className="dark:text-black">
-            {isLoading ? "Loading... 🇺🇸" : showMfaInput ? "Verify" : "Sign In"}
+            {isLoading ? "Loading... 🇺🇸" : showMfaInput ? "Verify & Sign In" : "Sign In"}
           </Button>
         </div>
       </form>

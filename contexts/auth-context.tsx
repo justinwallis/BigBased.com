@@ -2,80 +2,82 @@
 
 import type React from "react"
 import { createContext, useContext, useEffect, useState } from "react"
-import { supabaseClient } from "@/lib/supabase/client"
-import { useRouter } from "next/navigation"
+import { createClient } from "@supabase/supabase-js"
+import type { User, Session, AuthError } from "@supabase/supabase-js"
 
-type AuthContextType = {
-  user: any | null
+interface AuthContextType {
+  user: User | null
+  session: Session | null
   isLoading: boolean
-  signIn: (email: string, password: string, mfaCode?: string) => Promise<any>
-  signUp: (email: string, password: string) => Promise<any>
+  signIn: (
+    email: string,
+    password: string,
+    mfaCode?: string,
+  ) => Promise<{
+    data?: { session: Session | null; user: User | null }
+    error?: AuthError | null
+    mfaRequired?: boolean
+  }>
+  signUp: (
+    email: string,
+    password: string,
+  ) => Promise<{
+    data?: any
+    error?: AuthError | null
+  }>
   signOut: () => Promise<void>
-  resetPassword: (email: string) => Promise<any>
+  resetPassword: (email: string) => Promise<{
+    data?: any
+    error?: AuthError | null
+  }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<any | null>(null)
+  const [user, setUser] = useState<User | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const router = useRouter()
+
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
   useEffect(() => {
-    const supabase = supabaseClient()
-    if (!supabase) {
+    // Get initial session
+    const getInitialSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      setSession(session)
+      setUser(session?.user ?? null)
       setIsLoading(false)
-      return
     }
 
-    // Check if user is already logged in
-    const checkUser = async () => {
-      try {
-        const { data, error } = await supabase.auth.getSession()
-        if (error) {
-          console.error("Error getting session:", error)
-        }
-        setUser(data?.session?.user || null)
-      } catch (error) {
-        console.error("Error checking user:", error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
+    getInitialSession()
 
-    checkUser()
-
-    // Set up auth state change listener
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user || null)
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session?.user?.email)
+      setSession(session)
+      setUser(session?.user ?? null)
+      setIsLoading(false)
     })
 
-    return () => {
-      authListener?.subscription.unsubscribe()
-    }
-  }, [])
+    return () => subscription.unsubscribe()
+  }, [supabase.auth])
 
   const signIn = async (email: string, password: string, mfaCode?: string) => {
     try {
-      const supabase = supabaseClient()
-      if (!supabase) {
-        throw new Error("Supabase client not initialized")
-      }
+      console.log("=== Sign In Attempt ===")
+      console.log("Email:", email)
+      console.log("Has MFA Code:", !!mfaCode)
 
       // First, check if user has MFA enabled
       if (!mfaCode) {
-        // Try to sign in first to validate credentials
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
-
-        if (signInError) {
-          return { error: signInError }
-        }
-
-        // Check if user has MFA enabled
-        const response = await fetch("/api/auth/check-mfa", {
+        console.log("Checking MFA status...")
+        const mfaCheckResponse = await fetch("/api/auth/check-mfa", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -83,19 +85,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           body: JSON.stringify({ email }),
         })
 
-        const { data: mfaData } = await response.json()
+        const mfaCheckResult = await mfaCheckResponse.json()
+        console.log("MFA Check Result:", mfaCheckResult)
 
-        if (mfaData?.enabled) {
-          // If MFA is enabled but no code provided, sign out and require MFA
-          await supabase.auth.signOut()
-          return { mfaRequired: true }
+        if (mfaCheckResult.success && mfaCheckResult.data.enabled) {
+          console.log("MFA is enabled for this user, requiring MFA code")
+          return {
+            error: null,
+            mfaRequired: true,
+          }
         }
+      }
 
-        // If no MFA, return the sign in data
-        return { data: signInData }
-      } else {
-        // If MFA code is provided, verify it
-        const response = await fetch("/api/auth/verify-mfa", {
+      // If MFA code is provided, verify it first
+      if (mfaCode) {
+        console.log("Verifying MFA code...")
+        const mfaVerifyResponse = await fetch("/api/auth/verify-mfa", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -103,86 +108,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           body: JSON.stringify({ email, token: mfaCode }),
         })
 
-        const { success, error } = await response.json()
+        const mfaVerifyResult = await mfaVerifyResponse.json()
+        console.log("MFA Verify Result:", mfaVerifyResult)
 
-        if (!success) {
-          return { error: { message: error || "Invalid verification code" } }
+        if (!mfaVerifyResult.success) {
+          return {
+            error: { message: mfaVerifyResult.error || "Invalid MFA code" } as AuthError,
+            mfaRequired: true,
+          }
         }
-
-        // If MFA verification succeeded, sign in
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
-
-        if (signInError) {
-          return { error: signInError }
-        }
-
-        return { data: signInData }
       }
-    } catch (error: any) {
-      console.error("Sign in error:", error)
-      return { error: { message: error.message || "An unexpected error occurred" } }
+
+      // Proceed with normal sign in
+      console.log("Proceeding with Supabase sign in...")
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      console.log("Supabase sign in result:", { data: !!data, error })
+
+      if (error) {
+        return { error }
+      }
+
+      return { data, error: null }
+    } catch (err) {
+      console.error("Sign in error:", err)
+      return {
+        error: { message: "An unexpected error occurred" } as AuthError,
+      }
     }
   }
 
   const signUp = async (email: string, password: string) => {
-    try {
-      const supabase = supabaseClient()
-      if (!supabase) {
-        throw new Error("Supabase client not initialized")
-      }
-
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      })
-
-      return { data, error }
-    } catch (error: any) {
-      console.error("Sign up error:", error)
-      return { error: { message: error.message || "An unexpected error occurred" } }
-    }
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    })
+    return { data, error }
   }
 
   const signOut = async () => {
-    try {
-      const supabase = supabaseClient()
-      if (!supabase) {
-        throw new Error("Supabase client not initialized")
-      }
-
-      await supabase.auth.signOut()
-      router.push("/auth/sign-in")
-    } catch (error) {
+    const { error } = await supabase.auth.signOut()
+    if (error) {
       console.error("Sign out error:", error)
     }
   }
 
   const resetPassword = async (email: string) => {
-    try {
-      const supabase = supabaseClient()
-      if (!supabase) {
-        throw new Error("Supabase client not initialized")
-      }
-
-      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
-      })
-
-      return { data, error }
-    } catch (error: any) {
-      console.error("Reset password error:", error)
-      return { error: { message: error.message || "An unexpected error occurred" } }
-    }
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/reset-password`,
+    })
+    return { data, error }
   }
 
   const value = {
     user,
+    session,
     isLoading,
     signIn,
     signUp,
@@ -193,7 +176,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext)
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider")
