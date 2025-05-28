@@ -35,13 +35,18 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
 
   const handleSetupAuthenticator = () => {
     startTransition(async () => {
+      console.log("Starting authenticator setup for:", user.email)
       const result = await generateAuthenticatorSecret(user.email || "")
 
+      console.log("Setup result:", result)
+
       if (result.success && result.data) {
+        console.log("QR Code received:", result.data.qrCode?.substring(0, 50) + "...")
         setQrCode(result.data.qrCode)
         setSecret(result.data.secret)
         setStep("setup")
       } else {
+        console.error("Setup failed:", result.error)
         toast({
           title: "Error",
           description: result.error || "Failed to generate authenticator secret",
@@ -216,7 +221,7 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
                             </div>
                           </div>
                           <Button onClick={handleSetupAuthenticator} disabled={isPending}>
-                            Setup
+                            {isPending ? "Setting up..." : "Setup"}
                           </Button>
                         </div>
                       </div>
@@ -262,10 +267,35 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
               <CardContent className="space-y-6">
                 {/* QR Code */}
                 <div className="flex justify-center">
-                  <div className="p-4 bg-white rounded-lg border">
-                    <img src={qrCode || "/placeholder.svg"} alt="QR Code for 2FA setup" className="w-48 h-48" />
+                  <div className="p-4 bg-white dark:bg-gray-100 rounded-lg border">
+                    {qrCode ? (
+                      <img
+                        src={qrCode || "/placeholder.svg"}
+                        alt="QR Code for 2FA setup"
+                        className="w-48 h-48"
+                        onError={(e) => {
+                          console.error("QR code failed to load:", qrCode?.substring(0, 100))
+                          e.currentTarget.style.display = "none"
+                        }}
+                        onLoad={() => {
+                          console.log("QR code loaded successfully")
+                        }}
+                      />
+                    ) : (
+                      <div className="w-48 h-48 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
+                        <p className="text-gray-500 text-sm">Loading QR Code...</p>
+                      </div>
+                    )}
                   </div>
                 </div>
+
+                {/* Debug info */}
+                {process.env.NODE_ENV === "development" && (
+                  <div className="text-xs text-gray-500 p-2 bg-gray-100 dark:bg-gray-800 rounded">
+                    <p>Debug: QR Code length: {qrCode?.length || 0}</p>
+                    <p>Debug: QR Code starts with: {qrCode?.substring(0, 50) || "N/A"}</p>
+                  </div>
+                )}
 
                 {/* Manual Entry */}
                 <div className="space-y-2">

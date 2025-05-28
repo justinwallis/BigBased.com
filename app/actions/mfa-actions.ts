@@ -4,6 +4,10 @@ import { createServerClient } from "@/lib/supabase/server"
 import { cookies } from "next/headers"
 import { generateSecret, verifyToken } from "node-2fa"
 import { randomBytes, createHash } from "crypto"
+import { AUTH_EVENTS, AUTH_STATUS } from "@/app/constants/auth-log-constants"
+
+// Re-export constants for backward compatibility
+export { AUTH_EVENTS, AUTH_STATUS }
 
 // Helper to get authenticated user
 async function getAuthenticatedUser() {
@@ -54,34 +58,52 @@ export async function generateAuthenticatorSecret(email: string) {
   try {
     const { userId, supabase } = await getAuthenticatedUser()
 
-    // Generate a new secret
-    const { secret, qr } = generateSecret({
+    console.log("Generating secret for email:", email)
+
+    // Generate a new secret with proper options
+    const secretData = generateSecret({
       name: "Big Based",
       account: email,
+      length: 32,
     })
+
+    console.log("Generated secret data:", {
+      hasSecret: !!secretData.secret,
+      hasQr: !!secretData.qr,
+      qrLength: secretData.qr?.length,
+    })
+
+    if (!secretData.secret || !secretData.qr) {
+      throw new Error("Failed to generate secret or QR code")
+    }
 
     // Store the secret in the database
     const { error } = await supabase
       .from("mfa_settings")
       .update({
-        authenticator_secret: secret,
+        authenticator_secret: secretData.secret,
       })
       .eq("id", userId)
 
-    if (error) throw error
+    if (error) {
+      console.error("Database error:", error)
+      throw error
+    }
+
+    console.log("Secret stored successfully")
 
     return {
       success: true,
       data: {
-        secret,
-        qrCode: qr,
+        secret: secretData.secret,
+        qrCode: secretData.qr,
       },
     }
   } catch (error) {
     console.error("Error generating authenticator secret:", error)
     return {
       success: false,
-      error: "Failed to generate authenticator secret",
+      error: error instanceof Error ? error.message : "Failed to generate authenticator secret",
     }
   }
 }
