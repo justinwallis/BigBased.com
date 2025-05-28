@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
 import { Checkbox } from "@/components/ui/checkbox"
 
-export default function SignInForm() {
+function SignInFormComponent() {
   const { signIn } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -21,9 +21,12 @@ export default function SignInForm() {
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [mfaCode, setMfaCode] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [rememberMe, setRememberMe] = useState(false)
+  const [showMfaInput, setShowMfaInput] = useState(false)
+  const [mfaRequired, setMfaRequired] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,10 +34,20 @@ export default function SignInForm() {
     setError(null)
 
     try {
-      const { error, data } = await signIn(email, password)
+      // First attempt sign in
+      const { error, data, mfaRequired: requiresMfa } = await signIn(email, password, mfaCode)
 
       if (error) {
         setError(error.message || "Failed to sign in")
+        setIsLoading(false)
+        return
+      }
+
+      // If MFA is required but no code was provided
+      if (requiresMfa && !mfaCode) {
+        setMfaRequired(true)
+        setShowMfaInput(true)
+        setIsLoading(false)
         return
       }
 
@@ -53,11 +66,17 @@ export default function SignInForm() {
         }, 500)
       } else {
         setError("Authentication failed. Please try again.")
+        setIsLoading(false)
       }
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred")
-    } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !isLoading) {
+      handleSubmit(e as unknown as React.FormEvent)
     }
   }
 
@@ -85,7 +104,7 @@ export default function SignInForm() {
               autoCapitalize="none"
               autoComplete="email"
               autoCorrect="off"
-              disabled={isLoading}
+              disabled={isLoading || showMfaInput}
               className="dark:text-white dark:bg-gray-800 dark:border-gray-700"
             />
           </div>
@@ -110,29 +129,66 @@ export default function SignInForm() {
               autoCapitalize="none"
               autoComplete="current-password"
               autoCorrect="off"
-              disabled={isLoading}
+              disabled={isLoading || showMfaInput}
               className="dark:text-white dark:bg-gray-800 dark:border-gray-700"
             />
           </div>
-          <div className="flex items-center space-x-2 my-2">
-            <Checkbox
-              id="remember"
-              checked={rememberMe}
-              onCheckedChange={(checked) => setRememberMe(checked === true)}
-              className="dark:border-gray-500"
-            />
-            <Label
-              htmlFor="remember"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white"
-            >
-              Remember me
-            </Label>
-          </div>
+
+          {showMfaInput && (
+            <div className="grid gap-2">
+              <Label htmlFor="mfaCode" className="dark:text-white">
+                Verification Code
+              </Label>
+              <Input
+                id="mfaCode"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={6}
+                placeholder="6-digit code"
+                value={mfaCode}
+                onChange={(e) => setMfaCode(e.target.value)}
+                required
+                autoFocus
+                autoComplete="one-time-code"
+                disabled={isLoading}
+                onKeyDown={handleKeyDown}
+                className="dark:text-white dark:bg-gray-800 dark:border-gray-700"
+              />
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Enter the 6-digit code from your authenticator app
+              </p>
+            </div>
+          )}
+
+          {!showMfaInput && (
+            <div className="flex items-center space-x-2 my-2">
+              <Checkbox
+                id="remember"
+                checked={rememberMe}
+                onCheckedChange={(checked) => setRememberMe(checked === true)}
+                className="dark:border-gray-500"
+              />
+              <Label
+                htmlFor="remember"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-white"
+              >
+                Remember me
+              </Label>
+            </div>
+          )}
+
           <Button type="submit" disabled={isLoading} className="dark:text-black">
-            {isLoading ? "Loading... 🇺🇸" : "Sign In"}
+            {isLoading ? "Loading... 🇺🇸" : showMfaInput ? "Verify" : "Sign In"}
           </Button>
         </div>
       </form>
     </div>
   )
 }
+
+// Default export
+export default SignInFormComponent
+
+// Named export for compatibility
+export { SignInFormComponent as SignInForm }
