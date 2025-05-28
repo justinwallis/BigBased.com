@@ -4,10 +4,6 @@ import { createServerClient } from "@/lib/supabase/server"
 import { cookies } from "next/headers"
 import { generateSecret, verifyToken } from "node-2fa"
 import { randomBytes, createHash } from "crypto"
-import { AUTH_EVENTS, AUTH_STATUS } from "@/app/constants/auth-log-constants"
-
-// Re-export constants for backward compatibility
-export { AUTH_EVENTS, AUTH_STATUS }
 
 // Helper to get authenticated user
 async function getAuthenticatedUser() {
