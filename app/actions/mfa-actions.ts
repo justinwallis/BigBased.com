@@ -1,15 +1,13 @@
 "use server"
 
-import { createServerClient } from "@/lib/supabase/server"
-import { cookies } from "next/headers"
+import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { generateSecret, verifyToken } from "node-2fa"
 import { randomBytes, createHash } from "crypto"
 import QRCode from "qrcode"
 
 // Helper to get authenticated user
-async function getAuthenticatedUser() {
-  const cookieStore = cookies()
-  const supabase = createServerClient(cookieStore)
+async function getAuthenticatedUser(useServiceRole = false) {
+  const supabase = createServerSupabaseClient(useServiceRole)
 
   // Use getUser() instead of getSession() for better security
   const {
@@ -21,13 +19,14 @@ async function getAuthenticatedUser() {
     throw new Error("Not authenticated")
   }
 
-  return { userId: user.id, supabase }
+  return { userId: user.id, supabase, user }
 }
 
 // Get MFA status for the current user
 export async function getMfaStatus() {
   try {
-    const { userId, supabase } = await getAuthenticatedUser()
+    // Use regular client for reading
+    const { userId, supabase } = await getAuthenticatedUser(false)
 
     const { data, error } = await supabase
       .from("mfa_settings")
@@ -36,10 +35,14 @@ export async function getMfaStatus() {
       .single()
 
     if (error) {
-      console.log("MFA settings not found, creating new record")
+      console.log("MFA settings not found, will create with service role")
+
+      // Use service role for writing
+      const { userId: serviceUserId, supabase: serviceSupabase } = await getAuthenticatedUser(true)
+
       // Create MFA settings if they don't exist
-      const { error: insertError } = await supabase.from("mfa_settings").insert({
-        id: userId,
+      const { error: insertError } = await serviceSupabase.from("mfa_settings").insert({
+        id: serviceUserId,
         mfa_enabled: false,
         mfa_type: null,
       })
@@ -77,7 +80,11 @@ export async function getMfaStatus() {
 // Generate a new authenticator secret
 export async function generateAuthenticatorSecret(email: string) {
   try {
-    const { userId, supabase } = await getAuthenticatedUser()
+    // Get user with regular client
+    const { userId, user } = await getAuthenticatedUser(false)
+
+    // But use service role for database operations
+    const serviceSupabase = createServerSupabaseClient(true)
 
     console.log("Generating secret for user:", userId, "email:", email)
 
@@ -116,11 +123,11 @@ export async function generateAuthenticatorSecret(email: string) {
     })
 
     // First, ensure MFA settings record exists
-    const { data: existingSettings } = await supabase.from("mfa_settings").select("id").eq("id", userId).single()
+    const { data: existingSettings } = await serviceSupabase.from("mfa_settings").select("id").eq("id", userId).single()
 
     if (!existingSettings) {
       console.log("Creating MFA settings record for user:", userId)
-      const { error: insertError } = await supabase.from("mfa_settings").insert({
+      const { error: insertError } = await serviceSupabase.from("mfa_settings").insert({
         id: userId,
         mfa_enabled: false,
         mfa_type: null,
@@ -133,7 +140,7 @@ export async function generateAuthenticatorSecret(email: string) {
       }
     } else {
       // Update existing record
-      const { error: updateError } = await supabase
+      const { error: updateError } = await serviceSupabase
         .from("mfa_settings")
         .update({
           authenticator_secret: secretData.secret,
@@ -167,12 +174,16 @@ export async function generateAuthenticatorSecret(email: string) {
 // Verify authenticator token and enable MFA
 export async function verifyAndEnableMfa(token: string) {
   try {
-    const { userId, supabase } = await getAuthenticatedUser()
+    // Get user with regular client
+    const { userId } = await getAuthenticatedUser(false)
+
+    // But use service role for database operations
+    const serviceSupabase = createServerSupabaseClient(true)
 
     console.log("Verifying MFA for user:", userId, "with token:", token)
 
     // Get the secret from the database
-    const { data: mfaData, error: mfaError } = await supabase
+    const { data: mfaData, error: mfaError } = await serviceSupabase
       .from("mfa_settings")
       .select("authenticator_secret")
       .eq("id", userId)
@@ -201,7 +212,7 @@ export async function verifyAndEnableMfa(token: string) {
     }
 
     // Enable MFA
-    const { error } = await supabase
+    const { error } = await serviceSupabase
       .from("mfa_settings")
       .update({
         mfa_enabled: true,
@@ -229,10 +240,14 @@ export async function verifyAndEnableMfa(token: string) {
 // Generate backup codes
 export async function generateBackupCodes() {
   try {
-    const { userId, supabase } = await getAuthenticatedUser()
+    // Get user with regular client
+    const { userId } = await getAuthenticatedUser(false)
+
+    // But use service role for database operations
+    const serviceSupabase = createServerSupabaseClient(true)
 
     // Delete existing backup codes
-    await supabase.from("backup_codes").delete().eq("user_id", userId)
+    await serviceSupabase.from("backup_codes").delete().eq("user_id", userId)
 
     // Generate 10 new backup codes
     const codes = Array(10)
@@ -254,7 +269,7 @@ export async function generateBackupCodes() {
     })
 
     // Store the hashed codes
-    const { error } = await supabase.from("backup_codes").insert(hashedCodes)
+    const { error } = await serviceSupabase.from("backup_codes").insert(hashedCodes)
 
     if (error) throw error
 
@@ -274,13 +289,17 @@ export async function generateBackupCodes() {
 // Verify backup code
 export async function verifyBackupCode(code: string) {
   try {
-    const { userId, supabase } = await getAuthenticatedUser()
+    // Get user with regular client
+    const { userId } = await getAuthenticatedUser(false)
+
+    // But use service role for database operations
+    const serviceSupabase = createServerSupabaseClient(true)
 
     // Hash the provided code
     const hashedCode = createHash("sha256").update(code).digest("hex")
 
     // Check if the code exists and is not used
-    const { data, error } = await supabase
+    const { data, error } = await serviceSupabase
       .from("backup_codes")
       .select("id")
       .eq("user_id", userId)
@@ -296,7 +315,7 @@ export async function verifyBackupCode(code: string) {
     }
 
     // Mark the code as used
-    await supabase
+    await serviceSupabase
       .from("backup_codes")
       .update({
         is_used: true,
@@ -317,10 +336,14 @@ export async function verifyBackupCode(code: string) {
 // Disable MFA
 export async function disableMfa() {
   try {
-    const { userId, supabase } = await getAuthenticatedUser()
+    // Get user with regular client
+    const { userId } = await getAuthenticatedUser(false)
+
+    // But use service role for database operations
+    const serviceSupabase = createServerSupabaseClient(true)
 
     // Disable MFA
-    const { error } = await supabase
+    const { error } = await serviceSupabase
       .from("mfa_settings")
       .update({
         mfa_enabled: false,
@@ -333,7 +356,7 @@ export async function disableMfa() {
     if (error) throw error
 
     // Delete all backup codes
-    await supabase.from("backup_codes").delete().eq("user_id", userId)
+    await serviceSupabase.from("backup_codes").delete().eq("user_id", userId)
 
     return { success: true }
   } catch (error) {
