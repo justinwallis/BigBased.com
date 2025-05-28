@@ -1,12 +1,9 @@
-// Event types
+// Auth event types
 export const AUTH_EVENTS = {
-  LOGIN_ATTEMPT: "login_attempt",
   LOGIN_SUCCESS: "login_success",
   LOGIN_FAILURE: "login_failure",
-  SIGNUP_ATTEMPT: "signup_attempt",
-  SIGNUP_SUCCESS: "signup_success",
-  SIGNUP_FAILURE: "signup_failure",
   LOGOUT: "logout",
+  PASSWORD_CHANGE: "password_change",
   PASSWORD_RESET_REQUEST: "password_reset_request",
   PASSWORD_RESET_SUCCESS: "password_reset_success",
   MFA_SETUP_ATTEMPT: "mfa_setup_attempt",
@@ -18,15 +15,19 @@ export const AUTH_EVENTS = {
   MFA_SKIPPED: "mfa_skipped",
   BACKUP_CODE_GENERATION: "backup_code_generation",
   BACKUP_CODE_USAGE: "backup_code_usage",
-  DEVICE_TRUSTED: "device_trusted",
-  DEVICE_REMOVED: "device_removed",
-  ALL_DEVICES_REMOVED: "all_devices_removed",
-}
+  TRUSTED_DEVICE_ADDED: "trusted_device_added",
+  TRUSTED_DEVICE_REMOVED: "trusted_device_removed",
+  ACCOUNT_RECOVERY_REQUEST: "account_recovery_request",
+  ACCOUNT_RECOVERY_SUCCESS: "account_recovery_success",
+} as const
 
-// Status types
+// Auth status types
 export const AUTH_STATUS = {
   SUCCESS: "success",
   FAILURE: "failure",
   PENDING: "pending",
-  CANCELED: "canceled",
-}
+} as const
+
+// Type definitions
+export type AuthEvent = (typeof AUTH_EVENTS)[keyof typeof AUTH_EVENTS]
+export type AuthStatus = (typeof AUTH_STATUS)[keyof typeof AUTH_STATUS]

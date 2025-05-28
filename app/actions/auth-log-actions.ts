@@ -2,11 +2,10 @@
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { cookies, headers } from "next/headers"
-import { AUTH_EVENTS as EVENTS, AUTH_STATUS as STATUS } from "@/app/constants/auth-log-constants"
+import { AUTH_EVENTS, AUTH_STATUS } from "@/app/constants/auth-log-constants"
 
-// Re-export the constants for backward compatibility
-export const AUTH_EVENTS = EVENTS
-export const AUTH_STATUS = STATUS
+// Re-export constants for backward compatibility
+export { AUTH_EVENTS, AUTH_STATUS }
 
 // Log an authentication event
 export async function logAuthEvent(

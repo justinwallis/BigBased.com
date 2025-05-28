@@ -4,11 +4,6 @@ import { createServerClient } from "@/lib/supabase/server"
 import { cookies } from "next/headers"
 import { generateSecret, verifyToken } from "node-2fa"
 import { randomBytes, createHash } from "crypto"
-import { logAuthEvent } from "./auth-log-actions"
-import { isDeviceTrusted } from "./trusted-device-actions"
-
-// Import constants from a separate file
-import { AUTH_EVENTS, AUTH_STATUS } from "../constants/auth-log-constants"
 
 // Helper to get authenticated user
 async function getAuthenticatedUser() {
@@ -59,12 +54,6 @@ export async function generateAuthenticatorSecret(email: string) {
   try {
     const { userId, supabase } = await getAuthenticatedUser()
 
-    // Log the MFA setup attempt
-    await logAuthEvent(userId, AUTH_EVENTS.MFA_SETUP_ATTEMPT, AUTH_STATUS.PENDING, {
-      method: "authenticator",
-      email,
-    })
-
     // Generate a new secret
     const { secret, qr } = generateSecret({
       name: "Big Based",
@@ -90,18 +79,6 @@ export async function generateAuthenticatorSecret(email: string) {
     }
   } catch (error) {
     console.error("Error generating authenticator secret:", error)
-
-    // Log the failure
-    try {
-      const { userId } = await getAuthenticatedUser()
-      await logAuthEvent(userId, AUTH_EVENTS.MFA_SETUP_FAILURE, AUTH_STATUS.FAILURE, {
-        method: "authenticator",
-        error: error instanceof Error ? error.message : "Unknown error",
-      })
-    } catch {
-      // Ignore logging errors
-    }
-
     return {
       success: false,
       error: "Failed to generate authenticator secret",
@@ -113,11 +90,6 @@ export async function generateAuthenticatorSecret(email: string) {
 export async function verifyAndEnableMfa(token: string) {
   try {
     const { userId, supabase } = await getAuthenticatedUser()
-
-    // Log the verification attempt
-    await logAuthEvent(userId, AUTH_EVENTS.MFA_VERIFICATION_ATTEMPT, AUTH_STATUS.PENDING, {
-      method: "authenticator",
-    })
 
     // Get the secret from the database
     const { data: mfaData, error: mfaError } = await supabase
@@ -133,12 +105,6 @@ export async function verifyAndEnableMfa(token: string) {
     // Verify the token
     const verified = verifyToken(mfaData.authenticator_secret, token)
     if (!verified || verified.delta !== 0) {
-      // Log the failure
-      await logAuthEvent(userId, AUTH_EVENTS.MFA_VERIFICATION_FAILURE, AUTH_STATUS.FAILURE, {
-        method: "authenticator",
-        reason: "Invalid token",
-      })
-
       return {
         success: false,
         error: "Invalid verification code",
@@ -157,26 +123,9 @@ export async function verifyAndEnableMfa(token: string) {
 
     if (error) throw error
 
-    // Log the success
-    await logAuthEvent(userId, AUTH_EVENTS.MFA_SETUP_SUCCESS, AUTH_STATUS.SUCCESS, {
-      method: "authenticator",
-    })
-
     return { success: true }
   } catch (error) {
     console.error("Error verifying and enabling MFA:", error)
-
-    // Log the failure
-    try {
-      const { userId } = await getAuthenticatedUser()
-      await logAuthEvent(userId, AUTH_EVENTS.MFA_SETUP_FAILURE, AUTH_STATUS.FAILURE, {
-        method: "authenticator",
-        error: error instanceof Error ? error.message : "Unknown error",
-      })
-    } catch {
-      // Ignore logging errors
-    }
-
     return {
       success: false,
       error: "Failed to verify and enable MFA",
@@ -216,11 +165,6 @@ export async function generateBackupCodes() {
 
     if (error) throw error
 
-    // Log the generation
-    await logAuthEvent(userId, AUTH_EVENTS.BACKUP_CODE_GENERATION, AUTH_STATUS.SUCCESS, {
-      count: codes.length,
-    })
-
     return {
       success: true,
       data: { codes },
@@ -239,11 +183,6 @@ export async function verifyBackupCode(code: string) {
   try {
     const { userId, supabase } = await getAuthenticatedUser()
 
-    // Log the attempt
-    await logAuthEvent(userId, AUTH_EVENTS.MFA_VERIFICATION_ATTEMPT, AUTH_STATUS.PENDING, {
-      method: "backup_code",
-    })
-
     // Hash the provided code
     const hashedCode = createHash("sha256").update(code).digest("hex")
 
@@ -257,12 +196,6 @@ export async function verifyBackupCode(code: string) {
       .single()
 
     if (error || !data) {
-      // Log the failure
-      await logAuthEvent(userId, AUTH_EVENTS.MFA_VERIFICATION_FAILURE, AUTH_STATUS.FAILURE, {
-        method: "backup_code",
-        reason: "Invalid or already used code",
-      })
-
       return {
         success: false,
         error: "Invalid or already used backup code",
@@ -278,11 +211,6 @@ export async function verifyBackupCode(code: string) {
       })
       .eq("id", data.id)
 
-    // Log the success
-    await logAuthEvent(userId, AUTH_EVENTS.BACKUP_CODE_USAGE, AUTH_STATUS.SUCCESS, {
-      method: "backup_code",
-    })
-
     return { success: true }
   } catch (error) {
     console.error("Error verifying backup code:", error)
@@ -293,146 +221,33 @@ export async function verifyBackupCode(code: string) {
   }
 }
 
-// Check if MFA is required for login
-export async function isMfaRequired(userId: string) {
+// Disable MFA
+export async function disableMfa() {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    const { userId, supabase } = await getAuthenticatedUser()
 
-    // First, check if the device is trusted
-    const deviceCheck = await isDeviceTrusted(userId)
-    if (deviceCheck.trusted) {
-      // Log skipping MFA due to trusted device
-      await logAuthEvent(userId, AUTH_EVENTS.MFA_SKIPPED, AUTH_STATUS.SUCCESS, {
-        reason: "trusted_device",
-        device_name: deviceCheck.deviceName,
-      })
-      return { required: false, reason: "trusted_device" }
-    }
-
-    // If device is not trusted, check if MFA is enabled
-    const { data, error } = await supabase
+    // Disable MFA
+    const { error } = await supabase
       .from("mfa_settings")
-      .select("mfa_enabled, mfa_type")
+      .update({
+        mfa_enabled: false,
+        mfa_type: null,
+        authenticator_secret: null,
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", userId)
-      .single()
 
     if (error) throw error
 
-    return {
-      required: data?.mfa_enabled || false,
-      type: data?.mfa_type || null,
-    }
+    // Delete all backup codes
+    await supabase.from("backup_codes").delete().eq("user_id", userId)
+
+    return { success: true }
   } catch (error) {
-    console.error("Error checking if MFA is required:", error)
-    // Default to requiring MFA if there's an error
-    return { required: true, type: null }
-  }
-}
-
-// Verify MFA during login
-export async function verifyMfaLogin(email: string, token: string, type: "authenticator" | "email" | "backup") {
-  try {
-    // For email verification, we'll use the existing email verification system
-    if (type === "email") {
-      // This would be handled by the existing email verification system
-      return { success: true }
-    }
-
-    // For backup codes
-    if (type === "backup") {
-      // This would need to be handled differently since the user isn't authenticated yet
-      // In a real implementation, you'd need to store the email in the session and verify it here
-      // For demo purposes, we'll just return success
-      return { success: true }
-    }
-
-    // For authenticator app
-    // In a real implementation, you'd need to:
-    // 1. Get the user ID from the email
-    // 2. Get the authenticator secret for that user
-    // 3. Verify the token
-    // For demo purposes, we'll just return success if the token is "123456"
-    if (token === "123456") {
-      return { success: true }
-    }
-
+    console.error("Error disabling MFA:", error)
     return {
       success: false,
-      error: "Invalid verification code",
-    }
-  } catch (error) {
-    console.error("Error verifying MFA login:", error)
-    return {
-      success: false,
-      error: "Failed to verify MFA",
-    }
-  }
-}
-
-// Check if a user has MFA enabled (for login)
-export async function checkMfaEnabled(email: string) {
-  try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
-
-    // Get the user ID from the email
-    const { data: userData, error: userError } = await supabase
-      .from("auth.users")
-      .select("id")
-      .eq("email", email)
-      .single()
-
-    if (userError || !userData) {
-      // User not found, but don't reveal this for security
-      return {
-        success: true,
-        data: { mfaEnabled: false, mfaType: null },
-      }
-    }
-
-    // Check if the device is trusted
-    const deviceCheck = await isDeviceTrusted(userData.id)
-    if (deviceCheck.trusted) {
-      return {
-        success: true,
-        data: {
-          mfaEnabled: false, // Skip MFA for trusted devices
-          mfaType: null,
-          trustedDevice: true,
-          deviceName: deviceCheck.deviceName,
-        },
-      }
-    }
-
-    // Get the MFA settings
-    const { data: mfaData, error: mfaError } = await supabase
-      .from("mfa_settings")
-      .select("mfa_enabled, mfa_type")
-      .eq("id", userData.id)
-      .single()
-
-    if (mfaError) {
-      // Error, but don't reveal this for security
-      return {
-        success: true,
-        data: { mfaEnabled: false, mfaType: null },
-      }
-    }
-
-    return {
-      success: true,
-      data: {
-        mfaEnabled: mfaData?.mfa_enabled || false,
-        mfaType: mfaData?.mfa_type || null,
-        trustedDevice: false,
-      },
-    }
-  } catch (error) {
-    console.error("Error checking MFA status:", error)
-    return {
-      success: true, // Return success but with false data for security
-      data: { mfaEnabled: false, mfaType: null },
+      error: "Failed to disable MFA",
     }
   }
 }
