@@ -11,14 +11,17 @@ async function getAuthenticatedUser() {
   const cookieStore = cookies()
   const supabase = createServerClient(cookieStore)
 
+  // Use getUser() instead of getSession() for better security
   const {
-    data: { session },
-  } = await supabase.auth.getSession()
-  if (!session) {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser()
+
+  if (error || !user) {
     throw new Error("Not authenticated")
   }
 
-  return { userId: session.user.id, supabase }
+  return { userId: user.id, supabase }
 }
 
 // Get MFA status for the current user
@@ -32,7 +35,28 @@ export async function getMfaStatus() {
       .eq("id", userId)
       .single()
 
-    if (error) throw error
+    if (error) {
+      console.log("MFA settings not found, creating new record")
+      // Create MFA settings if they don't exist
+      const { error: insertError } = await supabase.from("mfa_settings").insert({
+        id: userId,
+        mfa_enabled: false,
+        mfa_type: null,
+      })
+
+      if (insertError) {
+        console.error("Failed to create MFA settings:", insertError)
+        throw insertError
+      }
+
+      return {
+        success: true,
+        data: {
+          enabled: false,
+          type: null,
+        },
+      }
+    }
 
     return {
       success: true,
@@ -55,7 +79,7 @@ export async function generateAuthenticatorSecret(email: string) {
   try {
     const { userId, supabase } = await getAuthenticatedUser()
 
-    console.log("Generating secret for email:", email)
+    console.log("Generating secret for user:", userId, "email:", email)
 
     // Generate a new secret
     const secretData = generateSecret({
@@ -91,20 +115,38 @@ export async function generateAuthenticatorSecret(email: string) {
       length: qrCodeDataUrl.length,
     })
 
-    // Store the secret in the database
-    const { error } = await supabase
-      .from("mfa_settings")
-      .update({
+    // First, ensure MFA settings record exists
+    const { data: existingSettings } = await supabase.from("mfa_settings").select("id").eq("id", userId).single()
+
+    if (!existingSettings) {
+      console.log("Creating MFA settings record for user:", userId)
+      const { error: insertError } = await supabase.from("mfa_settings").insert({
+        id: userId,
+        mfa_enabled: false,
+        mfa_type: null,
         authenticator_secret: secretData.secret,
       })
-      .eq("id", userId)
 
-    if (error) {
-      console.error("Database error:", error)
-      throw error
+      if (insertError) {
+        console.error("Failed to create MFA settings:", insertError)
+        throw insertError
+      }
+    } else {
+      // Update existing record
+      const { error: updateError } = await supabase
+        .from("mfa_settings")
+        .update({
+          authenticator_secret: secretData.secret,
+        })
+        .eq("id", userId)
+
+      if (updateError) {
+        console.error("Failed to update MFA settings:", updateError)
+        throw updateError
+      }
     }
 
-    console.log("Secret stored successfully")
+    console.log("Secret stored successfully for user:", userId)
 
     return {
       success: true,
@@ -127,6 +169,8 @@ export async function verifyAndEnableMfa(token: string) {
   try {
     const { userId, supabase } = await getAuthenticatedUser()
 
+    console.log("Verifying MFA for user:", userId, "with token:", token)
+
     // Get the secret from the database
     const { data: mfaData, error: mfaError } = await supabase
       .from("mfa_settings")
@@ -134,12 +178,21 @@ export async function verifyAndEnableMfa(token: string) {
       .eq("id", userId)
       .single()
 
+    console.log("MFA data retrieved:", {
+      hasData: !!mfaData,
+      hasSecret: !!mfaData?.authenticator_secret,
+      error: mfaError,
+    })
+
     if (mfaError || !mfaData?.authenticator_secret) {
-      throw new Error("MFA not set up")
+      console.error("MFA not set up - no secret found for user:", userId)
+      throw new Error("MFA not set up - please generate a new QR code")
     }
 
     // Verify the token
     const verified = verifyToken(mfaData.authenticator_secret, token)
+    console.log("Token verification result:", verified)
+
     if (!verified || verified.delta !== 0) {
       return {
         success: false,
@@ -157,14 +210,18 @@ export async function verifyAndEnableMfa(token: string) {
       })
       .eq("id", userId)
 
-    if (error) throw error
+    if (error) {
+      console.error("Failed to enable MFA:", error)
+      throw error
+    }
 
+    console.log("MFA enabled successfully for user:", userId)
     return { success: true }
   } catch (error) {
     console.error("Error verifying and enabling MFA:", error)
     return {
       success: false,
-      error: "Failed to verify and enable MFA",
+      error: error instanceof Error ? error.message : "Failed to verify and enable MFA",
     }
   }
 }

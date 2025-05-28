@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useTransition, useEffect } from "react"
 import Link from "next/link"
 import { ArrowLeft, Shield, Smartphone, Key, Download, Copy, Check, Home } from "lucide-react"
@@ -107,6 +109,12 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
         })
       }
     })
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && verificationCode.length === 6 && !isPending) {
+      handleVerifyCode()
+    }
   }
 
   const handleGenerateNewBackupCodes = () => {
@@ -387,11 +395,13 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
                     placeholder="000000"
                     value={verificationCode}
                     onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    onKeyDown={handleKeyDown}
                     className="text-center text-2xl font-mono tracking-widest"
                     maxLength={6}
+                    autoFocus
                   />
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Enter the 6-digit code shown in your authenticator app
+                    Enter the 6-digit code shown in your authenticator app (press Enter to verify)
                   </p>
                 </div>
 
