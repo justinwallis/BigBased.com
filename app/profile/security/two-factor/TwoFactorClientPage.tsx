@@ -2,9 +2,9 @@
 
 import type React from "react"
 
-import { useState, useTransition, useEffect } from "react"
+import { useState, useTransition } from "react"
 import Link from "next/link"
-import { ArrowLeft, Shield, Smartphone, Key, Download, Copy, Check, Home } from "lucide-react"
+import { ArrowLeft, Shield, Smartphone, Key, Download, Copy, Check, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,7 +12,12 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
-import { generateAuthenticatorSecret, verifyAndEnableMfa, generateBackupCodes } from "@/app/actions/mfa-actions"
+import {
+  generateAuthenticatorSecret,
+  verifyAndEnableMfa,
+  generateBackupCodes,
+  disableMfa,
+} from "@/app/actions/mfa-actions"
 import type { User } from "@supabase/supabase-js"
 import { ThemeToggle } from "@/components/theme-toggle"
 
@@ -36,37 +41,15 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
   const [qrError, setQrError] = useState<string>("")
   const { toast } = useToast()
 
-  // Debug QR code when it changes
-  useEffect(() => {
-    if (qrCode) {
-      console.log("QR Code updated:", {
-        length: qrCode.length,
-        startsWithData: qrCode.startsWith("data:"),
-        startsWithHttp: qrCode.startsWith("http"),
-        first100: qrCode.substring(0, 100),
-      })
-    }
-  }, [qrCode])
-
   const handleSetupAuthenticator = () => {
     startTransition(async () => {
-      console.log("Starting authenticator setup for:", user.email)
-      setQrError("")
       const result = await generateAuthenticatorSecret(user.email || "")
 
-      console.log("Setup result:", result)
-
       if (result.success && result.data) {
-        console.log("QR Code received:", {
-          length: result.data.qrCode?.length,
-          startsWithData: result.data.qrCode?.startsWith("data:"),
-          first50: result.data.qrCode?.substring(0, 50),
-        })
         setQrCode(result.data.qrCode)
         setSecret(result.data.secret)
         setStep("setup")
       } else {
-        console.error("Setup failed:", result.error)
         toast({
           title: "Error",
           description: result.error || "Failed to generate authenticator secret",
@@ -93,15 +76,12 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
         setMfaStatus({ enabled: true, type: "authenticator" })
 
         // Generate backup codes automatically
-        console.log("Generating backup codes after MFA verification...")
         const backupResult = await generateBackupCodes()
-        console.log("Backup codes result:", backupResult)
 
         if (backupResult.success && backupResult.data) {
           setBackupCodes(backupResult.data.codes)
           setStep("backup-codes")
         } else {
-          console.error("Failed to generate backup codes:", backupResult.error)
           // Still proceed to backup codes step but show error
           setStep("backup-codes")
           toast({
@@ -162,21 +142,38 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
     })
   }
 
+  const handleDisableMfa = () => {
+    startTransition(async () => {
+      const result = await disableMfa()
+
+      if (result.success) {
+        setMfaStatus({ enabled: false, type: null })
+        setStep("overview")
+        toast({
+          title: "Success",
+          description: "Two-factor authentication has been disabled",
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to disable MFA",
+          variant: "destructive",
+        })
+      }
+    })
+  }
+
   const downloadBackupCodes = () => {
     const codesText = backupCodes.join("\n")
     const blob = new Blob([codesText], { type: "text/plain" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = "backup-codes.txt"
+    a.download = "backup_codes.txt"
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-    toast({
-      title: "Downloaded",
-      description: "Backup codes saved to your device",
-    })
   }
 
   return (
@@ -193,20 +190,8 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
                 className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
               >
                 <Link href="/profile?tab=security" className="flex items-center gap-2">
-                  <ArrowLeft className="h-4 w-4" />
+                  <ArrowLeft className="h-4 w-4 mr-1" />
                   Back to Security
-                </Link>
-              </Button>
-              <div className="text-gray-400">•</div>
-              <Button
-                variant="ghost"
-                size="sm"
-                asChild
-                className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-              >
-                <Link href="/" className="flex items-center gap-2">
-                  <Home className="h-4 w-4" />
-                  Back to Big Based
                 </Link>
               </Button>
             </div>
@@ -290,6 +275,20 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
                             Generate New
                           </Button>
                         </div>
+                        <div className="flex items-center justify-between p-4 border rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <Trash2 className="h-5 w-5 text-red-600" />
+                            <div>
+                              <p className="font-medium">Disable Two-Factor Authentication</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                Remove two-factor authentication from your account
+                              </p>
+                            </div>
+                          </div>
+                          <Button variant="destructive" onClick={handleDisableMfa} disabled={isPending}>
+                            Disable
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </>
@@ -340,19 +339,6 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
                     )}
                   </div>
                 </div>
-
-                {/* Debug info - only in development */}
-                {process.env.NODE_ENV === "development" && qrCode && (
-                  <div className="text-xs text-gray-500 p-3 bg-gray-100 dark:bg-gray-800 rounded font-mono">
-                    <p>
-                      <strong>Debug Info:</strong>
-                    </p>
-                    <p>QR Length: {qrCode.length}</p>
-                    <p>Starts with data: {qrCode.startsWith("data:") ? "✓" : "✗"}</p>
-                    <p>Format: {qrCode.substring(0, 30)}...</p>
-                    {qrError && <p className="text-red-500">Error: {qrError}</p>}
-                  </div>
-                )}
 
                 {/* Manual Entry */}
                 <div className="space-y-2">

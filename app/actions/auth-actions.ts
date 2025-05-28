@@ -7,14 +7,18 @@ import { validatePassword } from "@/lib/password-validation"
 
 // Auth event constants (duplicated here to avoid import issues)
 const AUTH_EVENTS = {
-  LOGIN_ATTEMPT: "login_attempt",
   LOGIN_SUCCESS: "login_success",
+  LOGIN_FAILURE: "login_failure",
   LOGOUT: "logout",
   SIGNUP_ATTEMPT: "signup_attempt",
   PASSWORD_RESET_REQUEST: "password_reset_request",
   PASSWORD_RESET_SUCCESS: "password_reset_success",
   BACKUP_CODE_GENERATION: "backup_code_generation",
   BACKUP_CODE_USAGE: "backup_code_usage",
+  TRUSTED_DEVICE_ADDED: "trusted_device_added",
+  TRUSTED_DEVICE_REMOVED: "trusted_device_removed",
+  ACCOUNT_RECOVERY_REQUEST: "account_recovery_request",
+  ACCOUNT_RECOVERY_SUCCESS: "account_recovery_success",
 } as const
 
 const AUTH_STATUS = {
@@ -30,6 +34,7 @@ async function logAuthEvent(userId: string | null, event: string, status: string
     console.log("Auth Event:", { userId, event, status, metadata, timestamp: new Date().toISOString() })
   } catch (error) {
     console.error("Error logging auth event:", error)
+    return { success: false, error: error.message }
   }
 }
 
@@ -49,16 +54,13 @@ async function getSupabase() {
   })
 }
 
-export async function signIn(formData: FormData) {
+export async function signIn(email: string, password: string, mfaCode?: string) {
   try {
-    const email = formData.get("email") as string
-    const password = formData.get("password") as string
+    const supabase = await getSupabase()
 
     if (!email || !password) {
       return { error: "Email and password are required" }
     }
-
-    const supabase = await getSupabase()
 
     // Log login attempt
     await logAuthEvent(null, AUTH_EVENTS.LOGIN_ATTEMPT, AUTH_STATUS.PENDING, { email })
@@ -75,6 +77,11 @@ export async function signIn(formData: FormData) {
         error: error.message,
       })
       return { error: error.message }
+    }
+
+    // If MFA is required, return mfaRequired flag
+    if (data?.session?.factor_challenge) {
+      return { data: null, error: null, mfaRequired: true }
     }
 
     // Set cookies for client-side auth
@@ -104,7 +111,7 @@ export async function signIn(formData: FormData) {
       await logAuthEvent(data.user.id, AUTH_EVENTS.LOGIN_SUCCESS, AUTH_STATUS.SUCCESS, { email })
     }
 
-    return { success: true }
+    return { data, error: null }
   } catch (error) {
     console.error("Sign in error:", error)
     return { error: "An unexpected error occurred" }

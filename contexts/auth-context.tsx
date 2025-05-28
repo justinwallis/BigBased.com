@@ -23,9 +23,11 @@ type AuthContextType = {
   signIn: (
     email: string,
     password: string,
+    mfaCode?: string,
   ) => Promise<{
     error: any | null
     data: any | null
+    mfaRequired?: boolean
   }>
   signOut: () => Promise<void>
 }
@@ -113,6 +115,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL || "https://bigbased.com"}/auth/callback`,
+        },
       })
     } catch (error) {
       console.error("Error in signUp:", error)
@@ -120,7 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, mfaCode?: string) => {
     try {
       const supabase = supabaseClient()
       if (!supabase) {
@@ -128,18 +133,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { data: null, error: new Error("Supabase client not available") }
       }
 
-      const result = await supabase.auth.signInWithPassword({
+      // Sign in with password
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
-      // If successful, update the local state
-      if (result.data.session) {
-        setSession(result.data.session)
-        setUser(result.data.user)
+      if (error) {
+        console.error("Error in signIn:", error)
+        return { data: null, error }
       }
 
-      return result
+      // If MFA is required, return mfaRequired flag
+      if (data?.session?.factor_challenge) {
+        return { data: null, error: null, mfaRequired: true }
+      }
+
+      // If successful, update the local state
+      if (data.session) {
+        setSession(data.session)
+        setUser(data.user)
+      }
+
+      return { data, error: null }
     } catch (error) {
       console.error("Error in signIn:", error)
       return { data: null, error }
