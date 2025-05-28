@@ -12,7 +12,6 @@ import { AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
 import { Checkbox } from "@/components/ui/checkbox"
-import { supabaseClient } from "@/lib/supabase/client"
 
 function SignInFormComponent() {
   const { signIn } = useAuth()
@@ -61,55 +60,8 @@ function SignInFormComponent() {
         return
       }
 
-      // If MFA code is provided, verify it first
-      if (mfaCode) {
-        console.log("Verifying MFA code...")
-        const mfaVerifyResponse = await fetch("/api/auth/verify-mfa", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, token: mfaCode }),
-        })
-
-        const mfaVerifyResult = await mfaVerifyResponse.json()
-        console.log("MFA Verify Result:", mfaVerifyResult)
-
-        if (!mfaVerifyResult.success) {
-          setError(mfaVerifyResult.error || "Invalid MFA code")
-          setIsLoading(false)
-          return
-        }
-
-        // MFA verification successful, now proceed with Supabase sign in
-        console.log("MFA verified successfully, proceeding with sign in...")
-      }
-
-      // Get the Supabase client
-      const supabase = supabaseClient()
-      if (!supabase) {
-        setError("Failed to initialize authentication client")
-        setIsLoading(false)
-        return
-      }
-
-      // Proceed with normal sign in
-      console.log("Proceeding with Supabase sign in...")
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      console.log("Supabase sign in result:", { data: !!data, error })
-
-      if (error) {
-        setError(error.message)
-        setIsLoading(false)
-        return
-      }
-
-      // Success - redirect
-      if (data?.session) {
+      // If we have a successful session
+      if (result.data?.session) {
         console.log("Sign in successful!")
 
         // Store remember me preference if checked

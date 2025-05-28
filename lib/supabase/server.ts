@@ -1,4 +1,4 @@
-import { createServerClient as createSupabaseServerClient } from "@supabase/ssr"
+import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import type { Database } from "@/types/supabase"
 
@@ -14,7 +14,7 @@ export function createServerSupabaseClient(useServiceRole = false) {
     throw new Error("Missing Supabase environment variables")
   }
 
-  return createSupabaseServerClient<Database>(supabaseUrl, supabaseKey, {
+  return createServerClient<Database>(supabaseUrl, supabaseKey, {
     cookies: {
       get(name: string) {
         return cookieStore.get(name)?.value
@@ -23,18 +23,15 @@ export function createServerSupabaseClient(useServiceRole = false) {
         try {
           cookieStore.set({ name, value, ...options })
         } catch (error) {
-          // The `set` method was called from a Server Component.
-          // This can be ignored if you have middleware refreshing
-          // user sessions.
+          // Handle cookies in edge functions or other environments where setting cookies might fail
+          console.error("Error setting cookie:", error)
         }
       },
       remove(name: string, options: any) {
         try {
-          cookieStore.set({ name, value: "", ...options })
+          cookieStore.set({ name, value: "", ...options, maxAge: 0 })
         } catch (error) {
-          // The `delete` method was called from a Server Component.
-          // This can be ignored if you have middleware refreshing
-          // user sessions.
+          console.error("Error removing cookie:", error)
         }
       },
     },

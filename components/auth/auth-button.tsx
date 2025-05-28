@@ -108,31 +108,11 @@ export default function AuthButton() {
   }, [user])
 
   const handleSignOut = async () => {
-    try {
-      const supabase = supabaseClient()
-      if (!supabase) {
-        console.error("No Supabase client available for sign out")
-        return
-      }
+    const supabase = supabaseClient()
+    if (!supabase) return
 
-      console.log("Signing out...")
-      const { error } = await supabase.auth.signOut()
-
-      if (error) {
-        console.error("Error signing out:", error)
-        return
-      }
-
-      console.log("Sign out successful")
-
-      // Clear any local storage items
-      localStorage.removeItem("hasLoggedInBefore")
-
-      // Force a page reload to clear any cached state
-      window.location.href = "/"
-    } catch (error) {
-      console.error("Error during sign out:", error)
-    }
+    await supabase.auth.signOut()
+    window.location.href = "/"
   }
 
   if (loading) {

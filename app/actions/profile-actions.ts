@@ -79,7 +79,7 @@ export async function checkUsernameAvailability(
       query = query.neq("id", currentUserId)
     }
 
-    const { data, error } = await query
+    const { data, error } = await query.single()
 
     if (error && error.code !== "PGRST116") {
       // PGRST116 means no rows returned
@@ -87,8 +87,8 @@ export async function checkUsernameAvailability(
       return { available: false, error: "Error checking username availability" }
     }
 
-    // If data exists and has records, username is taken
-    const available = !data || data.length === 0
+    // If data exists, username is taken
+    const available = !data
 
     return { available }
   } catch (error) {
@@ -142,9 +142,9 @@ export async function updateCurrentUserProfile(profileData: {
     console.log("Updating profile for user:", user.id)
 
     // First, check if profile exists
-    const { data: existingProfile } = await supabase.from("profiles").select("id").eq("id", user.id)
+    const { data: existingProfile } = await supabase.from("profiles").select("id").eq("id", user.id).single()
 
-    if (!existingProfile || existingProfile.length === 0) {
+    if (!existingProfile) {
       // Create profile if it doesn't exist
       const { error: insertError } = await supabase.from("profiles").insert({
         id: user.id,
@@ -242,14 +242,14 @@ export async function getUserProfile(userId: string): Promise<any> {
   try {
     const supabase = createServerSupabaseClient()
 
-    const { data, error } = await supabase.from("profiles").select("*").eq("id", userId)
+    const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single()
 
     if (error) {
       console.error("Error fetching profile:", error)
       return null
     }
 
-    return data && data.length > 0 ? data[0] : null
+    return data
   } catch (error) {
     console.error("Error in getUserProfile:", error)
     return null
@@ -274,40 +274,42 @@ export async function getCurrentUserProfile(): Promise<any> {
     }
 
     // Get their profile
-    const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id)
+    const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).single()
 
     if (error) {
       console.error("Error fetching current user profile:", error)
+
+      // If profile doesn't exist, create a default one
+      if (error.code === "PGRST116") {
+        // No rows returned
+        console.log("Profile doesn't exist, creating default profile")
+        const defaultProfile = {
+          id: user.id,
+          username: user.email?.split("@")[0] || "",
+          full_name: "",
+          avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
+          banner_url: "",
+          bio: "",
+          social_links: {},
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }
+
+        const { error: insertError } = await supabase.from("profiles").insert(defaultProfile)
+
+        if (insertError) {
+          console.error("Error creating default profile:", insertError)
+          return null
+        }
+
+        return defaultProfile
+      }
+
       return null
     }
 
-    if (!data || data.length === 0) {
-      // If profile doesn't exist, create a default one
-      console.log("Profile doesn't exist, creating default profile")
-      const defaultProfile = {
-        id: user.id,
-        username: user.email?.split("@")[0] || "",
-        full_name: "",
-        avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
-        banner_url: "",
-        bio: "",
-        social_links: {},
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }
-
-      const { error: insertError } = await supabase.from("profiles").insert(defaultProfile)
-
-      if (insertError) {
-        console.error("Error creating default profile:", insertError)
-        return null
-      }
-
-      return defaultProfile
-    }
-
-    console.log("Profile fetched successfully:", data[0])
-    return data[0]
+    console.log("Profile fetched successfully:", data)
+    return data
   } catch (error) {
     console.error("Error in getCurrentUserProfile:", error)
     return null
@@ -318,14 +320,14 @@ export async function getUserProfileByUsername(username: string): Promise<any> {
   try {
     const supabase = createServerSupabaseClient()
 
-    const { data, error } = await supabase.from("profiles").select("*").eq("username", username)
+    const { data, error } = await supabase.from("profiles").select("*").eq("username", username).single()
 
     if (error) {
       console.error("Error fetching profile by username:", error)
       return null
     }
 
-    return data && data.length > 0 ? data[0] : null
+    return data
   } catch (error) {
     console.error("Error in getUserProfileByUsername:", error)
     return null
