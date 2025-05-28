@@ -2,9 +2,9 @@
 
 import type React from "react"
 
-import { useState, useTransition } from "react"
+import { useState, useTransition, useRef } from "react"
 import Link from "next/link"
-import { ArrowLeft, Shield, Smartphone, Key, Download, Copy, Check, Trash2 } from "lucide-react"
+import { ArrowLeft, Shield, Smartphone, Key, Copy, Check, Trash2, Printer } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -20,6 +20,7 @@ import {
 } from "@/app/actions/mfa-actions"
 import type { User } from "@supabase/supabase-js"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { Textarea } from "@/components/ui/textarea"
 
 interface TwoFactorClientPageProps {
   user: User
@@ -40,6 +41,7 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
   const [mfaStatus, setMfaStatus] = useState(currentMfaStatus)
   const [qrError, setQrError] = useState<string>("")
   const { toast } = useToast()
+  const textAreaRef = useRef<HTMLTextAreaElement>(null)
 
   const handleSetupAuthenticator = () => {
     startTransition(async () => {
@@ -164,7 +166,7 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
     })
   }
 
-  const downloadBackupCodes = () => {
+  const printBackupCodes = () => {
     try {
       // Format the backup codes with a title and instructions
       const timestamp = new Date().toLocaleString()
@@ -179,36 +181,95 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
         "If you lose access to your authenticator app, you can use one of these codes to sign in.",
       ].join("\n")
 
-      // Create a data URL directly (works better in some browsers than blob)
-      const dataUrl = `data:text/plain;charset=utf-8,${encodeURIComponent(content)}`
+      // Create a new window with just the content
+      const printWindow = window.open("", "_blank")
+      if (!printWindow) {
+        toast({
+          title: "Print Failed",
+          description: "Unable to open print window. Please check your popup blocker settings.",
+          variant: "destructive",
+        })
+        return
+      }
 
-      // Create a link element and trigger the download
-      const link = document.createElement("a")
-      link.setAttribute("href", dataUrl)
-      link.setAttribute("download", `bigbased-backup-codes-${Date.now()}.txt`)
-      link.style.display = "none"
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Big Based Backup Codes</title>
+            <style>
+              body { font-family: monospace; padding: 20px; }
+              h1 { font-size: 18px; margin-bottom: 10px; }
+              pre { white-space: pre-wrap; }
+              .code { 
+                padding: 5px; 
+                margin: 5px 0; 
+                background: #f5f5f5; 
+                border: 1px solid #ddd;
+                display: inline-block;
+                min-width: 150px;
+              }
+              .warning {
+                margin-top: 20px;
+                padding: 10px;
+                background: #fff3cd;
+                border: 1px solid #ffeeba;
+              }
+              @media print {
+                body { padding: 0; }
+                button { display: none; }
+              }
+            </style>
+          </head>
+          <body>
+            <h1>BIG BASED - BACKUP CODES</h1>
+            <p>Generated: ${timestamp}</p>
+            <div>
+              ${backupCodes.map((code) => `<div class="code">${code}</div>`).join("")}
+            </div>
+            <div class="warning">
+              <strong>IMPORTANT:</strong> Store these codes in a safe place. Each code can only be used once.
+              If you lose access to your authenticator app, you can use one of these codes to sign in.
+            </div>
+            <button onclick="window.print();window.close();" style="margin-top:20px;padding:10px;">Print</button>
+          </body>
+        </html>
+      `)
 
-      // Add to DOM, click and remove
-      document.body.appendChild(link)
-      link.click()
+      printWindow.document.close()
+      printWindow.focus()
 
-      // Small delay before removing
+      // Automatically trigger print
       setTimeout(() => {
-        document.body.removeChild(link)
-      }, 100)
+        printWindow.print()
+      }, 500)
 
       toast({
-        title: "Download Started",
-        description: "Your backup codes are being downloaded",
+        title: "Print Window Opened",
+        description: "A new window has opened with your backup codes ready to print",
       })
     } catch (error) {
-      console.error("Download failed:", error)
+      console.error("Print failed:", error)
       toast({
-        title: "Download Failed",
-        description: "Failed to download backup codes. Try copying them instead.",
+        title: "Print Failed",
+        description: "Failed to print backup codes. Try copying them instead.",
         variant: "destructive",
       })
     }
+  }
+
+  // Format backup codes for display in textarea
+  const formattedBackupCodes = () => {
+    const timestamp = new Date().toLocaleString()
+    return [
+      "BIG BASED - BACKUP CODES",
+      "Generated: " + timestamp,
+      "",
+      "IMPORTANT: Store these codes in a safe place. Each code can only be used once.",
+      "",
+      ...backupCodes,
+      "",
+      "If you lose access to your authenticator app, you can use one of these codes to sign in.",
+    ].join("\n")
   }
 
   return (
@@ -478,21 +539,46 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={downloadBackupCodes}
+                        onClick={printBackupCodes}
                         className="flex items-center gap-2"
                       >
-                        <Download className="h-4 w-4" />
-                        Download
+                        <Printer className="h-4 w-4" />
+                        Print
                       </Button>
                     </div>
                   </div>
 
+                  {/* Display codes in grid */}
                   <div className="grid grid-cols-2 gap-2 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg font-mono text-sm">
                     {backupCodes.map((code, index) => (
                       <div key={index} className="p-2 bg-white dark:bg-gray-700 rounded border">
                         {code}
                       </div>
                     ))}
+                  </div>
+
+                  {/* Text area for easy copying */}
+                  <div className="space-y-2">
+                    <Label htmlFor="backup-codes-text">Backup Codes Text Format</Label>
+                    <Textarea
+                      ref={textAreaRef}
+                      id="backup-codes-text"
+                      value={formattedBackupCodes()}
+                      readOnly
+                      className="font-mono text-sm h-48"
+                      onClick={() => {
+                        if (textAreaRef.current) {
+                          textAreaRef.current.select()
+                          toast({
+                            title: "Text Selected",
+                            description: "Click Copy button or press Ctrl+C to copy",
+                          })
+                        }
+                      }}
+                    />
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Click in the text area to select all codes, then copy them to a secure location.
+                    </p>
                   </div>
 
                   <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
