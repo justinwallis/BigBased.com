@@ -419,26 +419,41 @@ export async function disableMfa() {
 // Check if user has MFA enabled (for login flow)
 export async function checkUserMfaStatus(email: string) {
   try {
+    console.log("=== checkUserMfaStatus ===", email)
     const serviceSupabase = createServiceRoleClient()
 
     // Get user by email first
-    const { data: userData, error: userError } = await serviceSupabase.auth.admin.getUserByEmail(email)
+    const { data: userData, error: userError } = await serviceSupabase.auth.admin.listUsers()
 
-    if (userError || !userData.user) {
+    if (userError) {
+      console.error("Error listing users:", userError)
+      return {
+        success: false,
+        error: "Failed to check user",
+      }
+    }
+
+    const user = userData.users.find((u) => u.email === email)
+
+    if (!user) {
+      console.log("User not found for email:", email)
       return {
         success: false,
         error: "User not found",
       }
     }
 
+    console.log("Found user:", user.id)
+
     // Check MFA status
     const { data: mfaData, error: mfaError } = await serviceSupabase
       .from("mfa_settings")
       .select("mfa_enabled, mfa_type")
-      .eq("id", userData.user.id)
-      .single()
+      .eq("id", user.id)
+      .maybeSingle()
 
     if (mfaError) {
+      console.log("No MFA settings found, assuming disabled")
       return {
         success: true,
         data: {
@@ -448,13 +463,16 @@ export async function checkUserMfaStatus(email: string) {
       }
     }
 
-    return {
+    const result = {
       success: true,
       data: {
         enabled: mfaData?.mfa_enabled || false,
         type: mfaData?.mfa_type || null,
       },
     }
+
+    console.log("MFA status result:", result)
+    return result
   } catch (error) {
     console.error("Error checking user MFA status:", error)
     return {
@@ -467,12 +485,23 @@ export async function checkUserMfaStatus(email: string) {
 // Verify MFA token for login
 export async function verifyMfaForLogin(email: string, token: string) {
   try {
+    console.log("=== verifyMfaForLogin ===", email, "token length:", token.length)
     const serviceSupabase = createServiceRoleClient()
 
     // Get user by email
-    const { data: userData, error: userError } = await serviceSupabase.auth.admin.getUserByEmail(email)
+    const { data: userData, error: userError } = await serviceSupabase.auth.admin.listUsers()
 
-    if (userError || !userData.user) {
+    if (userError) {
+      console.error("Error listing users:", userError)
+      return {
+        success: false,
+        error: "Failed to find user",
+      }
+    }
+
+    const user = userData.users.find((u) => u.email === email)
+
+    if (!user) {
       return {
         success: false,
         error: "User not found",
@@ -483,18 +512,22 @@ export async function verifyMfaForLogin(email: string, token: string) {
     const { data: mfaData, error: mfaError } = await serviceSupabase
       .from("mfa_settings")
       .select("authenticator_secret")
-      .eq("id", userData.user.id)
+      .eq("id", user.id)
       .single()
 
     if (mfaError || !mfaData?.authenticator_secret) {
+      console.error("MFA secret not found:", mfaError)
       return {
         success: false,
         error: "MFA not set up",
       }
     }
 
+    console.log("Found MFA secret, verifying token...")
+
     // Verify the token
     const verified = verifyToken(mfaData.authenticator_secret, token)
+    console.log("Token verification result:", verified)
 
     if (!verified || verified.delta !== 0) {
       return {
@@ -503,6 +536,7 @@ export async function verifyMfaForLogin(email: string, token: string) {
       }
     }
 
+    console.log("MFA verification successful!")
     return { success: true }
   } catch (error) {
     console.error("Error verifying MFA for login:", error)

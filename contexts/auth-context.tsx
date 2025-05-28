@@ -127,26 +127,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string, mfaCode?: string) => {
     try {
+      console.log("=== Auth Context Sign In ===")
+      console.log("Email:", email)
+      console.log("Has Password:", !!password)
+      console.log("Has MFA Code:", !!mfaCode)
+
       const supabase = supabaseClient()
       if (!supabase) {
         console.error("Supabase client not available")
         return { data: null, error: new Error("Supabase client not available") }
       }
 
-      // Sign in with password
+      // First, check if user has MFA enabled before attempting login
+      const { checkUserMfaStatus, verifyMfaForLogin } = await import("@/app/actions/mfa-actions")
+
+      const mfaStatusResult = await checkUserMfaStatus(email)
+      console.log("MFA Status Result:", mfaStatusResult)
+
+      const hasMfaEnabled = mfaStatusResult.success && mfaStatusResult.data?.enabled
+
+      // If MFA is enabled and no code provided, return mfaRequired
+      if (hasMfaEnabled && !mfaCode) {
+        console.log("MFA required but no code provided")
+        return { data: null, error: null, mfaRequired: true }
+      }
+
+      // If MFA is enabled and code is provided, verify it first
+      if (hasMfaEnabled && mfaCode) {
+        console.log("Verifying MFA code...")
+        const mfaVerifyResult = await verifyMfaForLogin(email, mfaCode)
+
+        if (!mfaVerifyResult.success) {
+          console.log("MFA verification failed:", mfaVerifyResult.error)
+          return { data: null, error: new Error(mfaVerifyResult.error || "Invalid verification code") }
+        }
+        console.log("MFA verification successful")
+      }
+
+      // Proceed with password authentication
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
       if (error) {
-        console.error("Error in signIn:", error)
+        console.error("Password authentication failed:", error)
         return { data: null, error }
-      }
-
-      // If MFA is required, return mfaRequired flag
-      if (data?.session?.factor_challenge) {
-        return { data: null, error: null, mfaRequired: true }
       }
 
       // If successful, update the local state
@@ -155,6 +181,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(data.user)
       }
 
+      console.log("Sign in successful!")
       return { data, error: null }
     } catch (error) {
       console.error("Error in signIn:", error)
