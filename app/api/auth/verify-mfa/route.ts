@@ -28,55 +28,53 @@ export async function POST(request: Request) {
     const user = userData.users.find((u) => u.email === email)
 
     if (!user) {
+      console.log("User not found with email:", email)
       return NextResponse.json({ success: false, error: "User not found" }, { status: 404 })
     }
 
-    console.log("Getting MFA settings for user:", user.id)
+    console.log("Found user with ID:", user.id)
+
+    // First, let's check if the mfa_settings table exists and what columns it has
+    const { data: tableInfo, error: tableError } = await supabase.from("mfa_settings").select("*").limit(1)
+
+    console.log("Table check result:", { tableInfo, tableError })
 
     // Get MFA settings - use the correct column name: authenticator_secret
-    const { data: mfaData, error: mfaError } = await supabase
-      .from("mfa_settings")
-      .select("mfa_enabled, mfa_type, authenticator_secret, backup_codes")
-      .eq("id", user.id)
-      .single()
+    const { data: mfaData, error: mfaError } = await supabase.from("mfa_settings").select("*").eq("id", user.id)
 
-    console.log("MFA data retrieved:", {
+    console.log("MFA query result:", {
       hasData: !!mfaData,
-      mfaEnabled: mfaData?.mfa_enabled,
-      mfaType: mfaData?.mfa_type,
-      hasSecret: !!mfaData?.authenticator_secret,
-      hasBackupCodes: !!mfaData?.backup_codes,
+      dataLength: mfaData?.length,
+      mfaData: mfaData,
       error: mfaError,
     })
 
     if (mfaError) {
-      console.log("No MFA data found for user, but there was an error:", mfaError)
+      console.log("Error querying MFA settings:", mfaError)
       return NextResponse.json({ success: false, error: "MFA not set up" }, { status: 400 })
     }
 
-    if (!mfaData || !mfaData.mfa_enabled) {
+    if (!mfaData || mfaData.length === 0) {
+      console.log("No MFA settings found for user")
+      return NextResponse.json({ success: false, error: "MFA not set up" }, { status: 400 })
+    }
+
+    const mfaSettings = mfaData[0]
+    console.log("MFA settings found:", {
+      mfaEnabled: mfaSettings.mfa_enabled,
+      mfaType: mfaSettings.mfa_type,
+      hasSecret: !!mfaSettings.authenticator_secret,
+    })
+
+    if (!mfaSettings.mfa_enabled) {
       console.log("MFA not enabled for user")
       return NextResponse.json({ success: false, error: "MFA not enabled" }, { status: 400 })
     }
 
-    // Check if it's a backup code
-    if (mfaData.backup_codes && Array.isArray(mfaData.backup_codes)) {
-      const backupCodes = mfaData.backup_codes as string[]
-      if (backupCodes.includes(token)) {
-        console.log("Valid backup code used")
-
-        // Remove the used backup code
-        const updatedBackupCodes = backupCodes.filter((code) => code !== token)
-        await supabase.from("mfa_settings").update({ backup_codes: updatedBackupCodes }).eq("id", user.id)
-
-        return NextResponse.json({ success: true }, { status: 200 })
-      }
-    }
-
     // Verify TOTP token using our utility function
-    if (mfaData.authenticator_secret) {
+    if (mfaSettings.authenticator_secret) {
       console.log("Verifying TOTP token with secret")
-      const isValid = verifyToken(mfaData.authenticator_secret, token)
+      const isValid = verifyToken(mfaSettings.authenticator_secret, token)
 
       console.log("TOTP verification result:", isValid)
 
