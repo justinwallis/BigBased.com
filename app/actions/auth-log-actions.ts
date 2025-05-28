@@ -1,81 +1,115 @@
 "use server"
 
-import { createServerClient } from "@/lib/supabase/server"
-import { cookies } from "next/headers"
-import type { AuthEvent, AuthStatus } from "@/app/constants/auth-constants"
+import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { cookies, headers } from "next/headers"
+import { AUTH_EVENTS as EVENTS, AUTH_STATUS as STATUS } from "@/app/constants/auth-log-constants"
 
+// Re-export the constants for backward compatibility
+export const AUTH_EVENTS = EVENTS
+export const AUTH_STATUS = STATUS
+
+// Log an authentication event
 export async function logAuthEvent(
-  userId: string,
-  event: AuthEvent,
-  status: AuthStatus,
-  metadata?: Record<string, any>,
+  userId: string | null,
+  eventType: string,
+  status: string,
+  details: Record<string, any> = {},
 ) {
   try {
     const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    const supabase = createServerSupabaseClient()
 
-    const { error } = await supabase.from("auth_logs").insert({
-      user_id: userId,
-      event,
-      status,
-      metadata: metadata || {},
-      ip_address: "127.0.0.1", // In production, get from headers
-      user_agent: "Unknown", // In production, get from headers
-      created_at: new Date().toISOString(),
+    // Get IP address and user agent
+    const headersList = headers()
+    const ipAddress = headersList.get("x-forwarded-for") || "unknown"
+    const userAgent = headersList.get("user-agent") || "unknown"
+
+    // Call the database function to log the event
+    const { error } = await supabase.rpc("log_auth_event", {
+      p_user_id: userId,
+      p_event_type: eventType,
+      p_ip_address: ipAddress,
+      p_user_agent: userAgent,
+      p_status: status,
+      p_details: details,
     })
 
     if (error) {
-      console.error("Failed to log auth event:", error)
+      console.error("Error logging auth event:", error)
+      return { success: false, error: error.message }
     }
+
+    return { success: true }
   } catch (error) {
-    console.error("Error logging auth event:", error)
+    console.error("Error in logAuthEvent:", error)
+    return { success: false, error: "Failed to log authentication event" }
   }
 }
 
-export async function getAuthLogs(userId: string, limit = 50) {
+// Get authentication logs for the current user
+export async function getUserAuthLogs(
+  page = 1,
+  pageSize = 10,
+  filters: { eventType?: string; startDate?: string; endDate?: string } = {},
+) {
   try {
     const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    const supabase = createServerSupabaseClient()
 
-    const { data, error } = await supabase
+    // Get the current user
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+
+    if (!session) {
+      return { success: false, error: "Not authenticated" }
+    }
+
+    const userId = session.user.id
+
+    // Build the query
+    let query = supabase
       .from("auth_logs")
-      .select("*")
+      .select("*", { count: "exact" })
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
-      .limit(limit)
 
-    if (error) throw error
+    // Apply filters
+    if (filters.eventType) {
+      query = query.eq("event_type", filters.eventType)
+    }
+
+    if (filters.startDate) {
+      query = query.gte("created_at", filters.startDate)
+    }
+
+    if (filters.endDate) {
+      query = query.lte("created_at", filters.endDate)
+    }
+
+    // Apply pagination
+    const from = (page - 1) * pageSize
+    const to = from + pageSize - 1
+
+    const { data, error, count } = await query.range(from, to)
+
+    if (error) {
+      console.error("Error fetching auth logs:", error)
+      return { success: false, error: error.message }
+    }
 
     return {
       success: true,
       data,
+      pagination: {
+        page,
+        pageSize,
+        total: count || 0,
+        totalPages: count ? Math.ceil(count / pageSize) : 0,
+      },
     }
   } catch (error) {
-    console.error("Error getting auth logs:", error)
-    return {
-      success: false,
-      error: "Failed to get auth logs",
-    }
-  }
-}
-
-export async function clearAuthLogs(userId: string) {
-  try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
-
-    const { error } = await supabase.from("auth_logs").delete().eq("user_id", userId)
-
-    if (error) throw error
-
-    return {
-      success: true,
-    }
-  } catch (error) {
-    console.error("Error clearing auth logs:", error)
-    return {
-      success: false,
-      error: "Failed to clear auth logs",
-    }
+    console.error("Error in getUserAuthLogs:", error)
+    return { success: false, error: "Failed to fetch authentication logs" }
   }
 }
