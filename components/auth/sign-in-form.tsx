@@ -41,27 +41,24 @@ function SignInFormComponent() {
       console.log("Has MFA Code:", !!mfaCode)
       console.log("Show MFA Input:", showMfaInput)
 
-      // First, check if MFA is required for this user
-      if (!showMfaInput) {
-        const mfaCheckResponse = await fetch("/api/auth/check-mfa", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email }),
-        })
+      // Attempt sign in
+      const result = await signIn(email, password, mfaCode)
+      console.log("Sign in result:", result)
 
-        const mfaCheckResult = await mfaCheckResponse.json()
-        console.log("MFA Check Result:", mfaCheckResult)
+      if (result.error) {
+        setError(result.error.message || "Failed to sign in")
+        setIsLoading(false)
+        return
+      }
 
-        if (mfaCheckResult.mfaRequired) {
-          console.log("MFA required, showing MFA input")
-          setMfaRequired(true)
-          setShowMfaInput(true)
-          setError("Please enter your 6-digit verification code")
-          setIsLoading(false)
-          return
-        }
+      // If MFA is required but no code was provided
+      if (result.mfaRequired && !mfaCode) {
+        console.log("MFA required, showing MFA input")
+        setMfaRequired(true)
+        setShowMfaInput(true)
+        setError("Please enter your 6-digit verification code")
+        setIsLoading(false)
+        return
       }
 
       // If MFA code is provided, verify it first
@@ -84,19 +81,20 @@ function SignInFormComponent() {
           return
         }
 
+        // MFA verification successful, now proceed with Supabase sign in
         console.log("MFA verified successfully, proceeding with sign in...")
       }
 
-      // Proceed with Supabase sign in
-      console.log("Proceeding with Supabase sign in...")
+      // Get the Supabase client
       const supabase = supabaseClient()
-
       if (!supabase) {
-        setError("Authentication service unavailable")
+        setError("Failed to initialize authentication client")
         setIsLoading(false)
         return
       }
 
+      // Proceed with normal sign in
+      console.log("Proceeding with Supabase sign in...")
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -125,7 +123,6 @@ function SignInFormComponent() {
         setTimeout(() => {
           console.log("Authentication successful, redirecting to:", redirectUrl)
           router.push(redirectUrl)
-          router.refresh() // Refresh to update auth state
         }, 500)
       } else {
         setError("Authentication failed. Please try again.")
