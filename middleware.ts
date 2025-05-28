@@ -1,52 +1,81 @@
-import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
+import { createServerClient } from "@supabase/ssr"
+import { NextResponse, type NextRequest } from "next/server"
 
 export async function middleware(request: NextRequest) {
-  // Get the pathname of the request
-  const path = request.nextUrl.pathname
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  })
 
-  // Public paths that don't require authentication
-  const isPublicPath =
-    path === "/" ||
-    path === "/about" ||
-    path === "/features" ||
-    path === "/partners" ||
-    path === "/contact" ||
-    path === "/transform" ||
-    path === "/faq" ||
-    path === "/revolution" ||
-    path.startsWith("/api/auth") ||
-    path.startsWith("/auth/sign-in") ||
-    path.startsWith("/auth/sign-up") ||
-    path.startsWith("/auth/forgot-password") ||
-    path.startsWith("/auth/reset-password") ||
-    path.startsWith("/auth/callback")
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value
+        },
+        set(name: string, value: string, options: any) {
+          request.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          response.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+        },
+        remove(name: string, options: any) {
+          request.cookies.set({
+            name,
+            value: "",
+            ...options,
+          })
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          response.cookies.set({
+            name,
+            value: "",
+            ...options,
+          })
+        },
+      },
+    },
+  )
 
-  // Protected paths that require authentication
-  const isProtectedPath = path.startsWith("/profile") || path.startsWith("/dashboard")
+  // Refresh session if expired - required for Server Components
+  await supabase.auth.getUser()
 
-  // Skip middleware for non-protected paths
-  if (!isProtectedPath) {
-    return NextResponse.next()
+  // Protected routes
+  const protectedPaths = ["/profile", "/dashboard"]
+  const isProtectedPath = protectedPaths.some((path) => request.nextUrl.pathname.startsWith(path))
+
+  if (isProtectedPath) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      const redirectUrl = new URL("/auth/sign-in", request.url)
+      redirectUrl.searchParams.set("redirectTo", request.nextUrl.pathname)
+      return NextResponse.redirect(redirectUrl)
+    }
   }
 
-  // Check for Supabase session token in cookies
-  const supabaseSession = request.cookies.get("sb-access-token") || request.cookies.get("supabase-auth-token")
-
-  // If it's a protected path and the user is not authenticated,
-  // redirect to the sign-in page
-  if (isProtectedPath && !supabaseSession) {
-    console.log("No session found, redirecting to sign-in")
-    const redirectUrl = new URL("/auth/sign-in", request.url)
-    redirectUrl.searchParams.set("redirect", request.nextUrl.pathname)
-    return NextResponse.redirect(redirectUrl)
-  }
-
-  // Allow access to protected paths if authenticated
-  return NextResponse.next()
+  return response
 }
 
-// See "Matching Paths" below to learn more
 export const config = {
   matcher: [
     /*
@@ -54,8 +83,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public (public files)
+     * Feel free to modify this pattern to include more paths.
      */
-    "/((?!_next/static|_next/image|favicon.ico|public|.*\\.png$|.*\\.jpg$|.*\\.svg$|.*\\.ico$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 }
