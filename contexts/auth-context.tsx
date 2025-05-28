@@ -4,7 +4,6 @@ import type React from "react"
 import { createContext, useContext, useEffect, useState } from "react"
 import { createClient } from "@supabase/supabase-js"
 import type { User, Session, AuthError } from "@supabase/supabase-js"
-import { useRouter } from "next/navigation"
 
 interface AuthContextType {
   user: User | null
@@ -40,7 +39,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const router = useRouter()
 
   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -87,15 +85,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null)
       setIsLoading(false)
 
-      // Handle sign out - redirect to home
-      if (event === "SIGNED_OUT") {
-        console.log("User signed out, redirecting to home")
-        router.push("/")
-      }
+      // No automatic redirects - let the UI handle the state changes
     })
 
     return () => subscription.unsubscribe()
-  }, [supabase.auth, router])
+  }, [supabase.auth])
 
   const signIn = async (email: string, password: string, mfaCode?: string) => {
     try {
@@ -182,14 +176,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log("Starting sign out process...")
 
+      // Clear local state first for immediate UI update
+      setUser(null)
+      setSession(null)
+
+      // Then sign out from Supabase
       const { error } = await supabase.auth.signOut()
       if (error) {
         console.error("Sign out error:", error)
+        // If there's an error, we might want to restore the session
+        // but for now, we'll keep the user signed out locally
       } else {
         console.log("Sign out successful")
-        // Clear local state immediately
-        setUser(null)
-        setSession(null)
       }
     } catch (error) {
       console.error("Unexpected sign out error:", error)
