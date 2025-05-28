@@ -1,6 +1,6 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
-import { authenticator } from "otplib"
+import { verifyToken } from "@/utils/verify-token"
 
 export async function POST(request: Request) {
   try {
@@ -33,10 +33,10 @@ export async function POST(request: Request) {
 
     console.log("Getting MFA settings for user:", user.id)
 
-    // Get MFA settings - use the same columns as the check-mfa API
+    // Get MFA settings - use the correct column name: authenticator_secret
     const { data: mfaData, error: mfaError } = await supabase
       .from("mfa_settings")
-      .select("mfa_enabled, mfa_type, mfa_secret, backup_codes")
+      .select("mfa_enabled, mfa_type, authenticator_secret, backup_codes")
       .eq("id", user.id)
       .single()
 
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
       hasData: !!mfaData,
       mfaEnabled: mfaData?.mfa_enabled,
       mfaType: mfaData?.mfa_type,
-      hasSecret: !!mfaData?.mfa_secret,
+      hasSecret: !!mfaData?.authenticator_secret,
       hasBackupCodes: !!mfaData?.backup_codes,
       error: mfaError,
     })
@@ -73,14 +73,10 @@ export async function POST(request: Request) {
       }
     }
 
-    // Verify TOTP token
-    if (mfaData.mfa_secret) {
+    // Verify TOTP token using our utility function
+    if (mfaData.authenticator_secret) {
       console.log("Verifying TOTP token with secret")
-      const isValid = authenticator.verify({
-        token: token,
-        secret: mfaData.mfa_secret,
-        window: 2, // Allow 2 time steps before/after for clock drift
-      })
+      const isValid = verifyToken(mfaData.authenticator_secret, token)
 
       console.log("TOTP verification result:", isValid)
 
@@ -88,7 +84,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: true }, { status: 200 })
       }
     } else {
-      console.log("No MFA secret found")
+      console.log("No authenticator secret found")
     }
 
     console.log("Invalid MFA token")
