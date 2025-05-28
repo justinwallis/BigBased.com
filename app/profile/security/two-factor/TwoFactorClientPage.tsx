@@ -91,12 +91,26 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
 
       if (result.success) {
         setMfaStatus({ enabled: true, type: "authenticator" })
-        setStep("backup-codes")
+
         // Generate backup codes automatically
+        console.log("Generating backup codes after MFA verification...")
         const backupResult = await generateBackupCodes()
+        console.log("Backup codes result:", backupResult)
+
         if (backupResult.success && backupResult.data) {
           setBackupCodes(backupResult.data.codes)
+          setStep("backup-codes")
+        } else {
+          console.error("Failed to generate backup codes:", backupResult.error)
+          // Still proceed to backup codes step but show error
+          setStep("backup-codes")
+          toast({
+            title: "Warning",
+            description: "MFA enabled but failed to generate backup codes. You can generate them manually.",
+            variant: "destructive",
+          })
         }
+
         toast({
           title: "Success",
           description: "Two-factor authentication has been enabled",

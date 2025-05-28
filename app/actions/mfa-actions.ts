@@ -15,11 +15,6 @@ async function getAuthenticatedUser() {
     const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-    console.log("Auth check - Environment variables:", {
-      hasUrl: !!supabaseUrl,
-      hasAnonKey: !!supabaseKey,
-    })
-
     if (!supabaseUrl || !supabaseKey) {
       throw new Error("Missing Supabase environment variables")
     }
@@ -46,17 +41,10 @@ async function getAuthenticatedUser() {
       },
     })
 
-    console.log("Getting user with auth client...")
     const {
       data: { user },
       error,
     } = await supabase.auth.getUser()
-
-    console.log("Auth result:", {
-      hasUser: !!user,
-      userId: user?.id,
-      error: error?.message,
-    })
 
     if (error || !user) {
       throw new Error(`Not authenticated: ${error?.message || "No user found"}`)
@@ -75,12 +63,6 @@ function createServiceRoleClient() {
     const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-    console.log("Creating direct service role client:", {
-      hasUrl: !!supabaseUrl,
-      hasServiceKey: !!serviceRoleKey,
-      serviceKeyPrefix: serviceRoleKey?.substring(0, 20) + "...",
-    })
-
     if (!supabaseUrl || !serviceRoleKey) {
       throw new Error("Missing Supabase service role environment variables")
     }
@@ -93,7 +75,6 @@ function createServiceRoleClient() {
       },
     })
 
-    console.log("Direct service role client created successfully")
     return client
   } catch (error) {
     console.error("Error creating service role client:", error)
@@ -104,19 +85,14 @@ function createServiceRoleClient() {
 // Get MFA status for the current user
 export async function getMfaStatus() {
   try {
-    console.log("=== getMfaStatus called ===")
     const { userId } = await getAuthenticatedUser()
     const serviceSupabase = createServiceRoleClient()
-
-    console.log("Checking MFA status for user:", userId)
 
     const { data, error } = await serviceSupabase
       .from("mfa_settings")
       .select("mfa_enabled, mfa_type")
       .eq("id", userId)
-      .single()
-
-    console.log("MFA status query result:", { data, error })
+      .maybeSingle()
 
     if (error) {
       console.log("MFA settings not found, will create new record")
@@ -133,7 +109,6 @@ export async function getMfaStatus() {
         throw insertError
       }
 
-      console.log("Created new MFA settings record")
       return {
         success: true,
         data: {
@@ -163,35 +138,21 @@ export async function getMfaStatus() {
 export async function generateAuthenticatorSecret(email: string) {
   try {
     console.log("=== generateAuthenticatorSecret called ===")
-    console.log("Input email:", email)
-
-    console.log("Step 1: Getting authenticated user...")
     const { userId } = await getAuthenticatedUser()
-    console.log("Authenticated user ID:", userId)
-
-    console.log("Step 2: Creating direct service role client...")
     const serviceSupabase = createServiceRoleClient()
-    console.log("Direct service role client created")
 
-    console.log("Step 3: Generating secret...")
+    // Generate a new secret
     const secretData = generateSecret({
       name: "Big Based",
       account: email,
       length: 32,
     })
 
-    console.log("Generated secret data:", {
-      hasSecret: !!secretData.secret,
-      hasUri: !!secretData.uri,
-      secretLength: secretData.secret?.length,
-      uriLength: secretData.uri?.length,
-    })
-
     if (!secretData.secret || !secretData.uri) {
       throw new Error("Failed to generate secret or URI")
     }
 
-    console.log("Step 4: Generating QR code...")
+    // Generate QR code as data URL using qrcode library
     const qrCodeDataUrl = await QRCode.toDataURL(secretData.uri, {
       errorCorrectionLevel: "M",
       type: "image/png",
@@ -204,32 +165,15 @@ export async function generateAuthenticatorSecret(email: string) {
       width: 256,
     })
 
-    console.log("Generated QR code:", {
-      isDataUrl: qrCodeDataUrl.startsWith("data:"),
-      length: qrCodeDataUrl.length,
-    })
-
-    console.log("Step 5: Testing service role client with simple query...")
-    const { data: testData, error: testError } = await serviceSupabase.from("mfa_settings").select("count").limit(1)
-
-    console.log("Service role test query result:", { testData, testError })
-
-    console.log("Step 6: Checking for existing MFA settings...")
-    const { data: existingSettings, error: selectError } = await serviceSupabase
+    // Check for existing MFA settings
+    const { data: existingSettings } = await serviceSupabase
       .from("mfa_settings")
       .select("id")
       .eq("id", userId)
-      .maybeSingle() // Use maybeSingle instead of single to avoid error when no rows
-
-    console.log("Existing settings check:", {
-      hasData: !!existingSettings,
-      error: selectError,
-    })
+      .maybeSingle()
 
     if (!existingSettings) {
-      console.log("Step 7a: Creating new MFA settings record for user:", userId)
-
-      // Try a direct insert with explicit values
+      // Create new record
       const insertPayload = {
         id: userId,
         mfa_enabled: false,
@@ -239,50 +183,27 @@ export async function generateAuthenticatorSecret(email: string) {
         updated_at: new Date().toISOString(),
       }
 
-      console.log("Insert payload:", insertPayload)
-
-      const { data: insertData, error: insertError } = await serviceSupabase
-        .from("mfa_settings")
-        .insert(insertPayload)
-        .select()
-
-      console.log("Insert result:", { insertData, insertError })
+      const { error: insertError } = await serviceSupabase.from("mfa_settings").insert(insertPayload)
 
       if (insertError) {
         console.error("Failed to create MFA settings:", insertError)
-
-        // Try alternative approach: raw SQL
-        console.log("Trying raw SQL insert...")
-        const { data: sqlData, error: sqlError } = await serviceSupabase.rpc("exec_sql", {
-          sql: `INSERT INTO mfa_settings (id, mfa_enabled, mfa_type, authenticator_secret) VALUES ('${userId}', false, null, '${secretData.secret}') ON CONFLICT (id) DO UPDATE SET authenticator_secret = '${secretData.secret}'`,
-        })
-
-        console.log("Raw SQL result:", { sqlData, sqlError })
-
-        if (sqlError) {
-          throw insertError // Throw original error if SQL also fails
-        }
+        throw insertError
       }
     } else {
-      console.log("Step 7b: Updating existing MFA settings record for user:", userId)
-      const { data: updateData, error: updateError } = await serviceSupabase
+      // Update existing record
+      const { error: updateError } = await serviceSupabase
         .from("mfa_settings")
         .update({
           authenticator_secret: secretData.secret,
           updated_at: new Date().toISOString(),
         })
         .eq("id", userId)
-        .select()
-
-      console.log("Update result:", { updateData, updateError })
 
       if (updateError) {
         console.error("Failed to update MFA settings:", updateError)
         throw updateError
       }
     }
-
-    console.log("Step 8: Secret stored successfully for user:", userId)
 
     return {
       success: true,
@@ -293,7 +214,6 @@ export async function generateAuthenticatorSecret(email: string) {
     }
   } catch (error) {
     console.error("Error in generateAuthenticatorSecret:", error)
-    console.error("Error stack:", error instanceof Error ? error.stack : "No stack trace")
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to generate authenticator secret",
@@ -308,8 +228,6 @@ export async function verifyAndEnableMfa(token: string) {
     const { userId } = await getAuthenticatedUser()
     const serviceSupabase = createServiceRoleClient()
 
-    console.log("Verifying MFA for user:", userId, "with token:", token)
-
     // Get the secret from the database
     const { data: mfaData, error: mfaError } = await serviceSupabase
       .from("mfa_settings")
@@ -317,20 +235,12 @@ export async function verifyAndEnableMfa(token: string) {
       .eq("id", userId)
       .single()
 
-    console.log("MFA data retrieved:", {
-      hasData: !!mfaData,
-      hasSecret: !!mfaData?.authenticator_secret,
-      error: mfaError,
-    })
-
     if (mfaError || !mfaData?.authenticator_secret) {
-      console.error("MFA not set up - no secret found for user:", userId)
       throw new Error("MFA not set up - please generate a new QR code")
     }
 
     // Verify the token
     const verified = verifyToken(mfaData.authenticator_secret, token)
-    console.log("Token verification result:", verified)
 
     if (!verified || verified.delta !== 0) {
       return {
@@ -354,7 +264,6 @@ export async function verifyAndEnableMfa(token: string) {
       throw error
     }
 
-    console.log("MFA enabled successfully for user:", userId)
     return { success: true }
   } catch (error) {
     console.error("Error verifying and enabling MFA:", error)
@@ -372,9 +281,15 @@ export async function generateBackupCodes() {
     const { userId } = await getAuthenticatedUser()
     const serviceSupabase = createServiceRoleClient()
 
+    console.log("Deleting existing backup codes for user:", userId)
     // Delete existing backup codes
-    await serviceSupabase.from("backup_codes").delete().eq("user_id", userId)
+    const { error: deleteError } = await serviceSupabase.from("backup_codes").delete().eq("user_id", userId)
 
+    if (deleteError) {
+      console.error("Error deleting existing backup codes:", deleteError)
+    }
+
+    console.log("Generating 10 new backup codes...")
     // Generate 10 new backup codes
     const codes = Array(10)
       .fill(0)
@@ -385,20 +300,33 @@ export async function generateBackupCodes() {
         return `${hex.substring(0, 4)}-${hex.substring(4, 8)}-${hex.substring(8, 12)}`.toUpperCase()
       })
 
+    console.log("Generated codes:", codes.length)
+
     // Hash the codes for storage
     const hashedCodes = codes.map((code) => {
       return {
         user_id: userId,
         code: createHash("sha256").update(code).digest("hex"),
         is_used: false,
+        created_at: new Date().toISOString(),
       }
     })
 
+    console.log("Inserting hashed backup codes...")
     // Store the hashed codes
-    const { error } = await serviceSupabase.from("backup_codes").insert(hashedCodes)
+    const { data: insertData, error: insertError } = await serviceSupabase
+      .from("backup_codes")
+      .insert(hashedCodes)
+      .select()
 
-    if (error) throw error
+    console.log("Backup codes insert result:", { insertData, insertError })
 
+    if (insertError) {
+      console.error("Failed to insert backup codes:", insertError)
+      throw insertError
+    }
+
+    console.log("Backup codes generated successfully")
     return {
       success: true,
       data: { codes },
@@ -407,7 +335,7 @@ export async function generateBackupCodes() {
     console.error("Error generating backup codes:", error)
     return {
       success: false,
-      error: "Failed to generate backup codes",
+      error: error instanceof Error ? error.message : "Failed to generate backup codes",
     }
   }
 }
@@ -484,6 +412,103 @@ export async function disableMfa() {
     return {
       success: false,
       error: "Failed to disable MFA",
+    }
+  }
+}
+
+// Check if user has MFA enabled (for login flow)
+export async function checkUserMfaStatus(email: string) {
+  try {
+    const serviceSupabase = createServiceRoleClient()
+
+    // Get user by email first
+    const { data: userData, error: userError } = await serviceSupabase.auth.admin.getUserByEmail(email)
+
+    if (userError || !userData.user) {
+      return {
+        success: false,
+        error: "User not found",
+      }
+    }
+
+    // Check MFA status
+    const { data: mfaData, error: mfaError } = await serviceSupabase
+      .from("mfa_settings")
+      .select("mfa_enabled, mfa_type")
+      .eq("id", userData.user.id)
+      .single()
+
+    if (mfaError) {
+      return {
+        success: true,
+        data: {
+          enabled: false,
+          type: null,
+        },
+      }
+    }
+
+    return {
+      success: true,
+      data: {
+        enabled: mfaData?.mfa_enabled || false,
+        type: mfaData?.mfa_type || null,
+      },
+    }
+  } catch (error) {
+    console.error("Error checking user MFA status:", error)
+    return {
+      success: false,
+      error: "Failed to check MFA status",
+    }
+  }
+}
+
+// Verify MFA token for login
+export async function verifyMfaForLogin(email: string, token: string) {
+  try {
+    const serviceSupabase = createServiceRoleClient()
+
+    // Get user by email
+    const { data: userData, error: userError } = await serviceSupabase.auth.admin.getUserByEmail(email)
+
+    if (userError || !userData.user) {
+      return {
+        success: false,
+        error: "User not found",
+      }
+    }
+
+    // Get MFA secret
+    const { data: mfaData, error: mfaError } = await serviceSupabase
+      .from("mfa_settings")
+      .select("authenticator_secret")
+      .eq("id", userData.user.id)
+      .single()
+
+    if (mfaError || !mfaData?.authenticator_secret) {
+      return {
+        success: false,
+        error: "MFA not set up",
+      }
+    }
+
+    // Verify the token
+    const verified = verifyToken(mfaData.authenticator_secret, token)
+
+    if (!verified || verified.delta !== 0) {
+      return {
+        success: false,
+        error: "Invalid verification code",
+      }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error("Error verifying MFA for login:", error)
+    return {
+      success: false,
+      error: "Failed to verify MFA",
     }
   }
 }
