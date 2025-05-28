@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState, useTransition, useEffect } from "react"
 import Link from "next/link"
 import { ArrowLeft, Shield, Smartphone, Key, Download, Copy, Check, Home } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -31,17 +31,35 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
   const [backupCodes, setBackupCodes] = useState<string[]>([])
   const [copiedCodes, setCopiedCodes] = useState(false)
   const [mfaStatus, setMfaStatus] = useState(currentMfaStatus)
+  const [qrError, setQrError] = useState<string>("")
   const { toast } = useToast()
+
+  // Debug QR code when it changes
+  useEffect(() => {
+    if (qrCode) {
+      console.log("QR Code updated:", {
+        length: qrCode.length,
+        startsWithData: qrCode.startsWith("data:"),
+        startsWithHttp: qrCode.startsWith("http"),
+        first100: qrCode.substring(0, 100),
+      })
+    }
+  }, [qrCode])
 
   const handleSetupAuthenticator = () => {
     startTransition(async () => {
       console.log("Starting authenticator setup for:", user.email)
+      setQrError("")
       const result = await generateAuthenticatorSecret(user.email || "")
 
       console.log("Setup result:", result)
 
       if (result.success && result.data) {
-        console.log("QR Code received:", result.data.qrCode?.substring(0, 50) + "...")
+        console.log("QR Code received:", {
+          length: result.data.qrCode?.length,
+          startsWithData: result.data.qrCode?.startsWith("data:"),
+          first50: result.data.qrCode?.substring(0, 50),
+        })
         setQrCode(result.data.qrCode)
         setSecret(result.data.secret)
         setStep("setup")
@@ -269,18 +287,30 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
                 <div className="flex justify-center">
                   <div className="p-4 bg-white dark:bg-gray-100 rounded-lg border">
                     {qrCode ? (
-                      <img
-                        src={qrCode || "/placeholder.svg"}
-                        alt="QR Code for 2FA setup"
-                        className="w-48 h-48"
-                        onError={(e) => {
-                          console.error("QR code failed to load:", qrCode?.substring(0, 100))
-                          e.currentTarget.style.display = "none"
-                        }}
-                        onLoad={() => {
-                          console.log("QR code loaded successfully")
-                        }}
-                      />
+                      <div className="relative">
+                        <img
+                          src={qrCode || "/placeholder.svg"}
+                          alt="QR Code for 2FA setup"
+                          className="w-48 h-48 block"
+                          onError={(e) => {
+                            console.error("QR code failed to load")
+                            console.error("QR code data:", qrCode?.substring(0, 200))
+                            setQrError("Failed to load QR code")
+                            e.currentTarget.style.display = "none"
+                          }}
+                          onLoad={() => {
+                            console.log("QR code loaded successfully")
+                            setQrError("")
+                          }}
+                          style={{ display: qrError ? "none" : "block" }}
+                        />
+                        {qrError && (
+                          <div className="w-48 h-48 bg-red-100 dark:bg-red-900/20 rounded flex flex-col items-center justify-center text-center p-4">
+                            <p className="text-red-600 dark:text-red-400 text-sm mb-2">QR Code Error</p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">Use manual entry below</p>
+                          </div>
+                        )}
+                      </div>
                     ) : (
                       <div className="w-48 h-48 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
                         <p className="text-gray-500 text-sm">Loading QR Code...</p>
@@ -289,11 +319,16 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
                   </div>
                 </div>
 
-                {/* Debug info */}
-                {process.env.NODE_ENV === "development" && (
-                  <div className="text-xs text-gray-500 p-2 bg-gray-100 dark:bg-gray-800 rounded">
-                    <p>Debug: QR Code length: {qrCode?.length || 0}</p>
-                    <p>Debug: QR Code starts with: {qrCode?.substring(0, 50) || "N/A"}</p>
+                {/* Debug info - only in development */}
+                {process.env.NODE_ENV === "development" && qrCode && (
+                  <div className="text-xs text-gray-500 p-3 bg-gray-100 dark:bg-gray-800 rounded font-mono">
+                    <p>
+                      <strong>Debug Info:</strong>
+                    </p>
+                    <p>QR Length: {qrCode.length}</p>
+                    <p>Starts with data: {qrCode.startsWith("data:") ? "✓" : "✗"}</p>
+                    <p>Format: {qrCode.substring(0, 30)}...</p>
+                    {qrError && <p className="text-red-500">Error: {qrError}</p>}
                   </div>
                 )}
 
@@ -325,7 +360,7 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
                   <h4 className="font-medium">Instructions:</h4>
                   <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600 dark:text-gray-400">
                     <li>Open your authenticator app (Google Authenticator, Authy, etc.)</li>
-                    <li>Scan the QR code or enter the manual key</li>
+                    <li>Scan the QR code or enter the manual key above</li>
                     <li>Enter the 6-digit code from your app below</li>
                   </ol>
                 </div>
