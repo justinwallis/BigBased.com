@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { generateBackupCodes } from "@/app/actions/auth-actions"
+import { generateBackupCodes } from "@/app/actions/mfa-actions"
 import { logAuthEvent } from "@/app/actions/auth-log-actions"
 import { AUTH_EVENTS, AUTH_STATUS } from "@/app/constants/auth-log-constants"
 
@@ -15,9 +15,14 @@ export default function BackupCodesGenerator() {
     setError(null)
 
     try {
-      const newBackupCodes = await generateBackupCodes()
-      setBackupCodes(newBackupCodes)
-      await logAuthEvent(AUTH_EVENTS.BACKUP_CODES_GENERATED, AUTH_STATUS.SUCCESS)
+      const result = await generateBackupCodes()
+      if (result.success && result.data) {
+        setBackupCodes(result.data.codes)
+        await logAuthEvent(AUTH_EVENTS.BACKUP_CODES_GENERATED, AUTH_STATUS.SUCCESS)
+      } else {
+        setError(result.error || "Failed to generate backup codes.")
+        await logAuthEvent(AUTH_EVENTS.BACKUP_CODES_GENERATED, AUTH_STATUS.FAILURE, result.error)
+      }
     } catch (e: any) {
       setError(e.message || "Failed to generate backup codes.")
       await logAuthEvent(AUTH_EVENTS.BACKUP_CODES_GENERATED, AUTH_STATUS.FAILURE, e.message)

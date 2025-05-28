@@ -118,6 +118,7 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
       if (result.success && result.data) {
         setBackupCodes(result.data.codes)
         setCopiedCodes(false)
+        setStep("backup-codes") // Change to backup-codes step to display the codes
         toast({
           title: "Success",
           description: "New backup codes generated",
