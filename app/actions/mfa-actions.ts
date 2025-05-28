@@ -3,7 +3,7 @@
 import { createClient } from "@supabase/supabase-js"
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
-import { generateSecret, verifyToken } from "node-2fa"
+import { generateSecret, verifyToken } from "@/lib/mfa-utils"
 import { randomBytes, createHash } from "crypto"
 import QRCode from "qrcode"
 import type { Database } from "@/types/supabase"
