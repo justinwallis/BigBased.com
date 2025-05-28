@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react"
 import Link from "next/link"
-import { ArrowLeft, Shield, Smartphone, Key, Download, Copy, Check } from "lucide-react"
+import { ArrowLeft, Shield, Smartphone, Key, Download, Copy, Check, Home } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
 import { generateAuthenticatorSecret, verifyAndEnableMfa, generateBackupCodes } from "@/app/actions/mfa-actions"
 import type { User } from "@supabase/supabase-js"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 interface TwoFactorClientPageProps {
   user: User
@@ -137,33 +138,36 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
     <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors">
       <div className="container mx-auto px-4 pb-8 pt-4">
         {/* Navigation */}
-        <div className="flex items-center gap-4 mb-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            asChild
-            className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-          >
-            <Link href="/profile?tab=security" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Back to Security
-            </Link>
-          </Button>
-          <div className="text-gray-400">•</div>
-          <Button
-            variant="ghost"
-            size="sm"
-            asChild
-            className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-          >
-            <Link href="/" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Back to Big Based
-            </Link>
-          </Button>
-        </div>
-
         <div className="max-w-2xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                asChild
+                className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              >
+                <Link href="/profile?tab=security" className="flex items-center gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Security
+                </Link>
+              </Button>
+              <div className="text-gray-400">•</div>
+              <Button
+                variant="ghost"
+                size="sm"
+                asChild
+                className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              >
+                <Link href="/" className="flex items-center gap-2">
+                  <Home className="h-4 w-4" />
+                  Back to Big Based
+                </Link>
+              </Button>
+            </div>
+            <ThemeToggle />
+          </div>
+
           {step === "overview" && (
             <Card>
               <CardHeader>

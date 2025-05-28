@@ -29,6 +29,7 @@ import {
   Instagram,
   Youtube,
   Home,
+  Key,
 } from "lucide-react"
 import { AvatarUpload } from "@/components/avatar-upload"
 import { InteractiveBannerUpload } from "@/components/interactive-banner-upload"
@@ -882,24 +883,34 @@ export default function ProfileClientPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
+                  {/* Two-Factor Authentication */}
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="font-medium">Password</h4>
-                      <p className="text-sm text-muted-foreground">Last changed 30 days ago</p>
+                      <h4 className="font-medium flex items-center gap-2">
+                        <Shield className="h-4 w-4" />
+                        Two-Factor Authentication
+                      </h4>
+                      <p className="text-sm text-muted-foreground">Add an extra layer of security to your account</p>
                     </div>
-                    <Link href="/profile/security/change-password">
-                      <Button variant="outline">Change Password</Button>
+                    <Link href="/profile/security/two-factor">
+                      <Button variant="outline">Manage 2FA</Button>
                     </Link>
                   </div>
 
                   <Separator />
 
+                  {/* Change Password */}
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="font-medium">Two-Factor Authentication</h4>
-                      <p className="text-sm text-muted-foreground">Add an extra layer of security to your account</p>
+                      <h4 className="font-medium flex items-center gap-2">
+                        <Key className="h-4 w-4" />
+                        Password
+                      </h4>
+                      <p className="text-sm text-muted-foreground">Update your password to keep your account secure</p>
                     </div>
-                    <Button variant="outline">Enable 2FA</Button>
+                    <Link href="/profile/security/change-password">
+                      <Button variant="outline">Change Password</Button>
+                    </Link>
                   </div>
 
                   <Separator />
