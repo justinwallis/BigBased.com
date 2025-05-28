@@ -33,18 +33,18 @@ export async function POST(request: Request) {
 
     console.log("Getting MFA settings for user:", user.id)
 
-    // Get MFA settings - check both old and new field names
+    // Get MFA settings - use the same columns as the check-mfa API
     const { data: mfaData, error: mfaError } = await supabase
       .from("mfa_settings")
-      .select("mfa_enabled, authenticator_enabled, mfa_secret, authenticator_secret, backup_codes")
+      .select("mfa_enabled, mfa_type, mfa_secret, backup_codes")
       .eq("id", user.id)
       .single()
 
     console.log("MFA data retrieved:", {
       hasData: !!mfaData,
       mfaEnabled: mfaData?.mfa_enabled,
-      authenticatorEnabled: mfaData?.authenticator_enabled,
-      hasSecret: !!(mfaData?.mfa_secret || mfaData?.authenticator_secret),
+      mfaType: mfaData?.mfa_type,
+      hasSecret: !!mfaData?.mfa_secret,
       hasBackupCodes: !!mfaData?.backup_codes,
       error: mfaError,
     })
@@ -54,11 +54,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "MFA not set up" }, { status: 400 })
     }
 
-    // Check if MFA is enabled (check both field names for compatibility)
-    const isMfaEnabled = mfaData.mfa_enabled || mfaData.authenticator_enabled
-    const mfaSecret = mfaData.mfa_secret || mfaData.authenticator_secret
-
-    if (!isMfaEnabled) {
+    // Check if MFA is enabled
+    if (!mfaData.mfa_enabled) {
       console.log("MFA not enabled for user")
       return NextResponse.json({ success: false, error: "MFA not enabled" }, { status: 400 })
     }
@@ -78,11 +75,11 @@ export async function POST(request: Request) {
     }
 
     // Verify TOTP token
-    if (mfaSecret) {
+    if (mfaData.mfa_secret) {
       console.log("Verifying TOTP token with secret")
       const isValid = authenticator.verify({
         token: token,
-        secret: mfaSecret,
+        secret: mfaData.mfa_secret,
         window: 2, // Allow 2 time steps before/after for clock drift
       })
 
