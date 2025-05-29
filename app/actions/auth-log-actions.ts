@@ -1,10 +1,11 @@
 "use server"
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"
-// Import and re-export the constants
-import { AUTH_EVENTS, AUTH_STATUS } from "./auth-constants"
+import * as constants from "@/lib/auth-constants"
 
-export { AUTH_EVENTS, AUTH_STATUS }
+// Re-export the constants using a special pattern
+export const AUTH_EVENTS = constants.AUTH_EVENTS
+export const AUTH_STATUS = constants.AUTH_STATUS
 
 // Log auth events
 export async function logAuthEvent(userId: string, eventType: string, status: string, metadata: any = {}) {

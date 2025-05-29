@@ -1,4 +1,3 @@
-// Constants file (no "use server" directive)
 export const AUTH_EVENTS = {
   LOGIN: "login",
   LOGOUT: "logout",
@@ -10,10 +9,10 @@ export const AUTH_EVENTS = {
   MFA_DISABLE: "mfa_disable",
   MFA_CHALLENGE: "mfa_challenge",
   BACKUP_CODES_GENERATE: "backup_codes_generate",
-}
+} as const
 
 export const AUTH_STATUS = {
   SUCCESS: "success",
   FAILURE: "failure",
   PENDING: "pending",
-}
+} as const
