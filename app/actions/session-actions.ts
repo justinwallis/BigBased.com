@@ -1,57 +1,142 @@
 "use server"
 
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
-import { revalidatePath } from "next/cache"
+import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { headers } from "next/headers"
 
-interface Session {
-  id: string
-  user_id: string
-  session_token: string
-  device_info: string
-  ip_address: string
-  location: string
-  user_agent: string
-  created_at: string
-  last_active: string
-  is_current: boolean
-  status: "active" | "expired" | "revoked"
+// Helper function to parse user agent
+function parseUserAgent(userAgent: string) {
+  const ua = userAgent.toLowerCase()
+
+  // Detect device type
+  let deviceType = "desktop"
+  if (ua.includes("mobile") || ua.includes("android") || ua.includes("iphone")) {
+    deviceType = "mobile"
+  } else if (ua.includes("tablet") || ua.includes("ipad")) {
+    deviceType = "tablet"
+  }
+
+  // Detect browser
+  let browser = "Unknown"
+  if (ua.includes("chrome") && !ua.includes("edg")) {
+    browser = "Chrome"
+  } else if (ua.includes("firefox")) {
+    browser = "Firefox"
+  } else if (ua.includes("safari") && !ua.includes("chrome")) {
+    browser = "Safari"
+  } else if (ua.includes("edg")) {
+    browser = "Edge"
+  } else if (ua.includes("opera")) {
+    browser = "Opera"
+  }
+
+  // Detect OS
+  let os = "Unknown"
+  if (ua.includes("windows")) {
+    os = "Windows"
+  } else if (ua.includes("mac")) {
+    os = "macOS"
+  } else if (ua.includes("linux")) {
+    os = "Linux"
+  } else if (ua.includes("android")) {
+    os = "Android"
+  } else if (ua.includes("ios") || ua.includes("iphone") || ua.includes("ipad")) {
+    os = "iOS"
+  }
+
+  return { deviceType, browser, os }
 }
 
-interface SessionResult {
-  success: boolean
-  sessions?: Session[]
-  error?: string
-}
-
-interface RevokeResult {
-  success: boolean
-  error?: string
-}
-
-export async function getUserSessions(): Promise<SessionResult> {
+// Create or update session tracking
+export async function trackSession() {
   try {
-    const supabase = createServerComponentClient({ cookies })
+    const supabase = createServerSupabaseClient()
 
-    // Get current user
+    // Get the current user
     const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser()
+      data: { session },
+    } = await supabase.auth.getSession()
 
-    if (userError || !user) {
-      return {
-        success: false,
-        error: "User not authenticated",
+    if (!session) {
+      return { success: false, error: "Not authenticated" }
+    }
+
+    // Get request headers
+    const headersList = headers()
+    const ipAddress = headersList.get("x-forwarded-for") || "unknown"
+    const userAgent = headersList.get("user-agent") || "unknown"
+
+    // Parse user agent
+    const { deviceType, browser, os } = parseUserAgent(userAgent)
+
+    // Check if session already exists
+    const { data: existingSession } = await supabase
+      .from("user_sessions")
+      .select("*")
+      .eq("session_token", session.access_token)
+      .single()
+
+    if (existingSession) {
+      // Update last activity
+      const { error } = await supabase
+        .from("user_sessions")
+        .update({
+          last_activity: new Date().toISOString(),
+          ip_address: ipAddress,
+          user_agent: userAgent,
+        })
+        .eq("id", existingSession.id)
+
+      if (error) {
+        console.error("Error updating session:", error)
+      }
+    } else {
+      // Create new session record
+      const { error } = await supabase.from("user_sessions").insert({
+        user_id: session.user.id,
+        session_token: session.access_token,
+        ip_address: ipAddress,
+        user_agent: userAgent,
+        device_type: deviceType,
+        browser: browser,
+        os: os,
+        created_at: new Date().toISOString(),
+        last_activity: new Date().toISOString(),
+        expires_at: new Date(session.expires_at! * 1000).toISOString(),
+      })
+
+      if (error) {
+        console.error("Error creating session:", error)
       }
     }
 
-    // Mock session data for now - replace with actual database query
-    const mockSessions: Session[] = [
+    return { success: true }
+  } catch (error) {
+    console.error("Error in trackSession:", error)
+    return { success: false, error: "Failed to track session" }
+  }
+}
+
+// Get user sessions
+export async function getUserSessions() {
+  try {
+    const supabase = createServerSupabaseClient()
+
+    // Get the current user
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+
+    if (!session) {
+      return { success: false, error: "Not authenticated" }
+    }
+
+    // For now, return mock data since we don't have the user_sessions table set up
+    // In production, this would query the actual database
+    const mockSessions = [
       {
         id: "current-session",
-        user_id: user.id,
-        session_token: "current-token",
+        user_id: session.user.id,
+        session_token: session.access_token,
         device_info: "Chrome on Windows 11",
         ip_address: "192.168.1.100",
         location: "New York, NY",
@@ -64,7 +149,7 @@ export async function getUserSessions(): Promise<SessionResult> {
       },
       {
         id: "mobile-session",
-        user_id: user.id,
+        user_id: session.user.id,
         session_token: "mobile-token",
         device_info: "Safari on iPhone 15",
         ip_address: "10.0.0.50",
@@ -78,7 +163,7 @@ export async function getUserSessions(): Promise<SessionResult> {
       },
       {
         id: "old-session",
-        user_id: user.id,
+        user_id: session.user.id,
         session_token: "old-token",
         device_info: "Firefox on Ubuntu",
         ip_address: "203.0.113.45",
@@ -96,96 +181,61 @@ export async function getUserSessions(): Promise<SessionResult> {
       sessions: mockSessions,
     }
   } catch (error) {
-    console.error("Error fetching sessions:", error)
-    return {
-      success: false,
-      error: "Failed to fetch sessions",
-    }
+    console.error("Error in getUserSessions:", error)
+    return { success: false, error: "Failed to fetch sessions" }
   }
 }
 
-export async function revokeSession(sessionId: string): Promise<RevokeResult> {
+// Revoke a specific session
+export async function revokeSession(sessionId: string) {
   try {
-    const supabase = createServerComponentClient({ cookies })
+    const supabase = createServerSupabaseClient()
 
-    // Get current user
+    // Get the current user
     const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser()
+      data: { session },
+    } = await supabase.auth.getSession()
 
-    if (userError || !user) {
-      return {
-        success: false,
-        error: "User not authenticated",
-      }
+    if (!session) {
+      return { success: false, error: "Not authenticated" }
     }
 
-    // Mock revocation - replace with actual database update
-    console.log(`Revoking session ${sessionId} for user ${user.id}`)
-
-    // In a real implementation, you would:
-    // 1. Update the session status to 'revoked' in the database
-    // 2. Invalidate the session token
-    // 3. Optionally notify the user via email
+    // Mock revocation for now - in production this would update the database
+    console.log(`Revoking session ${sessionId} for user ${session.user.id}`)
 
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
-    // Revalidate the sessions page
-    revalidatePath("/profile/security/sessions")
-
-    return {
-      success: true,
-    }
+    return { success: true }
   } catch (error) {
-    console.error("Error revoking session:", error)
-    return {
-      success: false,
-      error: "Failed to revoke session",
-    }
+    console.error("Error in revokeSession:", error)
+    return { success: false, error: "Failed to revoke session" }
   }
 }
 
-export async function revokeAllOtherSessions(): Promise<RevokeResult> {
+// Revoke all other sessions (keep current)
+export async function revokeAllOtherSessions() {
   try {
-    const supabase = createServerComponentClient({ cookies })
+    const supabase = createServerSupabaseClient()
 
-    // Get current user
+    // Get the current user
     const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser()
+      data: { session },
+    } = await supabase.auth.getSession()
 
-    if (userError || !user) {
-      return {
-        success: false,
-        error: "User not authenticated",
-      }
+    if (!session) {
+      return { success: false, error: "Not authenticated" }
     }
 
-    // Mock revocation of all other sessions
-    console.log(`Revoking all other sessions for user ${user.id}`)
-
-    // In a real implementation, you would:
-    // 1. Update all non-current sessions to 'revoked' status
-    // 2. Invalidate all other session tokens
-    // 3. Keep only the current session active
+    // Mock revocation for now - in production this would update the database
+    console.log(`Revoking all other sessions for user ${session.user.id}`)
 
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 1500))
 
-    // Revalidate the sessions page
-    revalidatePath("/profile/security/sessions")
-
-    return {
-      success: true,
-    }
+    return { success: true, revokedCount: 2 }
   } catch (error) {
-    console.error("Error revoking all sessions:", error)
-    return {
-      success: false,
-      error: "Failed to revoke all sessions",
-    }
+    console.error("Error in revokeAllOtherSessions:", error)
+    return { success: false, error: "Failed to revoke sessions" }
   }
 }
