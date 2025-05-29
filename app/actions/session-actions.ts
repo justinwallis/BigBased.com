@@ -152,7 +152,7 @@ export async function getUserSessions() {
 
     return {
       success: true,
-      sessions: sessionsWithCurrent,
+      data: sessionsWithCurrent,
     }
   } catch (error) {
     console.error("Error in getUserSessions:", error)
