@@ -14,7 +14,7 @@ Any changes you make to your deployed app will be automatically pushed to this r
 
 Your project is live at:
 
-**[https://vercel.com/justinwallis-projects/bigbased.com](https://vercel.com/justinwallis-projects/bigbased.com)**
+**[https://BigBased.com](https://BigBased.com)**
 
 ## Build your app
 
