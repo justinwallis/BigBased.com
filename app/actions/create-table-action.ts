@@ -113,3 +113,8 @@ export async function checkTableExists() {
     return { success: false, error: String(error) }
   }
 }
+
+// Add the missing export
+export async function createTableAction() {
+  return await createUserSessionsTable()
+}

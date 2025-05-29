@@ -1,297 +1,228 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import {
   Monitor,
   Smartphone,
   Tablet,
-  Globe,
   MapPin,
   Clock,
   Shield,
-  LogOut,
+  Trash2,
   RefreshCw,
-  AlertTriangle,
-  ArrowLeft,
+  Bug,
   Database,
-  Code,
-  Plus,
+  TestTube,
 } from "lucide-react"
 import { getUserSessions, revokeSession, revokeAllOtherSessions } from "@/app/actions/session-actions"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useAuth } from "@/contexts/auth-context"
-import { debugSessionTracking } from "@/app/actions/debug-session-actions"
-import { createUserSessionsTable, checkTableExists } from "@/app/actions/create-table-action"
-import { comprehensiveDebug, testTableAccess } from "@/app/actions/comprehensive-debug-action"
+import { createTableAction } from "@/app/actions/create-table-action"
+import { comprehensiveDebugAction, testTableAccess } from "@/app/actions/comprehensive-debug-action"
+import { testSessionAccess } from "@/app/actions/simple-session-test"
 
-interface SessionData {
+interface UserSession {
   id: string
   user_id: string
   session_token: string
-  ip_address: string
-  user_agent: string
+  ip_address?: string
+  user_agent?: string
   location?: string
-  device_type: string
-  browser: string
-  os: string
-  is_current: boolean
+  device_type?: string
+  browser?: string
+  os?: string
   created_at: string
   last_activity: string
   expires_at?: string
-}
-
-// Helper function to get device icon
-function getDeviceIcon(deviceType: string) {
-  switch (deviceType?.toLowerCase()) {
-    case "mobile":
-      return <Smartphone className="h-4 w-4" />
-    case "tablet":
-      return <Tablet className="h-4 w-4" />
-    default:
-      return <Monitor className="h-4 w-4" />
-  }
-}
-
-// Helper function to format time ago
-function formatTimeAgo(timestamp: string) {
-  const now = new Date()
-  const time = new Date(timestamp)
-  const diffInMinutes = Math.floor((now.getTime() - time.getTime()) / (1000 * 60))
-
-  if (diffInMinutes < 1) return "Just now"
-  if (diffInMinutes < 60) return `${diffInMinutes}m ago`
-
-  const diffInHours = Math.floor(diffInMinutes / 60)
-  if (diffInHours < 24) return `${diffInHours}h ago`
-
-  const diffInDays = Math.floor(diffInHours / 24)
-  if (diffInDays < 7) return `${diffInDays}d ago`
-
-  // Simple date formatting without external library
-  const options: Intl.DateTimeFormatOptions = {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }
-  return time.toLocaleDateString("en-US", options)
+  is_current?: boolean
 }
 
 export default function SessionsClientPage() {
-  const router = useRouter()
-  const { user, session, isLoading: authLoading } = useAuth()
-
-  const [sessions, setSessions] = useState<SessionData[]>([])
+  const [sessions, setSessions] = useState<UserSession[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [tableExists, setTableExists] = useState<boolean | null>(null)
-  const [revoking, setRevoking] = useState<string | null>(null)
-  const [revokingAll, setRevokingAll] = useState(false)
-  const [showRevokeDialog, setShowRevokeDialog] = useState<string | null>(null)
-  const [showRevokeAllDialog, setShowRevokeAllDialog] = useState(false)
-  const [activeTab, setActiveTab] = useState<string>("sessions")
-  const [debugResult, setDebugResult] = useState<any>(null)
-  const [debugging, setDebugging] = useState(false)
-  const [creatingTable, setCreatingTable] = useState(false)
-  const [checkingTable, setCheckingTable] = useState(false)
-  const [comprehensiveDebugResult, setComprehensiveDebugResult] = useState<any>(null)
-  const [testingAccess, setTestingAccess] = useState(false)
+  const [debugInfo, setDebugInfo] = useState<any>(null)
 
-  // Fetch sessions
-  const fetchSessions = async () => {
+  const loadSessions = async () => {
     setLoading(true)
     setError(null)
 
     try {
       const result = await getUserSessions()
 
-      if (result.success) {
-        setSessions(result.data || [])
+      if (result.success && result.data) {
+        setSessions(result.data)
         setTableExists(true)
       } else {
-        // Check for specific error messages
-        if (
-          result.error?.includes("table doesn't exist") ||
-          result.error?.includes("user_sessions") ||
-          result.error?.includes("relation") ||
-          result.error?.includes("42P01")
-        ) {
-          setTableExists(false)
-          setError("The sessions table doesn't exist yet. Please create it first.")
-        } else if (result.error?.includes("Not authenticated")) {
-          setError("You need to be logged in to view sessions.")
-        } else {
-          setError(result.error || "Failed to fetch sessions")
-        }
+        setError(result.error || "Failed to load sessions")
+        setTableExists(result.tableExists ?? false)
       }
-    } catch (error) {
-      console.error("Error fetching sessions:", error)
+    } catch (err) {
       setError("An unexpected error occurred")
+      console.error("Error loading sessions:", err)
     } finally {
       setLoading(false)
     }
   }
 
-  // Only fetch sessions when user is authenticated and not loading
   useEffect(() => {
-    if (!authLoading && user && session) {
-      fetchSessions()
-    } else if (!authLoading && !user) {
-      setLoading(false)
-    }
-  }, [authLoading, user, session])
+    loadSessions()
+  }, [])
 
-  // Handle session revocation
   const handleRevokeSession = async (sessionId: string) => {
-    setRevoking(sessionId)
-
     try {
       const result = await revokeSession(sessionId)
-
       if (result.success) {
-        // Remove the session from the list
-        setSessions((prev) => prev.filter((session) => session.id !== sessionId))
-        setShowRevokeDialog(null)
+        await loadSessions() // Reload sessions
       } else {
         setError(result.error || "Failed to revoke session")
       }
-    } catch (error) {
-      console.error("Error revoking session:", error)
+    } catch (err) {
       setError("An unexpected error occurred")
-    } finally {
-      setRevoking(null)
+      console.error("Error revoking session:", err)
     }
   }
 
-  // Handle revoking all other sessions
-  const handleRevokeAllOtherSessions = async () => {
-    setRevokingAll(true)
-
+  const handleRevokeAllOther = async () => {
     try {
       const result = await revokeAllOtherSessions()
-
       if (result.success) {
-        // Keep only the current session
-        setSessions((prev) => prev.filter((session) => session.is_current))
-        setShowRevokeAllDialog(false)
+        await loadSessions() // Reload sessions
       } else {
         setError(result.error || "Failed to revoke sessions")
       }
-    } catch (error) {
-      console.error("Error revoking all sessions:", error)
+    } catch (err) {
       setError("An unexpected error occurred")
-    } finally {
-      setRevokingAll(false)
-    }
-  }
-
-  const handleDebugSession = async () => {
-    setDebugging(true)
-    try {
-      const result = await debugSessionTracking()
-      setDebugResult(result)
-      console.log("Debug result:", result)
-    } catch (error) {
-      console.error("Debug error:", error)
-      setDebugResult({ success: false, error: String(error) })
-    } finally {
-      setDebugging(false)
-    }
-  }
-
-  const handleComprehensiveDebug = async () => {
-    setDebugging(true)
-    try {
-      const result = await comprehensiveDebug()
-      setComprehensiveDebugResult(result)
-      console.log("Comprehensive debug result:", result)
-    } catch (error) {
-      console.error("Comprehensive debug error:", error)
-      setComprehensiveDebugResult({ success: false, error: String(error) })
-    } finally {
-      setDebugging(false)
-    }
-  }
-
-  const handleTestAccess = async () => {
-    setTestingAccess(true)
-    try {
-      const result = await testTableAccess()
-      setDebugResult(result)
-      console.log("Test access result:", result)
-    } catch (error) {
-      console.error("Test access error:", error)
-      setDebugResult({ success: false, error: String(error) })
-    } finally {
-      setTestingAccess(false)
+      console.error("Error revoking all sessions:", err)
     }
   }
 
   const handleCreateTable = async () => {
-    setCreatingTable(true)
     try {
-      const result = await createUserSessionsTable()
-      console.log("Create table result:", result)
-
+      setLoading(true)
+      const result = await createTableAction()
       if (result.success) {
         setTableExists(true)
-        setError(null)
-        // Refresh sessions after creating table
-        await fetchSessions()
+        await loadSessions()
       } else {
         setError(result.error || "Failed to create table")
       }
-    } catch (error) {
-      console.error("Create table error:", error)
-      setError(String(error))
+    } catch (err) {
+      setError("An unexpected error occurred")
+      console.error("Error creating table:", err)
     } finally {
-      setCreatingTable(false)
+      setLoading(false)
     }
   }
 
-  const handleCheckTable = async () => {
-    setCheckingTable(true)
+  const handleDebug = async () => {
     try {
-      const result = await checkTableExists()
-      console.log("Check table result:", result)
-
-      if (result.success) {
-        setTableExists(result.exists)
-        if (result.exists) {
-          setError(null)
-          await fetchSessions()
-        } else {
-          setError("Table does not exist")
-        }
-      } else {
-        setError(result.error || "Failed to check table")
-      }
-    } catch (error) {
-      console.error("Check table error:", error)
-      setError(String(error))
-    } finally {
-      setCheckingTable(false)
+      const result = await comprehensiveDebugAction()
+      setDebugInfo(result)
+      console.log("Debug result:", result)
+    } catch (err) {
+      console.error("Debug error:", err)
     }
   }
 
-  const currentSession = sessions.find((session) => session.is_current)
-  const otherSessions = sessions.filter((session) => !session.is_current)
+  const handleTestAccess = async () => {
+    try {
+      const result = await testTableAccess()
+      setDebugInfo(result)
+      console.log("Test access result:", result)
+    } catch (err) {
+      console.error("Test access error:", err)
+    }
+  }
 
-  const createTableSQL = `-- Create user_sessions table for tracking active sessions
+  const handleSimpleTest = async () => {
+    try {
+      const result = await testSessionAccess()
+      setDebugInfo(result)
+      console.log("Simple test result:", result)
+
+      // If the test was successful, try to reload sessions
+      if (result.success) {
+        await loadSessions()
+      }
+    } catch (err) {
+      console.error("Simple test error:", err)
+    }
+  }
+
+  const getDeviceIcon = (deviceType?: string) => {
+    switch (deviceType?.toLowerCase()) {
+      case "mobile":
+        return <Smartphone className="h-4 w-4" />
+      case "tablet":
+        return <Tablet className="h-4 w-4" />
+      default:
+        return <Monitor className="h-4 w-4" />
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString()
+  }
+
+  if (tableExists === false) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Active Sessions</h1>
+          <p className="text-muted-foreground">Manage your active sessions across different devices</p>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="h-5 w-5" />
+              Setup Required
+            </CardTitle>
+            <CardDescription>
+              The sessions table needs to be created before you can manage your sessions.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2 flex-wrap">
+              <Button onClick={handleCreateTable} disabled={loading}>
+                <Database className="h-4 w-4 mr-2" />
+                Create Table Automatically
+              </Button>
+              <Button variant="outline" onClick={handleDebug}>
+                <Bug className="h-4 w-4 mr-2" />
+                Full Debug
+              </Button>
+              <Button variant="outline" onClick={handleTestAccess}>
+                <TestTube className="h-4 w-4 mr-2" />
+                Test Access
+              </Button>
+              <Button variant="outline" onClick={handleSimpleTest}>
+                <TestTube className="h-4 w-4 mr-2" />
+                Simple Test
+              </Button>
+            </div>
+
+            {debugInfo && (
+              <div className="mt-4">
+                <h3 className="font-semibold mb-2">Debug Information:</h3>
+                <pre className="bg-muted p-4 rounded-lg text-sm overflow-auto max-h-96">
+                  {JSON.stringify(debugInfo, null, 2)}
+                </pre>
+              </div>
+            )}
+
+            <div className="bg-muted p-4 rounded-lg">
+              <h3 className="font-semibold mb-2">Manual Setup (SQL):</h3>
+              <p className="text-sm text-muted-foreground mb-2">
+                If automatic creation fails, you can run this SQL in your Supabase dashboard:
+              </p>
+              <pre className="text-xs bg-background p-2 rounded border overflow-auto">
+                {`-- Create user_sessions table
 CREATE TABLE IF NOT EXISTS public.user_sessions (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   session_token TEXT NOT NULL,
   ip_address TEXT,
@@ -302,24 +233,13 @@ CREATE TABLE IF NOT EXISTS public.user_sessions (
   os TEXT DEFAULT 'unknown',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   last_activity TIMESTAMPTZ DEFAULT NOW(),
-  expires_at TIMESTAMPTZ,
-  UNIQUE(session_token)
+  expires_at TIMESTAMPTZ
 );
-
--- Create indexes for faster queries
-CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON public.user_sessions(user_id);
-CREATE INDEX IF NOT EXISTS idx_user_sessions_session_token ON public.user_sessions(session_token);
-CREATE INDEX IF NOT EXISTS idx_user_sessions_last_activity ON public.user_sessions(last_activity);
 
 -- Enable RLS
 ALTER TABLE public.user_sessions ENABLE ROW LEVEL SECURITY;
 
--- Create RLS policies
-DROP POLICY IF EXISTS "Users can view their own sessions" ON public.user_sessions;
-DROP POLICY IF EXISTS "Users can insert their own sessions" ON public.user_sessions;
-DROP POLICY IF EXISTS "Users can update their own sessions" ON public.user_sessions;
-DROP POLICY IF EXISTS "Users can delete their own sessions" ON public.user_sessions;
-
+-- Create policies
 CREATE POLICY "Users can view their own sessions" ON public.user_sessions
   FOR SELECT USING (auth.uid() = user_id);
 
@@ -330,520 +250,141 @@ CREATE POLICY "Users can update their own sessions" ON public.user_sessions
   FOR UPDATE USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can delete their own sessions" ON public.user_sessions
-  FOR DELETE USING (auth.uid() = user_id);`
+  FOR DELETE USING (auth.uid() = user_id);
 
-  // Show loading while auth is loading
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="container max-w-4xl mx-auto py-8 px-4">
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center space-x-2 mb-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => router.push("/profile?tab=security")}
-                    className="p-0 h-auto"
-                  >
-                    <ArrowLeft className="h-4 w-4 mr-1" />
-                    Back to Security
-                  </Button>
-                </div>
-                <h1 className="text-2xl font-bold">Active Sessions</h1>
-                <p className="text-muted-foreground">
-                  Manage your active login sessions and revoke access from devices you don't recognize
-                </p>
-              </div>
+-- Create indexes
+CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON public.user_sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_session_token ON public.user_sessions(session_token);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_last_activity ON public.user_sessions(last_activity);`}
+              </pre>
             </div>
-
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center py-8">
-                  <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
-                  <p className="text-muted-foreground">Loading authentication...</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // Show authentication error if not logged in
-  if (!user || !session) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="container max-w-4xl mx-auto py-8 px-4">
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center space-x-2 mb-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => router.push("/profile?tab=security")}
-                    className="p-0 h-auto"
-                  >
-                    <ArrowLeft className="h-4 w-4 mr-1" />
-                    Back to Security
-                  </Button>
-                </div>
-                <h1 className="text-2xl font-bold">Active Sessions</h1>
-                <p className="text-muted-foreground">
-                  Manage your active login sessions and revoke access from devices you don't recognize
-                </p>
-              </div>
-            </div>
-
-            <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <AlertTriangle className="h-5 w-5 text-amber-500" />
-                  <span>Authentication Required</span>
-                </CardTitle>
-                <CardDescription>You need to be logged in to view your sessions.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-amber-800 dark:text-amber-300">
-                  Please sign in to your account to view and manage your active sessions.
-                </p>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button variant="outline" onClick={() => router.push("/profile?tab=security")}>
-                  Go Back
-                </Button>
-                <Button onClick={() => router.push("/auth/sign-in")}>Sign In</Button>
-              </CardFooter>
-            </Card>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container max-w-4xl mx-auto py-8 px-4">
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center space-x-2 mb-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => router.push("/profile?tab=security")}
-                  className="p-0 h-auto"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-1" />
-                  Back to Security
-                </Button>
-              </div>
-              <h1 className="text-2xl font-bold">Active Sessions</h1>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Active Sessions</h1>
+          <p className="text-muted-foreground">Manage your active sessions across different devices</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleSimpleTest}>
+            <TestTube className="h-4 w-4 mr-2" />
+            Test
+          </Button>
+          <Button variant="outline" onClick={loadSessions} disabled={loading}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
+      </div>
+
+      {error && (
+        <Card className="border-destructive">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-destructive">
+              <Shield className="h-4 w-4" />
+              <span className="font-medium">Error:</span>
+              <span>{error}</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {debugInfo && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Debug Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <pre className="bg-muted p-4 rounded-lg text-sm overflow-auto max-h-96">
+              {JSON.stringify(debugInfo, null, 2)}
+            </pre>
+          </CardContent>
+        </Card>
+      )}
+
+      {loading ? (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-center py-8">
+              <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+              <span>Loading sessions...</span>
+            </div>
+          </CardContent>
+        </Card>
+      ) : sessions.length === 0 ? (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center py-8">
+              <Monitor className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No Active Sessions</h3>
               <p className="text-muted-foreground">
-                Manage your active login sessions and revoke access from devices you don't recognize
+                You don't have any tracked sessions yet. Sessions will appear here when you sign in.
               </p>
             </div>
-            <div className="flex space-x-2">
-              <Button variant="outline" onClick={handleTestAccess} disabled={testingAccess}>
-                <Code className={`h-4 w-4 mr-2 ${testingAccess ? "animate-spin" : ""}`} />
-                Test Access
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              {sessions.length} active session{sessions.length !== 1 ? "s" : ""}
+            </p>
+            {sessions.length > 1 && (
+              <Button variant="outline" size="sm" onClick={handleRevokeAllOther}>
+                <Trash2 className="h-4 w-4 mr-2" />
+                Revoke All Other Sessions
               </Button>
-              <Button variant="outline" onClick={handleComprehensiveDebug} disabled={debugging}>
-                <Database className={`h-4 w-4 mr-2 ${debugging ? "animate-spin" : ""}`} />
-                Full Debug
-              </Button>
-              <Button variant="outline" onClick={handleCheckTable} disabled={checkingTable}>
-                <Database className={`h-4 w-4 mr-2 ${checkingTable ? "animate-spin" : ""}`} />
-                Check Table
-              </Button>
-              <Button variant="outline" onClick={fetchSessions} disabled={loading}>
-                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-                Refresh
-              </Button>
-            </div>
+            )}
           </div>
 
-          {/* Table Doesn't Exist Error */}
-          {tableExists === false && (
-            <Tabs defaultValue="info" className="w-full" value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="info">Information</TabsTrigger>
-                <TabsTrigger value="sql">SQL Setup</TabsTrigger>
-              </TabsList>
-              <TabsContent value="info" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <Database className="h-5 w-5 text-amber-500" />
-                      <span>Database Setup Required</span>
-                    </CardTitle>
-                    <CardDescription>
-                      The sessions table doesn't exist in your database. You need to create it first.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <p>
-                        To use the sessions feature, you need to create the{" "}
-                        <code className="bg-muted px-1 py-0.5 rounded">user_sessions</code> table in your Supabase
-                        database. This table will store information about active login sessions.
-                      </p>
-                      <div className="bg-amber-50 dark:bg-amber-950 p-4 rounded-md border border-amber-200 dark:border-amber-800">
-                        <div className="flex items-start space-x-2">
-                          <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
-                          <div className="text-amber-800 dark:text-amber-300 text-sm">
-                            <p className="font-medium">You can create the table automatically or manually</p>
-                            <p className="mt-1">
-                              Click "Create Table Automatically" below, or go to the SQL tab to copy the script and run
-                              it manually in your Supabase SQL editor.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex justify-between">
-                    <Button variant="outline" onClick={() => router.push("/profile?tab=security")}>
-                      Go Back
-                    </Button>
-                    <div className="flex space-x-2">
-                      <Button onClick={() => setActiveTab("sql")} variant="outline">
-                        View SQL Script
-                      </Button>
-                      <Button onClick={handleCreateTable} disabled={creatingTable}>
-                        <Plus className={`h-4 w-4 mr-2 ${creatingTable ? "animate-spin" : ""}`} />
-                        {creatingTable ? "Creating..." : "Create Table Automatically"}
-                      </Button>
-                    </div>
-                  </CardFooter>
-                </Card>
-              </TabsContent>
-              <TabsContent value="sql">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <Code className="h-5 w-5 text-blue-500" />
-                      <span>SQL Setup Script</span>
-                    </CardTitle>
-                    <CardDescription>
-                      Run this SQL script in your Supabase SQL editor to create the sessions table
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="relative">
-                      <pre className="bg-slate-950 text-slate-50 p-4 rounded-md overflow-x-auto text-xs sm:text-sm max-h-96 overflow-y-auto">
-                        <code>{createTableSQL}</code>
-                      </pre>
-                      <Button
-                        className="absolute top-2 right-2"
-                        size="sm"
-                        onClick={() => {
-                          navigator.clipboard.writeText(createTableSQL)
-                        }}
-                      >
-                        Copy
-                      </Button>
-                    </div>
-                    <div className="mt-4 space-y-4">
-                      <h3 className="text-lg font-medium">How to run this script:</h3>
-                      <ol className="list-decimal pl-5 space-y-2 text-sm">
-                        <li>Go to your Supabase dashboard</li>
-                        <li>Click on "SQL Editor" in the left sidebar</li>
-                        <li>Create a "New Query"</li>
-                        <li>Paste the SQL script above</li>
-                        <li>Click "Run" to execute the script</li>
-                        <li>Come back here and click "Refresh" below</li>
-                      </ol>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex justify-between">
-                    <Button variant="outline" onClick={() => setActiveTab("info")}>
-                      Back to Info
-                    </Button>
-                    <div className="flex space-x-2">
-                      <Button onClick={fetchSessions}>
-                        <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-                        Refresh
-                      </Button>
-                      <Button onClick={handleCreateTable} disabled={creatingTable}>
-                        <Plus className={`h-4 w-4 mr-2 ${creatingTable ? "animate-spin" : ""}`} />
-                        {creatingTable ? "Creating..." : "Create Table Automatically"}
-                      </Button>
-                    </div>
-                  </CardFooter>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          )}
-
-          {/* Error Message */}
-          {tableExists === true && error && (
-            <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
-              <CardContent className="pt-6">
-                <div className="flex items-center space-x-2 text-red-800 dark:text-red-200">
-                  <AlertTriangle className="h-4 w-4" />
-                  <span>{error}</span>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Debug Results */}
-          {debugResult && (
-            <Card className="border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950">
-              <CardHeader>
-                <CardTitle className="text-purple-800 dark:text-purple-200">Debug Results</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <pre className="text-xs overflow-x-auto bg-slate-100 dark:bg-slate-800 p-2 rounded">
-                  {JSON.stringify(debugResult, null, 2)}
-                </pre>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Comprehensive Debug Results */}
-          {comprehensiveDebugResult && (
-            <Card className="border-indigo-200 bg-indigo-50 dark:border-indigo-800 dark:bg-indigo-950">
-              <CardHeader>
-                <CardTitle className="text-indigo-800 dark:text-indigo-200">Comprehensive Debug Results</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <pre className="text-xs overflow-x-auto bg-slate-100 dark:bg-slate-800 p-2 rounded max-h-96 overflow-y-auto">
-                  {JSON.stringify(comprehensiveDebugResult, null, 2)}
-                </pre>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Loading State */}
-          {tableExists === true && loading && (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center py-8">
-                  <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
-                  <p className="text-muted-foreground">Loading sessions...</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Sessions Content */}
-          {tableExists === true && !loading && (
-            <>
-              {/* Current Session */}
-              {currentSession && (
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="flex items-center space-x-2">
-                          <Shield className="h-5 w-5 text-green-500" />
-                          <span>Current Session</span>
-                        </CardTitle>
-                        <CardDescription>This is your current active session</CardDescription>
-                      </div>
-                      <Badge variant="success">Active</Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-3">
-                        <div className="flex items-center space-x-2">
-                          {getDeviceIcon(currentSession.device_type)}
+          <div className="grid gap-4">
+            {sessions.map((session) => (
+              <Card key={session.id} className={session.is_current ? "ring-2 ring-primary" : ""}>
+                <CardContent className="pt-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3">
+                      {getDeviceIcon(session.device_type)}
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
                           <span className="font-medium">
-                            {currentSession.browser} on {currentSession.os}
+                            {session.browser} on {session.os}
                           </span>
+                          {session.is_current && <Badge variant="secondary">Current Session</Badge>}
                         </div>
-                        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                          <Globe className="h-4 w-4" />
-                          <span>{currentSession.ip_address}</span>
-                          {currentSession.location && (
-                            <>
-                              <MapPin className="h-4 w-4 ml-2" />
-                              <span>{currentSession.location}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                      <div className="space-y-3">
-                        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                          <Clock className="h-4 w-4" />
-                          <span>Started {formatTimeAgo(currentSession.created_at)}</span>
-                        </div>
-                        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                          <Clock className="h-4 w-4" />
-                          <span>Last activity {formatTimeAgo(currentSession.last_activity)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Other Sessions */}
-              {otherSessions.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle>Other Sessions</CardTitle>
-                        <CardDescription>
-                          {otherSessions.length} other active session{otherSessions.length !== 1 ? "s" : ""}
-                        </CardDescription>
-                      </div>
-                      <Button variant="outline" disabled={revokingAll} onClick={() => setShowRevokeAllDialog(true)}>
-                        <LogOut className="h-4 w-4 mr-2" />
-                        {revokingAll ? "Revoking..." : "Revoke All"}
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {otherSessions.map((session, index) => (
-                        <div key={session.id}>
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center space-x-2 mb-2">
-                                {getDeviceIcon(session.device_type)}
-                                <span className="font-medium">
-                                  {session.browser} on {session.os}
-                                </span>
-                              </div>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground">
-                                <div className="flex items-center space-x-2">
-                                  <Globe className="h-4 w-4" />
-                                  <span>{session.ip_address}</span>
-                                  {session.location && (
-                                    <>
-                                      <MapPin className="h-4 w-4 ml-2" />
-                                      <span>{session.location}</span>
-                                    </>
-                                  )}
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <Clock className="h-4 w-4" />
-                                  <span>Last activity {formatTimeAgo(session.last_activity)}</span>
-                                </div>
-                              </div>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          {session.ip_address && (
+                            <div className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              <span>{session.ip_address}</span>
                             </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              disabled={revoking === session.id}
-                              onClick={() => setShowRevokeDialog(session.id)}
-                            >
-                              <LogOut className="h-4 w-4 mr-2" />
-                              {revoking === session.id ? "Revoking..." : "Revoke"}
-                            </Button>
+                          )}
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            <span>Last active: {formatDate(session.last_activity)}</span>
                           </div>
-                          {index < otherSessions.length - 1 && <Separator className="mt-4" />}
                         </div>
-                      ))}
+                        <div className="text-xs text-muted-foreground">Created: {formatDate(session.created_at)}</div>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* No Other Sessions */}
-              {otherSessions.length === 0 && currentSession && (
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="text-center py-8">
-                      <Shield className="h-12 w-12 mx-auto mb-4 text-green-500" />
-                      <h3 className="text-lg font-medium mb-2">No Other Active Sessions</h3>
-                      <p className="text-muted-foreground">
-                        You're only signed in on this device. This is good for security!
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* No Sessions at All */}
-              {sessions.length === 0 && !loading && (
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="text-center py-8">
-                      <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-yellow-500" />
-                      <h3 className="text-lg font-medium mb-2">No Active Sessions Found</h3>
-                      <p className="text-muted-foreground">
-                        We couldn't find any active sessions. This might indicate a technical issue.
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </>
-          )}
-
-          {/* Security Tips */}
-          {tableExists === true && (
-            <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
-              <CardHeader>
-                <CardTitle className="text-blue-800 dark:text-blue-200 flex items-center space-x-2">
-                  <Shield className="h-5 w-5" />
-                  <span>Security Tips</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-blue-700 dark:text-blue-300">
-                <ul className="space-y-2 text-sm">
-                  <li>• Regularly review your active sessions and revoke any you don't recognize</li>
-                  <li>• If you see suspicious activity, revoke all sessions and change your password immediately</li>
-                  <li>• Always sign out from public or shared computers</li>
-                  <li>• Enable two-factor authentication for additional security</li>
-                </ul>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Revoke Single Session Dialog */}
-        <Dialog open={!!showRevokeDialog} onOpenChange={() => setShowRevokeDialog(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Revoke Session?</DialogTitle>
-              <DialogDescription>
-                This will sign out this device and end the session. The user will need to sign in again to access their
-                account from this device.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowRevokeDialog(null)}>
-                Cancel
-              </Button>
-              <Button onClick={() => showRevokeDialog && handleRevokeSession(showRevokeDialog)} disabled={!!revoking}>
-                Revoke Session
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Revoke All Sessions Dialog */}
-        <Dialog open={showRevokeAllDialog} onOpenChange={setShowRevokeAllDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Revoke All Other Sessions?</DialogTitle>
-              <DialogDescription>
-                This will sign out all other devices and sessions. You will remain signed in on this device. This action
-                cannot be undone.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowRevokeAllDialog(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleRevokeAllOtherSessions} disabled={revokingAll}>
-                Revoke All Sessions
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+                    {!session.is_current && (
+                      <Button variant="outline" size="sm" onClick={() => handleRevokeSession(session.id)}>
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Revoke
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }

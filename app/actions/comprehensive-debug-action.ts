@@ -314,3 +314,8 @@ export async function testTableAccess() {
     return { success: false, error: String(error) }
   }
 }
+
+// Add the missing export
+export async function comprehensiveDebugAction() {
+  return await comprehensiveDebug()
+}
