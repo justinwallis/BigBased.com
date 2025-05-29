@@ -28,11 +28,13 @@ import {
   ArrowLeft,
   Database,
   Code,
+  Plus,
 } from "lucide-react"
 import { getUserSessions, revokeSession, revokeAllOtherSessions } from "@/app/actions/session-actions"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/contexts/auth-context"
 import { debugSessionTracking } from "@/app/actions/debug-session-actions"
+import { createUserSessionsTable, checkTableExists } from "@/app/actions/create-table-action"
 
 interface SessionData {
   id: string
@@ -101,6 +103,8 @@ export default function SessionsClientPage() {
   const [activeTab, setActiveTab] = useState<string>("sessions")
   const [debugResult, setDebugResult] = useState<any>(null)
   const [debugging, setDebugging] = useState(false)
+  const [creatingTable, setCreatingTable] = useState(false)
+  const [checkingTable, setCheckingTable] = useState(false)
 
   // Fetch sessions
   const fetchSessions = async () => {
@@ -204,11 +208,58 @@ export default function SessionsClientPage() {
     }
   }
 
+  const handleCreateTable = async () => {
+    setCreatingTable(true)
+    try {
+      const result = await createUserSessionsTable()
+      console.log("Create table result:", result)
+
+      if (result.success) {
+        setTableExists(true)
+        setError(null)
+        // Refresh sessions after creating table
+        await fetchSessions()
+      } else {
+        setError(result.error || "Failed to create table")
+      }
+    } catch (error) {
+      console.error("Create table error:", error)
+      setError(String(error))
+    } finally {
+      setCreatingTable(false)
+    }
+  }
+
+  const handleCheckTable = async () => {
+    setCheckingTable(true)
+    try {
+      const result = await checkTableExists()
+      console.log("Check table result:", result)
+
+      if (result.success) {
+        setTableExists(result.exists)
+        if (result.exists) {
+          setError(null)
+          await fetchSessions()
+        } else {
+          setError("Table does not exist")
+        }
+      } else {
+        setError(result.error || "Failed to check table")
+      }
+    } catch (error) {
+      console.error("Check table error:", error)
+      setError(String(error))
+    } finally {
+      setCheckingTable(false)
+    }
+  }
+
   const currentSession = sessions.find((session) => session.is_current)
   const otherSessions = sessions.filter((session) => !session.is_current)
 
   const createTableSQL = `-- Create user_sessions table for tracking active sessions
-CREATE TABLE IF NOT EXISTS user_sessions (
+CREATE TABLE IF NOT EXISTS public.user_sessions (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   session_token TEXT NOT NULL,
@@ -224,30 +275,30 @@ CREATE TABLE IF NOT EXISTS user_sessions (
   UNIQUE(session_token)
 );
 
--- Create index for faster queries
-CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id);
-CREATE INDEX IF NOT EXISTS idx_user_sessions_session_token ON user_sessions(session_token);
-CREATE INDEX IF NOT EXISTS idx_user_sessions_last_activity ON user_sessions(last_activity);
+-- Create indexes for faster queries
+CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON public.user_sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_session_token ON public.user_sessions(session_token);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_last_activity ON public.user_sessions(last_activity);
 
 -- Enable RLS
-ALTER TABLE user_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_sessions ENABLE ROW LEVEL SECURITY;
 
 -- Create RLS policies
-DROP POLICY IF EXISTS "Users can view their own sessions" ON user_sessions;
-DROP POLICY IF EXISTS "Users can insert their own sessions" ON user_sessions;
-DROP POLICY IF EXISTS "Users can update their own sessions" ON user_sessions;
-DROP POLICY IF EXISTS "Users can delete their own sessions" ON user_sessions;
+DROP POLICY IF EXISTS "Users can view their own sessions" ON public.user_sessions;
+DROP POLICY IF EXISTS "Users can insert their own sessions" ON public.user_sessions;
+DROP POLICY IF EXISTS "Users can update their own sessions" ON public.user_sessions;
+DROP POLICY IF EXISTS "Users can delete their own sessions" ON public.user_sessions;
 
-CREATE POLICY "Users can view their own sessions" ON user_sessions
+CREATE POLICY "Users can view their own sessions" ON public.user_sessions
   FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can insert their own sessions" ON user_sessions
+CREATE POLICY "Users can insert their own sessions" ON public.user_sessions
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can update their own sessions" ON user_sessions
+CREATE POLICY "Users can update their own sessions" ON public.user_sessions
   FOR UPDATE USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can delete their own sessions" ON user_sessions
+CREATE POLICY "Users can delete their own sessions" ON public.user_sessions
   FOR DELETE USING (auth.uid() = user_id);`
 
   // Show loading while auth is loading
@@ -366,6 +417,10 @@ CREATE POLICY "Users can delete their own sessions" ON user_sessions
               </p>
             </div>
             <div className="flex space-x-2">
+              <Button variant="outline" onClick={handleCheckTable} disabled={checkingTable}>
+                <Database className={`h-4 w-4 mr-2 ${checkingTable ? "animate-spin" : ""}`} />
+                Check Table
+              </Button>
               <Button variant="outline" onClick={handleDebugSession} disabled={debugging}>
                 <Code className={`h-4 w-4 mr-2 ${debugging ? "animate-spin" : ""}`} />
                 Debug
@@ -406,9 +461,10 @@ CREATE POLICY "Users can delete their own sessions" ON user_sessions
                         <div className="flex items-start space-x-2">
                           <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
                           <div className="text-amber-800 dark:text-amber-300 text-sm">
-                            <p className="font-medium">You need to run the SQL script to create the table</p>
+                            <p className="font-medium">You can create the table automatically or manually</p>
                             <p className="mt-1">
-                              Go to the SQL tab above and copy the SQL script. Then run it in your Supabase SQL editor.
+                              Click "Create Table Automatically" below, or go to the SQL tab to copy the script and run
+                              it manually in your Supabase SQL editor.
                             </p>
                           </div>
                         </div>
@@ -419,7 +475,15 @@ CREATE POLICY "Users can delete their own sessions" ON user_sessions
                     <Button variant="outline" onClick={() => router.push("/profile?tab=security")}>
                       Go Back
                     </Button>
-                    <Button onClick={() => setActiveTab("sql")}>View SQL Script</Button>
+                    <div className="flex space-x-2">
+                      <Button onClick={() => setActiveTab("sql")} variant="outline">
+                        View SQL Script
+                      </Button>
+                      <Button onClick={handleCreateTable} disabled={creatingTable}>
+                        <Plus className={`h-4 w-4 mr-2 ${creatingTable ? "animate-spin" : ""}`} />
+                        {creatingTable ? "Creating..." : "Create Table Automatically"}
+                      </Button>
+                    </div>
                   </CardFooter>
                 </Card>
               </TabsContent>
@@ -465,10 +529,16 @@ CREATE POLICY "Users can delete their own sessions" ON user_sessions
                     <Button variant="outline" onClick={() => setActiveTab("info")}>
                       Back to Info
                     </Button>
-                    <Button onClick={fetchSessions}>
-                      <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-                      Refresh
-                    </Button>
+                    <div className="flex space-x-2">
+                      <Button onClick={fetchSessions}>
+                        <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+                        Refresh
+                      </Button>
+                      <Button onClick={handleCreateTable} disabled={creatingTable}>
+                        <Plus className={`h-4 w-4 mr-2 ${creatingTable ? "animate-spin" : ""}`} />
+                        {creatingTable ? "Creating..." : "Create Table Automatically"}
+                      </Button>
+                    </div>
                   </CardFooter>
                 </Card>
               </TabsContent>
