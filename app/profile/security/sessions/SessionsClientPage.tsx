@@ -4,13 +4,13 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
   Monitor,
   Smartphone,
   Tablet,
   MapPin,
   Clock,
-  Shield,
   Trash2,
   RefreshCw,
   Bug,
@@ -18,6 +18,12 @@ import {
   Settings,
   Zap,
   TestTube,
+  CheckCircle,
+  AlertTriangle,
+  Globe,
+  Wifi,
+  Activity,
+  LogOut,
 } from "lucide-react"
 import { getUserSessions, revokeSession, revokeAllOtherSessions } from "@/app/actions/session-actions"
 import { debugDatabaseConnection, checkEnvironmentVariables } from "@/app/actions/database-connection-debug"
@@ -51,6 +57,9 @@ export default function SessionsClientPage() {
   const [error, setError] = useState<string | null>(null)
   const [tableExists, setTableExists] = useState<boolean | null>(null)
   const [debugInfo, setDebugInfo] = useState<any>(null)
+  const [showDebug, setShowDebug] = useState(false)
+  const [revoking, setRevoking] = useState<string | null>(null)
+  const [revokingAll, setRevokingAll] = useState(false)
 
   const loadSessions = async () => {
     setLoading(true)
@@ -60,7 +69,17 @@ export default function SessionsClientPage() {
       const result = await getUserSessions()
 
       if (result.success && result.data) {
-        setSessions(result.data)
+        // Filter out expired sessions and clean them up
+        const now = new Date()
+        const validSessions = result.data.filter((session) => {
+          if (session.expires_at) {
+            const expiresAt = new Date(session.expires_at)
+            return expiresAt > now
+          }
+          return true
+        })
+
+        setSessions(validSessions)
         setTableExists(true)
       } else {
         setError(result.error || "Failed to load sessions")
@@ -76,9 +95,14 @@ export default function SessionsClientPage() {
 
   useEffect(() => {
     loadSessions()
+
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(loadSessions, 30000)
+    return () => clearInterval(interval)
   }, [])
 
   const handleRevokeSession = async (sessionId: string) => {
+    setRevoking(sessionId)
     try {
       const result = await revokeSession(sessionId)
       if (result.success) {
@@ -89,10 +113,13 @@ export default function SessionsClientPage() {
     } catch (err) {
       setError("An unexpected error occurred")
       console.error("Error revoking session:", err)
+    } finally {
+      setRevoking(null)
     }
   }
 
   const handleRevokeAllOther = async () => {
+    setRevokingAll(true)
     try {
       const result = await revokeAllOtherSessions()
       if (result.success) {
@@ -103,6 +130,8 @@ export default function SessionsClientPage() {
     } catch (err) {
       setError("An unexpected error occurred")
       console.error("Error revoking all sessions:", err)
+    } finally {
+      setRevokingAll(false)
     }
   }
 
@@ -175,226 +204,360 @@ export default function SessionsClientPage() {
   const getDeviceIcon = (deviceType?: string) => {
     switch (deviceType?.toLowerCase()) {
       case "mobile":
-        return <Smartphone className="h-4 w-4" />
+        return <Smartphone className="h-5 w-5 text-blue-500" />
       case "tablet":
-        return <Tablet className="h-4 w-4" />
+        return <Tablet className="h-5 w-5 text-purple-500" />
       default:
-        return <Monitor className="h-4 w-4" />
+        return <Monitor className="h-5 w-5 text-green-500" />
+    }
+  }
+
+  const getBrowserIcon = (browser?: string) => {
+    switch (browser?.toLowerCase()) {
+      case "chrome":
+        return "🌐"
+      case "firefox":
+        return "🦊"
+      case "safari":
+        return "🧭"
+      case "edge":
+        return "🔷"
+      default:
+        return "🌍"
     }
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString()
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMins / 60)
+    const diffDays = Math.floor(diffHours / 24)
+
+    if (diffMins < 1) return "Just now"
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffHours < 24) return `${diffHours}h ago`
+    if (diffDays < 7) return `${diffDays}d ago`
+    return date.toLocaleDateString()
+  }
+
+  const getSessionStatus = (session: UserSession) => {
+    const lastActivity = new Date(session.last_activity)
+    const now = new Date()
+    const diffMins = Math.floor((now.getTime() - lastActivity.getTime()) / 60000)
+
+    if (session.is_current) return { status: "current", color: "bg-green-500", text: "Current Session" }
+    if (diffMins < 5) return { status: "active", color: "bg-blue-500", text: "Active" }
+    if (diffMins < 60) return { status: "recent", color: "bg-yellow-500", text: "Recent" }
+    return { status: "idle", color: "bg-gray-500", text: "Idle" }
   }
 
   if (tableExists === false) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Active Sessions</h1>
-          <p className="text-muted-foreground">Manage your active sessions across different devices</p>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5" />
-              Database Setup Required
-            </CardTitle>
-            <CardDescription>
-              The sessions table needs to be created in your Neon database (not Supabase).
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-              <h3 className="font-semibold mb-2 text-blue-800 dark:text-blue-200">Database Configuration:</h3>
-              <p className="text-sm text-blue-700 dark:text-blue-300">
-                Your app uses <strong>Neon</strong> for the main database and <strong>Supabase</strong> for
-                authentication. The sessions table needs to be created in Neon, not Supabase.
-              </p>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-6">
+        <div className="max-w-4xl mx-auto space-y-8">
+          <div className="text-center space-y-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/20 mb-4">
+              <Database className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             </div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              Session Management
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Track and manage your active sessions across all devices
+            </p>
+          </div>
 
-            <div className="flex gap-2 flex-wrap">
-              <Button onClick={handleCreateNeonTable} disabled={loading}>
-                <Zap className="h-4 w-4 mr-2" />
-                Create Table in Neon
-              </Button>
-              <Button variant="outline" onClick={handleNeonDebug}>
-                <Database className="h-4 w-4 mr-2" />
-                Debug Neon
-              </Button>
-              <Button variant="outline" onClick={handleTestNeonOperations}>
-                <TestTube className="h-4 w-4 mr-2" />
-                Test Neon Operations
-              </Button>
-              <Button variant="outline" onClick={handleEnvDebug}>
-                <Settings className="h-4 w-4 mr-2" />
-                Check Environment
-              </Button>
-            </div>
+          <Card className="border-2 border-dashed border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20">
+            <CardHeader className="text-center">
+              <CardTitle className="flex items-center justify-center gap-3 text-blue-800 dark:text-blue-200">
+                <Settings className="h-6 w-6" />
+                Database Setup Required
+              </CardTitle>
+              <CardDescription className="text-blue-700 dark:text-blue-300">
+                The sessions table needs to be created in your Neon database to start tracking sessions.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <Alert className="border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/50">
+                <Database className="h-4 w-4" />
+                <AlertDescription className="text-blue-800 dark:text-blue-200">
+                  <strong>Architecture:</strong> Your app uses <strong>Neon</strong> for the main database and{" "}
+                  <strong>Supabase</strong> for authentication. The sessions table will be created in Neon.
+                </AlertDescription>
+              </Alert>
 
-            {debugInfo && (
-              <div className="mt-4">
-                <h3 className="font-semibold mb-2">Debug Information ({debugInfo.type}):</h3>
-                <pre className="bg-muted p-4 rounded-lg text-sm overflow-auto max-h-96">
-                  {JSON.stringify(debugInfo, null, 2)}
-                </pre>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Button onClick={handleCreateNeonTable} disabled={loading} size="lg" className="h-12">
+                  <Zap className="h-5 w-5 mr-2" />
+                  {loading ? "Creating..." : "Create Sessions Table"}
+                </Button>
+                <Button variant="outline" onClick={handleNeonDebug} size="lg" className="h-12">
+                  <Database className="h-5 w-5 mr-2" />
+                  Test Neon Connection
+                </Button>
               </div>
-            )}
 
-            <div className="bg-muted p-4 rounded-lg">
-              <h3 className="font-semibold mb-2">Manual Setup (Neon SQL Editor):</h3>
-              <p className="text-sm text-muted-foreground mb-2">
-                If automatic creation fails, run this in your Neon SQL editor:
-              </p>
-              <pre className="text-xs bg-background p-2 rounded border overflow-auto">
-                {`CREATE TABLE IF NOT EXISTS public.user_sessions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL,
-  session_token TEXT NOT NULL,
-  ip_address TEXT,
-  user_agent TEXT,
-  location TEXT,
-  device_type TEXT DEFAULT 'desktop',
-  browser TEXT DEFAULT 'unknown',
-  os TEXT DEFAULT 'unknown',
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  last_activity TIMESTAMPTZ DEFAULT NOW(),
-  expires_at TIMESTAMPTZ
-);
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Button variant="outline" onClick={handleTestNeonOperations}>
+                  <TestTube className="h-4 w-4 mr-2" />
+                  Test Operations
+                </Button>
+                <Button variant="outline" onClick={handleEnvDebug}>
+                  <Settings className="h-4 w-4 mr-2" />
+                  Check Environment
+                </Button>
+              </div>
 
-CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON public.user_sessions(user_id);
-CREATE INDEX IF NOT EXISTS idx_user_sessions_session_token ON public.user_sessions(session_token);
-CREATE INDEX IF NOT EXISTS idx_user_sessions_last_activity ON public.user_sessions(last_activity);`}
-              </pre>
-            </div>
-          </CardContent>
-        </Card>
+              {debugInfo && (
+                <Card className="bg-muted/50">
+                  <CardHeader>
+                    <CardTitle className="text-sm">Debug Information ({debugInfo.type})</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <pre className="text-xs overflow-auto max-h-64 p-4 bg-background rounded border">
+                      {JSON.stringify(debugInfo, null, 2)}
+                    </pre>
+                  </CardContent>
+                </Card>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Active Sessions</h1>
-          <p className="text-muted-foreground">Manage your active sessions across different devices</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleNeonDebug}>
-            <Bug className="h-4 w-4 mr-2" />
-            Debug
-          </Button>
-          <Button variant="outline" onClick={loadSessions} disabled={loading}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
-        </div>
-      </div>
-
-      {error && (
-        <Card className="border-destructive">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-destructive">
-              <Shield className="h-4 w-4" />
-              <span className="font-medium">Error:</span>
-              <span>{error}</span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {debugInfo && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Debug Information ({debugInfo.type})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <pre className="bg-muted p-4 rounded-lg text-sm overflow-auto max-h-96">
-              {JSON.stringify(debugInfo, null, 2)}
-            </pre>
-          </CardContent>
-        </Card>
-      )}
-
-      {loading ? (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-center py-8">
-              <RefreshCw className="h-6 w-6 animate-spin mr-2" />
-              <span>Loading sessions...</span>
-            </div>
-          </CardContent>
-        </Card>
-      ) : sessions.length === 0 ? (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center py-8">
-              <Monitor className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No Active Sessions</h3>
-              <p className="text-muted-foreground">
-                You don't have any tracked sessions yet. Sessions will appear here when you sign in.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <>
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              {sessions.length} active session{sessions.length !== 1 ? "s" : ""}
-            </p>
-            {sessions.length > 1 && (
-              <Button variant="outline" size="sm" onClick={handleRevokeAllOther}>
-                <Trash2 className="h-4 w-4 mr-2" />
-                Revoke All Other Sessions
-              </Button>
-            )}
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-6">
+      <div className="max-w-6xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              Active Sessions
+            </h1>
+            <p className="text-muted-foreground">Monitor and manage your sessions across all devices and locations</p>
           </div>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" onClick={() => setShowDebug(!showDebug)} size="sm">
+              <Bug className="h-4 w-4 mr-2" />
+              Debug
+            </Button>
+            <Button variant="outline" onClick={loadSessions} disabled={loading} size="sm">
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+          </div>
+        </div>
 
-          <div className="grid gap-4">
-            {sessions.map((session) => (
-              <Card key={session.id} className={session.is_current ? "ring-2 ring-primary" : ""}>
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive" className="border-red-200 dark:border-red-800">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription className="font-medium">{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {/* Debug Panel */}
+        {showDebug && debugInfo && (
+          <Card className="border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
+            <CardHeader>
+              <CardTitle className="text-amber-800 dark:text-amber-200">Debug Information ({debugInfo.type})</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <pre className="text-xs overflow-auto max-h-64 p-4 bg-background rounded border">
+                {JSON.stringify(debugInfo, null, 2)}
+              </pre>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Loading State */}
+        {loading && !sessions.length ? (
+          <Card className="border-2 border-dashed">
+            <CardContent className="pt-12 pb-12">
+              <div className="flex flex-col items-center justify-center space-y-4">
+                <div className="relative">
+                  <div className="w-12 h-12 border-4 border-muted rounded-full"></div>
+                  <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin absolute top-0"></div>
+                </div>
+                <p className="text-muted-foreground">Loading your sessions...</p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : sessions.length === 0 ? (
+          /* Empty State */
+          <Card className="border-2 border-dashed">
+            <CardContent className="pt-12 pb-12">
+              <div className="text-center space-y-4">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted">
+                  <Activity className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-xl font-semibold">No Active Sessions</h3>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  You don't have any tracked sessions yet. Sessions will appear here when you sign in from different
+                  devices or browsers.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          /* Sessions List */
+          <>
+            {/* Stats Bar */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card>
                 <CardContent className="pt-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-3">
-                      {getDeviceIcon(session.device_type)}
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">
-                            {session.browser} on {session.os}
-                          </span>
-                          {session.is_current && <Badge variant="secondary">Current Session</Badge>}
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          {session.ip_address && (
-                            <div className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              <span>{session.ip_address}</span>
-                            </div>
-                          )}
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            <span>Last active: {formatDate(session.last_activity)}</span>
-                          </div>
-                        </div>
-                        <div className="text-xs text-muted-foreground">Created: {formatDate(session.created_at)}</div>
-                      </div>
+                  <div className="flex items-center space-x-2">
+                    <Activity className="h-5 w-5 text-blue-500" />
+                    <div>
+                      <p className="text-2xl font-bold">{sessions.length}</p>
+                      <p className="text-sm text-muted-foreground">Total Sessions</p>
                     </div>
-                    {!session.is_current && (
-                      <Button variant="outline" size="sm" onClick={() => handleRevokeSession(session.id)}>
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Revoke
-                      </Button>
-                    )}
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        </>
-      )}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center space-x-2">
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    <div>
+                      <p className="text-2xl font-bold">{sessions.filter((s) => s.is_current).length}</p>
+                      <p className="text-sm text-muted-foreground">Current Session</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center space-x-2">
+                    <Globe className="h-5 w-5 text-purple-500" />
+                    <div>
+                      <p className="text-2xl font-bold">{new Set(sessions.map((s) => s.ip_address)).size}</p>
+                      <p className="text-sm text-muted-foreground">Unique Locations</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Actions Bar */}
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                {sessions.length} active session{sessions.length !== 1 ? "s" : ""} found
+              </p>
+              {sessions.length > 1 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRevokeAllOther}
+                  disabled={revokingAll}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
+                >
+                  {revokingAll ? (
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <LogOut className="h-4 w-4 mr-2" />
+                  )}
+                  {revokingAll ? "Revoking..." : "Sign Out All Other Devices"}
+                </Button>
+              )}
+            </div>
+
+            {/* Sessions Grid */}
+            <div className="grid gap-4">
+              {sessions.map((session) => {
+                const sessionStatus = getSessionStatus(session)
+                return (
+                  <Card
+                    key={session.id}
+                    className={`transition-all duration-200 hover:shadow-lg ${
+                      session.is_current
+                        ? "ring-2 ring-green-500 bg-green-50/50 dark:bg-green-950/20 border-green-200 dark:border-green-800"
+                        : "hover:border-primary/50"
+                    }`}
+                  >
+                    <CardContent className="pt-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-4 flex-1">
+                          <div className="flex-shrink-0">{getDeviceIcon(session.device_type)}</div>
+                          <div className="space-y-3 flex-1">
+                            {/* Main Info */}
+                            <div className="flex items-center gap-3 flex-wrap">
+                              <span className="font-semibold text-lg">
+                                {getBrowserIcon(session.browser)} {session.browser} on {session.os}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full ${sessionStatus.color}`}></div>
+                                <Badge
+                                  variant={session.is_current ? "default" : "secondary"}
+                                  className={session.is_current ? "bg-green-500 hover:bg-green-600 text-white" : ""}
+                                >
+                                  {sessionStatus.text}
+                                </Badge>
+                              </div>
+                            </div>
+
+                            {/* Details Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                              {session.ip_address && (
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <MapPin className="h-4 w-4 text-blue-500" />
+                                  <span className="font-mono">{session.ip_address}</span>
+                                </div>
+                              )}
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <Clock className="h-4 w-4 text-purple-500" />
+                                <span>Active {formatDate(session.last_activity)}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <Wifi className="h-4 w-4 text-green-500" />
+                                <span>Since {formatDate(session.created_at)}</span>
+                              </div>
+                            </div>
+
+                            {/* Device Type Badge */}
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="text-xs">
+                                {session.device_type?.charAt(0).toUpperCase() + session.device_type?.slice(1)}
+                              </Badge>
+                              {session.expires_at && (
+                                <Badge variant="outline" className="text-xs">
+                                  Expires {formatDate(session.expires_at)}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        {!session.is_current && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleRevokeSession(session.id)}
+                            disabled={revoking === session.id}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 ml-4"
+                          >
+                            {revoking === session.id ? (
+                              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4 mr-2" />
+                            )}
+                            {revoking === session.id ? "Revoking..." : "Sign Out"}
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   )
 }

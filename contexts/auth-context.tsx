@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useState } from "react"
 import { supabaseClient } from "@/lib/supabase/client"
 import type { User, Session } from "@supabase/supabase-js"
 import { trackSession } from "@/app/actions/session-actions"
+import { cleanupUserSessions } from "@/app/actions/session-cleanup-actions"
 
 type AuthContextType = {
   user: User | null
@@ -223,7 +224,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return
       }
 
+      // Get current session before signing out
+      const { data: sessionData } = await supabase.auth.getSession()
+      const currentToken = sessionData.session?.access_token
+
+      // Sign out from Supabase
       await supabase.auth.signOut()
+
+      // Clean up session from Neon
+      if (user?.id && currentToken) {
+        try {
+          await cleanupUserSessions(user.id, currentToken)
+        } catch (error) {
+          console.warn("Failed to cleanup session:", error)
+        }
+      }
+
       setUser(null)
       setSession(null)
     } catch (error) {
