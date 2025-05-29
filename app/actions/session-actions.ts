@@ -47,6 +47,38 @@ function parseUserAgent(userAgent: string) {
   return { deviceType, browser, os }
 }
 
+// Helper function to get location from IP
+async function getLocationFromIP(ipAddress: string) {
+  try {
+    // Skip for localhost/private IPs
+    if (
+      ipAddress === "unknown" ||
+      ipAddress.startsWith("127.") ||
+      ipAddress.startsWith("192.168.") ||
+      ipAddress.startsWith("10.")
+    ) {
+      return "Local Network"
+    }
+
+    // Use a free IP geolocation service
+    const response = await fetch(`http://ip-api.com/json/${ipAddress}?fields=status,country,regionName,city`, {
+      timeout: 3000, // 3 second timeout
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      if (data.status === "success") {
+        const parts = [data.city, data.regionName, data.country].filter(Boolean)
+        return parts.join(", ") || "Unknown Location"
+      }
+    }
+  } catch (error) {
+    console.log("Location lookup failed:", error.message)
+  }
+
+  return "Unknown Location"
+}
+
 // Get Neon SQL client
 function getNeonClient() {
   const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL
@@ -82,11 +114,18 @@ export async function trackSession() {
 
     // Get request headers
     const headersList = headers()
-    const ipAddress = headersList.get("x-forwarded-for") || "unknown"
+    const ipAddress =
+      headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      headersList.get("x-real-ip") ||
+      headersList.get("cf-connecting-ip") ||
+      "unknown"
     const userAgent = headersList.get("user-agent") || "unknown"
 
     // Parse user agent
     const { deviceType, browser, os } = parseUserAgent(userAgent)
+
+    // Get location from IP
+    const location = await getLocationFromIP(ipAddress)
 
     // Check if session already exists in Neon
     const existingSessions = await sql`
@@ -95,13 +134,14 @@ export async function trackSession() {
     `
 
     if (existingSessions.length > 0) {
-      // Update last activity
+      // Update last activity and location
       await sql`
         UPDATE user_sessions 
         SET 
           last_activity = NOW(),
           ip_address = ${ipAddress},
-          user_agent = ${userAgent}
+          user_agent = ${userAgent},
+          location = ${location}
         WHERE session_token = ${session.access_token}
       `
     } else {
@@ -109,10 +149,10 @@ export async function trackSession() {
       await sql`
         INSERT INTO user_sessions (
           user_id, session_token, ip_address, user_agent, 
-          device_type, browser, os, created_at, last_activity, expires_at
+          device_type, browser, os, location, created_at, last_activity, expires_at
         ) VALUES (
           ${user.id}, ${session.access_token}, ${ipAddress}, ${userAgent},
-          ${deviceType}, ${browser}, ${os}, NOW(), NOW(), 
+          ${deviceType}, ${browser}, ${os}, ${location}, NOW(), NOW(), 
           ${new Date(session.expires_at! * 1000).toISOString()}
         )
       `
@@ -122,6 +162,59 @@ export async function trackSession() {
   } catch (error) {
     console.error("Error in trackSession:", error)
     return { success: false, error: "Failed to track session" }
+  }
+}
+
+// Clean up session on sign out
+export async function cleanupSession(sessionToken?: string) {
+  try {
+    const sql = getNeonClient()
+
+    if (sessionToken) {
+      // Remove specific session
+      await sql`
+        DELETE FROM user_sessions 
+        WHERE session_token = ${sessionToken}
+      `
+    } else {
+      // If no token provided, try to get current session
+      const supabase = createServerSupabaseClient()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (session?.access_token) {
+        await sql`
+          DELETE FROM user_sessions 
+          WHERE session_token = ${session.access_token}
+        `
+      }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error("Error in cleanupSession:", error)
+    return { success: false, error: "Failed to cleanup session" }
+  }
+}
+
+// Clean up expired sessions (run periodically)
+export async function cleanupExpiredSessions() {
+  try {
+    const sql = getNeonClient()
+
+    // Remove sessions that have expired
+    const result = await sql`
+      DELETE FROM user_sessions 
+      WHERE expires_at < NOW()
+      RETURNING id
+    `
+
+    console.log(`Cleaned up ${result.length} expired sessions`)
+    return { success: true, cleanedCount: result.length }
+  } catch (error) {
+    console.error("Error in cleanupExpiredSessions:", error)
+    return { success: false, error: "Failed to cleanup expired sessions" }
   }
 }
 
@@ -149,10 +242,14 @@ export async function getUserSessions() {
       return { success: false, error: "No session found" }
     }
 
-    // Get all sessions for the user from Neon
+    // Clean up expired sessions first
+    await cleanupExpiredSessions()
+
+    // Get all active sessions for the user from Neon
     const sessions = await sql`
       SELECT * FROM user_sessions 
       WHERE user_id = ${user.id} 
+      AND expires_at > NOW()
       ORDER BY last_activity DESC
     `
 

@@ -3,33 +3,34 @@ import { neon } from "@neondatabase/serverless"
 
 export async function POST(request: NextRequest) {
   try {
+    // Get database URL
     const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL
 
     if (!databaseUrl) {
       return NextResponse.json({
         success: false,
-        error: "No DATABASE_URL or NEON_DATABASE_URL found in environment variables",
+        error: "No DATABASE_URL or NEON_DATABASE_URL environment variable found",
       })
     }
 
     const sql = neon(databaseUrl)
 
-    // Create the user_sessions table
+    // Create the user_sessions table with proper structure
     await sql`
       CREATE TABLE IF NOT EXISTS user_sessions (
         id SERIAL PRIMARY KEY,
-        user_id UUID NOT NULL,
+        user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
         session_token TEXT NOT NULL UNIQUE,
-        ip_address TEXT,
+        ip_address INET,
         user_agent TEXT,
-        device_type TEXT,
-        browser TEXT,
-        os TEXT,
+        device_type VARCHAR(50),
+        browser VARCHAR(100),
+        os VARCHAR(100),
         location TEXT,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-        last_activity TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-        expires_at TIMESTAMP WITH TIME ZONE,
-        CONSTRAINT fk_user_sessions_user_id FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        last_activity TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        expires_at TIMESTAMPTZ NOT NULL,
+        CONSTRAINT unique_user_session UNIQUE(user_id, session_token)
       )
     `
 
@@ -46,28 +47,25 @@ export async function POST(request: NextRequest) {
       CREATE INDEX IF NOT EXISTS idx_user_sessions_last_activity ON user_sessions(last_activity)
     `
 
-    // Verify table was created
-    const tableCheck = await sql`
-      SELECT EXISTS (
-        SELECT FROM information_schema.tables 
-        WHERE table_schema = 'public' 
-        AND table_name = 'user_sessions'
-      ) as exists
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_user_sessions_expires_at ON user_sessions(expires_at)
     `
 
-    const tableExists = tableCheck[0]?.exists || false
+    // Clean up any expired sessions
+    const cleanupResult = await sql`
+      DELETE FROM user_sessions WHERE expires_at < NOW()
+    `
 
     return NextResponse.json({
       success: true,
-      tableExists,
-      message: "user_sessions table created successfully with indexes",
+      message: "user_sessions table created successfully",
+      cleanedExpired: cleanupResult.length,
     })
   } catch (error) {
-    console.error("Error creating sessions table:", error)
-
+    console.error("Error creating user_sessions table:", error)
     return NextResponse.json({
       success: false,
-      error: error.message || "Unknown error occurred",
+      error: error.message,
     })
   }
 }
