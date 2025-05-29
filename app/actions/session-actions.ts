@@ -56,6 +56,7 @@ export async function trackSession() {
     const { data: userData, error: userError } = await supabase.auth.getUser()
 
     if (userError || !userData.user) {
+      console.log("trackSession: No authenticated user")
       return { success: false, error: "Not authenticated" }
     }
 
@@ -63,18 +64,34 @@ export async function trackSession() {
     const session = sessionData.session
 
     if (!session) {
+      console.log("trackSession: No active session")
       return { success: false, error: "No active session" }
     }
 
     // Get request headers
     const headersList = headers()
-    const ipAddress = headersList.get("x-forwarded-for") || "unknown"
+    const ipAddress = headersList.get("x-forwarded-for") || headersList.get("x-real-ip") || "unknown"
     const userAgent = headersList.get("user-agent") || "unknown"
 
     // Parse user agent
     const { deviceType, browser, os } = parseUserAgent(userAgent)
 
     try {
+      // First, test if we can access the table
+      const { data: testQuery, error: testError } = await supabase.from("user_sessions").select("id").limit(1)
+
+      if (testError) {
+        console.error("trackSession: Table access error:", testError)
+        if (
+          testError.code === "42P01" ||
+          testError.message?.includes("relation") ||
+          testError.message?.includes("does not exist")
+        ) {
+          return { success: false, error: "Table does not exist", tableExists: false }
+        }
+        return { success: false, error: testError.message }
+      }
+
       // Check if session already exists
       const { data: existingSession, error: queryError } = await supabase
         .from("user_sessions")
@@ -82,11 +99,10 @@ export async function trackSession() {
         .eq("session_token", session.access_token)
         .single()
 
-      if (queryError) {
-        // If the error is because the table doesn't exist, we'll handle it later
-        if (queryError.code !== "42P01") {
-          console.error("Error checking session:", queryError)
-        }
+      if (queryError && queryError.code !== "PGRST116") {
+        // PGRST116 is "not found" which is expected for new sessions
+        console.error("trackSession: Query error:", queryError)
+        return { success: false, error: queryError.message }
       }
 
       if (existingSession) {
@@ -101,8 +117,11 @@ export async function trackSession() {
           .eq("id", existingSession.id)
 
         if (error) {
-          console.error("Error updating session:", error)
+          console.error("trackSession: Update error:", error)
+          return { success: false, error: error.message }
         }
+
+        console.log("trackSession: Updated existing session")
       } else {
         // Create new session record
         const { error } = await supabase.from("user_sessions").insert({
@@ -119,21 +138,20 @@ export async function trackSession() {
         })
 
         if (error) {
-          // If the error is because the table doesn't exist, we need to create it
-          if (error.code === "42P01") {
-            console.error("The user_sessions table doesn't exist. Please create it first.")
-          } else {
-            console.error("Error creating session:", error)
-          }
+          console.error("trackSession: Insert error:", error)
+          return { success: false, error: error.message }
         }
-      }
-    } catch (error) {
-      console.error("Error tracking session:", error)
-    }
 
-    return { success: true }
+        console.log("trackSession: Created new session")
+      }
+
+      return { success: true, tableExists: true }
+    } catch (error) {
+      console.error("trackSession: Database error:", error)
+      return { success: false, error: "Database operation failed" }
+    }
   } catch (error) {
-    console.error("Error in trackSession:", error)
+    console.error("trackSession: General error:", error)
     return { success: false, error: "Failed to track session" }
   }
 }
@@ -158,6 +176,21 @@ export async function getUserSessions() {
     }
 
     try {
+      // First, test if we can access the table
+      const { data: testQuery, error: testError } = await supabase.from("user_sessions").select("id").limit(1)
+
+      if (testError) {
+        console.error("getUserSessions: Table access error:", testError)
+        if (
+          testError.code === "42P01" ||
+          testError.message?.includes("relation") ||
+          testError.message?.includes("does not exist")
+        ) {
+          return { success: false, error: "The user_sessions table doesn't exist", tableExists: false }
+        }
+        return { success: false, error: testError.message }
+      }
+
       // Get all sessions for the user
       const { data: sessions, error } = await supabase
         .from("user_sessions")
@@ -166,13 +199,7 @@ export async function getUserSessions() {
         .order("last_activity", { ascending: false })
 
       if (error) {
-        // If the error is because the table doesn't exist, return an empty array
-        if (error.code === "42P01") {
-          console.error("The user_sessions table doesn't exist. Please create it first.")
-          return { success: true, data: [] }
-        }
-
-        console.error("Error fetching sessions:", error)
+        console.error("getUserSessions: Query error:", error)
         return { success: false, error: error.message }
       }
 
@@ -186,13 +213,14 @@ export async function getUserSessions() {
       return {
         success: true,
         data: sessionsWithCurrent,
+        tableExists: true,
       }
     } catch (error) {
-      console.error("Error getting sessions:", error)
-      return { success: false, error: "Failed to get sessions" }
+      console.error("getUserSessions: Database error:", error)
+      return { success: false, error: "Database operation failed" }
     }
   } catch (error) {
-    console.error("Error in getUserSessions:", error)
+    console.error("getUserSessions: General error:", error)
     return { success: false, error: "Failed to fetch sessions" }
   }
 }

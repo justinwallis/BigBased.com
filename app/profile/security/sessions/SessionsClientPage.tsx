@@ -32,6 +32,7 @@ import {
 import { getUserSessions, revokeSession, revokeAllOtherSessions } from "@/app/actions/session-actions"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/contexts/auth-context"
+import { debugSessionTracking } from "@/app/actions/debug-session-actions"
 
 interface SessionData {
   id: string
@@ -98,6 +99,8 @@ export default function SessionsClientPage() {
   const [showRevokeDialog, setShowRevokeDialog] = useState<string | null>(null)
   const [showRevokeAllDialog, setShowRevokeAllDialog] = useState(false)
   const [activeTab, setActiveTab] = useState<string>("sessions")
+  const [debugResult, setDebugResult] = useState<any>(null)
+  const [debugging, setDebugging] = useState(false)
 
   // Fetch sessions
   const fetchSessions = async () => {
@@ -184,6 +187,20 @@ export default function SessionsClientPage() {
       setError("An unexpected error occurred")
     } finally {
       setRevokingAll(false)
+    }
+  }
+
+  const handleDebugSession = async () => {
+    setDebugging(true)
+    try {
+      const result = await debugSessionTracking()
+      setDebugResult(result)
+      console.log("Debug result:", result)
+    } catch (error) {
+      console.error("Debug error:", error)
+      setDebugResult({ success: false, error: String(error) })
+    } finally {
+      setDebugging(false)
     }
   }
 
@@ -348,10 +365,16 @@ CREATE POLICY "Users can delete their own sessions" ON user_sessions
                 Manage your active login sessions and revoke access from devices you don't recognize
               </p>
             </div>
-            <Button variant="outline" onClick={fetchSessions} disabled={loading}>
-              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-              Refresh
-            </Button>
+            <div className="flex space-x-2">
+              <Button variant="outline" onClick={handleDebugSession} disabled={debugging}>
+                <Code className={`h-4 w-4 mr-2 ${debugging ? "animate-spin" : ""}`} />
+                Debug
+              </Button>
+              <Button variant="outline" onClick={fetchSessions} disabled={loading}>
+                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+                Refresh
+              </Button>
+            </div>
           </div>
 
           {/* Table Doesn't Exist Error */}
@@ -460,6 +483,20 @@ CREATE POLICY "Users can delete their own sessions" ON user_sessions
                   <AlertTriangle className="h-4 w-4" />
                   <span>{error}</span>
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Debug Results */}
+          {debugResult && (
+            <Card className="border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950">
+              <CardHeader>
+                <CardTitle className="text-purple-800 dark:text-purple-200">Debug Results</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <pre className="text-xs overflow-x-auto bg-slate-100 dark:bg-slate-800 p-2 rounded">
+                  {JSON.stringify(debugResult, null, 2)}
+                </pre>
               </CardContent>
             </Card>
           )}

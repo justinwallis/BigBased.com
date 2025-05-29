@@ -1,14 +1,15 @@
 "use server"
-
-import { cookies } from "next/headers"
-import { createClient } from "@supabase/supabase-js"
+import { createClient } from "@/utils/supabase/server"
 import { generateRandomString } from "@/lib/utils"
 import { validatePassword } from "@/lib/password-validation"
+import { redirect } from "next/navigation"
+import { trackSession } from "./session-actions"
 
 // Auth event constants (duplicated here to avoid import issues)
 const AUTH_EVENTS = {
   LOGIN_SUCCESS: "login_success",
   LOGIN_FAILURE: "login_failure",
+  LOGIN_ATTEMPT: "login_attempt",
   LOGOUT: "logout",
   SIGNUP_ATTEMPT: "signup_attempt",
   PASSWORD_RESET_REQUEST: "password_reset_request",
@@ -38,25 +39,9 @@ async function logAuthEvent(userId: string | null, event: string, status: string
   }
 }
 
-// Create a Supabase client for server actions
-async function getSupabase() {
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error("Missing Supabase environment variables")
-  }
-
-  return createClient(supabaseUrl, supabaseKey, {
-    auth: {
-      persistSession: false,
-    },
-  })
-}
-
 export async function signIn(email: string, password: string, mfaCode?: string) {
   try {
-    const supabase = await getSupabase()
+    const supabase = createClient()
 
     if (!email || !password) {
       return { error: "Email and password are required" }
@@ -84,26 +69,13 @@ export async function signIn(email: string, password: string, mfaCode?: string) 
       return { data: null, error: null, mfaRequired: true }
     }
 
-    // Set cookies for client-side auth
-    const cookieStore = cookies()
-    const session = data.session
-
-    if (session) {
-      cookieStore.set("sb-access-token", session.access_token, {
-        path: "/",
-        maxAge: session.expires_in,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-      })
-
-      cookieStore.set("sb-refresh-token", session.refresh_token, {
-        path: "/",
-        maxAge: 60 * 60 * 24 * 30, // 30 days
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-      })
+    // Track the new session
+    if (data?.user && data?.session) {
+      try {
+        await trackSession()
+      } catch (error) {
+        console.warn("Failed to track session after sign-in:", error)
+      }
     }
 
     // Log login success
@@ -120,7 +92,7 @@ export async function signIn(email: string, password: string, mfaCode?: string) 
 
 export async function signOut() {
   try {
-    const supabase = await getSupabase()
+    const supabase = createClient()
 
     // Get the current user
     const {
@@ -133,11 +105,6 @@ export async function signOut() {
     }
 
     await supabase.auth.signOut()
-
-    // Clear cookies
-    const cookieStore = cookies()
-    cookieStore.delete("sb-access-token")
-    cookieStore.delete("sb-refresh-token")
 
     // Log logout success
     if (session?.user) {
@@ -171,7 +138,7 @@ export async function register(formData: FormData) {
       return { error: passwordValidation.message }
     }
 
-    const supabase = await getSupabase()
+    const supabase = createClient()
 
     // Log signup attempt
     await logAuthEvent(null, AUTH_EVENTS.SIGNUP_ATTEMPT, AUTH_STATUS.PENDING, { email })
@@ -211,7 +178,7 @@ export async function resetPasswordRequest(formData: FormData) {
   }
 
   try {
-    const supabase = await getSupabase()
+    const supabase = createClient()
 
     // Log password reset request
     await logAuthEvent(null, AUTH_EVENTS.PASSWORD_RESET_REQUEST, AUTH_STATUS.PENDING, { email })
@@ -259,7 +226,7 @@ export async function resetPassword(formData: FormData) {
   }
 
   try {
-    const supabase = await getSupabase()
+    const supabase = createClient()
 
     // Get the current user
     const {
@@ -297,7 +264,7 @@ export async function resetPassword(formData: FormData) {
 
 export async function generateBackupCodes() {
   try {
-    const supabase = await getSupabase()
+    const supabase = createClient()
 
     // Get the current user
     const {
@@ -344,7 +311,7 @@ export async function generateBackupCodes() {
 
 export async function verifyBackupCode(code: string) {
   try {
-    const supabase = await getSupabase()
+    const supabase = createClient()
 
     // Get the current user
     const {
@@ -394,4 +361,46 @@ export async function verifyBackupCode(code: string) {
     console.error("Error verifying backup code:", error)
     return { success: false, error: "Failed to verify backup code" }
   }
+}
+
+// Additional action functions for form handling
+export async function actionSignInWithEmail(formData: FormData) {
+  const email = String(formData.get("email"))
+  const password = String(formData.get("password"))
+
+  const result = await signIn(email, password)
+
+  if (result.error) {
+    return {
+      error: result.error,
+    }
+  }
+
+  redirect("/")
+}
+
+export async function actionSignUpWithEmail(formData: FormData) {
+  const result = await register(formData)
+
+  if (result.error) {
+    return {
+      error: result.error,
+    }
+  }
+
+  return {
+    message: "Check your email to continue sign in process",
+  }
+}
+
+export async function actionSignOut() {
+  const result = await signOut()
+
+  if (result.error) {
+    return {
+      error: result.error,
+    }
+  }
+
+  redirect("/")
 }
