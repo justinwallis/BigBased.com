@@ -15,12 +15,15 @@ import {
   RefreshCw,
   Bug,
   Database,
-  TestTube,
+  Settings,
+  Zap,
 } from "lucide-react"
 import { getUserSessions, revokeSession, revokeAllOtherSessions } from "@/app/actions/session-actions"
-import { createTableAction } from "@/app/actions/create-table-action"
-import { comprehensiveDebugAction, testTableAccess } from "@/app/actions/comprehensive-debug-action"
-import { testSessionAccess } from "@/app/actions/simple-session-test"
+import {
+  debugDatabaseConnection,
+  checkEnvironmentVariables,
+  createTableWithRawSQL,
+} from "@/app/actions/database-connection-debug"
 
 interface UserSession {
   id: string
@@ -99,10 +102,33 @@ export default function SessionsClientPage() {
     }
   }
 
-  const handleCreateTable = async () => {
+  const handleDatabaseDebug = async () => {
+    try {
+      const result = await debugDatabaseConnection()
+      setDebugInfo({ type: "database", ...result })
+      console.log("Database debug result:", result)
+    } catch (err) {
+      console.error("Database debug error:", err)
+    }
+  }
+
+  const handleEnvDebug = async () => {
+    try {
+      const result = await checkEnvironmentVariables()
+      setDebugInfo({ type: "environment", ...result })
+      console.log("Environment debug result:", result)
+    } catch (err) {
+      console.error("Environment debug error:", err)
+    }
+  }
+
+  const handleCreateTableRaw = async () => {
     try {
       setLoading(true)
-      const result = await createTableAction()
+      const result = await createTableWithRawSQL()
+      setDebugInfo({ type: "create-table", ...result })
+      console.log("Create table result:", result)
+
       if (result.success) {
         setTableExists(true)
         await loadSessions()
@@ -111,44 +137,9 @@ export default function SessionsClientPage() {
       }
     } catch (err) {
       setError("An unexpected error occurred")
-      console.error("Error creating table:", err)
+      console.error("Create table error:", err)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleDebug = async () => {
-    try {
-      const result = await comprehensiveDebugAction()
-      setDebugInfo(result)
-      console.log("Debug result:", result)
-    } catch (err) {
-      console.error("Debug error:", err)
-    }
-  }
-
-  const handleTestAccess = async () => {
-    try {
-      const result = await testTableAccess()
-      setDebugInfo(result)
-      console.log("Test access result:", result)
-    } catch (err) {
-      console.error("Test access error:", err)
-    }
-  }
-
-  const handleSimpleTest = async () => {
-    try {
-      const result = await testSessionAccess()
-      setDebugInfo(result)
-      console.log("Simple test result:", result)
-
-      // If the test was successful, try to reload sessions
-      if (result.success) {
-        await loadSessions()
-      }
-    } catch (err) {
-      console.error("Simple test error:", err)
     }
   }
 
@@ -179,49 +170,54 @@ export default function SessionsClientPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Database className="h-5 w-5" />
-              Setup Required
+              Database Connection Issue
             </CardTitle>
             <CardDescription>
-              The sessions table needs to be created before you can manage your sessions.
+              The application cannot access the sessions table. Let's debug the connection.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-2 flex-wrap">
-              <Button onClick={handleCreateTable} disabled={loading}>
+              <Button onClick={handleDatabaseDebug}>
                 <Database className="h-4 w-4 mr-2" />
-                Create Table Automatically
+                Debug Database
               </Button>
-              <Button variant="outline" onClick={handleDebug}>
-                <Bug className="h-4 w-4 mr-2" />
-                Full Debug
+              <Button variant="outline" onClick={handleEnvDebug}>
+                <Settings className="h-4 w-4 mr-2" />
+                Check Environment
               </Button>
-              <Button variant="outline" onClick={handleTestAccess}>
-                <TestTube className="h-4 w-4 mr-2" />
-                Test Access
-              </Button>
-              <Button variant="outline" onClick={handleSimpleTest}>
-                <TestTube className="h-4 w-4 mr-2" />
-                Simple Test
+              <Button onClick={handleCreateTableRaw} disabled={loading}>
+                <Zap className="h-4 w-4 mr-2" />
+                Force Create Table
               </Button>
             </div>
 
             {debugInfo && (
               <div className="mt-4">
-                <h3 className="font-semibold mb-2">Debug Information:</h3>
+                <h3 className="font-semibold mb-2">Debug Information ({debugInfo.type}):</h3>
                 <pre className="bg-muted p-4 rounded-lg text-sm overflow-auto max-h-96">
                   {JSON.stringify(debugInfo, null, 2)}
                 </pre>
               </div>
             )}
 
+            <div className="bg-amber-50 dark:bg-amber-950 p-4 rounded-lg border border-amber-200 dark:border-amber-800">
+              <h3 className="font-semibold mb-2 text-amber-800 dark:text-amber-200">Troubleshooting Steps:</h3>
+              <ol className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
+                <li>1. Click "Debug Database" to check the connection</li>
+                <li>2. Click "Check Environment" to verify configuration</li>
+                <li>3. Click "Force Create Table" to create the table directly</li>
+                <li>4. If all fails, the app may be connected to a different database</li>
+              </ol>
+            </div>
+
             <div className="bg-muted p-4 rounded-lg">
-              <h3 className="font-semibold mb-2">Manual Setup (SQL):</h3>
+              <h3 className="font-semibold mb-2">Manual Setup (if needed):</h3>
               <p className="text-sm text-muted-foreground mb-2">
-                If automatic creation fails, you can run this SQL in your Supabase dashboard:
+                If the automatic creation fails, run this in your Supabase SQL editor:
               </p>
               <pre className="text-xs bg-background p-2 rounded border overflow-auto">
-                {`-- Create user_sessions table
-CREATE TABLE IF NOT EXISTS public.user_sessions (
+                {`CREATE TABLE IF NOT EXISTS public.user_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   session_token TEXT NOT NULL,
@@ -236,10 +232,8 @@ CREATE TABLE IF NOT EXISTS public.user_sessions (
   expires_at TIMESTAMPTZ
 );
 
--- Enable RLS
 ALTER TABLE public.user_sessions ENABLE ROW LEVEL SECURITY;
 
--- Create policies
 CREATE POLICY "Users can view their own sessions" ON public.user_sessions
   FOR SELECT USING (auth.uid() = user_id);
 
@@ -250,12 +244,7 @@ CREATE POLICY "Users can update their own sessions" ON public.user_sessions
   FOR UPDATE USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can delete their own sessions" ON public.user_sessions
-  FOR DELETE USING (auth.uid() = user_id);
-
--- Create indexes
-CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON public.user_sessions(user_id);
-CREATE INDEX IF NOT EXISTS idx_user_sessions_session_token ON public.user_sessions(session_token);
-CREATE INDEX IF NOT EXISTS idx_user_sessions_last_activity ON public.user_sessions(last_activity);`}
+  FOR DELETE USING (auth.uid() = user_id);`}
               </pre>
             </div>
           </CardContent>
@@ -272,9 +261,9 @@ CREATE INDEX IF NOT EXISTS idx_user_sessions_last_activity ON public.user_sessio
           <p className="text-muted-foreground">Manage your active sessions across different devices</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleSimpleTest}>
-            <TestTube className="h-4 w-4 mr-2" />
-            Test
+          <Button variant="outline" onClick={handleDatabaseDebug}>
+            <Bug className="h-4 w-4 mr-2" />
+            Debug
           </Button>
           <Button variant="outline" onClick={loadSessions} disabled={loading}>
             <RefreshCw className="h-4 w-4 mr-2" />
@@ -298,7 +287,7 @@ CREATE INDEX IF NOT EXISTS idx_user_sessions_last_activity ON public.user_sessio
       {debugInfo && (
         <Card>
           <CardHeader>
-            <CardTitle>Debug Information</CardTitle>
+            <CardTitle>Debug Information ({debugInfo.type})</CardTitle>
           </CardHeader>
           <CardContent>
             <pre className="bg-muted p-4 rounded-lg text-sm overflow-auto max-h-96">
