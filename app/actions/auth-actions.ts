@@ -64,12 +64,49 @@ export async function signIn(email: string, password: string, mfaCode?: string) 
       return { error: error.message }
     }
 
-    // If MFA is required, return mfaRequired flag
-    if (data?.session?.factor_challenge) {
+    // Check if MFA is required
+    if (data?.session?.factor_challenge && !mfaCode) {
       return { data: null, error: null, mfaRequired: true }
     }
 
-    // Track the new session
+    // If MFA code provided, verify it
+    if (data?.session?.factor_challenge && mfaCode) {
+      const { data: mfaData, error: mfaError } = await supabase.auth.mfa.verify({
+        factorId: data.session.factor_challenge.id,
+        challengeId: data.session.factor_challenge.challenge_id,
+        code: mfaCode,
+      })
+
+      if (mfaError) {
+        await logAuthEvent(null, AUTH_EVENTS.LOGIN_FAILURE, AUTH_STATUS.FAILURE, {
+          email,
+          error: mfaError.message,
+          mfa_required: true,
+        })
+        return { error: mfaError.message }
+      }
+
+      // Track the new session
+      if (mfaData?.user && mfaData?.session) {
+        try {
+          await trackSession()
+        } catch (error) {
+          console.warn("Failed to track session after MFA sign-in:", error)
+        }
+      }
+
+      // Log login success
+      if (mfaData.user) {
+        await logAuthEvent(mfaData.user.id, AUTH_EVENTS.LOGIN_SUCCESS, AUTH_STATUS.SUCCESS, {
+          email,
+          mfa_verified: true,
+        })
+      }
+
+      return { data: mfaData, error: null }
+    }
+
+    // Track the new session for non-MFA users
     if (data?.user && data?.session) {
       try {
         await trackSession()

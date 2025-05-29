@@ -153,7 +153,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { data: null, error: new Error("Supabase client not available") }
       }
 
-      // For now, let's simplify and just do basic password auth
+      // First attempt: Password authentication
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -164,7 +164,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { data: null, error }
       }
 
-      // If successful, update the local state
+      // Check if MFA is required
+      if (data?.session?.factor_challenge && !mfaCode) {
+        console.log("MFA required, waiting for code")
+        return { data: null, error: null, mfaRequired: true }
+      }
+
+      // If MFA code provided, verify it
+      if (data?.session?.factor_challenge && mfaCode) {
+        console.log("Verifying MFA code")
+        const { data: mfaData, error: mfaError } = await supabase.auth.mfa.verify({
+          factorId: data.session.factor_challenge.id,
+          challengeId: data.session.factor_challenge.challenge_id,
+          code: mfaCode,
+        })
+
+        if (mfaError) {
+          console.error("MFA verification failed:", mfaError)
+          return { data: null, error: mfaError }
+        }
+
+        // Update session with MFA verified session
+        if (mfaData.session) {
+          setSession(mfaData.session)
+          setUser(mfaData.user)
+        }
+
+        console.log("MFA verification successful!")
+        return { data: mfaData, error: null }
+      }
+
+      // If successful without MFA, update the local state
       if (data.session) {
         setSession(data.session)
         setUser(data.user)

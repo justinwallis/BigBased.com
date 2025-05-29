@@ -23,6 +23,8 @@ export default function SignInForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [rememberMe, setRememberMe] = useState(false)
+  const [mfaCode, setMfaCode] = useState("")
+  const [mfaRequired, setMfaRequired] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,8 +43,14 @@ export default function SignInForm() {
       }
 
       // Attempt sign in
-      const result = await signIn(email, password)
+      const result = await signIn(email, password, mfaCode)
       console.log("Sign in result:", result)
+
+      if (result.mfaRequired) {
+        setMfaRequired(true)
+        setIsLoading(false)
+        return
+      }
 
       if (result.error) {
         setError(result.error.message || "Failed to sign in")
@@ -131,6 +139,28 @@ export default function SignInForm() {
             />
           </div>
 
+          {mfaRequired && (
+            <div className="grid gap-2">
+              <Label htmlFor="mfa-code" className="dark:text-white">
+                Two-Factor Authentication Code
+              </Label>
+              <Input
+                id="mfa-code"
+                type="text"
+                placeholder="000000"
+                value={mfaCode}
+                onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                maxLength={6}
+                autoComplete="one-time-code"
+                disabled={isLoading}
+                className="dark:text-white dark:bg-gray-800 dark:border-gray-700 text-center text-lg font-mono tracking-widest"
+              />
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Enter the 6-digit code from your authenticator app
+              </p>
+            </div>
+          )}
+
           <div className="flex items-center space-x-2 my-2">
             <Checkbox
               id="remember"
@@ -147,7 +177,7 @@ export default function SignInForm() {
           </div>
 
           <Button type="submit" disabled={isLoading} className="dark:text-black">
-            {isLoading ? "Signing In... 🇺🇸" : "Sign In"}
+            {isLoading ? "Signing In... 🇺🇸" : mfaRequired ? "Verify & Sign In" : "Sign In"}
           </Button>
         </div>
       </form>
