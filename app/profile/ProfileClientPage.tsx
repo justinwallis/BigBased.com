@@ -947,7 +947,9 @@ export default function ProfileClientPage() {
                       <h4 className="font-medium">Email Notifications</h4>
                       <p className="text-sm text-muted-foreground">Receive updates via email</p>
                     </div>
-                    <Button variant="outline">Configure</Button>
+                    <Link href="/profile/notifications/email">
+                      <Button variant="outline">Configure</Button>
+                    </Link>
                   </div>
 
                   <Separator />
