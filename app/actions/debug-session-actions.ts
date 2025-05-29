@@ -27,27 +27,17 @@ export async function debugSessionTracking() {
 
     console.log("Basic auth test - Data:", basicTest?.id, "Error:", basicError?.message)
 
-    // Check if table exists in different schemas
-    const { data: tableCheck, error: tableError } = await supabase.rpc("check_table_exists", {
+    // Check if table exists
+    const { data: tableInfo, error: tableError } = await supabase.rpc("check_table_exists_simple", {
       table_name: "user_sessions",
     })
 
-    console.log("Table check RPC - Data:", tableCheck, "Error:", tableError?.message)
+    console.log("Table exists check:", tableInfo, tableError?.message)
 
     // Try to access the table directly
     const { data: directTest, error: directError } = await supabase.from("user_sessions").select("id").limit(1)
 
     console.log("Direct table test - Data:", directTest, "Error:", directError)
-
-    // Try with explicit schema
-    const { data: schemaTest, error: schemaError } = await supabase.from("public.user_sessions").select("id").limit(1)
-
-    console.log("Schema table test - Data:", schemaTest, "Error:", schemaError)
-
-    // Check current user's permissions
-    const { data: permTest, error: permError } = await supabase.rpc("check_user_permissions")
-
-    console.log("Permission test - Data:", permTest, "Error:", permError?.message)
 
     // Try to track session
     const trackResult = await trackSession()
@@ -61,10 +51,8 @@ export async function debugSessionTracking() {
       success: true,
       user: userData.user.id,
       basicTest: { data: basicTest?.id, error: basicError?.message },
-      tableCheck: { data: tableCheck, error: tableError?.message },
+      tableInfo,
       directTest: { data: directTest, error: directError?.message },
-      schemaTest: { data: schemaTest, error: schemaError?.message },
-      permTest: { data: permTest, error: permError?.message },
       trackResult,
       sessionsResult,
     }
@@ -77,8 +65,8 @@ export async function debugSessionTracking() {
   }
 }
 
-export async function createTableIfNotExists() {
-  console.log("=== Creating Table ===")
+export async function manuallyCreateSession() {
+  console.log("=== Manually Creating Session ===")
 
   try {
     const supabase = createServerSupabaseClient()
@@ -86,59 +74,35 @@ export async function createTableIfNotExists() {
     // Check if user is authenticated
     const { data: userData, error: userError } = await supabase.auth.getUser()
 
-    if (!userData.user) {
+    if (userError || !userData.user) {
       return { success: false, error: "Not authenticated" }
     }
 
-    // Create the table using SQL
-    const createTableSQL = `
-      -- Create user_sessions table for tracking active sessions
-      CREATE TABLE IF NOT EXISTS public.user_sessions (
-        id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-        user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-        session_token TEXT NOT NULL,
-        ip_address TEXT,
-        user_agent TEXT,
-        location TEXT,
-        device_type TEXT DEFAULT 'desktop',
-        browser TEXT DEFAULT 'unknown',
-        os TEXT DEFAULT 'unknown',
-        created_at TIMESTAMPTZ DEFAULT NOW(),
-        last_activity TIMESTAMPTZ DEFAULT NOW(),
-        expires_at TIMESTAMPTZ,
-        UNIQUE(session_token)
-      );
+    const { data: sessionData } = await supabase.auth.getSession()
+    const session = sessionData.session
 
-      -- Create index for faster queries
-      CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON public.user_sessions(user_id);
-      CREATE INDEX IF NOT EXISTS idx_user_sessions_session_token ON public.user_sessions(session_token);
-      CREATE INDEX IF NOT EXISTS idx_user_sessions_last_activity ON public.user_sessions(last_activity);
+    if (!session) {
+      return { success: false, error: "No active session" }
+    }
 
-      -- Enable RLS
-      ALTER TABLE public.user_sessions ENABLE ROW LEVEL SECURITY;
+    // Try to insert a session record directly
+    const { data, error } = await supabase
+      .from("user_sessions")
+      .insert({
+        user_id: userData.user.id,
+        session_token: session.access_token,
+        ip_address: "127.0.0.1",
+        user_agent: "Manual creation",
+        device_type: "desktop",
+        browser: "Manual",
+        os: "Manual",
+        created_at: new Date().toISOString(),
+        last_activity: new Date().toISOString(),
+        expires_at: new Date(session.expires_at! * 1000).toISOString(),
+      })
+      .select()
 
-      -- Create RLS policies
-      DROP POLICY IF EXISTS "Users can view their own sessions" ON public.user_sessions;
-      DROP POLICY IF EXISTS "Users can insert their own sessions" ON public.user_sessions;
-      DROP POLICY IF EXISTS "Users can update their own sessions" ON public.user_sessions;
-      DROP POLICY IF EXISTS "Users can delete their own sessions" ON public.user_sessions;
-
-      CREATE POLICY "Users can view their own sessions" ON public.user_sessions
-        FOR SELECT USING (auth.uid() = user_id);
-
-      CREATE POLICY "Users can insert their own sessions" ON public.user_sessions
-        FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-      CREATE POLICY "Users can update their own sessions" ON public.user_sessions
-        FOR UPDATE USING (auth.uid() = user_id);
-
-      CREATE POLICY "Users can delete their own sessions" ON public.user_sessions
-        FOR DELETE USING (auth.uid() = user_id);
-    `
-
-    const { data, error } = await supabase.rpc("exec_sql", { sql: createTableSQL })
-
-    console.log("Create table result - Data:", data, "Error:", error)
+    console.log("Manual session creation result:", data, error)
 
     if (error) {
       return { success: false, error: error.message }
@@ -146,7 +110,7 @@ export async function createTableIfNotExists() {
 
     return { success: true, data }
   } catch (error) {
-    console.error("Create table error:", error)
+    console.error("Manual session creation error:", error)
     return { success: false, error: String(error) }
   }
 }

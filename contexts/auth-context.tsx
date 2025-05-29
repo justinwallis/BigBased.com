@@ -4,6 +4,7 @@ import type React from "react"
 import { createContext, useContext, useEffect, useState } from "react"
 import { supabaseClient } from "@/lib/supabase/client"
 import type { User, Session } from "@supabase/supabase-js"
+import { trackSession } from "@/app/actions/session-actions"
 
 type AuthContextType = {
   user: User | null
@@ -79,14 +80,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session) {
           setSession(session)
           setUser(session.user)
+
+          // Track session when user is authenticated
+          trackSession().catch((error) => {
+            console.warn("Failed to track session:", error)
+          })
         }
 
         // Set up auth state listener
         const {
           data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event, session) => {
+        } = supabase.auth.onAuthStateChange(async (event, session) => {
           setSession(session)
           setUser(session?.user ?? null)
+
+          // Track session on sign in
+          if (event === "SIGNED_IN" && session) {
+            try {
+              await trackSession()
+            } catch (error) {
+              console.warn("Failed to track session on sign in:", error)
+            }
+          }
         })
 
         setIsLoading(false)
@@ -139,7 +154,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // For now, let's simplify and just do basic password auth
-      // We can add MFA back later once basic auth is working
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -154,6 +168,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (data.session) {
         setSession(data.session)
         setUser(data.user)
+
+        // Track session on successful sign in
+        try {
+          await trackSession()
+        } catch (trackError) {
+          console.warn("Failed to track session after sign in:", trackError)
+        }
       }
 
       console.log("Sign in successful!")
