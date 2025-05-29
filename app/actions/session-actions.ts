@@ -52,13 +52,18 @@ export async function trackSession() {
   try {
     const supabase = createServerSupabaseClient()
 
-    // Get the current user
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
+    // Get the current user using the more secure getUser method
+    const { data: userData, error: userError } = await supabase.auth.getUser()
+
+    if (userError || !userData.user) {
+      return { success: false, error: "Not authenticated" }
+    }
+
+    const { data: sessionData } = await supabase.auth.getSession()
+    const session = sessionData.session
 
     if (!session) {
-      return { success: false, error: "Not authenticated" }
+      return { success: false, error: "No active session" }
     }
 
     // Get request headers
@@ -69,45 +74,61 @@ export async function trackSession() {
     // Parse user agent
     const { deviceType, browser, os } = parseUserAgent(userAgent)
 
-    // Check if session already exists
-    const { data: existingSession } = await supabase
-      .from("user_sessions")
-      .select("*")
-      .eq("session_token", session.access_token)
-      .single()
-
-    if (existingSession) {
-      // Update last activity
-      const { error } = await supabase
+    try {
+      // Check if session already exists
+      const { data: existingSession, error: queryError } = await supabase
         .from("user_sessions")
-        .update({
-          last_activity: new Date().toISOString(),
+        .select("*")
+        .eq("session_token", session.access_token)
+        .single()
+
+      if (queryError) {
+        // If the error is because the table doesn't exist, we'll handle it later
+        if (queryError.code !== "42P01") {
+          console.error("Error checking session:", queryError)
+        }
+      }
+
+      if (existingSession) {
+        // Update last activity
+        const { error } = await supabase
+          .from("user_sessions")
+          .update({
+            last_activity: new Date().toISOString(),
+            ip_address: ipAddress,
+            user_agent: userAgent,
+          })
+          .eq("id", existingSession.id)
+
+        if (error) {
+          console.error("Error updating session:", error)
+        }
+      } else {
+        // Create new session record
+        const { error } = await supabase.from("user_sessions").insert({
+          user_id: userData.user.id,
+          session_token: session.access_token,
           ip_address: ipAddress,
           user_agent: userAgent,
+          device_type: deviceType,
+          browser: browser,
+          os: os,
+          created_at: new Date().toISOString(),
+          last_activity: new Date().toISOString(),
+          expires_at: new Date(session.expires_at! * 1000).toISOString(),
         })
-        .eq("id", existingSession.id)
 
-      if (error) {
-        console.error("Error updating session:", error)
+        if (error) {
+          // If the error is because the table doesn't exist, we need to create it
+          if (error.code === "42P01") {
+            console.error("The user_sessions table doesn't exist. Please create it first.")
+          } else {
+            console.error("Error creating session:", error)
+          }
+        }
       }
-    } else {
-      // Create new session record
-      const { error } = await supabase.from("user_sessions").insert({
-        user_id: session.user.id,
-        session_token: session.access_token,
-        ip_address: ipAddress,
-        user_agent: userAgent,
-        device_type: deviceType,
-        browser: browser,
-        os: os,
-        created_at: new Date().toISOString(),
-        last_activity: new Date().toISOString(),
-        expires_at: new Date(session.expires_at! * 1000).toISOString(),
-      })
-
-      if (error) {
-        console.error("Error creating session:", error)
-      }
+    } catch (error) {
+      console.error("Error tracking session:", error)
     }
 
     return { success: true }
@@ -122,37 +143,53 @@ export async function getUserSessions() {
   try {
     const supabase = createServerSupabaseClient()
 
-    // Get the current user
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
+    // Get the current user using the more secure getUser method
+    const { data: userData, error: userError } = await supabase.auth.getUser()
 
-    if (!session) {
+    if (userError || !userData.user) {
       return { success: false, error: "Not authenticated" }
     }
 
-    // Get all sessions for the user
-    const { data: sessions, error } = await supabase
-      .from("user_sessions")
-      .select("*")
-      .eq("user_id", session.user.id)
-      .order("last_activity", { ascending: false })
+    const { data: sessionData } = await supabase.auth.getSession()
+    const session = sessionData.session
 
-    if (error) {
-      console.error("Error fetching sessions:", error)
-      return { success: false, error: error.message }
+    if (!session) {
+      return { success: false, error: "No active session" }
     }
 
-    // Mark current session
-    const sessionsWithCurrent =
-      sessions?.map((s) => ({
-        ...s,
-        is_current: s.session_token === session.access_token,
-      })) || []
+    try {
+      // Get all sessions for the user
+      const { data: sessions, error } = await supabase
+        .from("user_sessions")
+        .select("*")
+        .eq("user_id", userData.user.id)
+        .order("last_activity", { ascending: false })
 
-    return {
-      success: true,
-      data: sessionsWithCurrent,
+      if (error) {
+        // If the error is because the table doesn't exist, return an empty array
+        if (error.code === "42P01") {
+          console.error("The user_sessions table doesn't exist. Please create it first.")
+          return { success: true, data: [] }
+        }
+
+        console.error("Error fetching sessions:", error)
+        return { success: false, error: error.message }
+      }
+
+      // Mark current session
+      const sessionsWithCurrent =
+        sessions?.map((s) => ({
+          ...s,
+          is_current: s.session_token === session.access_token,
+        })) || []
+
+      return {
+        success: true,
+        data: sessionsWithCurrent,
+      }
+    } catch (error) {
+      console.error("Error getting sessions:", error)
+      return { success: false, error: "Failed to get sessions" }
     }
   } catch (error) {
     console.error("Error in getUserSessions:", error)
@@ -165,57 +202,80 @@ export async function revokeSession(sessionId: string) {
   try {
     const supabase = createServerSupabaseClient()
 
-    // Get the current user
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
+    // Get the current user using the more secure getUser method
+    const { data: userData, error: userError } = await supabase.auth.getUser()
 
-    if (!session) {
+    if (userError || !userData.user) {
       return { success: false, error: "Not authenticated" }
     }
 
-    // Get the session to revoke
-    const { data: sessionToRevoke, error: fetchError } = await supabase
-      .from("user_sessions")
-      .select("*")
-      .eq("id", sessionId)
-      .eq("user_id", session.user.id)
-      .single()
+    const { data: sessionData } = await supabase.auth.getSession()
+    const session = sessionData.session
 
-    if (fetchError || !sessionToRevoke) {
-      return { success: false, error: "Session not found" }
+    if (!session) {
+      return { success: false, error: "No active session" }
     }
 
-    // Don't allow revoking current session
-    if (sessionToRevoke.session_token === session.access_token) {
-      return { success: false, error: "Cannot revoke current session" }
-    }
-
-    // Delete the session record
-    const { error } = await supabase.from("user_sessions").delete().eq("id", sessionId).eq("user_id", session.user.id)
-
-    if (error) {
-      console.error("Error revoking session:", error)
-      return { success: false, error: error.message }
-    }
-
-    // Log the event using async functions
     try {
-      const authEvents = await AUTH_EVENTS()
-      const authStatus = await AUTH_STATUS()
+      // Get the session to revoke
+      const { data: sessionToRevoke, error: fetchError } = await supabase
+        .from("user_sessions")
+        .select("*")
+        .eq("id", sessionId)
+        .eq("user_id", userData.user.id)
+        .single()
 
-      await logAuthEvent(session.user.id, authEvents.LOGOUT, authStatus.SUCCESS, {
-        revoked_session_id: sessionId,
-        device_type: sessionToRevoke.device_type,
-        browser: sessionToRevoke.browser,
-        ip_address: sessionToRevoke.ip_address,
-      })
-    } catch (logError) {
-      // Ignore logging errors
-      console.warn("Failed to log auth event:", logError)
+      if (fetchError) {
+        // If the error is because the table doesn't exist, return an error
+        if (fetchError.code === "42P01") {
+          return { success: false, error: "The user_sessions table doesn't exist" }
+        }
+
+        return { success: false, error: "Session not found" }
+      }
+
+      if (!sessionToRevoke) {
+        return { success: false, error: "Session not found" }
+      }
+
+      // Don't allow revoking current session
+      if (sessionToRevoke.session_token === session.access_token) {
+        return { success: false, error: "Cannot revoke current session" }
+      }
+
+      // Delete the session record
+      const { error } = await supabase
+        .from("user_sessions")
+        .delete()
+        .eq("id", sessionId)
+        .eq("user_id", userData.user.id)
+
+      if (error) {
+        console.error("Error revoking session:", error)
+        return { success: false, error: error.message }
+      }
+
+      // Log the event using async functions
+      try {
+        const authEvents = await AUTH_EVENTS()
+        const authStatus = await AUTH_STATUS()
+
+        await logAuthEvent(userData.user.id, authEvents.LOGOUT, authStatus.SUCCESS, {
+          revoked_session_id: sessionId,
+          device_type: sessionToRevoke.device_type,
+          browser: sessionToRevoke.browser,
+          ip_address: sessionToRevoke.ip_address,
+        })
+      } catch (logError) {
+        // Ignore logging errors
+        console.warn("Failed to log auth event:", logError)
+      }
+
+      return { success: true }
+    } catch (error) {
+      console.error("Error revoking session:", error)
+      return { success: false, error: "Failed to revoke session" }
     }
-
-    return { success: true }
   } catch (error) {
     console.error("Error in revokeSession:", error)
     return { success: false, error: "Failed to revoke session" }
@@ -227,49 +287,69 @@ export async function revokeAllOtherSessions() {
   try {
     const supabase = createServerSupabaseClient()
 
-    // Get the current user
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
+    // Get the current user using the more secure getUser method
+    const { data: userData, error: userError } = await supabase.auth.getUser()
 
-    if (!session) {
+    if (userError || !userData.user) {
       return { success: false, error: "Not authenticated" }
     }
 
-    // Get count of sessions to revoke
-    const { count } = await supabase
-      .from("user_sessions")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", session.user.id)
-      .neq("session_token", session.access_token)
+    const { data: sessionData } = await supabase.auth.getSession()
+    const session = sessionData.session
 
-    // Delete all other sessions
-    const { error } = await supabase
-      .from("user_sessions")
-      .delete()
-      .eq("user_id", session.user.id)
-      .neq("session_token", session.access_token)
-
-    if (error) {
-      console.error("Error revoking all sessions:", error)
-      return { success: false, error: error.message }
+    if (!session) {
+      return { success: false, error: "No active session" }
     }
 
-    // Log the event using async functions
     try {
-      const authEvents = await AUTH_EVENTS()
-      const authStatus = await AUTH_STATUS()
+      // Get count of sessions to revoke
+      const { count, error: countError } = await supabase
+        .from("user_sessions")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userData.user.id)
+        .neq("session_token", session.access_token)
 
-      await logAuthEvent(session.user.id, authEvents.LOGOUT, authStatus.SUCCESS, {
-        action: "revoke_all_other_sessions",
-        sessions_revoked: count || 0,
-      })
-    } catch (logError) {
-      // Ignore logging errors
-      console.warn("Failed to log auth event:", logError)
+      if (countError) {
+        // If the error is because the table doesn't exist, return success with 0 revoked
+        if (countError.code === "42P01") {
+          return { success: true, revokedCount: 0 }
+        }
+
+        console.error("Error counting sessions:", countError)
+        return { success: false, error: countError.message }
+      }
+
+      // Delete all other sessions
+      const { error } = await supabase
+        .from("user_sessions")
+        .delete()
+        .eq("user_id", userData.user.id)
+        .neq("session_token", session.access_token)
+
+      if (error) {
+        console.error("Error revoking all sessions:", error)
+        return { success: false, error: error.message }
+      }
+
+      // Log the event using async functions
+      try {
+        const authEvents = await AUTH_EVENTS()
+        const authStatus = await AUTH_STATUS()
+
+        await logAuthEvent(userData.user.id, authEvents.LOGOUT, authStatus.SUCCESS, {
+          action: "revoke_all_other_sessions",
+          sessions_revoked: count || 0,
+        })
+      } catch (logError) {
+        // Ignore logging errors
+        console.warn("Failed to log auth event:", logError)
+      }
+
+      return { success: true, revokedCount: count || 0 }
+    } catch (error) {
+      console.error("Error revoking all sessions:", error)
+      return { success: false, error: "Failed to revoke sessions" }
     }
-
-    return { success: true, revokedCount: count || 0 }
   } catch (error) {
     console.error("Error in revokeAllOtherSessions:", error)
     return { success: false, error: "Failed to revoke sessions" }
