@@ -1,89 +1,50 @@
 "use server"
 
-import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { neon } from "@neondatabase/serverless"
 
-// Clean up expired and invalid sessions
-export async function cleanupExpiredSessions() {
+export async function cleanupUserSessions(userId: string, currentToken: string) {
   try {
-    const sql = neon(process.env.NEON_DATABASE_URL!)
+    console.log("Cleaning up sessions for user:", userId)
+    console.log("Current token:", currentToken ? "Present (hidden)" : "Missing")
 
-    // Delete expired sessions
+    // Connect to Neon database
+    const sql = neon(process.env.DATABASE_URL || process.env.NEON_DATABASE_URL || "")
+
+    // First, try to find the session by token
     const result = await sql`
-      DELETE FROM public.user_sessions 
-      WHERE expires_at < NOW()
+      DELETE FROM user_sessions 
+      WHERE user_id = ${userId} 
+      AND session_token = ${currentToken}
+      RETURNING id
     `
 
-    console.log("Cleaned up expired sessions:", result)
-    return { success: true, cleaned: result.length }
+    console.log(`Cleaned up ${result.length} sessions`)
+
+    return { success: true, count: result.length }
   } catch (error) {
     console.error("Error cleaning up sessions:", error)
-    return { success: false, error: "Failed to cleanup sessions" }
+    return { success: false, error: error.message }
   }
 }
 
-// Clean up sessions for a specific user when they sign out
-export async function cleanupUserSessions(userId: string, currentSessionToken?: string) {
+export async function cleanupExpiredSessions() {
   try {
-    const sql = neon(process.env.NEON_DATABASE_URL!)
+    // Connect to Neon database
+    const sql = neon(process.env.DATABASE_URL || process.env.NEON_DATABASE_URL || "")
 
-    if (currentSessionToken) {
-      // Remove only the current session
-      await sql`
-        DELETE FROM public.user_sessions 
-        WHERE user_id = ${userId} AND session_token = ${currentSessionToken}
-      `
-    } else {
-      // Remove all sessions for the user
-      await sql`
-        DELETE FROM public.user_sessions 
-        WHERE user_id = ${userId}
-      `
-    }
-
-    return { success: true }
-  } catch (error) {
-    console.error("Error cleaning up user sessions:", error)
-    return { success: false, error: "Failed to cleanup user sessions" }
-  }
-}
-
-// Validate and clean invalid sessions
-export async function validateAndCleanSessions() {
-  try {
-    const supabase = createServerSupabaseClient()
-    const sql = neon(process.env.NEON_DATABASE_URL!)
-
-    // Get all sessions from Neon
-    const sessions = await sql`
-      SELECT session_token, user_id FROM public.user_sessions
+    // Delete expired sessions
+    const now = new Date().toISOString()
+    const result = await sql`
+      DELETE FROM user_sessions 
+      WHERE expires_at < ${now}
+      RETURNING id
     `
 
-    const invalidTokens: string[] = []
+    console.log(`Cleaned up ${result.length} expired sessions`)
 
-    // Check each session token with Supabase
-    for (const session of sessions) {
-      try {
-        const { data, error } = await supabase.auth.getUser(session.session_token)
-        if (error || !data.user) {
-          invalidTokens.push(session.session_token)
-        }
-      } catch {
-        invalidTokens.push(session.session_token)
-      }
-    }
-
-    // Remove invalid sessions
-    if (invalidTokens.length > 0) {
-      await sql`
-        DELETE FROM public.user_sessions 
-        WHERE session_token = ANY(${invalidTokens})
-      `
-    }
-
-    return { success: true, cleaned: invalidTokens.length }
+    return { success: true, count: result.length }
   } catch (error) {
-    console.error("Error validating sessions:", error)
-    return { success: false, error: "Failed to validate sessions" }
+    console.error("Error cleaning up expired sessions:", error)
+    return { success: false, error: error.message }
   }
 }

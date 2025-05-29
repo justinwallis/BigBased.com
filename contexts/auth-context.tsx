@@ -26,10 +26,14 @@ type AuthContextType = {
     email: string,
     password: string,
     mfaCode?: string,
+    factorId?: string | null,
+    challengeId?: string | null,
   ) => Promise<{
     error: any | null
     data: any | null
     mfaRequired?: boolean
+    factorId?: string
+    challengeId?: string
   }>
   signOut: () => Promise<void>
 }
@@ -141,17 +145,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const signIn = async (email: string, password: string, mfaCode?: string) => {
+  const signIn = async (
+    email: string,
+    password: string,
+    mfaCode?: string,
+    factorId?: string | null,
+    challengeId?: string | null,
+  ) => {
     try {
       console.log("=== Auth Context Sign In ===")
       console.log("Email:", email)
       console.log("Has Password:", !!password)
       console.log("Has MFA Code:", !!mfaCode)
+      console.log("Has Factor ID:", !!factorId)
+      console.log("Has Challenge ID:", !!challengeId)
 
       const supabase = supabaseClient()
       if (!supabase) {
         console.error("Supabase client not available")
         return { data: null, error: new Error("Supabase client not available") }
+      }
+
+      // If we have MFA code and challenge details, verify directly
+      if (mfaCode && factorId && challengeId) {
+        console.log("Verifying MFA code directly")
+        const { data: mfaData, error: mfaError } = await supabase.auth.mfa.verify({
+          factorId,
+          challengeId,
+          code: mfaCode,
+        })
+
+        if (mfaError) {
+          console.error("MFA verification failed:", mfaError)
+          return { data: null, error: mfaError }
+        }
+
+        // Update session with MFA verified session
+        if (mfaData.session) {
+          setSession(mfaData.session)
+          setUser(mfaData.user)
+
+          // Track session after MFA verification
+          try {
+            await trackSession()
+          } catch (trackError) {
+            console.warn("Failed to track session after MFA verification:", trackError)
+          }
+        }
+
+        console.log("MFA verification successful!")
+        return { data: mfaData, error: null }
       }
 
       // First attempt: Password authentication
@@ -166,33 +209,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Check if MFA is required
-      if (data?.session?.factor_challenge && !mfaCode) {
+      if (data?.session?.factor_challenge) {
         console.log("MFA required, waiting for code")
-        return { data: null, error: null, mfaRequired: true }
-      }
+        console.log("Factor ID:", data.session.factor_challenge.id)
+        console.log("Challenge ID:", data.session.factor_challenge.challenge_id)
 
-      // If MFA code provided, verify it
-      if (data?.session?.factor_challenge && mfaCode) {
-        console.log("Verifying MFA code")
-        const { data: mfaData, error: mfaError } = await supabase.auth.mfa.verify({
+        return {
+          data: null,
+          error: null,
+          mfaRequired: true,
           factorId: data.session.factor_challenge.id,
           challengeId: data.session.factor_challenge.challenge_id,
-          code: mfaCode,
-        })
-
-        if (mfaError) {
-          console.error("MFA verification failed:", mfaError)
-          return { data: null, error: mfaError }
         }
-
-        // Update session with MFA verified session
-        if (mfaData.session) {
-          setSession(mfaData.session)
-          setUser(mfaData.user)
-        }
-
-        console.log("MFA verification successful!")
-        return { data: mfaData, error: null }
       }
 
       // If successful without MFA, update the local state

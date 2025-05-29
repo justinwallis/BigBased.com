@@ -204,11 +204,11 @@ export default function SessionsClientPage() {
   const getDeviceIcon = (deviceType?: string) => {
     switch (deviceType?.toLowerCase()) {
       case "mobile":
-        return <Smartphone className="h-5 w-5 text-blue-500" />
+        return <Smartphone className="h-5 w-5 text-blue-500 dark:text-blue-400" />
       case "tablet":
-        return <Tablet className="h-5 w-5 text-purple-500" />
+        return <Tablet className="h-5 w-5 text-purple-500 dark:text-purple-400" />
       default:
-        return <Monitor className="h-5 w-5 text-green-500" />
+        return <Monitor className="h-5 w-5 text-green-500 dark:text-green-400" />
     }
   }
 
@@ -247,42 +247,43 @@ export default function SessionsClientPage() {
     const now = new Date()
     const diffMins = Math.floor((now.getTime() - lastActivity.getTime()) / 60000)
 
-    if (session.is_current) return { status: "current", color: "bg-green-500", text: "Current Session" }
-    if (diffMins < 5) return { status: "active", color: "bg-blue-500", text: "Active" }
-    if (diffMins < 60) return { status: "recent", color: "bg-yellow-500", text: "Recent" }
-    return { status: "idle", color: "bg-gray-500", text: "Idle" }
+    if (session.is_current)
+      return { status: "current", color: "bg-green-500 dark:bg-green-500", text: "Current Session" }
+    if (diffMins < 5) return { status: "active", color: "bg-blue-500 dark:bg-blue-500", text: "Active" }
+    if (diffMins < 60) return { status: "recent", color: "bg-yellow-500 dark:bg-yellow-500", text: "Recent" }
+    return { status: "idle", color: "bg-gray-500 dark:bg-gray-400", text: "Idle" }
   }
 
   if (tableExists === false) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950/90 p-6">
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="text-center space-y-4">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/20 mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 mb-4">
               <Database className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
               Session Management
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground dark:text-gray-400 max-w-2xl mx-auto">
               Track and manage your active sessions across all devices
             </p>
           </div>
 
-          <Card className="border-2 border-dashed border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20">
+          <Card className="border-2 border-dashed border-blue-200 dark:border-blue-800/50 bg-blue-50/50 dark:bg-blue-950/20">
             <CardHeader className="text-center">
-              <CardTitle className="flex items-center justify-center gap-3 text-blue-800 dark:text-blue-200">
+              <CardTitle className="flex items-center justify-center gap-3 text-blue-800 dark:text-blue-300">
                 <Settings className="h-6 w-6" />
                 Database Setup Required
               </CardTitle>
-              <CardDescription className="text-blue-700 dark:text-blue-300">
+              <CardDescription className="text-blue-700 dark:text-blue-400">
                 The sessions table needs to be created in your Neon database to start tracking sessions.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <Alert className="border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/50">
-                <Database className="h-4 w-4" />
-                <AlertDescription className="text-blue-800 dark:text-blue-200">
+              <Alert className="border-blue-200 dark:border-blue-800/50 bg-blue-50 dark:bg-blue-950/30">
+                <Database className="h-4 w-4 text-blue-700 dark:text-blue-400" />
+                <AlertDescription className="text-blue-800 dark:text-blue-300">
                   <strong>Architecture:</strong> Your app uses <strong>Neon</strong> for the main database and{" "}
                   <strong>Supabase</strong> for authentication. The sessions table will be created in Neon.
                 </AlertDescription>
@@ -293,30 +294,43 @@ export default function SessionsClientPage() {
                   <Zap className="h-5 w-5 mr-2" />
                   {loading ? "Creating..." : "Create Sessions Table"}
                 </Button>
-                <Button variant="outline" onClick={handleNeonDebug} size="lg" className="h-12">
+                <Button
+                  variant="outline"
+                  onClick={handleNeonDebug}
+                  size="lg"
+                  className="h-12 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700"
+                >
                   <Database className="h-5 w-5 mr-2" />
                   Test Neon Connection
                 </Button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Button variant="outline" onClick={handleTestNeonOperations}>
+                <Button
+                  variant="outline"
+                  onClick={handleTestNeonOperations}
+                  className="dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700"
+                >
                   <TestTube className="h-4 w-4 mr-2" />
                   Test Operations
                 </Button>
-                <Button variant="outline" onClick={handleEnvDebug}>
+                <Button
+                  variant="outline"
+                  onClick={handleEnvDebug}
+                  className="dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700"
+                >
                   <Settings className="h-4 w-4 mr-2" />
                   Check Environment
                 </Button>
               </div>
 
               {debugInfo && (
-                <Card className="bg-muted/50">
+                <Card className="bg-muted/50 dark:bg-gray-900/50 dark:border-gray-800">
                   <CardHeader>
-                    <CardTitle className="text-sm">Debug Information ({debugInfo.type})</CardTitle>
+                    <CardTitle className="text-sm dark:text-gray-300">Debug Information ({debugInfo.type})</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <pre className="text-xs overflow-auto max-h-64 p-4 bg-background rounded border">
+                    <pre className="text-xs overflow-auto max-h-64 p-4 bg-background dark:bg-gray-950 rounded border dark:border-gray-800">
                       {JSON.stringify(debugInfo, null, 2)}
                     </pre>
                   </CardContent>
@@ -330,22 +344,35 @@ export default function SessionsClientPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950/90 p-6">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
               Active Sessions
             </h1>
-            <p className="text-muted-foreground">Monitor and manage your sessions across all devices and locations</p>
+            <p className="text-muted-foreground dark:text-gray-400">
+              Monitor and manage your sessions across all devices and locations
+            </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={() => setShowDebug(!showDebug)} size="sm">
+            <Button
+              variant="outline"
+              onClick={() => setShowDebug(!showDebug)}
+              size="sm"
+              className="dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700"
+            >
               <Bug className="h-4 w-4 mr-2" />
               Debug
             </Button>
-            <Button variant="outline" onClick={loadSessions} disabled={loading} size="sm">
+            <Button
+              variant="outline"
+              onClick={loadSessions}
+              disabled={loading}
+              size="sm"
+              className="dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700"
+            >
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </Button>
@@ -354,20 +381,20 @@ export default function SessionsClientPage() {
 
         {/* Error Alert */}
         {error && (
-          <Alert variant="destructive" className="border-red-200 dark:border-red-800">
+          <Alert variant="destructive" className="border-red-200 dark:border-red-800/50 dark:bg-red-950/20">
             <AlertTriangle className="h-4 w-4" />
-            <AlertDescription className="font-medium">{error}</AlertDescription>
+            <AlertDescription className="font-medium dark:text-red-300">{error}</AlertDescription>
           </Alert>
         )}
 
         {/* Debug Panel */}
         {showDebug && debugInfo && (
-          <Card className="border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
+          <Card className="border-amber-200 dark:border-amber-800/50 bg-amber-50/50 dark:bg-amber-950/20">
             <CardHeader>
-              <CardTitle className="text-amber-800 dark:text-amber-200">Debug Information ({debugInfo.type})</CardTitle>
+              <CardTitle className="text-amber-800 dark:text-amber-300">Debug Information ({debugInfo.type})</CardTitle>
             </CardHeader>
             <CardContent>
-              <pre className="text-xs overflow-auto max-h-64 p-4 bg-background rounded border">
+              <pre className="text-xs overflow-auto max-h-64 p-4 bg-background dark:bg-gray-950 rounded border dark:border-gray-800">
                 {JSON.stringify(debugInfo, null, 2)}
               </pre>
             </CardContent>
@@ -376,27 +403,27 @@ export default function SessionsClientPage() {
 
         {/* Loading State */}
         {loading && !sessions.length ? (
-          <Card className="border-2 border-dashed">
+          <Card className="border-2 border-dashed dark:border-gray-800 dark:bg-gray-900/50">
             <CardContent className="pt-12 pb-12">
               <div className="flex flex-col items-center justify-center space-y-4">
                 <div className="relative">
-                  <div className="w-12 h-12 border-4 border-muted rounded-full"></div>
-                  <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin absolute top-0"></div>
+                  <div className="w-12 h-12 border-4 border-muted dark:border-gray-700 rounded-full"></div>
+                  <div className="w-12 h-12 border-4 border-primary dark:border-blue-500 border-t-transparent rounded-full animate-spin absolute top-0"></div>
                 </div>
-                <p className="text-muted-foreground">Loading your sessions...</p>
+                <p className="text-muted-foreground dark:text-gray-400">Loading your sessions...</p>
               </div>
             </CardContent>
           </Card>
         ) : sessions.length === 0 ? (
           /* Empty State */
-          <Card className="border-2 border-dashed">
+          <Card className="border-2 border-dashed dark:border-gray-800 dark:bg-gray-900/50">
             <CardContent className="pt-12 pb-12">
               <div className="text-center space-y-4">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted">
-                  <Activity className="h-8 w-8 text-muted-foreground" />
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted dark:bg-gray-800">
+                  <Activity className="h-8 w-8 text-muted-foreground dark:text-gray-400" />
                 </div>
-                <h3 className="text-xl font-semibold">No Active Sessions</h3>
-                <p className="text-muted-foreground max-w-md mx-auto">
+                <h3 className="text-xl font-semibold dark:text-white">No Active Sessions</h3>
+                <p className="text-muted-foreground dark:text-gray-400 max-w-md mx-auto">
                   You don't have any tracked sessions yet. Sessions will appear here when you sign in from different
                   devices or browsers.
                 </p>
@@ -408,35 +435,39 @@ export default function SessionsClientPage() {
           <>
             {/* Stats Bar */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card>
+              <Card className="dark:bg-gray-900 dark:border-gray-800">
                 <CardContent className="pt-6">
                   <div className="flex items-center space-x-2">
-                    <Activity className="h-5 w-5 text-blue-500" />
+                    <Activity className="h-5 w-5 text-blue-500 dark:text-blue-400" />
                     <div>
-                      <p className="text-2xl font-bold">{sessions.length}</p>
-                      <p className="text-sm text-muted-foreground">Total Sessions</p>
+                      <p className="text-2xl font-bold dark:text-white">{sessions.length}</p>
+                      <p className="text-sm text-muted-foreground dark:text-gray-400">Total Sessions</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="dark:bg-gray-900 dark:border-gray-800">
                 <CardContent className="pt-6">
                   <div className="flex items-center space-x-2">
-                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    <CheckCircle className="h-5 w-5 text-green-500 dark:text-green-400" />
                     <div>
-                      <p className="text-2xl font-bold">{sessions.filter((s) => s.is_current).length}</p>
-                      <p className="text-sm text-muted-foreground">Current Session</p>
+                      <p className="text-2xl font-bold dark:text-white">
+                        {sessions.filter((s) => s.is_current).length}
+                      </p>
+                      <p className="text-sm text-muted-foreground dark:text-gray-400">Current Session</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="dark:bg-gray-900 dark:border-gray-800">
                 <CardContent className="pt-6">
                   <div className="flex items-center space-x-2">
-                    <Globe className="h-5 w-5 text-purple-500" />
+                    <Globe className="h-5 w-5 text-purple-500 dark:text-purple-400" />
                     <div>
-                      <p className="text-2xl font-bold">{new Set(sessions.map((s) => s.ip_address)).size}</p>
-                      <p className="text-sm text-muted-foreground">Unique Locations</p>
+                      <p className="text-2xl font-bold dark:text-white">
+                        {new Set(sessions.map((s) => s.ip_address)).size}
+                      </p>
+                      <p className="text-sm text-muted-foreground dark:text-gray-400">Unique Locations</p>
                     </div>
                   </div>
                 </CardContent>
@@ -445,7 +476,7 @@ export default function SessionsClientPage() {
 
             {/* Actions Bar */}
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground dark:text-gray-400">
                 {sessions.length} active session{sessions.length !== 1 ? "s" : ""} found
               </p>
               {sessions.length > 1 && (
@@ -454,7 +485,7 @@ export default function SessionsClientPage() {
                   size="sm"
                   onClick={handleRevokeAllOther}
                   disabled={revokingAll}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/20 dark:border-red-900/50"
                 >
                   {revokingAll ? (
                     <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
@@ -473,10 +504,10 @@ export default function SessionsClientPage() {
                 return (
                   <Card
                     key={session.id}
-                    className={`transition-all duration-200 hover:shadow-lg ${
+                    className={`transition-all duration-200 hover:shadow-lg dark:hover:shadow-none ${
                       session.is_current
-                        ? "ring-2 ring-green-500 bg-green-50/50 dark:bg-green-950/20 border-green-200 dark:border-green-800"
-                        : "hover:border-primary/50"
+                        ? "ring-2 ring-green-500 bg-green-50/50 dark:bg-green-950/10 border-green-200 dark:border-green-800/50"
+                        : "hover:border-primary/50 dark:bg-gray-900 dark:border-gray-800 dark:hover:border-blue-800/50"
                     }`}
                   >
                     <CardContent className="pt-6">
@@ -486,14 +517,18 @@ export default function SessionsClientPage() {
                           <div className="space-y-3 flex-1">
                             {/* Main Info */}
                             <div className="flex items-center gap-3 flex-wrap">
-                              <span className="font-semibold text-lg">
+                              <span className="font-semibold text-lg dark:text-white">
                                 {getBrowserIcon(session.browser)} {session.browser} on {session.os}
                               </span>
                               <div className="flex items-center gap-2">
                                 <div className={`w-2 h-2 rounded-full ${sessionStatus.color}`}></div>
                                 <Badge
                                   variant={session.is_current ? "default" : "secondary"}
-                                  className={session.is_current ? "bg-green-500 hover:bg-green-600 text-white" : ""}
+                                  className={
+                                    session.is_current
+                                      ? "bg-green-500 hover:bg-green-600 text-white"
+                                      : "dark:bg-gray-800 dark:text-gray-300"
+                                  }
                                 >
                                   {sessionStatus.text}
                                 </Badge>
@@ -503,28 +538,34 @@ export default function SessionsClientPage() {
                             {/* Details Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                               {session.ip_address && (
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                  <MapPin className="h-4 w-4 text-blue-500" />
+                                <div className="flex items-center gap-2 text-muted-foreground dark:text-gray-400">
+                                  <MapPin className="h-4 w-4 text-blue-500 dark:text-blue-400" />
                                   <span className="font-mono">{session.ip_address}</span>
                                 </div>
                               )}
-                              <div className="flex items-center gap-2 text-muted-foreground">
-                                <Clock className="h-4 w-4 text-purple-500" />
+                              <div className="flex items-center gap-2 text-muted-foreground dark:text-gray-400">
+                                <Clock className="h-4 w-4 text-purple-500 dark:text-purple-400" />
                                 <span>Active {formatDate(session.last_activity)}</span>
                               </div>
-                              <div className="flex items-center gap-2 text-muted-foreground">
-                                <Wifi className="h-4 w-4 text-green-500" />
+                              <div className="flex items-center gap-2 text-muted-foreground dark:text-gray-400">
+                                <Wifi className="h-4 w-4 text-green-500 dark:text-green-400" />
                                 <span>Since {formatDate(session.created_at)}</span>
                               </div>
                             </div>
 
                             {/* Device Type Badge */}
                             <div className="flex items-center gap-2">
-                              <Badge variant="outline" className="text-xs">
+                              <Badge
+                                variant="outline"
+                                className="text-xs dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700"
+                              >
                                 {session.device_type?.charAt(0).toUpperCase() + session.device_type?.slice(1)}
                               </Badge>
                               {session.expires_at && (
-                                <Badge variant="outline" className="text-xs">
+                                <Badge
+                                  variant="outline"
+                                  className="text-xs dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700"
+                                >
                                   Expires {formatDate(session.expires_at)}
                                 </Badge>
                               )}
@@ -539,7 +580,7 @@ export default function SessionsClientPage() {
                             size="sm"
                             onClick={() => handleRevokeSession(session.id)}
                             disabled={revoking === session.id}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 ml-4"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/20 dark:border-red-900/50 dark:bg-gray-800 ml-4"
                           >
                             {revoking === session.id ? (
                               <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
