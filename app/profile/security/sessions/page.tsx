@@ -1,11 +1,10 @@
-import type { Metadata, Viewport } from "next/types"
-import { viewportConfig, generateMetadata } from "../../../metadata-config"
+import { AuthProvider } from "@/contexts/auth-context"
 import SessionsClientPage from "./SessionsClientPage"
 
-export const metadata: Metadata = generateMetadata("Active Sessions", "View and manage your active login sessions.")
-
-export const viewport: Viewport = viewportConfig
-
 export default function SessionsPage() {
-  return <SessionsClientPage />
+  return (
+    <AuthProvider>
+      <SessionsClientPage />
+    </AuthProvider>
+  )
 }

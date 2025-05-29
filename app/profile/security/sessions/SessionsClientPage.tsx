@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -32,6 +31,7 @@ import {
 } from "lucide-react"
 import { getUserSessions, revokeSession, revokeAllOtherSessions } from "@/app/actions/session-actions"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useAuth } from "@/contexts/auth-context"
 
 interface SessionData {
   id: string
@@ -87,38 +87,17 @@ function formatTimeAgo(timestamp: string) {
 
 export default function SessionsClientPage() {
   const router = useRouter()
-  const supabase = createClientComponentClient()
+  const { user, session, isLoading: authLoading } = useAuth()
 
   const [sessions, setSessions] = useState<SessionData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [tableExists, setTableExists] = useState<boolean | null>(null)
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const [revoking, setRevoking] = useState<string | null>(null)
   const [revokingAll, setRevokingAll] = useState(false)
   const [showRevokeDialog, setShowRevokeDialog] = useState<string | null>(null)
   const [showRevokeAllDialog, setShowRevokeAllDialog] = useState(false)
   const [activeTab, setActiveTab] = useState<string>("sessions")
-
-  // Check authentication without redirecting immediately
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data } = await supabase.auth.getSession()
-        setIsAuthenticated(!!data.session)
-
-        if (!data.session) {
-          // Don't redirect immediately, let user see the setup interface first
-          console.log("No active session found")
-        }
-      } catch (error) {
-        console.error("Auth check error:", error)
-        setIsAuthenticated(false)
-      }
-    }
-
-    checkAuth()
-  }, [supabase])
 
   // Fetch sessions
   const fetchSessions = async () => {
@@ -142,7 +121,6 @@ export default function SessionsClientPage() {
           setTableExists(false)
           setError("The sessions table doesn't exist yet. Please create it first.")
         } else if (result.error?.includes("Not authenticated")) {
-          setIsAuthenticated(false)
           setError("You need to be logged in to view sessions.")
         } else {
           setError(result.error || "Failed to fetch sessions")
@@ -156,14 +134,14 @@ export default function SessionsClientPage() {
     }
   }
 
+  // Only fetch sessions when user is authenticated and not loading
   useEffect(() => {
-    // Only fetch sessions if we know the user is authenticated
-    if (isAuthenticated === true) {
+    if (!authLoading && user && session) {
       fetchSessions()
-    } else if (isAuthenticated === false) {
+    } else if (!authLoading && !user) {
       setLoading(false)
     }
-  }, [isAuthenticated])
+  }, [authLoading, user, session])
 
   // Handle session revocation
   const handleRevokeSession = async (sessionId: string) => {
@@ -255,8 +233,48 @@ CREATE POLICY "Users can update their own sessions" ON user_sessions
 CREATE POLICY "Users can delete their own sessions" ON user_sessions
   FOR DELETE USING (auth.uid() = user_id);`
 
+  // Show loading while auth is loading
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container max-w-4xl mx-auto py-8 px-4">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center space-x-2 mb-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => router.push("/profile?tab=security")}
+                    className="p-0 h-auto"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-1" />
+                    Back to Security
+                  </Button>
+                </div>
+                <h1 className="text-2xl font-bold">Active Sessions</h1>
+                <p className="text-muted-foreground">
+                  Manage your active login sessions and revoke access from devices you don't recognize
+                </p>
+              </div>
+            </div>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center py-8">
+                  <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
+                  <p className="text-muted-foreground">Loading authentication...</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   // Show authentication error if not logged in
-  if (isAuthenticated === false) {
+  if (!user || !session) {
     return (
       <div className="min-h-screen bg-background">
         <div className="container max-w-4xl mx-auto py-8 px-4">
