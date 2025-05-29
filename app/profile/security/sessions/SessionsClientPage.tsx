@@ -35,6 +35,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/contexts/auth-context"
 import { debugSessionTracking } from "@/app/actions/debug-session-actions"
 import { createUserSessionsTable, checkTableExists } from "@/app/actions/create-table-action"
+import { comprehensiveDebug, testTableAccess } from "@/app/actions/comprehensive-debug-action"
 
 interface SessionData {
   id: string
@@ -105,6 +106,8 @@ export default function SessionsClientPage() {
   const [debugging, setDebugging] = useState(false)
   const [creatingTable, setCreatingTable] = useState(false)
   const [checkingTable, setCheckingTable] = useState(false)
+  const [comprehensiveDebugResult, setComprehensiveDebugResult] = useState<any>(null)
+  const [testingAccess, setTestingAccess] = useState(false)
 
   // Fetch sessions
   const fetchSessions = async () => {
@@ -205,6 +208,34 @@ export default function SessionsClientPage() {
       setDebugResult({ success: false, error: String(error) })
     } finally {
       setDebugging(false)
+    }
+  }
+
+  const handleComprehensiveDebug = async () => {
+    setDebugging(true)
+    try {
+      const result = await comprehensiveDebug()
+      setComprehensiveDebugResult(result)
+      console.log("Comprehensive debug result:", result)
+    } catch (error) {
+      console.error("Comprehensive debug error:", error)
+      setComprehensiveDebugResult({ success: false, error: String(error) })
+    } finally {
+      setDebugging(false)
+    }
+  }
+
+  const handleTestAccess = async () => {
+    setTestingAccess(true)
+    try {
+      const result = await testTableAccess()
+      setDebugResult(result)
+      console.log("Test access result:", result)
+    } catch (error) {
+      console.error("Test access error:", error)
+      setDebugResult({ success: false, error: String(error) })
+    } finally {
+      setTestingAccess(false)
     }
   }
 
@@ -417,13 +448,17 @@ CREATE POLICY "Users can delete their own sessions" ON public.user_sessions
               </p>
             </div>
             <div className="flex space-x-2">
+              <Button variant="outline" onClick={handleTestAccess} disabled={testingAccess}>
+                <Code className={`h-4 w-4 mr-2 ${testingAccess ? "animate-spin" : ""}`} />
+                Test Access
+              </Button>
+              <Button variant="outline" onClick={handleComprehensiveDebug} disabled={debugging}>
+                <Database className={`h-4 w-4 mr-2 ${debugging ? "animate-spin" : ""}`} />
+                Full Debug
+              </Button>
               <Button variant="outline" onClick={handleCheckTable} disabled={checkingTable}>
                 <Database className={`h-4 w-4 mr-2 ${checkingTable ? "animate-spin" : ""}`} />
                 Check Table
-              </Button>
-              <Button variant="outline" onClick={handleDebugSession} disabled={debugging}>
-                <Code className={`h-4 w-4 mr-2 ${debugging ? "animate-spin" : ""}`} />
-                Debug
               </Button>
               <Button variant="outline" onClick={fetchSessions} disabled={loading}>
                 <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
@@ -566,6 +601,20 @@ CREATE POLICY "Users can delete their own sessions" ON public.user_sessions
               <CardContent>
                 <pre className="text-xs overflow-x-auto bg-slate-100 dark:bg-slate-800 p-2 rounded">
                   {JSON.stringify(debugResult, null, 2)}
+                </pre>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Comprehensive Debug Results */}
+          {comprehensiveDebugResult && (
+            <Card className="border-indigo-200 bg-indigo-50 dark:border-indigo-800 dark:bg-indigo-950">
+              <CardHeader>
+                <CardTitle className="text-indigo-800 dark:text-indigo-200">Comprehensive Debug Results</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <pre className="text-xs overflow-x-auto bg-slate-100 dark:bg-slate-800 p-2 rounded max-h-96 overflow-y-auto">
+                  {JSON.stringify(comprehensiveDebugResult, null, 2)}
                 </pre>
               </CardContent>
             </Card>
