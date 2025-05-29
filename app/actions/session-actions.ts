@@ -2,9 +2,9 @@
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { headers } from "next/headers"
-import { logAuthEvent, AUTH_EVENTS, AUTH_STATUS } from "./auth-log-actions"
+import { logAuthEvent, getAuthEvents, getAuthStatus } from "./auth-log-actions"
 
-// Helper function to parse user agent (moved inside functions to avoid export)
+// Helper function to parse user agent
 function parseUserAgent(userAgent: string) {
   const ua = userAgent.toLowerCase()
 
@@ -199,8 +199,11 @@ export async function revokeSession(sessionId: string) {
       return { success: false, error: error.message }
     }
 
-    // Log the event (only if logAuthEvent function exists)
+    // Log the event
     try {
+      const AUTH_EVENTS = await getAuthEvents()
+      const AUTH_STATUS = await getAuthStatus()
+
       await logAuthEvent(session.user.id, AUTH_EVENTS.LOGOUT, AUTH_STATUS.SUCCESS, {
         revoked_session_id: sessionId,
         device_type: sessionToRevoke.device_type,
@@ -252,8 +255,11 @@ export async function revokeAllOtherSessions() {
       return { success: false, error: error.message }
     }
 
-    // Log the event (only if logAuthEvent function exists)
+    // Log the event
     try {
+      const AUTH_EVENTS = await getAuthEvents()
+      const AUTH_STATUS = await getAuthStatus()
+
       await logAuthEvent(session.user.id, AUTH_EVENTS.LOGOUT, AUTH_STATUS.SUCCESS, {
         action: "revoke_all_other_sessions",
         sessions_revoked: count || 0,
