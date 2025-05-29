@@ -4,8 +4,6 @@ import type React from "react"
 import { createContext, useContext, useEffect, useState } from "react"
 import { supabaseClient } from "@/lib/supabase/client"
 import type { User, Session } from "@supabase/supabase-js"
-import { trackSession } from "@/app/actions/session-actions"
-import { cleanupUserSessions } from "@/app/actions/session-cleanup-actions"
 
 type AuthContextType = {
   user: User | null
@@ -26,14 +24,10 @@ type AuthContextType = {
     email: string,
     password: string,
     mfaCode?: string,
-    factorId?: string | null,
-    challengeId?: string | null,
   ) => Promise<{
     error: any | null
     data: any | null
     mfaRequired?: boolean
-    factorId?: string
-    challengeId?: string
   }>
   signOut: () => Promise<void>
 }
@@ -85,28 +79,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session) {
           setSession(session)
           setUser(session.user)
-
-          // Track session when user is authenticated
-          trackSession().catch((error) => {
-            console.warn("Failed to track session:", error)
-          })
         }
 
         // Set up auth state listener
         const {
           data: { subscription },
-        } = supabase.auth.onAuthStateChange(async (event, session) => {
+        } = supabase.auth.onAuthStateChange((_event, session) => {
           setSession(session)
           setUser(session?.user ?? null)
-
-          // Track session on sign in
-          if (event === "SIGNED_IN" && session) {
-            try {
-              await trackSession()
-            } catch (error) {
-              console.warn("Failed to track session on sign in:", error)
-            }
-          }
         })
 
         setIsLoading(false)
@@ -145,20 +125,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const signIn = async (
-    email: string,
-    password: string,
-    mfaCode?: string,
-    factorId?: string | null,
-    challengeId?: string | null,
-  ) => {
+  const signIn = async (email: string, password: string, mfaCode?: string) => {
     try {
       console.log("=== Auth Context Sign In ===")
       console.log("Email:", email)
       console.log("Has Password:", !!password)
       console.log("Has MFA Code:", !!mfaCode)
-      console.log("Has Factor ID:", !!factorId)
-      console.log("Has Challenge ID:", !!challengeId)
 
       const supabase = supabaseClient()
       if (!supabase) {
@@ -166,38 +138,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { data: null, error: new Error("Supabase client not available") }
       }
 
-      // If we have MFA code and challenge details, verify directly
-      if (mfaCode && factorId && challengeId) {
-        console.log("Verifying MFA code directly")
-        const { data: mfaData, error: mfaError } = await supabase.auth.mfa.verify({
-          factorId,
-          challengeId,
-          code: mfaCode,
-        })
+      // First, check if user has MFA enabled before attempting login
+      const { checkUserMfaStatus, verifyMfaForLogin } = await import("@/app/actions/mfa-actions")
 
-        if (mfaError) {
-          console.error("MFA verification failed:", mfaError)
-          return { data: null, error: mfaError }
-        }
+      const mfaStatusResult = await checkUserMfaStatus(email)
+      console.log("MFA Status Result:", mfaStatusResult)
 
-        // Update session with MFA verified session
-        if (mfaData.session) {
-          setSession(mfaData.session)
-          setUser(mfaData.user)
+      const hasMfaEnabled = mfaStatusResult.success && mfaStatusResult.data?.enabled
 
-          // Track session after MFA verification
-          try {
-            await trackSession()
-          } catch (trackError) {
-            console.warn("Failed to track session after MFA verification:", trackError)
-          }
-        }
-
-        console.log("MFA verification successful!")
-        return { data: mfaData, error: null }
+      // If MFA is enabled and no code provided, return mfaRequired
+      if (hasMfaEnabled && !mfaCode) {
+        console.log("MFA required but no code provided")
+        return { data: null, error: null, mfaRequired: true }
       }
 
-      // First attempt: Password authentication
+      // If MFA is enabled and code is provided, verify it first
+      if (hasMfaEnabled && mfaCode) {
+        console.log("Verifying MFA code...")
+        const mfaVerifyResult = await verifyMfaForLogin(email, mfaCode)
+
+        if (!mfaVerifyResult.success) {
+          console.log("MFA verification failed:", mfaVerifyResult.error)
+          return { data: null, error: new Error(mfaVerifyResult.error || "Invalid verification code") }
+        }
+        console.log("MFA verification successful")
+      }
+
+      // Proceed with password authentication
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -208,32 +175,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { data: null, error }
       }
 
-      // Check if MFA is required
-      if (data?.session?.factor_challenge) {
-        console.log("MFA required, waiting for code")
-        console.log("Factor ID:", data.session.factor_challenge.id)
-        console.log("Challenge ID:", data.session.factor_challenge.challenge_id)
-
-        return {
-          data: null,
-          error: null,
-          mfaRequired: true,
-          factorId: data.session.factor_challenge.id,
-          challengeId: data.session.factor_challenge.challenge_id,
-        }
-      }
-
-      // If successful without MFA, update the local state
+      // If successful, update the local state
       if (data.session) {
         setSession(data.session)
         setUser(data.user)
-
-        // Track session on successful sign in
-        try {
-          await trackSession()
-        } catch (trackError) {
-          console.warn("Failed to track session after sign in:", trackError)
-        }
       }
 
       console.log("Sign in successful!")
@@ -252,22 +197,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return
       }
 
-      // Get current session before signing out
-      const { data: sessionData } = await supabase.auth.getSession()
-      const currentToken = sessionData.session?.access_token
-
-      // Sign out from Supabase
       await supabase.auth.signOut()
-
-      // Clean up session from Neon
-      if (user?.id && currentToken) {
-        try {
-          await cleanupUserSessions(user.id, currentToken)
-        } catch (error) {
-          console.warn("Failed to cleanup session:", error)
-        }
-      }
-
       setUser(null)
       setSession(null)
     } catch (error) {

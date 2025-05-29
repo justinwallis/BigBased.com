@@ -25,5 +25,5 @@ export function supabaseClient() {
   return supabaseInstance
 }
 
-// Export createClient as a named export
+// Export for backward compatibility
 export const createClient = supabaseClient

@@ -1,42 +1,36 @@
 "use server"
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { cookies, headers } from "next/headers"
+import { AUTH_EVENTS, AUTH_STATUS } from "@/app/constants/auth-log-constants"
 
-// Export constants as async functions to satisfy "use server" requirements
-export async function AUTH_EVENTS() {
-  return {
-    LOGIN: "login",
-    LOGOUT: "logout",
-    REGISTER: "register",
-    PASSWORD_RESET: "password_reset",
-    PASSWORD_CHANGE: "password_change",
-    EMAIL_CHANGE: "email_change",
-    MFA_ENABLE: "mfa_enable",
-    MFA_DISABLE: "mfa_disable",
-    MFA_CHALLENGE: "mfa_challenge",
-    BACKUP_CODES_GENERATE: "backup_codes_generate",
-  } as const
-}
+// Re-export constants for backward compatibility
+export { AUTH_EVENTS, AUTH_STATUS }
 
-export async function AUTH_STATUS() {
-  return {
-    SUCCESS: "success",
-    FAILURE: "failure",
-    PENDING: "pending",
-  } as const
-}
-
-// Log auth events
-export async function logAuthEvent(userId: string, eventType: string, status: string, metadata: any = {}) {
+// Log an authentication event
+export async function logAuthEvent(
+  userId: string | null,
+  eventType: string,
+  status: string,
+  details: Record<string, any> = {},
+) {
   try {
+    const cookieStore = cookies()
     const supabase = createServerSupabaseClient()
 
-    const { error } = await supabase.from("auth_logs").insert({
-      user_id: userId,
-      event_type: eventType,
-      status: status,
-      metadata: metadata,
-      created_at: new Date().toISOString(),
+    // Get IP address and user agent
+    const headersList = headers()
+    const ipAddress = headersList.get("x-forwarded-for") || "unknown"
+    const userAgent = headersList.get("user-agent") || "unknown"
+
+    // Call the database function to log the event
+    const { error } = await supabase.rpc("log_auth_event", {
+      p_user_id: userId,
+      p_event_type: eventType,
+      p_ip_address: ipAddress,
+      p_user_agent: userAgent,
+      p_status: status,
+      p_details: details,
     })
 
     if (error) {
@@ -47,36 +41,74 @@ export async function logAuthEvent(userId: string, eventType: string, status: st
     return { success: true }
   } catch (error) {
     console.error("Error in logAuthEvent:", error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error logging auth event",
-    }
+    return { success: false, error: "Failed to log authentication event" }
   }
 }
 
-// Get auth logs for a user
-export async function getUserAuthLogs(userId: string, limit = 10) {
+// Get authentication logs for the current user
+export async function getUserAuthLogs(
+  page = 1,
+  pageSize = 10,
+  filters: { eventType?: string; startDate?: string; endDate?: string } = {},
+) {
   try {
+    const cookieStore = cookies()
     const supabase = createServerSupabaseClient()
 
-    const { data, error } = await supabase
+    // Get the current user
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+
+    if (!session) {
+      return { success: false, error: "Not authenticated" }
+    }
+
+    const userId = session.user.id
+
+    // Build the query
+    let query = supabase
       .from("auth_logs")
-      .select("*")
+      .select("*", { count: "exact" })
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
-      .limit(limit)
+
+    // Apply filters
+    if (filters.eventType) {
+      query = query.eq("event_type", filters.eventType)
+    }
+
+    if (filters.startDate) {
+      query = query.gte("created_at", filters.startDate)
+    }
+
+    if (filters.endDate) {
+      query = query.lte("created_at", filters.endDate)
+    }
+
+    // Apply pagination
+    const from = (page - 1) * pageSize
+    const to = from + pageSize - 1
+
+    const { data, error, count } = await query.range(from, to)
 
     if (error) {
       console.error("Error fetching auth logs:", error)
       return { success: false, error: error.message }
     }
 
-    return { success: true, data }
+    return {
+      success: true,
+      data,
+      pagination: {
+        page,
+        pageSize,
+        total: count || 0,
+        totalPages: count ? Math.ceil(count / pageSize) : 0,
+      },
+    }
   } catch (error) {
     console.error("Error in getUserAuthLogs:", error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error fetching auth logs",
-    }
+    return { success: false, error: "Failed to fetch authentication logs" }
   }
 }
