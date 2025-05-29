@@ -17,13 +17,16 @@ import {
   Database,
   Settings,
   Zap,
+  TestTube,
 } from "lucide-react"
 import { getUserSessions, revokeSession, revokeAllOtherSessions } from "@/app/actions/session-actions"
+import { debugDatabaseConnection, checkEnvironmentVariables } from "@/app/actions/database-connection-debug"
 import {
-  debugDatabaseConnection,
-  checkEnvironmentVariables,
-  createTableWithRawSQL,
-} from "@/app/actions/database-connection-debug"
+  createUserSessionsTableInNeon,
+  debugNeonConnection,
+  testNeonSessionOperations,
+} from "@/app/actions/neon-database-setup"
+import { useAuth } from "@/contexts/auth-context"
 
 interface UserSession {
   id: string
@@ -42,6 +45,7 @@ interface UserSession {
 }
 
 export default function SessionsClientPage() {
+  const { user } = useAuth()
   const [sessions, setSessions] = useState<UserSession[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -105,10 +109,20 @@ export default function SessionsClientPage() {
   const handleDatabaseDebug = async () => {
     try {
       const result = await debugDatabaseConnection()
-      setDebugInfo({ type: "database", ...result })
-      console.log("Database debug result:", result)
+      setDebugInfo({ type: "supabase-database", ...result })
+      console.log("Supabase database debug result:", result)
     } catch (err) {
       console.error("Database debug error:", err)
+    }
+  }
+
+  const handleNeonDebug = async () => {
+    try {
+      const result = await debugNeonConnection()
+      setDebugInfo({ type: "neon-database", ...result })
+      console.log("Neon database debug result:", result)
+    } catch (err) {
+      console.error("Neon debug error:", err)
     }
   }
 
@@ -122,24 +136,39 @@ export default function SessionsClientPage() {
     }
   }
 
-  const handleCreateTableRaw = async () => {
+  const handleCreateNeonTable = async () => {
     try {
       setLoading(true)
-      const result = await createTableWithRawSQL()
-      setDebugInfo({ type: "create-table", ...result })
-      console.log("Create table result:", result)
+      const result = await createUserSessionsTableInNeon()
+      setDebugInfo({ type: "neon-create-table", ...result })
+      console.log("Neon create table result:", result)
 
       if (result.success) {
         setTableExists(true)
         await loadSessions()
       } else {
-        setError(result.error || "Failed to create table")
+        setError(result.error || "Failed to create table in Neon")
       }
     } catch (err) {
       setError("An unexpected error occurred")
-      console.error("Create table error:", err)
+      console.error("Create Neon table error:", err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleTestNeonOperations = async () => {
+    if (!user?.id) {
+      setError("User not authenticated")
+      return
+    }
+
+    try {
+      const result = await testNeonSessionOperations(user.id)
+      setDebugInfo({ type: "neon-operations", ...result })
+      console.log("Neon operations test result:", result)
+    } catch (err) {
+      console.error("Neon operations test error:", err)
     }
   }
 
@@ -170,25 +199,37 @@ export default function SessionsClientPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Database className="h-5 w-5" />
-              Database Connection Issue
+              Database Setup Required
             </CardTitle>
             <CardDescription>
-              The application cannot access the sessions table. Let's debug the connection.
+              The sessions table needs to be created in your Neon database (not Supabase).
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+              <h3 className="font-semibold mb-2 text-blue-800 dark:text-blue-200">Database Configuration:</h3>
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                Your app uses <strong>Neon</strong> for the main database and <strong>Supabase</strong> for
+                authentication. The sessions table needs to be created in Neon, not Supabase.
+              </p>
+            </div>
+
             <div className="flex gap-2 flex-wrap">
-              <Button onClick={handleDatabaseDebug}>
+              <Button onClick={handleCreateNeonTable} disabled={loading}>
+                <Zap className="h-4 w-4 mr-2" />
+                Create Table in Neon
+              </Button>
+              <Button variant="outline" onClick={handleNeonDebug}>
                 <Database className="h-4 w-4 mr-2" />
-                Debug Database
+                Debug Neon
+              </Button>
+              <Button variant="outline" onClick={handleTestNeonOperations}>
+                <TestTube className="h-4 w-4 mr-2" />
+                Test Neon Operations
               </Button>
               <Button variant="outline" onClick={handleEnvDebug}>
                 <Settings className="h-4 w-4 mr-2" />
                 Check Environment
-              </Button>
-              <Button onClick={handleCreateTableRaw} disabled={loading}>
-                <Zap className="h-4 w-4 mr-2" />
-                Force Create Table
               </Button>
             </div>
 
@@ -201,25 +242,15 @@ export default function SessionsClientPage() {
               </div>
             )}
 
-            <div className="bg-amber-50 dark:bg-amber-950 p-4 rounded-lg border border-amber-200 dark:border-amber-800">
-              <h3 className="font-semibold mb-2 text-amber-800 dark:text-amber-200">Troubleshooting Steps:</h3>
-              <ol className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
-                <li>1. Click "Debug Database" to check the connection</li>
-                <li>2. Click "Check Environment" to verify configuration</li>
-                <li>3. Click "Force Create Table" to create the table directly</li>
-                <li>4. If all fails, the app may be connected to a different database</li>
-              </ol>
-            </div>
-
             <div className="bg-muted p-4 rounded-lg">
-              <h3 className="font-semibold mb-2">Manual Setup (if needed):</h3>
+              <h3 className="font-semibold mb-2">Manual Setup (Neon SQL Editor):</h3>
               <p className="text-sm text-muted-foreground mb-2">
-                If the automatic creation fails, run this in your Supabase SQL editor:
+                If automatic creation fails, run this in your Neon SQL editor:
               </p>
               <pre className="text-xs bg-background p-2 rounded border overflow-auto">
                 {`CREATE TABLE IF NOT EXISTS public.user_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL,
   session_token TEXT NOT NULL,
   ip_address TEXT,
   user_agent TEXT,
@@ -232,19 +263,9 @@ export default function SessionsClientPage() {
   expires_at TIMESTAMPTZ
 );
 
-ALTER TABLE public.user_sessions ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view their own sessions" ON public.user_sessions
-  FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert their own sessions" ON public.user_sessions
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update their own sessions" ON public.user_sessions
-  FOR UPDATE USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can delete their own sessions" ON public.user_sessions
-  FOR DELETE USING (auth.uid() = user_id);`}
+CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON public.user_sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_session_token ON public.user_sessions(session_token);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_last_activity ON public.user_sessions(last_activity);`}
               </pre>
             </div>
           </CardContent>
@@ -261,7 +282,7 @@ CREATE POLICY "Users can delete their own sessions" ON public.user_sessions
           <p className="text-muted-foreground">Manage your active sessions across different devices</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleDatabaseDebug}>
+          <Button variant="outline" onClick={handleNeonDebug}>
             <Bug className="h-4 w-4 mr-2" />
             Debug
           </Button>
