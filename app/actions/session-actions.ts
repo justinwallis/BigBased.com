@@ -2,7 +2,6 @@
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { headers } from "next/headers"
-import { logAuthEvent, AUTH_EVENTS, AUTH_STATUS } from "./auth-log-actions"
 
 // Helper function to parse user agent
 function parseUserAgent(userAgent: string) {
@@ -152,7 +151,7 @@ export async function getUserSessions() {
 
     return {
       success: true,
-      data: sessionsWithCurrent,
+      sessions: sessionsWithCurrent,
     }
   } catch (error) {
     console.error("Error in getUserSessions:", error)
@@ -199,13 +198,8 @@ export async function revokeSession(sessionId: string) {
       return { success: false, error: error.message }
     }
 
-    // Log the event
-    await logAuthEvent(session.user.id, AUTH_EVENTS.LOGOUT, AUTH_STATUS.SUCCESS, {
-      revoked_session_id: sessionId,
-      device_type: sessionToRevoke.device_type,
-      browser: sessionToRevoke.browser,
-      ip_address: sessionToRevoke.ip_address,
-    })
+    // Log the revocation (simple console log for now)
+    console.log(`Session ${sessionId} revoked for user ${session.user.id}`)
 
     return { success: true }
   } catch (error) {
@@ -247,11 +241,8 @@ export async function revokeAllOtherSessions() {
       return { success: false, error: error.message }
     }
 
-    // Log the event
-    await logAuthEvent(session.user.id, AUTH_EVENTS.LOGOUT, AUTH_STATUS.SUCCESS, {
-      action: "revoke_all_other_sessions",
-      sessions_revoked: count || 0,
-    })
+    // Log the revocation (simple console log for now)
+    console.log(`All other sessions revoked for user ${session.user.id}, count: ${count || 0}`)
 
     return { success: true, revokedCount: count || 0 }
   } catch (error) {
