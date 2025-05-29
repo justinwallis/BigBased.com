@@ -4,11 +4,13 @@ import { cookies } from "next/headers"
 import { createClient } from "@supabase/supabase-js"
 import { generateRandomString } from "@/lib/utils"
 import { validatePassword } from "@/lib/password-validation"
+import { trackSession } from "./session-actions"
 
 // Auth event constants (duplicated here to avoid import issues)
 const AUTH_EVENTS = {
   LOGIN_SUCCESS: "login_success",
   LOGIN_FAILURE: "login_failure",
+  LOGIN_ATTEMPT: "login_attempt",
   LOGOUT: "logout",
   SIGNUP_ATTEMPT: "signup_attempt",
   PASSWORD_RESET_REQUEST: "password_reset_request",
@@ -52,6 +54,26 @@ async function getSupabase() {
       persistSession: false,
     },
   })
+}
+
+export async function getAuthUser() {
+  try {
+    const supabase = await getSupabase()
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession()
+
+    if (error) {
+      console.error("Error getting auth user:", error)
+      return { user: null, error: error.message }
+    }
+
+    return { user: session?.user || null, error: null }
+  } catch (error) {
+    console.error("Error in getAuthUser:", error)
+    return { user: null, error: "Failed to get authenticated user" }
+  }
 }
 
 export async function signIn(email: string, password: string, mfaCode?: string) {
@@ -104,6 +126,14 @@ export async function signIn(email: string, password: string, mfaCode?: string) 
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
       })
+
+      // Track the new session
+      try {
+        await trackSession()
+      } catch (trackError) {
+        console.error("Error tracking session:", trackError)
+        // Don't fail the login if session tracking fails
+      }
     }
 
     // Log login success
