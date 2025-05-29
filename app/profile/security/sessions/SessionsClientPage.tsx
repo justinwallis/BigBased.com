@@ -214,6 +214,28 @@ export default function SessionsClientPage() {
     }
   }
 
+  const createSessionsTable = async () => {
+    try {
+      const response = await fetch("/api/debug/create-sessions-table", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        // Refresh the debug info
+        await testNeonConnection()
+        // Refresh sessions
+        await loadSessions()
+      } else {
+        setError(`Failed to create table: ${result.error}`)
+      }
+    } catch (error) {
+      setError(`Error creating table: ${error.message}`)
+    }
+  }
+
   if (isLoading || !user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
@@ -408,6 +430,16 @@ export default function SessionsClientPage() {
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Retest Connection
               </Button>
+              {!neonDebug.tableExists && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={createSessionsTable}
+                  className="text-blue-700 border-blue-300"
+                >
+                  Create Sessions Table
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>

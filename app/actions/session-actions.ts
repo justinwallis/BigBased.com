@@ -1,5 +1,6 @@
 "use server"
 
+import { neon } from "@neondatabase/serverless"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { headers } from "next/headers"
 
@@ -46,18 +47,37 @@ function parseUserAgent(userAgent: string) {
   return { deviceType, browser, os }
 }
 
+// Get Neon SQL client
+function getNeonClient() {
+  const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL
+  if (!databaseUrl) {
+    throw new Error("No DATABASE_URL or NEON_DATABASE_URL found")
+  }
+  return neon(databaseUrl)
+}
+
 // Create or update session tracking
 export async function trackSession() {
   try {
     const supabase = createServerSupabaseClient()
+    const sql = getNeonClient()
 
-    // Get the current user
+    // Get the current user from Supabase Auth
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      return { success: false, error: "Not authenticated" }
+    }
+
+    // Get current session
     const {
       data: { session },
     } = await supabase.auth.getSession()
 
     if (!session) {
-      return { success: false, error: "Not authenticated" }
+      return { success: false, error: "No session found" }
     }
 
     // Get request headers
@@ -68,45 +88,34 @@ export async function trackSession() {
     // Parse user agent
     const { deviceType, browser, os } = parseUserAgent(userAgent)
 
-    // Check if session already exists
-    const { data: existingSession } = await supabase
-      .from("user_sessions")
-      .select("*")
-      .eq("session_token", session.access_token)
-      .single()
+    // Check if session already exists in Neon
+    const existingSessions = await sql`
+      SELECT * FROM user_sessions 
+      WHERE session_token = ${session.access_token}
+    `
 
-    if (existingSession) {
+    if (existingSessions.length > 0) {
       // Update last activity
-      const { error } = await supabase
-        .from("user_sessions")
-        .update({
-          last_activity: new Date().toISOString(),
-          ip_address: ipAddress,
-          user_agent: userAgent,
-        })
-        .eq("id", existingSession.id)
-
-      if (error) {
-        console.error("Error updating session:", error)
-      }
+      await sql`
+        UPDATE user_sessions 
+        SET 
+          last_activity = NOW(),
+          ip_address = ${ipAddress},
+          user_agent = ${userAgent}
+        WHERE session_token = ${session.access_token}
+      `
     } else {
       // Create new session record
-      const { error } = await supabase.from("user_sessions").insert({
-        user_id: session.user.id,
-        session_token: session.access_token,
-        ip_address: ipAddress,
-        user_agent: userAgent,
-        device_type: deviceType,
-        browser: browser,
-        os: os,
-        created_at: new Date().toISOString(),
-        last_activity: new Date().toISOString(),
-        expires_at: new Date(session.expires_at! * 1000).toISOString(),
-      })
-
-      if (error) {
-        console.error("Error creating session:", error)
-      }
+      await sql`
+        INSERT INTO user_sessions (
+          user_id, session_token, ip_address, user_agent, 
+          device_type, browser, os, created_at, last_activity, expires_at
+        ) VALUES (
+          ${user.id}, ${session.access_token}, ${ipAddress}, ${userAgent},
+          ${deviceType}, ${browser}, ${os}, NOW(), NOW(), 
+          ${new Date(session.expires_at! * 1000).toISOString()}
+        )
+      `
     }
 
     return { success: true }
@@ -120,34 +129,49 @@ export async function trackSession() {
 export async function getUserSessions() {
   try {
     const supabase = createServerSupabaseClient()
+    const sql = getNeonClient()
 
-    // Get the current user
+    // Get the current user from Supabase Auth
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      return { success: false, error: "Not authenticated" }
+    }
+
+    // Get current session
     const {
       data: { session },
     } = await supabase.auth.getSession()
 
     if (!session) {
-      return { success: false, error: "Not authenticated" }
+      return { success: false, error: "No session found" }
     }
 
-    // Get all sessions for the user
-    const { data: sessions, error } = await supabase
-      .from("user_sessions")
-      .select("*")
-      .eq("user_id", session.user.id)
-      .order("last_activity", { ascending: false })
+    // Get all sessions for the user from Neon
+    const sessions = await sql`
+      SELECT * FROM user_sessions 
+      WHERE user_id = ${user.id} 
+      ORDER BY last_activity DESC
+    `
 
-    if (error) {
-      console.error("Error fetching sessions:", error)
-      return { success: false, error: error.message }
-    }
-
-    // Mark current session
-    const sessionsWithCurrent =
-      sessions?.map((s) => ({
-        ...s,
-        is_current: s.session_token === session.access_token,
-      })) || []
+    // Mark current session and format data
+    const sessionsWithCurrent = sessions.map((s) => ({
+      id: s.id,
+      user_id: s.user_id,
+      session_token: s.session_token,
+      ip_address: s.ip_address,
+      user_agent: s.user_agent,
+      device_type: s.device_type,
+      browser: s.browser,
+      os: s.os,
+      location: s.location,
+      created_at: s.created_at,
+      last_activity: s.last_activity,
+      expires_at: s.expires_at,
+      is_current: s.session_token === session.access_token,
+    }))
 
     return {
       success: true,
@@ -155,7 +179,7 @@ export async function getUserSessions() {
     }
   } catch (error) {
     console.error("Error in getUserSessions:", error)
-    return { success: false, error: "Failed to fetch sessions" }
+    return { success: false, error: error.message || "Failed to fetch sessions" }
   }
 }
 
@@ -163,48 +187,56 @@ export async function getUserSessions() {
 export async function revokeSession(sessionId: string) {
   try {
     const supabase = createServerSupabaseClient()
+    const sql = getNeonClient()
 
-    // Get the current user
+    // Get the current user from Supabase Auth
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      return { success: false, error: "Not authenticated" }
+    }
+
+    // Get current session
     const {
       data: { session },
     } = await supabase.auth.getSession()
 
     if (!session) {
-      return { success: false, error: "Not authenticated" }
+      return { success: false, error: "No session found" }
     }
 
-    // Get the session to revoke
-    const { data: sessionToRevoke, error: fetchError } = await supabase
-      .from("user_sessions")
-      .select("*")
-      .eq("id", sessionId)
-      .eq("user_id", session.user.id)
-      .single()
+    // Get the session to revoke from Neon
+    const sessionsToRevoke = await sql`
+      SELECT * FROM user_sessions 
+      WHERE id = ${sessionId} AND user_id = ${user.id}
+    `
 
-    if (fetchError || !sessionToRevoke) {
+    if (sessionsToRevoke.length === 0) {
       return { success: false, error: "Session not found" }
     }
+
+    const sessionToRevoke = sessionsToRevoke[0]
 
     // Don't allow revoking current session
     if (sessionToRevoke.session_token === session.access_token) {
       return { success: false, error: "Cannot revoke current session" }
     }
 
-    // Delete the session record
-    const { error } = await supabase.from("user_sessions").delete().eq("id", sessionId).eq("user_id", session.user.id)
+    // Delete the session record from Neon
+    await sql`
+      DELETE FROM user_sessions 
+      WHERE id = ${sessionId} AND user_id = ${user.id}
+    `
 
-    if (error) {
-      console.error("Error revoking session:", error)
-      return { success: false, error: error.message }
-    }
-
-    // Log the revocation (simple console log for now)
-    console.log(`Session ${sessionId} revoked for user ${session.user.id}`)
+    // Log the revocation
+    console.log(`Session ${sessionId} revoked for user ${user.id}`)
 
     return { success: true }
   } catch (error) {
     console.error("Error in revokeSession:", error)
-    return { success: false, error: "Failed to revoke session" }
+    return { success: false, error: error.message || "Failed to revoke session" }
   }
 }
 
@@ -212,41 +244,46 @@ export async function revokeSession(sessionId: string) {
 export async function revokeAllOtherSessions() {
   try {
     const supabase = createServerSupabaseClient()
+    const sql = getNeonClient()
 
-    // Get the current user
+    // Get the current user from Supabase Auth
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      return { success: false, error: "Not authenticated" }
+    }
+
+    // Get current session
     const {
       data: { session },
     } = await supabase.auth.getSession()
 
     if (!session) {
-      return { success: false, error: "Not authenticated" }
+      return { success: false, error: "No session found" }
     }
 
     // Get count of sessions to revoke
-    const { count } = await supabase
-      .from("user_sessions")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", session.user.id)
-      .neq("session_token", session.access_token)
+    const countResult = await sql`
+      SELECT COUNT(*) as count FROM user_sessions 
+      WHERE user_id = ${user.id} AND session_token != ${session.access_token}
+    `
 
-    // Delete all other sessions
-    const { error } = await supabase
-      .from("user_sessions")
-      .delete()
-      .eq("user_id", session.user.id)
-      .neq("session_token", session.access_token)
+    const count = Number.parseInt(countResult[0]?.count || "0")
 
-    if (error) {
-      console.error("Error revoking all sessions:", error)
-      return { success: false, error: error.message }
-    }
+    // Delete all other sessions from Neon
+    await sql`
+      DELETE FROM user_sessions 
+      WHERE user_id = ${user.id} AND session_token != ${session.access_token}
+    `
 
-    // Log the revocation (simple console log for now)
-    console.log(`All other sessions revoked for user ${session.user.id}, count: ${count || 0}`)
+    // Log the revocation
+    console.log(`All other sessions revoked for user ${user.id}, count: ${count}`)
 
-    return { success: true, revokedCount: count || 0 }
+    return { success: true, revokedCount: count }
   } catch (error) {
     console.error("Error in revokeAllOtherSessions:", error)
-    return { success: false, error: "Failed to revoke sessions" }
+    return { success: false, error: error.message || "Failed to revoke sessions" }
   }
 }
