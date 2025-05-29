@@ -4,7 +4,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { headers } from "next/headers"
 import { logAuthEvent, AUTH_EVENTS, AUTH_STATUS } from "./auth-log-actions"
 
-// Helper function to parse user agent
+// Helper function to parse user agent (moved inside functions to avoid export)
 function parseUserAgent(userAgent: string) {
   const ua = userAgent.toLowerCase()
 
@@ -199,13 +199,18 @@ export async function revokeSession(sessionId: string) {
       return { success: false, error: error.message }
     }
 
-    // Log the event
-    await logAuthEvent(session.user.id, AUTH_EVENTS.LOGOUT, AUTH_STATUS.SUCCESS, {
-      revoked_session_id: sessionId,
-      device_type: sessionToRevoke.device_type,
-      browser: sessionToRevoke.browser,
-      ip_address: sessionToRevoke.ip_address,
-    })
+    // Log the event (only if logAuthEvent function exists)
+    try {
+      await logAuthEvent(session.user.id, AUTH_EVENTS.LOGOUT, AUTH_STATUS.SUCCESS, {
+        revoked_session_id: sessionId,
+        device_type: sessionToRevoke.device_type,
+        browser: sessionToRevoke.browser,
+        ip_address: sessionToRevoke.ip_address,
+      })
+    } catch (logError) {
+      // Ignore logging errors
+      console.warn("Failed to log auth event:", logError)
+    }
 
     return { success: true }
   } catch (error) {
@@ -247,11 +252,16 @@ export async function revokeAllOtherSessions() {
       return { success: false, error: error.message }
     }
 
-    // Log the event
-    await logAuthEvent(session.user.id, AUTH_EVENTS.LOGOUT, AUTH_STATUS.SUCCESS, {
-      action: "revoke_all_other_sessions",
-      sessions_revoked: count || 0,
-    })
+    // Log the event (only if logAuthEvent function exists)
+    try {
+      await logAuthEvent(session.user.id, AUTH_EVENTS.LOGOUT, AUTH_STATUS.SUCCESS, {
+        action: "revoke_all_other_sessions",
+        sessions_revoked: count || 0,
+      })
+    } catch (logError) {
+      // Ignore logging errors
+      console.warn("Failed to log auth event:", logError)
+    }
 
     return { success: true, revokedCount: count || 0 }
   } catch (error) {
