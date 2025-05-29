@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -27,8 +27,11 @@ import {
   RefreshCw,
   AlertTriangle,
   ArrowLeft,
+  Database,
+  Code,
 } from "lucide-react"
 import { getUserSessions, revokeSession, revokeAllOtherSessions } from "@/app/actions/session-actions"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 interface SessionData {
   id: string
@@ -48,7 +51,7 @@ interface SessionData {
 
 // Helper function to get device icon
 function getDeviceIcon(deviceType: string) {
-  switch (deviceType.toLowerCase()) {
+  switch (deviceType?.toLowerCase()) {
     case "mobile":
       return <Smartphone className="h-4 w-4" />
     case "tablet":
@@ -89,10 +92,12 @@ export default function SessionsClientPage() {
   const [sessions, setSessions] = useState<SessionData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [tableExists, setTableExists] = useState(true)
   const [revoking, setRevoking] = useState<string | null>(null)
   const [revokingAll, setRevokingAll] = useState(false)
   const [showRevokeDialog, setShowRevokeDialog] = useState<string | null>(null)
   const [showRevokeAllDialog, setShowRevokeAllDialog] = useState(false)
+  const [activeTab, setActiveTab] = useState<string>("sessions")
 
   // Check if user is authenticated
   useEffect(() => {
@@ -116,8 +121,14 @@ export default function SessionsClientPage() {
 
       if (result.success) {
         setSessions(result.data || [])
+        setTableExists(true)
       } else {
-        setError(result.error || "Failed to fetch sessions")
+        if (result.error?.includes("table doesn't exist")) {
+          setTableExists(false)
+          setError("The sessions table doesn't exist yet. Please create it first.")
+        } else {
+          setError(result.error || "Failed to fetch sessions")
+        }
       }
     } catch (error) {
       console.error("Error fetching sessions:", error)
@@ -178,6 +189,51 @@ export default function SessionsClientPage() {
   const currentSession = sessions.find((session) => session.is_current)
   const otherSessions = sessions.filter((session) => !session.is_current)
 
+  const createTableSQL = `
+-- Create user_sessions table for tracking active sessions
+CREATE TABLE IF NOT EXISTS user_sessions (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  session_token TEXT NOT NULL,
+  ip_address TEXT,
+  user_agent TEXT,
+  location TEXT,
+  device_type TEXT DEFAULT 'desktop',
+  browser TEXT DEFAULT 'unknown',
+  os TEXT DEFAULT 'unknown',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  last_activity TIMESTAMPTZ DEFAULT NOW(),
+  expires_at TIMESTAMPTZ,
+  UNIQUE(session_token)
+);
+
+-- Create index for faster queries
+CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_session_token ON user_sessions(session_token);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_last_activity ON user_sessions(last_activity);
+
+-- Enable RLS
+ALTER TABLE user_sessions ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS policies
+DROP POLICY IF EXISTS "Users can view their own sessions" ON user_sessions;
+DROP POLICY IF EXISTS "Users can insert their own sessions" ON user_sessions;
+DROP POLICY IF EXISTS "Users can update their own sessions" ON user_sessions;
+DROP POLICY IF EXISTS "Users can delete their own sessions" ON user_sessions;
+
+CREATE POLICY "Users can view their own sessions" ON user_sessions
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own sessions" ON user_sessions
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own sessions" ON user_sessions
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own sessions" ON user_sessions
+  FOR DELETE USING (auth.uid() = user_id);
+`
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container max-w-4xl mx-auto py-8 px-4">
@@ -207,8 +263,105 @@ export default function SessionsClientPage() {
             </Button>
           </div>
 
+          {/* Table Doesn't Exist Error */}
+          {!tableExists && (
+            <Tabs defaultValue="info" className="w-full" value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="info">Information</TabsTrigger>
+                <TabsTrigger value="sql">SQL Setup</TabsTrigger>
+              </TabsList>
+              <TabsContent value="info" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Database className="h-5 w-5 text-amber-500" />
+                      <span>Database Setup Required</span>
+                    </CardTitle>
+                    <CardDescription>
+                      The sessions table doesn't exist in your database. You need to create it first.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <p>
+                        To use the sessions feature, you need to create the <code>user_sessions</code> table in your
+                        Supabase database. This table will store information about active login sessions.
+                      </p>
+                      <div className="bg-amber-50 dark:bg-amber-950 p-4 rounded-md border border-amber-200 dark:border-amber-800">
+                        <div className="flex items-start space-x-2">
+                          <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+                          <div className="text-amber-800 dark:text-amber-300 text-sm">
+                            <p className="font-medium">You need to run the SQL script to create the table</p>
+                            <p className="mt-1">
+                              Go to the SQL tab above and copy the SQL script. Then run it in your Supabase SQL editor.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <Button variant="outline" onClick={() => router.push("/profile?tab=security")}>
+                      Go Back
+                    </Button>
+                    <Button onClick={() => setActiveTab("sql")}>View SQL Script</Button>
+                  </CardFooter>
+                </Card>
+              </TabsContent>
+              <TabsContent value="sql">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Code className="h-5 w-5 text-blue-500" />
+                      <span>SQL Setup Script</span>
+                    </CardTitle>
+                    <CardDescription>
+                      Run this SQL script in your Supabase SQL editor to create the sessions table
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="relative">
+                      <pre className="bg-slate-950 text-slate-50 p-4 rounded-md overflow-x-auto text-xs sm:text-sm">
+                        <code>{createTableSQL}</code>
+                      </pre>
+                      <Button
+                        className="absolute top-2 right-2"
+                        size="sm"
+                        onClick={() => {
+                          navigator.clipboard.writeText(createTableSQL)
+                        }}
+                      >
+                        Copy
+                      </Button>
+                    </div>
+                    <div className="mt-4 space-y-4">
+                      <h3 className="text-lg font-medium">How to run this script:</h3>
+                      <ol className="list-decimal pl-5 space-y-2">
+                        <li>Go to your Supabase dashboard</li>
+                        <li>Click on "SQL Editor" in the left sidebar</li>
+                        <li>Create a "New Query"</li>
+                        <li>Paste the SQL script above</li>
+                        <li>Click "Run" to execute the script</li>
+                        <li>Come back here and refresh the page</li>
+                      </ol>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <Button variant="outline" onClick={() => setActiveTab("info")}>
+                      Back to Info
+                    </Button>
+                    <Button onClick={fetchSessions}>
+                      <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+                      Refresh
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          )}
+
           {/* Error Message */}
-          {error && (
+          {tableExists && error && (
             <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
               <CardContent className="pt-6">
                 <div className="flex items-center space-x-2 text-red-800 dark:text-red-200">
@@ -220,7 +373,7 @@ export default function SessionsClientPage() {
           )}
 
           {/* Loading State */}
-          {loading && (
+          {tableExists && loading && (
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center py-8">
@@ -232,7 +385,7 @@ export default function SessionsClientPage() {
           )}
 
           {/* Sessions Content */}
-          {!loading && (
+          {tableExists && !loading && (
             <>
               {/* Current Session */}
               {currentSession && (
@@ -381,22 +534,24 @@ export default function SessionsClientPage() {
           )}
 
           {/* Security Tips */}
-          <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
-            <CardHeader>
-              <CardTitle className="text-blue-800 dark:text-blue-200 flex items-center space-x-2">
-                <Shield className="h-5 w-5" />
-                <span>Security Tips</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-blue-700 dark:text-blue-300">
-              <ul className="space-y-2 text-sm">
-                <li>• Regularly review your active sessions and revoke any you don't recognize</li>
-                <li>• If you see suspicious activity, revoke all sessions and change your password immediately</li>
-                <li>• Always sign out from public or shared computers</li>
-                <li>• Enable two-factor authentication for additional security</li>
-              </ul>
-            </CardContent>
-          </Card>
+          {tableExists && (
+            <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
+              <CardHeader>
+                <CardTitle className="text-blue-800 dark:text-blue-200 flex items-center space-x-2">
+                  <Shield className="h-5 w-5" />
+                  <span>Security Tips</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-blue-700 dark:text-blue-300">
+                <ul className="space-y-2 text-sm">
+                  <li>• Regularly review your active sessions and revoke any you don't recognize</li>
+                  <li>• If you see suspicious activity, revoke all sessions and change your password immediately</li>
+                  <li>• Always sign out from public or shared computers</li>
+                  <li>• Enable two-factor authentication for additional security</li>
+                </ul>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Revoke Single Session Dialog */}
