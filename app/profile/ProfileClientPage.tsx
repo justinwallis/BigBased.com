@@ -957,9 +957,11 @@ export default function ProfileClientPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="font-medium">Push Notifications</h4>
-                      <p className="text-sm text-muted-foreground">Get notified on your devices</p>
+                      <p className="text-sm text-muted-foreground">Get instant notifications on your devices</p>
                     </div>
-                    <Button variant="outline">Configure</Button>
+                    <Link href="/profile/notifications/push">
+                      <Button variant="outline">Configure</Button>
+                    </Link>
                   </div>
                 </div>
               </CardContent>
