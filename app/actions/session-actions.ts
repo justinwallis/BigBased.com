@@ -199,9 +199,12 @@ export async function revokeSession(sessionId: string) {
       return { success: false, error: error.message }
     }
 
-    // Log the event
+    // Log the event using async functions
     try {
-      await logAuthEvent(session.user.id, AUTH_EVENTS.LOGOUT, AUTH_STATUS.SUCCESS, {
+      const authEvents = await AUTH_EVENTS()
+      const authStatus = await AUTH_STATUS()
+
+      await logAuthEvent(session.user.id, authEvents.LOGOUT, authStatus.SUCCESS, {
         revoked_session_id: sessionId,
         device_type: sessionToRevoke.device_type,
         browser: sessionToRevoke.browser,
@@ -252,9 +255,12 @@ export async function revokeAllOtherSessions() {
       return { success: false, error: error.message }
     }
 
-    // Log the event
+    // Log the event using async functions
     try {
-      await logAuthEvent(session.user.id, AUTH_EVENTS.LOGOUT, AUTH_STATUS.SUCCESS, {
+      const authEvents = await AUTH_EVENTS()
+      const authStatus = await AUTH_STATUS()
+
+      await logAuthEvent(session.user.id, authEvents.LOGOUT, authStatus.SUCCESS, {
         action: "revoke_all_other_sessions",
         sessions_revoked: count || 0,
       })

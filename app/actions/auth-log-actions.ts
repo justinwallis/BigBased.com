@@ -1,11 +1,30 @@
 "use server"
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"
-import * as constants from "@/lib/auth-constants"
 
-// Re-export the constants using a special pattern
-export const AUTH_EVENTS = constants.AUTH_EVENTS
-export const AUTH_STATUS = constants.AUTH_STATUS
+// Export constants as async functions to satisfy "use server" requirements
+export async function AUTH_EVENTS() {
+  return {
+    LOGIN: "login",
+    LOGOUT: "logout",
+    REGISTER: "register",
+    PASSWORD_RESET: "password_reset",
+    PASSWORD_CHANGE: "password_change",
+    EMAIL_CHANGE: "email_change",
+    MFA_ENABLE: "mfa_enable",
+    MFA_DISABLE: "mfa_disable",
+    MFA_CHALLENGE: "mfa_challenge",
+    BACKUP_CODES_GENERATE: "backup_codes_generate",
+  } as const
+}
+
+export async function AUTH_STATUS() {
+  return {
+    SUCCESS: "success",
+    FAILURE: "failure",
+    PENDING: "pending",
+  } as const
+}
 
 // Log auth events
 export async function logAuthEvent(userId: string, eventType: string, status: string, metadata: any = {}) {
