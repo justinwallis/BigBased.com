@@ -2,6 +2,7 @@
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { headers } from "next/headers"
+import { logAuthEvent, AUTH_EVENTS, AUTH_STATUS } from "./auth-log-actions"
 
 // Helper function to parse user agent
 function parseUserAgent(userAgent: string) {
@@ -130,55 +131,28 @@ export async function getUserSessions() {
       return { success: false, error: "Not authenticated" }
     }
 
-    // For now, return mock data since we don't have the user_sessions table set up
-    // In production, this would query the actual database
-    const mockSessions = [
-      {
-        id: "current-session",
-        user_id: session.user.id,
-        session_token: session.access_token,
-        device_info: "Chrome on Windows 11",
-        ip_address: "192.168.1.100",
-        location: "New York, NY",
-        user_agent:
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        created_at: new Date().toISOString(),
-        last_active: new Date().toISOString(),
-        is_current: true,
-        status: "active",
-      },
-      {
-        id: "mobile-session",
-        user_id: session.user.id,
-        session_token: "mobile-token",
-        device_info: "Safari on iPhone 15",
-        ip_address: "10.0.0.50",
-        location: "San Francisco, CA",
-        user_agent:
-          "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
-        created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-        last_active: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
-        is_current: false,
-        status: "active",
-      },
-      {
-        id: "old-session",
-        user_id: session.user.id,
-        session_token: "old-token",
-        device_info: "Firefox on Ubuntu",
-        ip_address: "203.0.113.45",
-        location: "Austin, TX",
-        user_agent: "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0",
-        created_at: new Date(Date.now() - 604800000).toISOString(), // 1 week ago
-        last_active: new Date(Date.now() - 259200000).toISOString(), // 3 days ago
-        is_current: false,
-        status: "expired",
-      },
-    ]
+    // Get all sessions for the user
+    const { data: sessions, error } = await supabase
+      .from("user_sessions")
+      .select("*")
+      .eq("user_id", session.user.id)
+      .order("last_activity", { ascending: false })
+
+    if (error) {
+      console.error("Error fetching sessions:", error)
+      return { success: false, error: error.message }
+    }
+
+    // Mark current session
+    const sessionsWithCurrent =
+      sessions?.map((s) => ({
+        ...s,
+        is_current: s.session_token === session.access_token,
+      })) || []
 
     return {
       success: true,
-      sessions: mockSessions,
+      sessions: sessionsWithCurrent,
     }
   } catch (error) {
     console.error("Error in getUserSessions:", error)
@@ -200,11 +174,38 @@ export async function revokeSession(sessionId: string) {
       return { success: false, error: "Not authenticated" }
     }
 
-    // Mock revocation for now - in production this would update the database
-    console.log(`Revoking session ${sessionId} for user ${session.user.id}`)
+    // Get the session to revoke
+    const { data: sessionToRevoke, error: fetchError } = await supabase
+      .from("user_sessions")
+      .select("*")
+      .eq("id", sessionId)
+      .eq("user_id", session.user.id)
+      .single()
 
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    if (fetchError || !sessionToRevoke) {
+      return { success: false, error: "Session not found" }
+    }
+
+    // Don't allow revoking current session
+    if (sessionToRevoke.session_token === session.access_token) {
+      return { success: false, error: "Cannot revoke current session" }
+    }
+
+    // Delete the session record
+    const { error } = await supabase.from("user_sessions").delete().eq("id", sessionId).eq("user_id", session.user.id)
+
+    if (error) {
+      console.error("Error revoking session:", error)
+      return { success: false, error: error.message }
+    }
+
+    // Log the event
+    await logAuthEvent(session.user.id, AUTH_EVENTS.LOGOUT, AUTH_STATUS.SUCCESS, {
+      revoked_session_id: sessionId,
+      device_type: sessionToRevoke.device_type,
+      browser: sessionToRevoke.browser,
+      ip_address: sessionToRevoke.ip_address,
+    })
 
     return { success: true }
   } catch (error) {
@@ -227,13 +228,32 @@ export async function revokeAllOtherSessions() {
       return { success: false, error: "Not authenticated" }
     }
 
-    // Mock revocation for now - in production this would update the database
-    console.log(`Revoking all other sessions for user ${session.user.id}`)
+    // Get count of sessions to revoke
+    const { count } = await supabase
+      .from("user_sessions")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", session.user.id)
+      .neq("session_token", session.access_token)
 
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    // Delete all other sessions
+    const { error } = await supabase
+      .from("user_sessions")
+      .delete()
+      .eq("user_id", session.user.id)
+      .neq("session_token", session.access_token)
 
-    return { success: true, revokedCount: 2 }
+    if (error) {
+      console.error("Error revoking all sessions:", error)
+      return { success: false, error: error.message }
+    }
+
+    // Log the event
+    await logAuthEvent(session.user.id, AUTH_EVENTS.LOGOUT, AUTH_STATUS.SUCCESS, {
+      action: "revoke_all_other_sessions",
+      sessions_revoked: count || 0,
+    })
+
+    return { success: true, revokedCount: count || 0 }
   } catch (error) {
     console.error("Error in revokeAllOtherSessions:", error)
     return { success: false, error: "Failed to revoke sessions" }

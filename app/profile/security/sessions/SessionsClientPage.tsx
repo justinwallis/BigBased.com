@@ -22,30 +22,28 @@ import {
   Home,
 } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { getUserSessions, revokeSession } from "@/app/actions/session-actions"
+import { getUserSessions, revokeSession, revokeAllOtherSessions } from "@/app/actions/session-actions"
 import Link from "next/link"
-
-interface Session {
-  id: string
-  user_id: string
-  session_token: string
-  device_info: string
-  ip_address: string
-  location: string
-  user_agent: string
-  created_at: string
-  last_active: string
-  is_current: boolean
-  status: "active" | "expired" | "revoked"
-}
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function SessionsClientPage() {
   const { user, isLoading, signOut } = useAuth()
   const router = useRouter()
-  const [sessions, setSessions] = useState<Session[]>([])
+  const [sessions, setSessions] = useState([])
   const [isLoadingSessions, setIsLoadingSessions] = useState(true)
   const [error, setError] = useState("")
-  const [revokingSessionId, setRevokingSessionId] = useState<string | null>(null)
+  const [revokingSessionId, setRevokingSessionId] = useState(null)
+  const [revokingAll, setRevokingAll] = useState(false)
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -65,6 +63,7 @@ export default function SessionsClientPage() {
   const loadSessions = async () => {
     try {
       setError("")
+      setIsLoadingSessions(true)
       const result = await getUserSessions()
       if (result.success && result.sessions) {
         setSessions(result.sessions)
@@ -79,7 +78,7 @@ export default function SessionsClientPage() {
     }
   }
 
-  const handleRevokeSession = async (sessionId: string) => {
+  const handleRevokeSession = async (sessionId) => {
     setRevokingSessionId(sessionId)
     try {
       const result = await revokeSession(sessionId)
@@ -96,52 +95,73 @@ export default function SessionsClientPage() {
     }
   }
 
+  const handleRevokeAllOtherSessions = async () => {
+    setRevokingAll(true)
+    try {
+      const result = await revokeAllOtherSessions()
+      if (result.success) {
+        await loadSessions() // Refresh the list
+      } else {
+        setError(result.error || "Failed to revoke all sessions")
+      }
+    } catch (err) {
+      setError("An error occurred while revoking all sessions")
+      console.error("Error revoking all sessions:", err)
+    } finally {
+      setRevokingAll(false)
+    }
+  }
+
   const handleSignOut = async () => {
     await signOut()
     router.push("/")
   }
 
-  const getDeviceIcon = (userAgent: string) => {
-    const ua = userAgent.toLowerCase()
-    if (ua.includes("mobile") || ua.includes("android") || ua.includes("iphone")) {
+  const getDeviceIcon = (session) => {
+    if (session.device_type === "mobile") {
       return <Smartphone className="h-5 w-5" />
     }
-    if (ua.includes("tablet") || ua.includes("ipad")) {
+    if (session.device_type === "tablet") {
       return <Tablet className="h-5 w-5" />
     }
     return <Monitor className="h-5 w-5" />
   }
 
-  const getBrowserEmoji = (userAgent: string) => {
-    const ua = userAgent.toLowerCase()
-    if (ua.includes("chrome")) return "🌐"
-    if (ua.includes("firefox")) return "🦊"
-    if (ua.includes("safari")) return "🧭"
-    if (ua.includes("edge")) return "🔷"
+  const getBrowserEmoji = (browser) => {
+    if (browser?.toLowerCase().includes("chrome")) return "🌐"
+    if (browser?.toLowerCase().includes("firefox")) return "🦊"
+    if (browser?.toLowerCase().includes("safari")) return "🧭"
+    if (browser?.toLowerCase().includes("edge")) return "🔷"
     return "🌍"
   }
 
-  const getStatusColor = (status: string, isActive: boolean) => {
-    if (status === "revoked") return "bg-red-500"
-    if (status === "expired") return "bg-gray-500"
-    if (isActive) return "bg-green-500"
-    return "bg-yellow-500"
-  }
-
-  const getStatusText = (status: string, lastActive: string, isActive: boolean) => {
-    if (status === "revoked") return "Revoked"
-    if (status === "expired") return "Expired"
+  const getStatusColor = (session) => {
+    if (session.is_current) return "bg-green-500"
 
     const now = new Date()
-    const lastActiveDate = new Date(lastActive)
-    const diffInMinutes = Math.floor((now.getTime() - lastActiveDate.getTime()) / (1000 * 60))
+    const lastActive = new Date(session.last_activity)
+    const diffInMinutes = Math.floor((now.getTime() - lastActive.getTime()) / (1000 * 60))
 
-    if (isActive || diffInMinutes < 5) return "Active"
-    if (diffInMinutes < 60) return "Recent"
-    return "Idle"
+    if (diffInMinutes < 30) return "bg-green-500" // Active in last 30 min
+    if (diffInMinutes < 60 * 24) return "bg-yellow-500" // Active in last 24 hours
+    return "bg-gray-500" // Inactive for more than 24 hours
   }
 
-  const formatRelativeTime = (timestamp: string) => {
+  const getStatusText = (session) => {
+    if (session.is_current) return "Current"
+
+    const now = new Date()
+    const lastActive = new Date(session.last_activity)
+    const diffInMinutes = Math.floor((now.getTime() - lastActive.getTime()) / (1000 * 60))
+
+    if (diffInMinutes < 5) return "Active"
+    if (diffInMinutes < 30) return "Recent"
+    if (diffInMinutes < 60) return "Active < 1h ago"
+    if (diffInMinutes < 60 * 24) return "Active today"
+    return "Inactive"
+  }
+
+  const formatRelativeTime = (timestamp) => {
     const now = new Date()
     const time = new Date(timestamp)
     const diffInMinutes = Math.floor((now.getTime() - time.getTime()) / (1000 * 60))
@@ -156,6 +176,10 @@ export default function SessionsClientPage() {
     if (diffInDays < 7) return `${diffInDays}d ago`
 
     return time.toLocaleDateString()
+  }
+
+  const getDeviceInfo = (session) => {
+    return `${session.browser || "Unknown"} on ${session.os || "Unknown Device"}`
   }
 
   if (isLoading || !user) {
@@ -181,8 +205,19 @@ export default function SessionsClientPage() {
     )
   }
 
-  const activeSessions = sessions.filter((s) => s.status === "active")
-  const inactiveSessions = sessions.filter((s) => s.status !== "active")
+  const activeSessions = sessions.filter((s) => {
+    const now = new Date()
+    const lastActive = new Date(s.last_activity)
+    const diffInHours = Math.floor((now.getTime() - lastActive.getTime()) / (1000 * 60 * 60))
+    return diffInHours < 24 // Consider sessions active if used in last 24 hours
+  })
+
+  const inactiveSessions = sessions.filter((s) => {
+    const now = new Date()
+    const lastActive = new Date(s.last_activity)
+    const diffInHours = Math.floor((now.getTime() - lastActive.getTime()) / (1000 * 60 * 60))
+    return diffInHours >= 24 // Consider sessions inactive if not used in last 24 hours
+  })
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
@@ -302,16 +337,58 @@ export default function SessionsClientPage() {
                   Monitor and control access to your account across all devices
                 </CardDescription>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={loadSessions}
-                disabled={isLoadingSessions}
-                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-gray-200 dark:border-gray-700"
-              >
-                <RefreshCw className={`h-4 w-4 mr-2 ${isLoadingSessions ? "animate-spin" : ""}`} />
-                Refresh
-              </Button>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={loadSessions}
+                  disabled={isLoadingSessions}
+                  className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-gray-200 dark:border-gray-700"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isLoadingSessions ? "animate-spin" : ""}`} />
+                  Refresh
+                </Button>
+
+                {sessions.length > 1 && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={revokingAll}
+                        className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-gray-200 dark:border-gray-700 text-red-600"
+                      >
+                        {revokingAll ? (
+                          <>
+                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                            <span>Revoking...</span>
+                          </>
+                        ) : (
+                          <>
+                            <LogOut className="h-4 w-4 mr-2" />
+                            <span>Revoke All Other Sessions</span>
+                          </>
+                        )}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Revoke All Other Sessions?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will sign out all your other devices. You will remain signed in on this device only. This
+                          action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleRevokeAllOtherSessions}>
+                          Revoke All Other Sessions
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -343,14 +420,14 @@ export default function SessionsClientPage() {
                           <div className="flex items-start justify-between">
                             <div className="flex items-start space-x-4 flex-1">
                               <div className="flex items-center space-x-2">
-                                {getDeviceIcon(session.user_agent)}
-                                <span className="text-lg">{getBrowserEmoji(session.user_agent)}</span>
+                                {getDeviceIcon(session)}
+                                <span className="text-lg">{getBrowserEmoji(session.browser)}</span>
                               </div>
 
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center space-x-2 mb-2">
                                   <h4 className="font-medium text-gray-900 dark:text-gray-100 truncate">
-                                    {session.device_info || "Unknown Device"}
+                                    {getDeviceInfo(session)}
                                   </h4>
                                   {session.is_current && (
                                     <Badge
@@ -361,11 +438,9 @@ export default function SessionsClientPage() {
                                     </Badge>
                                   )}
                                   <div className="flex items-center space-x-1">
-                                    <div
-                                      className={`h-2 w-2 rounded-full ${getStatusColor(session.status, true)}`}
-                                    ></div>
+                                    <div className={`h-2 w-2 rounded-full ${getStatusColor(session)}`}></div>
                                     <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                                      {getStatusText(session.status, session.last_active, true)}
+                                      {getStatusText(session)}
                                     </span>
                                   </div>
                                 </div>
@@ -381,7 +456,7 @@ export default function SessionsClientPage() {
                                   </div>
                                   <div className="flex items-center space-x-1">
                                     <Clock className="h-3 w-3" />
-                                    <span>Last active {formatRelativeTime(session.last_active)}</span>
+                                    <span>Last active {formatRelativeTime(session.last_activity)}</span>
                                   </div>
                                 </div>
                               </div>
@@ -389,19 +464,37 @@ export default function SessionsClientPage() {
 
                             <div className="flex items-center space-x-2 ml-4">
                               {!session.is_current && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleRevokeSession(session.id)}
-                                  disabled={revokingSessionId === session.id}
-                                  className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 border-red-200 dark:border-red-800"
-                                >
-                                  {revokingSessionId === session.id ? (
-                                    <RefreshCw className="h-3 w-3 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="h-3 w-3" />
-                                  )}
-                                </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      disabled={revokingSessionId === session.id}
+                                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 border-red-200 dark:border-red-800"
+                                    >
+                                      {revokingSessionId === session.id ? (
+                                        <RefreshCw className="h-3 w-3 animate-spin" />
+                                      ) : (
+                                        <Trash2 className="h-3 w-3" />
+                                      )}
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Revoke Session?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        This will sign out this device immediately. The user will need to sign in again
+                                        to access their account from this device.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction onClick={() => handleRevokeSession(session.id)}>
+                                        Revoke Session
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
                               )}
                             </div>
                           </div>
@@ -429,21 +522,19 @@ export default function SessionsClientPage() {
                             <div className="flex items-start justify-between">
                               <div className="flex items-start space-x-4 flex-1">
                                 <div className="flex items-center space-x-2">
-                                  {getDeviceIcon(session.user_agent)}
-                                  <span className="text-lg grayscale">{getBrowserEmoji(session.user_agent)}</span>
+                                  {getDeviceIcon(session)}
+                                  <span className="text-lg grayscale">{getBrowserEmoji(session.browser)}</span>
                                 </div>
 
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center space-x-2 mb-2">
                                     <h4 className="font-medium text-gray-700 dark:text-gray-300 truncate">
-                                      {session.device_info || "Unknown Device"}
+                                      {getDeviceInfo(session)}
                                     </h4>
                                     <div className="flex items-center space-x-1">
-                                      <div
-                                        className={`h-2 w-2 rounded-full ${getStatusColor(session.status, false)}`}
-                                      ></div>
+                                      <div className={`h-2 w-2 rounded-full ${getStatusColor(session)}`}></div>
                                       <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                        {getStatusText(session.status, session.last_active, false)}
+                                        {getStatusText(session)}
                                       </span>
                                     </div>
                                   </div>
@@ -459,10 +550,46 @@ export default function SessionsClientPage() {
                                     </div>
                                     <div className="flex items-center space-x-1">
                                       <Clock className="h-3 w-3" />
-                                      <span>Last active {formatRelativeTime(session.last_active)}</span>
+                                      <span>Last active {formatRelativeTime(session.last_activity)}</span>
                                     </div>
                                   </div>
                                 </div>
+                              </div>
+
+                              <div className="flex items-center space-x-2 ml-4">
+                                {!session.is_current && (
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={revokingSessionId === session.id}
+                                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 border-red-200 dark:border-red-800"
+                                      >
+                                        {revokingSessionId === session.id ? (
+                                          <RefreshCw className="h-3 w-3 animate-spin" />
+                                        ) : (
+                                          <Trash2 className="h-3 w-3" />
+                                        )}
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Revoke Session?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          This will sign out this device immediately. The user will need to sign in
+                                          again to access their account from this device.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleRevokeSession(session.id)}>
+                                          Revoke Session
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                )}
                               </div>
                             </div>
                           </div>
