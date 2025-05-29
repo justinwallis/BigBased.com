@@ -35,6 +35,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { SecurityInsights } from "@/components/security-insights"
+import { SessionAlerts } from "@/components/session-alerts"
 
 export default function SessionsClientPage() {
   const { user, isLoading, signOut } = useAuth()
@@ -44,13 +46,6 @@ export default function SessionsClientPage() {
   const [error, setError] = useState("")
   const [revokingSessionId, setRevokingSessionId] = useState(null)
   const [revokingAll, setRevokingAll] = useState(false)
-  const [neonDebug, setNeonDebug] = useState({
-    connectionStatus: "checking",
-    databaseUrl: "",
-    tableExists: false,
-    error: null,
-    sessionCount: 0,
-  })
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -66,10 +61,6 @@ export default function SessionsClientPage() {
       return () => clearInterval(interval)
     }
   }, [user])
-
-  useEffect(() => {
-    testNeonConnection()
-  }, [])
 
   const loadSessions = async () => {
     try {
@@ -191,49 +182,6 @@ export default function SessionsClientPage() {
 
   const getDeviceInfo = (session) => {
     return `${session.browser || "Unknown"} on ${session.os || "Unknown Device"}`
-  }
-
-  const testNeonConnection = async () => {
-    try {
-      setNeonDebug((prev) => ({ ...prev, connectionStatus: "testing" }))
-
-      // Test basic connection and get debug info
-      const response = await fetch("/api/debug/neon-test", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      })
-
-      const debugInfo = await response.json()
-      setNeonDebug(debugInfo)
-    } catch (error) {
-      setNeonDebug((prev) => ({
-        ...prev,
-        connectionStatus: "error",
-        error: error.message,
-      }))
-    }
-  }
-
-  const createSessionsTable = async () => {
-    try {
-      const response = await fetch("/api/debug/create-sessions-table", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
-        // Refresh the debug info
-        await testNeonConnection()
-        // Refresh sessions
-        await loadSessions()
-      } else {
-        setError(`Failed to create table: ${result.error}`)
-      }
-    } catch (error) {
-      setError(`Error creating table: ${error.message}`)
-    }
   }
 
   if (isLoading || !user) {
@@ -369,80 +317,11 @@ export default function SessionsClientPage() {
           </Card>
         </div>
 
-        {/* Neon Debug Section */}
-        <Card className="border-0 shadow-lg bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
-              <RefreshCw className="h-5 w-5" />
-              Neon Database Debug
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div>
-                <strong>Connection Status:</strong>
-                <span
-                  className={`ml-2 px-2 py-1 rounded text-xs ${
-                    neonDebug.connectionStatus === "connected"
-                      ? "bg-green-100 text-green-800"
-                      : neonDebug.connectionStatus === "error"
-                        ? "bg-red-100 text-red-800"
-                        : "bg-yellow-100 text-yellow-800"
-                  }`}
-                >
-                  {neonDebug.connectionStatus}
-                </span>
-              </div>
-              <div>
-                <strong>Database URL:</strong>
-                <span className="ml-2 font-mono text-xs">
-                  {neonDebug.databaseUrl ? `${neonDebug.databaseUrl.substring(0, 30)}...` : "Not found"}
-                </span>
-              </div>
-              <div>
-                <strong>user_sessions Table:</strong>
-                <span
-                  className={`ml-2 px-2 py-1 rounded text-xs ${
-                    neonDebug.tableExists ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  {neonDebug.tableExists ? "Exists" : "Missing"}
-                </span>
-              </div>
-              <div>
-                <strong>Session Count:</strong>
-                <span className="ml-2 font-semibold">{neonDebug.sessionCount}</span>
-              </div>
-            </div>
-            {neonDebug.error && (
-              <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
-                <strong className="text-red-800 dark:text-red-200">Error:</strong>
-                <pre className="text-xs mt-1 text-red-700 dark:text-red-300 whitespace-pre-wrap">{neonDebug.error}</pre>
-              </div>
-            )}
-            <div className="flex space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={testNeonConnection}
-                className="text-yellow-700 border-yellow-300"
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Retest Connection
-              </Button>
-              {!neonDebug.tableExists && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={createSessionsTable}
-                  className="text-blue-700 border-blue-300"
-                >
-                  Create Sessions Table
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Security Alerts */}
+        <SessionAlerts sessions={sessions} />
+
+        {/* Security Insights */}
+        <SecurityInsights sessions={sessions} />
 
         {/* Error Display */}
         {error && (
