@@ -92,24 +92,33 @@ export default function SessionsClientPage() {
   const [sessions, setSessions] = useState<SessionData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [tableExists, setTableExists] = useState(true)
+  const [tableExists, setTableExists] = useState<boolean | null>(null)
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const [revoking, setRevoking] = useState<string | null>(null)
   const [revokingAll, setRevokingAll] = useState(false)
   const [showRevokeDialog, setShowRevokeDialog] = useState<string | null>(null)
   const [showRevokeAllDialog, setShowRevokeAllDialog] = useState(false)
   const [activeTab, setActiveTab] = useState<string>("sessions")
 
-  // Check if user is authenticated
+  // Check authentication without redirecting immediately
   useEffect(() => {
     const checkAuth = async () => {
-      const { data } = await supabase.auth.getSession()
-      if (!data.session) {
-        router.push("/auth/sign-in")
+      try {
+        const { data } = await supabase.auth.getSession()
+        setIsAuthenticated(!!data.session)
+
+        if (!data.session) {
+          // Don't redirect immediately, let user see the setup interface first
+          console.log("No active session found")
+        }
+      } catch (error) {
+        console.error("Auth check error:", error)
+        setIsAuthenticated(false)
       }
     }
 
     checkAuth()
-  }, [router, supabase])
+  }, [supabase])
 
   // Fetch sessions
   const fetchSessions = async () => {
@@ -123,9 +132,18 @@ export default function SessionsClientPage() {
         setSessions(result.data || [])
         setTableExists(true)
       } else {
-        if (result.error?.includes("table doesn't exist")) {
+        // Check for specific error messages
+        if (
+          result.error?.includes("table doesn't exist") ||
+          result.error?.includes("user_sessions") ||
+          result.error?.includes("relation") ||
+          result.error?.includes("42P01")
+        ) {
           setTableExists(false)
           setError("The sessions table doesn't exist yet. Please create it first.")
+        } else if (result.error?.includes("Not authenticated")) {
+          setIsAuthenticated(false)
+          setError("You need to be logged in to view sessions.")
         } else {
           setError(result.error || "Failed to fetch sessions")
         }
@@ -139,8 +157,13 @@ export default function SessionsClientPage() {
   }
 
   useEffect(() => {
-    fetchSessions()
-  }, [])
+    // Only fetch sessions if we know the user is authenticated
+    if (isAuthenticated === true) {
+      fetchSessions()
+    } else if (isAuthenticated === false) {
+      setLoading(false)
+    }
+  }, [isAuthenticated])
 
   // Handle session revocation
   const handleRevokeSession = async (sessionId: string) => {
@@ -189,8 +212,7 @@ export default function SessionsClientPage() {
   const currentSession = sessions.find((session) => session.is_current)
   const otherSessions = sessions.filter((session) => !session.is_current)
 
-  const createTableSQL = `
--- Create user_sessions table for tracking active sessions
+  const createTableSQL = `-- Create user_sessions table for tracking active sessions
 CREATE TABLE IF NOT EXISTS user_sessions (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -231,8 +253,59 @@ CREATE POLICY "Users can update their own sessions" ON user_sessions
   FOR UPDATE USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can delete their own sessions" ON user_sessions
-  FOR DELETE USING (auth.uid() = user_id);
-`
+  FOR DELETE USING (auth.uid() = user_id);`
+
+  // Show authentication error if not logged in
+  if (isAuthenticated === false) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container max-w-4xl mx-auto py-8 px-4">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center space-x-2 mb-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => router.push("/profile?tab=security")}
+                    className="p-0 h-auto"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-1" />
+                    Back to Security
+                  </Button>
+                </div>
+                <h1 className="text-2xl font-bold">Active Sessions</h1>
+                <p className="text-muted-foreground">
+                  Manage your active login sessions and revoke access from devices you don't recognize
+                </p>
+              </div>
+            </div>
+
+            <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  <span>Authentication Required</span>
+                </CardTitle>
+                <CardDescription>You need to be logged in to view your sessions.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-amber-800 dark:text-amber-300">
+                  Please sign in to your account to view and manage your active sessions.
+                </p>
+              </CardContent>
+              <CardFooter className="flex justify-between">
+                <Button variant="outline" onClick={() => router.push("/profile?tab=security")}>
+                  Go Back
+                </Button>
+                <Button onClick={() => router.push("/auth/sign-in")}>Sign In</Button>
+              </CardFooter>
+            </Card>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -264,7 +337,7 @@ CREATE POLICY "Users can delete their own sessions" ON user_sessions
           </div>
 
           {/* Table Doesn't Exist Error */}
-          {!tableExists && (
+          {tableExists === false && (
             <Tabs defaultValue="info" className="w-full" value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="info">Information</TabsTrigger>
@@ -284,8 +357,9 @@ CREATE POLICY "Users can delete their own sessions" ON user_sessions
                   <CardContent>
                     <div className="space-y-4">
                       <p>
-                        To use the sessions feature, you need to create the <code>user_sessions</code> table in your
-                        Supabase database. This table will store information about active login sessions.
+                        To use the sessions feature, you need to create the{" "}
+                        <code className="bg-muted px-1 py-0.5 rounded">user_sessions</code> table in your Supabase
+                        database. This table will store information about active login sessions.
                       </p>
                       <div className="bg-amber-50 dark:bg-amber-950 p-4 rounded-md border border-amber-200 dark:border-amber-800">
                         <div className="flex items-start space-x-2">
@@ -321,7 +395,7 @@ CREATE POLICY "Users can delete their own sessions" ON user_sessions
                   </CardHeader>
                   <CardContent>
                     <div className="relative">
-                      <pre className="bg-slate-950 text-slate-50 p-4 rounded-md overflow-x-auto text-xs sm:text-sm">
+                      <pre className="bg-slate-950 text-slate-50 p-4 rounded-md overflow-x-auto text-xs sm:text-sm max-h-96 overflow-y-auto">
                         <code>{createTableSQL}</code>
                       </pre>
                       <Button
@@ -336,13 +410,13 @@ CREATE POLICY "Users can delete their own sessions" ON user_sessions
                     </div>
                     <div className="mt-4 space-y-4">
                       <h3 className="text-lg font-medium">How to run this script:</h3>
-                      <ol className="list-decimal pl-5 space-y-2">
+                      <ol className="list-decimal pl-5 space-y-2 text-sm">
                         <li>Go to your Supabase dashboard</li>
                         <li>Click on "SQL Editor" in the left sidebar</li>
                         <li>Create a "New Query"</li>
                         <li>Paste the SQL script above</li>
                         <li>Click "Run" to execute the script</li>
-                        <li>Come back here and refresh the page</li>
+                        <li>Come back here and click "Refresh" below</li>
                       </ol>
                     </div>
                   </CardContent>
@@ -361,7 +435,7 @@ CREATE POLICY "Users can delete their own sessions" ON user_sessions
           )}
 
           {/* Error Message */}
-          {tableExists && error && (
+          {tableExists === true && error && (
             <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
               <CardContent className="pt-6">
                 <div className="flex items-center space-x-2 text-red-800 dark:text-red-200">
@@ -373,7 +447,7 @@ CREATE POLICY "Users can delete their own sessions" ON user_sessions
           )}
 
           {/* Loading State */}
-          {tableExists && loading && (
+          {tableExists === true && loading && (
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center py-8">
@@ -385,7 +459,7 @@ CREATE POLICY "Users can delete their own sessions" ON user_sessions
           )}
 
           {/* Sessions Content */}
-          {tableExists && !loading && (
+          {tableExists === true && !loading && (
             <>
               {/* Current Session */}
               {currentSession && (
@@ -534,7 +608,7 @@ CREATE POLICY "Users can delete their own sessions" ON user_sessions
           )}
 
           {/* Security Tips */}
-          {tableExists && (
+          {tableExists === true && (
             <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
               <CardHeader>
                 <CardTitle className="text-blue-800 dark:text-blue-200 flex items-center space-x-2">
