@@ -1,6 +1,7 @@
 "use server"
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { neon } from "@neondatabase/serverless"
 import { headers } from "next/headers"
 import { logAuthEvent, AUTH_EVENTS, AUTH_STATUS } from "./auth-log-actions"
 
@@ -51,8 +52,9 @@ function parseUserAgent(userAgent: string) {
 export async function trackSession() {
   try {
     const supabase = createServerSupabaseClient()
+    const sql = neon(process.env.NEON_DATABASE_URL!)
 
-    // Get the current user using the more secure getUser method
+    // Get the current user using Supabase auth
     const { data: userData, error: userError } = await supabase.auth.getUser()
 
     if (userError || !userData.user) {
@@ -77,77 +79,45 @@ export async function trackSession() {
     const { deviceType, browser, os } = parseUserAgent(userAgent)
 
     try {
-      // First, test if we can access the table
-      const { data: testQuery, error: testError } = await supabase.from("user_sessions").select("id").limit(1)
+      // Check if session already exists in Neon
+      const existingSessions = await sql`
+        SELECT * FROM public.user_sessions 
+        WHERE session_token = ${session.access_token}
+      `
 
-      if (testError) {
-        console.error("trackSession: Table access error:", testError)
-        if (
-          testError.code === "42P01" ||
-          testError.message?.includes("relation") ||
-          testError.message?.includes("does not exist")
-        ) {
-          return { success: false, error: "Table does not exist", tableExists: false }
-        }
-        return { success: false, error: testError.message }
-      }
-
-      // Check if session already exists
-      const { data: existingSession, error: queryError } = await supabase
-        .from("user_sessions")
-        .select("*")
-        .eq("session_token", session.access_token)
-        .single()
-
-      if (queryError && queryError.code !== "PGRST116") {
-        // PGRST116 is "not found" which is expected for new sessions
-        console.error("trackSession: Query error:", queryError)
-        return { success: false, error: queryError.message }
-      }
-
-      if (existingSession) {
+      if (existingSessions.length > 0) {
         // Update last activity
-        const { error } = await supabase
-          .from("user_sessions")
-          .update({
-            last_activity: new Date().toISOString(),
-            ip_address: ipAddress,
-            user_agent: userAgent,
-          })
-          .eq("id", existingSession.id)
-
-        if (error) {
-          console.error("trackSession: Update error:", error)
-          return { success: false, error: error.message }
-        }
-
+        await sql`
+          UPDATE public.user_sessions 
+          SET last_activity = NOW(), ip_address = ${ipAddress}, user_agent = ${userAgent}
+          WHERE session_token = ${session.access_token}
+        `
         console.log("trackSession: Updated existing session")
       } else {
         // Create new session record
-        const { error } = await supabase.from("user_sessions").insert({
-          user_id: userData.user.id,
-          session_token: session.access_token,
-          ip_address: ipAddress,
-          user_agent: userAgent,
-          device_type: deviceType,
-          browser: browser,
-          os: os,
-          created_at: new Date().toISOString(),
-          last_activity: new Date().toISOString(),
-          expires_at: new Date(session.expires_at! * 1000).toISOString(),
-        })
-
-        if (error) {
-          console.error("trackSession: Insert error:", error)
-          return { success: false, error: error.message }
-        }
-
+        await sql`
+          INSERT INTO public.user_sessions (
+            user_id, session_token, ip_address, user_agent, device_type, browser, os, expires_at
+          ) VALUES (
+            ${userData.user.id}, 
+            ${session.access_token}, 
+            ${ipAddress}, 
+            ${userAgent}, 
+            ${deviceType}, 
+            ${browser}, 
+            ${os}, 
+            ${new Date(session.expires_at! * 1000).toISOString()}
+          )
+        `
         console.log("trackSession: Created new session")
       }
 
       return { success: true, tableExists: true }
     } catch (error) {
       console.error("trackSession: Database error:", error)
+      if (String(error).includes("does not exist")) {
+        return { success: false, error: "Table does not exist", tableExists: false }
+      }
       return { success: false, error: "Database operation failed" }
     }
   } catch (error) {
@@ -160,8 +130,9 @@ export async function trackSession() {
 export async function getUserSessions() {
   try {
     const supabase = createServerSupabaseClient()
+    const sql = neon(process.env.NEON_DATABASE_URL!)
 
-    // Get the current user using the more secure getUser method
+    // Get the current user using Supabase auth
     const { data: userData, error: userError } = await supabase.auth.getUser()
 
     if (userError || !userData.user) {
@@ -176,39 +147,18 @@ export async function getUserSessions() {
     }
 
     try {
-      // First, test if we can access the table
-      const { data: testQuery, error: testError } = await supabase.from("user_sessions").select("id").limit(1)
-
-      if (testError) {
-        console.error("getUserSessions: Table access error:", testError)
-        if (
-          testError.code === "42P01" ||
-          testError.message?.includes("relation") ||
-          testError.message?.includes("does not exist")
-        ) {
-          return { success: false, error: "The user_sessions table doesn't exist", tableExists: false }
-        }
-        return { success: false, error: testError.message }
-      }
-
-      // Get all sessions for the user
-      const { data: sessions, error } = await supabase
-        .from("user_sessions")
-        .select("*")
-        .eq("user_id", userData.user.id)
-        .order("last_activity", { ascending: false })
-
-      if (error) {
-        console.error("getUserSessions: Query error:", error)
-        return { success: false, error: error.message }
-      }
+      // Get all sessions for the user from Neon
+      const sessions = await sql`
+        SELECT * FROM public.user_sessions 
+        WHERE user_id = ${userData.user.id}
+        ORDER BY last_activity DESC
+      `
 
       // Mark current session
-      const sessionsWithCurrent =
-        sessions?.map((s) => ({
-          ...s,
-          is_current: s.session_token === session.access_token,
-        })) || []
+      const sessionsWithCurrent = sessions.map((s) => ({
+        ...s,
+        is_current: s.session_token === session.access_token,
+      }))
 
       return {
         success: true,
@@ -217,6 +167,9 @@ export async function getUserSessions() {
       }
     } catch (error) {
       console.error("getUserSessions: Database error:", error)
+      if (String(error).includes("does not exist")) {
+        return { success: false, error: "The user_sessions table doesn't exist", tableExists: false }
+      }
       return { success: false, error: "Database operation failed" }
     }
   } catch (error) {
@@ -229,8 +182,9 @@ export async function getUserSessions() {
 export async function revokeSession(sessionId: string) {
   try {
     const supabase = createServerSupabaseClient()
+    const sql = neon(process.env.NEON_DATABASE_URL!)
 
-    // Get the current user using the more secure getUser method
+    // Get the current user using Supabase auth
     const { data: userData, error: userError } = await supabase.auth.getUser()
 
     if (userError || !userData.user) {
@@ -246,25 +200,16 @@ export async function revokeSession(sessionId: string) {
 
     try {
       // Get the session to revoke
-      const { data: sessionToRevoke, error: fetchError } = await supabase
-        .from("user_sessions")
-        .select("*")
-        .eq("id", sessionId)
-        .eq("user_id", userData.user.id)
-        .single()
+      const sessionsToRevoke = await sql`
+        SELECT * FROM public.user_sessions 
+        WHERE id = ${sessionId} AND user_id = ${userData.user.id}
+      `
 
-      if (fetchError) {
-        // If the error is because the table doesn't exist, return an error
-        if (fetchError.code === "42P01") {
-          return { success: false, error: "The user_sessions table doesn't exist" }
-        }
-
+      if (sessionsToRevoke.length === 0) {
         return { success: false, error: "Session not found" }
       }
 
-      if (!sessionToRevoke) {
-        return { success: false, error: "Session not found" }
-      }
+      const sessionToRevoke = sessionsToRevoke[0]
 
       // Don't allow revoking current session
       if (sessionToRevoke.session_token === session.access_token) {
@@ -272,16 +217,10 @@ export async function revokeSession(sessionId: string) {
       }
 
       // Delete the session record
-      const { error } = await supabase
-        .from("user_sessions")
-        .delete()
-        .eq("id", sessionId)
-        .eq("user_id", userData.user.id)
-
-      if (error) {
-        console.error("Error revoking session:", error)
-        return { success: false, error: error.message }
-      }
+      await sql`
+        DELETE FROM public.user_sessions 
+        WHERE id = ${sessionId} AND user_id = ${userData.user.id}
+      `
 
       // Log the event using async functions
       try {
@@ -314,8 +253,9 @@ export async function revokeSession(sessionId: string) {
 export async function revokeAllOtherSessions() {
   try {
     const supabase = createServerSupabaseClient()
+    const sql = neon(process.env.NEON_DATABASE_URL!)
 
-    // Get the current user using the more secure getUser method
+    // Get the current user using Supabase auth
     const { data: userData, error: userError } = await supabase.auth.getUser()
 
     if (userError || !userData.user) {
@@ -331,33 +271,18 @@ export async function revokeAllOtherSessions() {
 
     try {
       // Get count of sessions to revoke
-      const { count, error: countError } = await supabase
-        .from("user_sessions")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", userData.user.id)
-        .neq("session_token", session.access_token)
+      const sessionsToRevoke = await sql`
+        SELECT COUNT(*) as count FROM public.user_sessions 
+        WHERE user_id = ${userData.user.id} AND session_token != ${session.access_token}
+      `
 
-      if (countError) {
-        // If the error is because the table doesn't exist, return success with 0 revoked
-        if (countError.code === "42P01") {
-          return { success: true, revokedCount: 0 }
-        }
-
-        console.error("Error counting sessions:", countError)
-        return { success: false, error: countError.message }
-      }
+      const count = Number.parseInt(sessionsToRevoke[0].count)
 
       // Delete all other sessions
-      const { error } = await supabase
-        .from("user_sessions")
-        .delete()
-        .eq("user_id", userData.user.id)
-        .neq("session_token", session.access_token)
-
-      if (error) {
-        console.error("Error revoking all sessions:", error)
-        return { success: false, error: error.message }
-      }
+      await sql`
+        DELETE FROM public.user_sessions 
+        WHERE user_id = ${userData.user.id} AND session_token != ${session.access_token}
+      `
 
       // Log the event using async functions
       try {
@@ -366,14 +291,14 @@ export async function revokeAllOtherSessions() {
 
         await logAuthEvent(userData.user.id, authEvents.LOGOUT, authStatus.SUCCESS, {
           action: "revoke_all_other_sessions",
-          sessions_revoked: count || 0,
+          sessions_revoked: count,
         })
       } catch (logError) {
         // Ignore logging errors
         console.warn("Failed to log auth event:", logError)
       }
 
-      return { success: true, revokedCount: count || 0 }
+      return { success: true, revokedCount: count }
     } catch (error) {
       console.error("Error revoking all sessions:", error)
       return { success: false, error: "Failed to revoke sessions" }

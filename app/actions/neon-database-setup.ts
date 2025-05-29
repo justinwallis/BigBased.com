@@ -6,9 +6,8 @@ export async function createUserSessionsTableInNeon() {
   try {
     const sql = neon(process.env.NEON_DATABASE_URL!)
 
-    // Create the user_sessions table in Neon
-    const createTableSQL = `
-      -- Create user_sessions table
+    // Create the user_sessions table in Neon using proper tagged template syntax
+    await sql`
       CREATE TABLE IF NOT EXISTS public.user_sessions (
         id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
         user_id UUID NOT NULL,
@@ -23,15 +22,13 @@ export async function createUserSessionsTableInNeon() {
         last_activity TIMESTAMPTZ DEFAULT NOW(),
         expires_at TIMESTAMPTZ,
         UNIQUE(session_token)
-      );
-
-      -- Create indexes for faster queries
-      CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON public.user_sessions(user_id);
-      CREATE INDEX IF NOT EXISTS idx_user_sessions_session_token ON public.user_sessions(session_token);
-      CREATE INDEX IF NOT EXISTS idx_user_sessions_last_activity ON public.user_sessions(last_activity);
+      )
     `
 
-    await sql(createTableSQL)
+    // Create indexes for faster queries
+    await sql`CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON public.user_sessions(user_id)`
+    await sql`CREATE INDEX IF NOT EXISTS idx_user_sessions_session_token ON public.user_sessions(session_token)`
+    await sql`CREATE INDEX IF NOT EXISTS idx_user_sessions_last_activity ON public.user_sessions(last_activity)`
 
     // Test if the table was created successfully
     const testResult = await sql`SELECT COUNT(*) as count FROM public.user_sessions`
@@ -158,9 +155,10 @@ export async function testNeonSessionOperations(userId: string) {
 
     // Test 1: Insert a test session
     try {
+      const sessionToken = `test-session-${Date.now()}`
       const insertResult = await sql`
         INSERT INTO public.user_sessions (user_id, session_token, ip_address, user_agent, device_type, browser, os)
-        VALUES (${userId}, 'test-session-' || extract(epoch from now()), '127.0.0.1', 'Test Browser', 'desktop', 'Test', 'Test OS')
+        VALUES (${userId}, ${sessionToken}, '127.0.0.1', 'Test Browser', 'desktop', 'Test', 'Test OS')
         RETURNING id, session_token
       `
       result.tests.push({
