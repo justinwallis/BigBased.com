@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Trash2, CheckCircle, CreditCard, Loader2 } from "lucide-react"
+import { Trash2, CheckCircle, CreditCard, Loader2, Building2 } from "lucide-react"
 import { deletePaymentMethod, setDefaultPaymentMethod } from "@/app/actions/stripe-actions"
 import { useToast } from "@/hooks/use-toast"
 
@@ -31,6 +31,13 @@ const getPaymentMethodDisplay = (paymentMethod: any) => {
       icon: <CreditCard className="h-5 w-5 text-blue-500" />,
       title: `Link ${paymentMethod.link?.email ? `(${paymentMethod.link.email})` : ""}`,
       subtitle: "Link by Stripe",
+    }
+  } else if (paymentMethod.type === "us_bank_account") {
+    const bankAccount = paymentMethod.us_bank_account
+    return {
+      icon: <Building2 className="h-5 w-5 text-green-600" />,
+      title: `${bankAccount.bank_name || "Bank Account"} •••• ${bankAccount.last4}`,
+      subtitle: `${bankAccount.account_type?.charAt(0).toUpperCase() + bankAccount.account_type?.slice(1) || "Account"} • ${bankAccount.account_holder_type === "individual" ? "Personal" : "Business"}`,
     }
   }
   return {

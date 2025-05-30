@@ -27,8 +27,8 @@ export async function getCustomerPaymentMethods(customerId: string) {
     // Get the customer to see their default payment method
     const customer = await stripe.customers.retrieve(customerId)
 
-    // Fetch both card and link payment methods
-    const [cardMethods, linkMethods] = await Promise.all([
+    // Fetch all types of payment methods that can be saved
+    const [cardMethods, linkMethods, bankMethods] = await Promise.all([
       stripe.paymentMethods.list({
         customer: customerId,
         type: "card",
@@ -37,10 +37,14 @@ export async function getCustomerPaymentMethods(customerId: string) {
         customer: customerId,
         type: "link",
       }),
+      stripe.paymentMethods.list({
+        customer: customerId,
+        type: "us_bank_account",
+      }),
     ])
 
-    // Combine both types of payment methods
-    const allPaymentMethods = [...cardMethods.data, ...linkMethods.data]
+    // Combine all types of payment methods
+    const allPaymentMethods = [...cardMethods.data, ...linkMethods.data, ...bankMethods.data]
 
     // Get the default payment method ID from customer
     const defaultPaymentMethodId =
@@ -62,7 +66,7 @@ export async function createSetupIntent(customerId: string) {
     const stripe = getStripe()
     const setupIntent = await stripe.setupIntents.create({
       customer: customerId,
-      payment_method_types: ["card", "us_bank_account", "link"], // Added Link support
+      payment_method_types: ["card", "us_bank_account", "link"],
       usage: "off_session",
       metadata: {
         source: "bigbased_billing",
