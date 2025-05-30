@@ -81,9 +81,8 @@ export async function setDefaultPaymentMethod(customerId: string, paymentMethodI
 
 export async function getOrCreateStripeCustomer() {
   try {
-    // Use service role client to bypass any RLS issues
-    const supabase = createClient(true)
-
+    // Get the authenticated user from Supabase
+    const supabase = createClient(false)
     const { data: userData, error: userError } = await supabase.auth.getUser()
 
     if (userError || !userData?.user) {
@@ -92,21 +91,43 @@ export async function getOrCreateStripeCustomer() {
 
     const user = userData.user
 
-    // Use direct SQL query to get stripe_customer_id
-    const { data: profileData, error: profileError } = await supabase
+    // Check if profile exists in Supabase, if not create it
+    const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("id, username, full_name, avatar_url, banner_url, bio, website, location, stripe_customer_id")
+      .select("*")
       .eq("id", user.id)
       .single()
 
-    if (profileError) {
+    let currentProfile = profile
+
+    if (profileError && profileError.code === "PGRST116") {
+      // Profile doesn't exist, create it
+      const { data: newProfile, error: createError } = await supabase
+        .from("profiles")
+        .insert({
+          id: user.id,
+          email: user.email,
+          full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email,
+          username: user.user_metadata?.username || user.email?.split("@")[0] || "",
+          social_links: {},
+        })
+        .select()
+        .single()
+
+      if (createError) {
+        console.error("Error creating profile:", createError)
+        return { success: false, error: "Failed to create user profile" }
+      }
+
+      currentProfile = newProfile
+    } else if (profileError) {
       console.error("Error fetching profile:", profileError)
       return { success: false, error: "Failed to access user profile" }
     }
 
     // If we have a stripe customer ID, return it
-    if (profileData?.stripe_customer_id) {
-      return { success: true, customerId: profileData.stripe_customer_id }
+    if (currentProfile?.stripe_customer_id) {
+      return { success: true, customerId: currentProfile.stripe_customer_id }
     }
 
     // Create new Stripe customer
@@ -119,7 +140,7 @@ export async function getOrCreateStripeCustomer() {
       return customerResult
     }
 
-    // Use direct SQL to update stripe_customer_id
+    // Save customer ID to profile
     const { error: updateError } = await supabase
       .from("profiles")
       .update({
