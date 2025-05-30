@@ -357,25 +357,25 @@ export async function sendTestNotification() {
 
     console.log("Preferences query result:", preferences)
 
-    if (preferences.length === 0 || !preferences[0].onesignal_user_id) {
-      console.log("No OneSignal ID found for user")
+    // Check if we have OneSignal configuration
+    if (!process.env.ONESIGNAL_REST_API_KEY || !process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID) {
+      console.log("OneSignal not configured - this is normal for development")
       return {
         success: false,
-        error: "OneSignal ID not found. Please enable push notifications first and refresh the page.",
+        error: "OneSignal is not configured. Browser notifications will be used as fallback.",
+      }
+    }
+
+    if (preferences.length === 0 || !preferences[0].onesignal_user_id) {
+      console.log("No OneSignal ID found for user - this is normal if OneSignal isn't set up")
+      return {
+        success: false,
+        error: "OneSignal ID not found. Browser notifications will be used as fallback.",
       }
     }
 
     const oneSignalUserId = preferences[0].onesignal_user_id
     console.log("Found OneSignal ID:", oneSignalUserId)
-
-    // Check if we have the required environment variables
-    if (!process.env.ONESIGNAL_REST_API_KEY || !process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID) {
-      console.log("Missing OneSignal environment variables")
-      return {
-        success: false,
-        error: "OneSignal configuration is incomplete. Please contact support.",
-      }
-    }
 
     // Call the OneSignal API to send a test notification
     console.log("Sending notification to OneSignal API")
@@ -412,7 +412,7 @@ export async function sendTestNotification() {
       if (response.status === 401) {
         return {
           success: false,
-          error: "OneSignal authentication failed. The REST API key may be missing or invalid.",
+          error: "OneSignal authentication failed. Browser notifications will be used as fallback.",
         }
       }
 
@@ -432,7 +432,7 @@ export async function sendTestNotification() {
     console.error("Error sending test notification:", error)
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to send test notification",
+      error: "OneSignal service unavailable. Browser notifications will be used as fallback.",
     }
   }
 }

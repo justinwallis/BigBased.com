@@ -141,8 +141,8 @@ export default function PushNotificationsClientPage() {
     try {
       setPushStatus((prev) => ({ ...prev, loading: true, error: null }))
 
-      // Check if push notifications are supported
-      const supported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window
+      // Simple check - just look at what the browser supports and permission status
+      const supported = typeof window !== "undefined" && "Notification" in window
 
       if (!supported) {
         setPushStatus({
@@ -155,30 +155,11 @@ export default function PushNotificationsClientPage() {
         return
       }
 
-      // Check current permission
+      // Get the current permission - this is the most reliable indicator
       const permission = Notification.permission
 
-      // Check if we have an active subscription
-      let subscribed = false
-
-      // If permission is granted, we consider it subscribed
-      if (permission === "granted") {
-        subscribed = true
-
-        // Also try to check for actual subscription if possible
-        try {
-          if ("serviceWorker" in navigator) {
-            const registration = await navigator.serviceWorker.ready
-            const subscription = await registration.pushManager.getSubscription()
-            // Keep subscribed as true even if no subscription found, since permission is granted
-            subscribed = true
-          }
-        } catch (error) {
-          console.warn("Could not check subscription status:", error)
-          // Still keep subscribed as true since permission is granted
-          subscribed = true
-        }
-      }
+      // If permission is granted, we consider notifications enabled
+      const subscribed = permission === "granted"
 
       setPushStatus({
         supported: true,
@@ -188,14 +169,16 @@ export default function PushNotificationsClientPage() {
         error: null,
       })
 
-      console.log("Push notification status:", { supported, permission, subscribed })
+      console.log("Push notification status updated:", { supported, permission, subscribed })
     } catch (error) {
       console.error("Error checking push notification status:", error)
-      setPushStatus((prev) => ({
-        ...prev,
+      setPushStatus({
+        supported: false,
+        permission: "denied",
+        subscribed: false,
         loading: false,
         error: "Failed to check notification status",
-      }))
+      })
     }
   }
 
@@ -203,63 +186,44 @@ export default function PushNotificationsClientPage() {
     try {
       setPushStatus((prev) => ({ ...prev, loading: true, error: null }))
 
-      // Check if OneSignal is available
-      if (!window.OneSignal) {
-        // Try to initialize OneSignal if not already done
-        if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID) {
-          const OneSignal = (await import("react-onesignal")).default
-          await OneSignal.init({
-            appId: process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID,
-            allowLocalhostAsSecureOrigin: true,
-          })
-        } else {
-          throw new Error("OneSignal is not available or app ID is missing")
-        }
-      }
-
-      // Request permission using browser API first
+      // Simple permission request
       const permission = await Notification.requestPermission()
 
       if (permission === "granted") {
-        // Now try to get OneSignal subscription
-        if (window.OneSignal) {
-          try {
+        // Try to save OneSignal ID if available, but don't fail if it doesn't work
+        try {
+          if (window.OneSignal) {
             await window.OneSignal.setSubscription(true)
             const userId = await window.OneSignal.getUserId()
-            console.log("OneSignal User ID:", userId)
-
-            // Save the OneSignal user ID to the database
             if (userId) {
               const { saveOneSignalUserId } = await import("@/app/actions/notification-actions")
-              const result = await saveOneSignalUserId(userId)
-
-              if (!result.success) {
-                console.warn("Failed to save OneSignal user ID:", result.error)
-              }
+              await saveOneSignalUserId(userId)
             }
-          } catch (onesignalError) {
-            console.warn("OneSignal subscription failed, but browser permission granted:", onesignalError)
           }
+        } catch (onesignalError) {
+          console.warn("OneSignal setup failed, but browser notifications are enabled:", onesignalError)
         }
 
-        setPushStatus((prev) => ({
-          ...prev,
+        setPushStatus({
+          supported: true,
           permission: "granted",
           subscribed: true,
           loading: false,
-        }))
+          error: null,
+        })
 
         toast({
           title: "Push notifications enabled! 🎉",
           description: "You will now receive notifications on this device.",
         })
       } else {
-        setPushStatus((prev) => ({
-          ...prev,
+        setPushStatus({
+          supported: true,
           permission: permission,
           subscribed: false,
           loading: false,
-        }))
+          error: null,
+        })
 
         toast({
           title: "Permission denied",
@@ -269,11 +233,13 @@ export default function PushNotificationsClientPage() {
       }
     } catch (error) {
       console.error("Error requesting notification permission:", error)
-      setPushStatus((prev) => ({
-        ...prev,
+      setPushStatus({
+        supported: false,
+        permission: "denied",
+        subscribed: false,
         loading: false,
-        error: "Failed to request notification permission. Please try refreshing the page.",
-      }))
+        error: "Failed to request notification permission",
+      })
 
       toast({
         title: "Error enabling notifications",
