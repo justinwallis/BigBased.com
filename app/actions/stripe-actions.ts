@@ -1,15 +1,8 @@
 "use server"
 
-import { getStripe, validateStripeKeys } from "@/lib/stripe"
+import { getStripe } from "@/lib/stripe"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
-
-// Validate Stripe configuration on module load
-try {
-  validateStripeKeys()
-} catch (error) {
-  console.error("Stripe configuration error:", error)
-}
 
 export async function createCustomer(email: string, name?: string) {
   try {
@@ -96,33 +89,64 @@ export async function getOrCreateStripeCustomer() {
     redirect("/auth/sign-in")
   }
 
-  // Check if user already has a Stripe customer ID
-  const { data: profile } = await supabase.from("profiles").select("stripe_customer_id").eq("id", user.id).single()
+  try {
+    // First, check if the user's profile exists
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("id, stripe_customer_id")
+      .eq("id", user.id)
+      .single()
 
-  if (profile?.stripe_customer_id) {
-    return { success: true, customerId: profile.stripe_customer_id }
+    if (profileError) {
+      // If profile doesn't exist, create it
+      if (profileError.code === "PGRST116") {
+        // Record not found
+        const { error: insertError } = await supabase.from("profiles").insert({
+          id: user.id,
+          email: user.email,
+          full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email,
+          social_links: {},
+        })
+
+        if (insertError) {
+          console.error("Error creating profile:", insertError)
+          return { success: false, error: "Failed to create user profile" }
+        }
+      } else {
+        console.error("Error fetching profile:", profileError)
+        return { success: false, error: "Failed to access user profile" }
+      }
+    }
+
+    // If profile exists and has a Stripe customer ID, return it
+    if (profile?.stripe_customer_id) {
+      return { success: true, customerId: profile.stripe_customer_id }
+    }
+
+    // Create new Stripe customer
+    const customerResult = await createCustomer(
+      user.email!,
+      user.user_metadata?.full_name || user.user_metadata?.name || user.email,
+    )
+
+    if (!customerResult.success) {
+      return customerResult
+    }
+
+    // Save customer ID to profile
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({ stripe_customer_id: customerResult.customerId })
+      .eq("id", user.id)
+
+    if (updateError) {
+      console.error("Error saving Stripe customer ID:", updateError)
+      return { success: false, error: "Failed to save customer information" }
+    }
+
+    return { success: true, customerId: customerResult.customerId }
+  } catch (error) {
+    console.error("Error in getOrCreateStripeCustomer:", error)
+    return { success: false, error: "An unexpected error occurred" }
   }
-
-  // Create new Stripe customer
-  const customerResult = await createCustomer(
-    user.email!,
-    user.user_metadata?.full_name || user.user_metadata?.name || user.email,
-  )
-
-  if (!customerResult.success) {
-    return customerResult
-  }
-
-  // Save customer ID to profile
-  const { error } = await supabase
-    .from("profiles")
-    .update({ stripe_customer_id: customerResult.customerId })
-    .eq("id", user.id)
-
-  if (error) {
-    console.error("Error saving Stripe customer ID:", error)
-    return { success: false, error: "Failed to save customer information" }
-  }
-
-  return { success: true, customerId: customerResult.customerId }
 }
