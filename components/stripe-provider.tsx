@@ -1,40 +1,42 @@
 "use client"
 
-import { Elements } from "@stripe/react-stripe-js"
-import { loadStripe } from "@stripe/stripe-js"
-import type { ReactNode } from "react"
+import type React from "react"
 
-// Make sure to call loadStripe outside of a component's render to avoid
-// recreating the Stripe object on every render.
+import { loadStripe } from "@stripe/stripe-js"
+import { Elements } from "@stripe/react-stripe-js"
+import { useTheme } from "next-themes"
+
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
 interface StripeProviderProps {
-  children: ReactNode
+  children: React.ReactNode
   clientSecret: string
   appearance?: {
     theme?: "stripe" | "night" | "flat"
-    variables?: Record<string, string>
   }
 }
 
 export function StripeProvider({ children, clientSecret, appearance }: StripeProviderProps) {
+  const { theme } = useTheme()
+
   const options = {
     clientSecret,
-    appearance: appearance || {
-      theme: "stripe",
+    appearance: {
+      theme: appearance?.theme || (theme === "dark" ? "night" : "stripe"),
       variables: {
-        colorPrimary: "#6d28d9",
-        colorBackground: appearance?.theme === "night" ? "#1e293b" : "#ffffff",
-        colorText: appearance?.theme === "night" ? "#f8fafc" : "#1a202c",
-        colorDanger: "#ef4444",
-        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+        colorPrimary: theme === "dark" ? "#ffffff" : "#000000",
+        colorBackground: theme === "dark" ? "#1f2937" : "#ffffff",
+        colorText: theme === "dark" ? "#ffffff" : "#000000",
+        colorDanger: "#df1b41",
+        fontFamily: "Inter, system-ui, sans-serif",
         spacingUnit: "4px",
-        borderRadius: "8px",
+        borderRadius: "6px",
       },
     },
-    // Enable Link and other automatic payment methods
-    paymentMethodCreation: "manual",
-    mode: "setup",
+    // Add currency for Elements that require it
+    currency: "usd",
+    // Specify the mode for setup intents
+    mode: "setup" as const,
   }
 
   return (

@@ -94,6 +94,12 @@ export function AddPaymentMethod({ clientSecret, onSuccess }: AddPaymentMethodPr
               options={{
                 layout: "tabs",
                 paymentMethodOrder: ["card", "apple_pay", "google_pay", "link"],
+                fields: {
+                  billingDetails: {
+                    name: "auto",
+                    email: "auto",
+                  },
+                },
               }}
             />
           </div>

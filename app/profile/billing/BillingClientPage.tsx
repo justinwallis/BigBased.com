@@ -3,13 +3,11 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2, CreditCard, AlertCircle, ArrowLeft } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { StripeProvider } from "@/components/stripe-provider"
 import { AddPaymentMethod } from "@/components/add-payment-method"
 import { PaymentMethodCard } from "@/components/payment-method-card"
-import { PayPalPayment } from "@/components/paypal-payment"
 import { getOrCreateStripeCustomer, getCustomerPaymentMethods, createSetupIntent } from "@/app/actions/stripe-actions"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useRouter } from "next/navigation"
@@ -65,14 +63,6 @@ export default function BillingClientPage() {
 
   const handlePaymentMethodUpdate = () => {
     loadBillingData()
-  }
-
-  const handlePayPalSuccess = (details: any) => {
-    console.log("PayPal payment successful:", details)
-    toast({
-      title: "PayPal Payment Successful",
-      description: `Payment ID: ${details.id}`,
-    })
   }
 
   if (isLoading) {
@@ -150,31 +140,13 @@ export default function BillingClientPage() {
         </Card>
 
         {/* Add Payment Methods */}
-        <Tabs defaultValue="stripe" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 dark:bg-gray-800">
-            <TabsTrigger value="stripe" className="dark:text-white">
-              Cards & Digital Wallets
-            </TabsTrigger>
-            <TabsTrigger value="paypal" className="dark:text-white">
-              PayPal
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="stripe" className="mt-6">
-            {clientSecret && (
-              <StripeProvider clientSecret={clientSecret} appearance={{ theme: theme === "dark" ? "night" : "stripe" }}>
-                <AddPaymentMethod clientSecret={clientSecret} onSuccess={handlePaymentMethodUpdate} />
-              </StripeProvider>
-            )}
-          </TabsContent>
-
-          <TabsContent value="paypal" className="mt-6">
-            <PayPalPayment amount={0} onSuccess={handlePayPalSuccess} />
-            <p className="text-sm text-muted-foreground dark:text-gray-400 mt-4">
-              PayPal payments are processed separately and don't require saving payment methods.
-            </p>
-          </TabsContent>
-        </Tabs>
+        <div className="mt-6">
+          {clientSecret && (
+            <StripeProvider clientSecret={clientSecret} appearance={{ theme: theme === "dark" ? "night" : "stripe" }}>
+              <AddPaymentMethod clientSecret={clientSecret} onSuccess={handlePaymentMethodUpdate} />
+            </StripeProvider>
+          )}
+        </div>
 
         {/* Payment Methods Info */}
         <Card className="mt-8 dark:bg-gray-800 dark:border-gray-700">
@@ -193,11 +165,11 @@ export default function BillingClientPage() {
                 </ul>
               </div>
               <div>
-                <h3 className="font-medium mb-2 dark:text-white">Alternative Methods</h3>
+                <h3 className="font-medium mb-2 dark:text-white">Coming Soon</h3>
                 <ul className="space-y-1 text-sm">
                   <li>• PayPal</li>
-                  <li>• Bank transfers (coming soon)</li>
-                  <li>• Cryptocurrency (coming soon)</li>
+                  <li>• Bank transfers</li>
+                  <li>• Cryptocurrency</li>
                 </ul>
               </div>
             </div>
