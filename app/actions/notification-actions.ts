@@ -348,18 +348,37 @@ export async function sendTestNotification() {
     const userId = session.user.id
     const sql = neon(process.env.DATABASE_URL!)
 
+    console.log("Looking up OneSignal ID for user:", userId)
+
     // Get the user's OneSignal ID
     const preferences = await sql`
       SELECT onesignal_user_id FROM notification_preferences WHERE user_id = ${userId}
     `
 
+    console.log("Preferences query result:", preferences)
+
     if (preferences.length === 0 || !preferences[0].onesignal_user_id) {
-      return { success: false, error: "OneSignal ID not found. Please enable push notifications first." }
+      console.log("No OneSignal ID found for user")
+      return {
+        success: false,
+        error: "OneSignal ID not found. Please enable push notifications first and refresh the page.",
+      }
     }
 
     const oneSignalUserId = preferences[0].onesignal_user_id
+    console.log("Found OneSignal ID:", oneSignalUserId)
+
+    // Check if we have the required environment variables
+    if (!process.env.ONESIGNAL_REST_API_KEY || !process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID) {
+      console.log("Missing OneSignal environment variables")
+      return {
+        success: false,
+        error: "OneSignal configuration is incomplete. Please contact support.",
+      }
+    }
 
     // Call the OneSignal API to send a test notification
+    console.log("Sending notification to OneSignal API")
     const response = await fetch("https://onesignal.com/api/v1/notifications", {
       method: "POST",
       headers: {
@@ -388,10 +407,20 @@ export async function sendTestNotification() {
     if (!response.ok) {
       const errorData = await response.json()
       console.error("OneSignal API error:", errorData)
+
+      // If we're missing the REST API key, provide a helpful error
+      if (response.status === 401) {
+        return {
+          success: false,
+          error: "OneSignal authentication failed. The REST API key may be missing or invalid.",
+        }
+      }
+
       throw new Error(`OneSignal API error: ${response.status}`)
     }
 
     const responseData = await response.json()
+    console.log("OneSignal API response:", responseData)
 
     if (!responseData.id) {
       throw new Error("Failed to send notification - no notification ID returned")

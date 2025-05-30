@@ -212,6 +212,16 @@ export default function PushNotificationsClientPage() {
             await window.OneSignal.setSubscription(true)
             const userId = await window.OneSignal.getUserId()
             console.log("OneSignal User ID:", userId)
+
+            // Save the OneSignal user ID to the database
+            if (userId) {
+              const { saveOneSignalUserId } = await import("@/app/actions/notification-actions")
+              const result = await saveOneSignalUserId(userId)
+
+              if (!result.success) {
+                console.warn("Failed to save OneSignal user ID:", result.error)
+              }
+            }
           } catch (onesignalError) {
             console.warn("OneSignal subscription failed, but browser permission granted:", onesignalError)
           }
@@ -389,38 +399,39 @@ export default function PushNotificationsClientPage() {
         description: "You should receive a notification shortly.",
       })
 
-      // Send a simple browser notification first
-      if (Notification.permission === "granted") {
-        new Notification("Big Based Test Notification", {
-          body: "This is a test notification from Big Based! 🎉",
-          icon: "/favicon-32x32.png",
-          badge: "/favicon-16x16.png",
-        })
-      }
+      // Call the server action to send the test notification
+      const result = await sendTestNotification()
 
-      // Also try to send via server action if available
-      try {
-        const result = await sendTestNotification()
-        if (result.success) {
-          toast({
-            title: "Test notification sent successfully! 🎉",
-            description: "Check your notifications. If you don't see it, make sure your browser allows notifications.",
-          })
-        }
-      } catch (serverError) {
-        console.warn("Server notification failed, but browser notification sent:", serverError)
+      if (result.success) {
         toast({
-          title: "Test notification sent! 🎉",
-          description: "A browser notification was sent. Server notifications may not be configured yet.",
+          title: "Test notification sent successfully! 🎉",
+          description: "Check your notifications. If you don't see it, make sure your browser allows notifications.",
         })
+      } else {
+        throw new Error(result.error || "Failed to send test notification")
       }
     } catch (error) {
       console.error("Error sending test notification:", error)
-      toast({
-        title: "Error sending test notification",
-        description: error instanceof Error ? error.message : "Please try again later.",
-        variant: "destructive",
-      })
+
+      // Send a browser notification as fallback
+      if (Notification.permission === "granted") {
+        new Notification("Big Based Test Notification", {
+          body: "This is a fallback test notification from Big Based! 🎉",
+          icon: "/favicon-32x32.png",
+          badge: "/favicon-16x16.png",
+        })
+
+        toast({
+          title: "Fallback notification sent",
+          description: "Server notification failed, but a browser notification was sent as fallback.",
+        })
+      } else {
+        toast({
+          title: "Error sending test notification",
+          description: error instanceof Error ? error.message : "Please try again later.",
+          variant: "destructive",
+        })
+      }
     } finally {
       setIsSendingTest(false)
     }
