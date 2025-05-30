@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, CreditCard, AlertCircle, RefreshCw } from "lucide-react"
+import { ArrowLeft, CreditCard, AlertCircle, RefreshCw, Bug } from "lucide-react"
 import Link from "next/link"
 import { StripeProvider } from "@/components/stripe-provider"
 import { AddPaymentMethod } from "@/components/add-payment-method"
@@ -61,7 +61,7 @@ export default function BillingClientPage() {
     } catch (error) {
       console.error("Billing initialization error:", error)
       setError("Failed to initialize billing system")
-      setDebugInfo(error)
+      setDebugInfo({ clientError: error })
     } finally {
       setIsLoading(false)
     }
@@ -131,15 +131,22 @@ export default function BillingClientPage() {
                 </div>
               </div>
 
-              {process.env.NODE_ENV === "development" && debugInfo && (
+              <div className="flex space-x-2 mb-4">
+                <Button onClick={initializeStripe}>Retry</Button>
+                <Link href="/debug/billing">
+                  <Button variant="outline">
+                    <Bug className="h-4 w-4 mr-2" />
+                    Debug Console
+                  </Button>
+                </Link>
+              </div>
+
+              {debugInfo && (
                 <div className="mt-4 p-4 bg-gray-800 rounded-md overflow-auto max-h-60">
-                  <pre className="text-xs text-gray-300">{JSON.stringify(debugInfo, null, 2)}</pre>
+                  <h4 className="text-sm font-medium text-gray-300 mb-2">Debug Information:</h4>
+                  <pre className="text-xs text-gray-300 whitespace-pre-wrap">{JSON.stringify(debugInfo, null, 2)}</pre>
                 </div>
               )}
-
-              <Button onClick={initializeStripe} className="mt-4">
-                Retry
-              </Button>
             </CardContent>
           </Card>
         </div>
