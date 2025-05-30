@@ -53,10 +53,10 @@ export default function NotificationDisableDialog({
         </div>
 
         <DialogFooter className="flex-col sm:flex-row gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="text-foreground">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto text-foreground">
             Cancel
           </Button>
-          <Button onClick={handleOkay} variant="default">
+          <Button onClick={handleOkay} className="w-full sm:w-auto">
             Okay
           </Button>
         </DialogFooter>
