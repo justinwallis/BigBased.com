@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, CreditCard } from "lucide-react"
+import { ArrowLeft, CreditCard, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { StripeProvider } from "@/components/stripe-provider"
 import { AddPaymentMethod } from "@/components/add-payment-method"
@@ -17,6 +17,7 @@ export default function BillingClientPage() {
   const [paymentMethods, setPaymentMethods] = useState<any[]>([])
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [defaultPaymentMethod, setDefaultPaymentMethod] = useState<string | null>(null)
 
   useEffect(() => {
@@ -25,14 +26,12 @@ export default function BillingClientPage() {
 
   const initializeStripe = async () => {
     try {
+      setError(null)
+
       // Get or create Stripe customer
       const customerResult = await getOrCreateStripeCustomer()
       if (!customerResult.success) {
-        toast({
-          title: "Error",
-          description: customerResult.error || "Failed to initialize billing",
-          variant: "destructive",
-        })
+        setError(customerResult.error || "Failed to initialize billing")
         return
       }
 
@@ -45,23 +44,25 @@ export default function BillingClientPage() {
       const setupResult = await createSetupIntent(customerResult.customerId!)
       if (setupResult.success) {
         setClientSecret(setupResult.clientSecret!)
+      } else {
+        setError("Failed to initialize payment setup")
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to initialize billing",
-        variant: "destructive",
-      })
+      console.error("Billing initialization error:", error)
+      setError("Failed to initialize billing system")
     } finally {
       setIsLoading(false)
     }
   }
 
   const loadPaymentMethods = async (customerId: string) => {
-    const result = await getCustomerPaymentMethods(customerId)
-    if (result.success) {
-      setPaymentMethods(result.paymentMethods || [])
-      // Note: You might want to fetch the default payment method from Stripe customer object
+    try {
+      const result = await getCustomerPaymentMethods(customerId)
+      if (result.success) {
+        setPaymentMethods(result.paymentMethods || [])
+      }
+    } catch (error) {
+      console.error("Error loading payment methods:", error)
     }
   }
 
@@ -87,6 +88,38 @@ export default function BillingClientPage() {
           <div className="flex items-center justify-center py-12">
             <div className="text-foreground">Loading billing information...</div>
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center space-x-4 mb-8">
+            <Link href="/profile">
+              <Button variant="ghost" size="sm" className="text-foreground">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Profile
+              </Button>
+            </Link>
+            <h1 className="text-3xl font-bold text-foreground">Billing & Payment Methods</h1>
+          </div>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-3 text-destructive">
+                <AlertCircle className="h-5 w-5" />
+                <div>
+                  <p className="font-medium">Billing System Error</p>
+                  <p className="text-sm text-muted-foreground">{error}</p>
+                </div>
+              </div>
+              <Button onClick={initializeStripe} className="mt-4">
+                Retry
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     )

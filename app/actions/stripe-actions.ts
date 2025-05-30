@@ -1,14 +1,25 @@
 "use server"
 
-import { stripe } from "@/lib/stripe"
+import { getStripe, validateStripeKeys } from "@/lib/stripe"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 
+// Validate Stripe configuration on module load
+try {
+  validateStripeKeys()
+} catch (error) {
+  console.error("Stripe configuration error:", error)
+}
+
 export async function createCustomer(email: string, name?: string) {
   try {
+    const stripe = getStripe()
     const customer = await stripe.customers.create({
       email,
       name,
+      metadata: {
+        source: "bigbased_website",
+      },
     })
     return { success: true, customerId: customer.id }
   } catch (error) {
@@ -19,6 +30,7 @@ export async function createCustomer(email: string, name?: string) {
 
 export async function getCustomerPaymentMethods(customerId: string) {
   try {
+    const stripe = getStripe()
     const paymentMethods = await stripe.paymentMethods.list({
       customer: customerId,
       type: "card",
@@ -32,10 +44,14 @@ export async function getCustomerPaymentMethods(customerId: string) {
 
 export async function createSetupIntent(customerId: string) {
   try {
+    const stripe = getStripe()
     const setupIntent = await stripe.setupIntents.create({
       customer: customerId,
       payment_method_types: ["card"],
       usage: "off_session",
+      metadata: {
+        source: "bigbased_billing",
+      },
     })
     return { success: true, clientSecret: setupIntent.client_secret }
   } catch (error) {
@@ -46,6 +62,7 @@ export async function createSetupIntent(customerId: string) {
 
 export async function deletePaymentMethod(paymentMethodId: string) {
   try {
+    const stripe = getStripe()
     await stripe.paymentMethods.detach(paymentMethodId)
     return { success: true }
   } catch (error) {
@@ -56,6 +73,7 @@ export async function deletePaymentMethod(paymentMethodId: string) {
 
 export async function setDefaultPaymentMethod(customerId: string, paymentMethodId: string) {
   try {
+    const stripe = getStripe()
     await stripe.customers.update(customerId, {
       invoice_settings: {
         default_payment_method: paymentMethodId,
@@ -86,14 +104,25 @@ export async function getOrCreateStripeCustomer() {
   }
 
   // Create new Stripe customer
-  const customerResult = await createCustomer(user.email!, user.user_metadata?.full_name || user.email)
+  const customerResult = await createCustomer(
+    user.email!,
+    user.user_metadata?.full_name || user.user_metadata?.name || user.email,
+  )
 
   if (!customerResult.success) {
     return customerResult
   }
 
   // Save customer ID to profile
-  await supabase.from("profiles").update({ stripe_customer_id: customerResult.customerId }).eq("id", user.id)
+  const { error } = await supabase
+    .from("profiles")
+    .update({ stripe_customer_id: customerResult.customerId })
+    .eq("id", user.id)
+
+  if (error) {
+    console.error("Error saving Stripe customer ID:", error)
+    return { success: false, error: "Failed to save customer information" }
+  }
 
   return { success: true, customerId: customerResult.customerId }
 }
