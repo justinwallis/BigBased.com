@@ -92,30 +92,21 @@ export async function getOrCreateStripeCustomer() {
 
     const user = userData.user
 
-    // Use raw SQL to check for stripe_customer_id to bypass schema cache issues
-    const { data: profileData, error: profileError } = await supabase.rpc("get_profile_stripe_customer", {
-      user_id: user.id,
-    })
+    // Use direct SQL query to get stripe_customer_id
+    const { data: profileData, error: profileError } = await supabase
+      .from("profiles")
+      .select("id, username, full_name, avatar_url, banner_url, bio, website, location, stripe_customer_id")
+      .eq("id", user.id)
+      .single()
 
     if (profileError) {
-      console.error("Error fetching profile stripe customer:", profileError)
-
-      // Fallback: try to get the profile data directly
-      const { data: fallbackProfile, error: fallbackError } = await supabase
-        .from("profiles")
-        .select("id, username, full_name")
-        .eq("id", user.id)
-        .single()
-
-      if (fallbackError) {
-        console.error("Fallback profile fetch error:", fallbackError)
-        return { success: false, error: "Failed to access user profile" }
-      }
+      console.error("Error fetching profile:", profileError)
+      return { success: false, error: "Failed to access user profile" }
     }
 
     // If we have a stripe customer ID, return it
-    if (profileData && profileData.length > 0 && profileData[0]?.stripe_customer_id) {
-      return { success: true, customerId: profileData[0].stripe_customer_id }
+    if (profileData?.stripe_customer_id) {
+      return { success: true, customerId: profileData.stripe_customer_id }
     }
 
     // Create new Stripe customer
@@ -128,11 +119,14 @@ export async function getOrCreateStripeCustomer() {
       return customerResult
     }
 
-    // Use raw SQL to update stripe_customer_id to bypass schema cache issues
-    const { error: updateError } = await supabase.rpc("update_profile_stripe_customer", {
-      user_id: user.id,
-      customer_id: customerResult.customerId,
-    })
+    // Use direct SQL to update stripe_customer_id
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({
+        stripe_customer_id: customerResult.customerId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", user.id)
 
     if (updateError) {
       console.error("Error saving Stripe customer ID:", updateError)
