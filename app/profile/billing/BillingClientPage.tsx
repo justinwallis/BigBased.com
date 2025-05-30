@@ -3,12 +3,14 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Loader2, CreditCard, AlertCircle } from "lucide-react"
+import { Loader2, CreditCard, AlertCircle, ArrowLeft } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { StripeProvider } from "@/components/stripe-provider"
 import { AddPaymentMethod } from "@/components/add-payment-method"
 import { PaymentMethodCard } from "@/components/payment-method-card"
 import { getOrCreateStripeCustomer, getCustomerPaymentMethods, createSetupIntent } from "@/app/actions/stripe-actions"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { useRouter } from "next/navigation"
 
 export default function BillingClientPage() {
   const { toast } = useToast()
@@ -17,6 +19,8 @@ export default function BillingClientPage() {
   const [paymentMethods, setPaymentMethods] = useState<any[]>([])
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const router = useRouter()
 
   const loadBillingData = async () => {
     try {
@@ -90,11 +94,21 @@ export default function BillingClientPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Billing & Payment Methods</h1>
+        {/* Header with navigation and theme toggle */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center space-x-4">
+            <Button variant="ghost" size="sm" onClick={() => router.back()} className="flex items-center space-x-2">
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back</span>
+            </Button>
+            <h1 className="text-3xl font-bold dark:text-white">Billing & Payment Methods</h1>
+          </div>
+          <ThemeToggle />
+        </div>
 
-        <Card>
+        <Card className="dark:bg-gray-800 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
+            <CardTitle className="flex items-center space-x-2 dark:text-white">
               <CreditCard className="h-5 w-5" />
               <span>Payment Methods</span>
             </CardTitle>
