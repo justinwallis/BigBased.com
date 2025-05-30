@@ -31,6 +31,7 @@ export default function BillingClientPage() {
   const { theme } = useTheme()
   const [activeTab, setActiveTab] = useState("stripe")
   const [paypalConnected, setPaypalConnected] = useState(false)
+  const [paypalEmail, setPaypalEmail] = useState<string | null>(null)
   const [defaultPaymentMethodId, setDefaultPaymentMethodId] = useState<string | null>(null)
   const [isPayPalDefault, setIsPayPalDefault] = useState(false)
   const [isSettingPayPalDefault, setIsSettingPayPalDefault] = useState(false)
@@ -91,9 +92,12 @@ export default function BillingClientPage() {
 
   const handlePayPalSetup = (details: any) => {
     setPaypalConnected(true)
+    // Extract email from PayPal response
+    const email = details.payer?.email_address || details.email || "user@paypal.com"
+    setPaypalEmail(email)
     toast({
       title: "PayPal Connected",
-      description: "PayPal is now available for payments",
+      description: `PayPal account ${email} is now available for payments`,
     })
   }
 
@@ -184,7 +188,7 @@ export default function BillingClientPage() {
                 <CheckCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 <div>
                   <p className="font-medium text-blue-900 dark:text-blue-100">
-                    Default Payment Method: {isPayPalDefault ? "PayPal" : "Stripe Payment Method"}
+                    Default Payment Method: {isPayPalDefault ? `PayPal (${paypalEmail})` : "Stripe Payment Method"}
                   </p>
                   <p className="text-sm text-blue-700 dark:text-blue-300">
                     {isPayPalDefault
@@ -246,7 +250,12 @@ export default function BillingClientPage() {
                             </svg>
                           </div>
                           <div>
-                            <p className="font-medium dark:text-white">PayPal Account</p>
+                            <div className="flex items-center space-x-2">
+                              <p className="font-medium dark:text-white">PayPal</p>
+                              {paypalEmail && (
+                                <span className="text-sm text-muted-foreground dark:text-gray-400">{paypalEmail}</span>
+                              )}
+                            </div>
                             <p className="text-sm text-muted-foreground dark:text-gray-400">
                               Connected • Available for payments
                             </p>
@@ -275,7 +284,10 @@ export default function BillingClientPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setPaypalConnected(false)}
+                            onClick={() => {
+                              setPaypalConnected(false)
+                              setPaypalEmail(null)
+                            }}
                             className="dark:border-gray-600 dark:text-gray-300"
                           >
                             Disconnect
@@ -374,9 +386,10 @@ export default function BillingClientPage() {
                         </svg>
                       </div>
                       <h3 className="text-lg font-medium dark:text-white mb-2">PayPal Connected</h3>
-                      <p className="text-muted-foreground dark:text-gray-400 mb-4">
+                      <p className="text-muted-foreground dark:text-gray-400 mb-2">
                         Your PayPal account is ready for payments
                       </p>
+                      {paypalEmail && <p className="text-sm text-blue-600 dark:text-blue-400 mb-4">{paypalEmail}</p>}
                       {!isPayPalDefault && (
                         <Button onClick={handleSetPayPalAsDefault} disabled={isSettingPayPalDefault} className="mt-2">
                           {isSettingPayPalDefault ? (

@@ -96,13 +96,17 @@ export function PayPalPayment({
         `
 
         connectButton.onclick = () => {
+          // Simulate getting user email - in a real app, you'd get this from PayPal auth
+          const userEmail = prompt("Enter your PayPal email address:") || "user@example.com"
+
           toast({
             title: "PayPal Connected",
-            description: "PayPal account will be used for future payments",
+            description: `PayPal account ${userEmail} will be used for future payments`,
           })
           onSuccess({
             id: "paypal_setup_" + Date.now(),
-            payer: { email_address: "user@example.com" },
+            payer: { email_address: userEmail },
+            email: userEmail,
             status: "COMPLETED",
             type: "setup",
           })
