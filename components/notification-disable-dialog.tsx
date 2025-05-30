@@ -38,9 +38,9 @@ export default function NotificationDisableDialog({
 }: NotificationDisableDialogProps) {
   const [step, setStep] = useState<"confirm" | "instructions">("confirm")
 
-  const handleDisable = async () => {
-    await onConfirmDisable()
-    setStep("instructions")
+  const handleOkay = () => {
+    onConfirmDisable()
+    onOpenChange(false)
   }
 
   const getBrowserIcon = () => {
@@ -126,7 +126,7 @@ export default function NotificationDisableDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md [&>button]:text-foreground">
         {step === "confirm" ? (
           <>
             <DialogHeader>
@@ -180,7 +180,7 @@ export default function NotificationDisableDialog({
               <Button variant="outline" onClick={handleClose} className="w-full sm:w-auto text-foreground">
                 Cancel
               </Button>
-              <Button onClick={handleDisable} className="w-full sm:w-auto">
+              <Button onClick={handleOkay} className="w-full sm:w-auto">
                 Okay
               </Button>
             </DialogFooter>
