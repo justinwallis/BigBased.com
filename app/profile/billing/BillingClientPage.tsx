@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Loader2, CreditCard, AlertCircle, ArrowLeft, CreditCardIcon } from "lucide-react"
+import { Loader2, CreditCard, AlertCircle, ArrowLeft, CreditCardIcon, Info } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { StripeProvider } from "@/components/stripe-provider"
 import { AddPaymentMethod } from "@/components/add-payment-method"
@@ -24,6 +24,7 @@ export default function BillingClientPage() {
   const [error, setError] = useState<string | null>(null)
   const { theme } = useTheme()
   const [activeTab, setActiveTab] = useState("stripe")
+  const [paypalConnected, setPaypalConnected] = useState(false)
 
   const router = useRouter()
 
@@ -68,12 +69,12 @@ export default function BillingClientPage() {
     loadBillingData()
   }
 
-  const handlePayPalSuccess = (details: any) => {
+  const handlePayPalSetup = (details: any) => {
+    setPaypalConnected(true)
     toast({
-      title: "PayPal Payment Successful",
-      description: `Transaction ID: ${details.id}`,
+      title: "PayPal Connected",
+      description: "PayPal is now available for payments",
     })
-    // Here you would typically call a server action to record the payment
   }
 
   if (isLoading) {
@@ -133,7 +134,7 @@ export default function BillingClientPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {paymentMethods.length === 0 ? (
+            {paymentMethods.length === 0 && !paypalConnected ? (
               <p className="text-muted-foreground dark:text-gray-300 mb-4">No payment methods saved yet.</p>
             ) : (
               <div className="space-y-4">
@@ -145,6 +146,45 @@ export default function BillingClientPage() {
                     onUpdate={handlePaymentMethodUpdate}
                   />
                 ))}
+
+                {/* Show PayPal as connected if setup */}
+                {paypalConnected && (
+                  <div className="flex items-center justify-between p-4 border rounded-lg dark:border-gray-600 dark:bg-gray-700">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="h-5 w-5 text-blue-600 dark:text-blue-400"
+                        >
+                          <path d="M7 11l5-7" />
+                          <path d="M21 11V6a2 2 0 0 0-2-2h-4l5 7" />
+                          <path d="M3 11v5a2 2 0 0 0 2 2h4l5-7" />
+                          <path d="M17 11v5a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2v-5" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="font-medium dark:text-white">PayPal Account</p>
+                        <p className="text-sm text-muted-foreground dark:text-gray-400">
+                          Connected • Available for payments
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPaypalConnected(false)}
+                      className="dark:border-gray-600 dark:text-gray-300"
+                    >
+                      Disconnect
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
@@ -153,12 +193,12 @@ export default function BillingClientPage() {
         {/* Add Payment Methods with Tabs */}
         <div className="mt-6">
           <Tabs defaultValue="stripe" value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-2 mb-4">
-              <TabsTrigger value="stripe" className="flex items-center space-x-2">
+            <TabsList className="grid grid-cols-2 mb-4 dark:bg-gray-800">
+              <TabsTrigger value="stripe" className="flex items-center space-x-2 dark:data-[state=active]:bg-gray-700">
                 <CreditCardIcon className="h-4 w-4" />
                 <span>Card & Digital Wallets</span>
               </TabsTrigger>
-              <TabsTrigger value="paypal" className="flex items-center space-x-2">
+              <TabsTrigger value="paypal" className="flex items-center space-x-2 dark:data-[state=active]:bg-gray-700">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -194,7 +234,7 @@ export default function BillingClientPage() {
             </TabsContent>
 
             <TabsContent value="paypal">
-              <Card className="dark:bg-gray-700 dark:border-gray-600">
+              <Card className="dark:bg-gray-800 dark:border-gray-700">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2 dark:text-white">
                     <svg
@@ -212,12 +252,33 @@ export default function BillingClientPage() {
                       <path d="M3 11v5a2 2 0 0 0 2 2h4l5-7" />
                       <path d="M17 11v5a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2v-5" />
                     </svg>
-                    <span>PayPal Payment</span>
+                    <span>PayPal Setup</span>
                   </CardTitle>
-                  <CardDescription className="dark:text-gray-300">Make a payment using PayPal</CardDescription>
+                  <CardDescription className="dark:text-gray-300">
+                    Connect your PayPal account for payments
+                  </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <PayPalPayment amount={10} onSuccess={handlePayPalSuccess} />
+                <CardContent className="dark:bg-gray-800">
+                  {!paypalConnected ? (
+                    <PayPalPayment mode="setup" onSuccess={handlePayPalSetup} />
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg
+                          className="w-8 h-8 text-green-600 dark:text-green-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-medium dark:text-white mb-2">PayPal Connected</h3>
+                      <p className="text-muted-foreground dark:text-gray-400">
+                        Your PayPal account is ready for payments
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -227,7 +288,10 @@ export default function BillingClientPage() {
         {/* Payment Methods Info */}
         <Card className="mt-8 dark:bg-gray-800 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="dark:text-white">Supported Payment Methods</CardTitle>
+            <CardTitle className="flex items-center space-x-2 dark:text-white">
+              <Info className="h-5 w-5" />
+              <span>Payment Method Information</span>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-2 gap-6 dark:text-gray-300">
@@ -240,14 +304,22 @@ export default function BillingClientPage() {
                   <li>• Link by Stripe (Save for faster checkout)</li>
                   <li>• US Bank Accounts (ACH)</li>
                 </ul>
+                <p className="text-xs text-muted-foreground dark:text-gray-400 mt-2">
+                  These payment methods are saved securely and can be reused.
+                </p>
               </div>
               <div>
-                <h3 className="font-medium mb-2 dark:text-white">Other Payment Methods</h3>
+                <h3 className="font-medium mb-2 dark:text-white">PayPal</h3>
                 <ul className="space-y-1 text-sm">
-                  <li>• PayPal</li>
+                  <li>• PayPal Account Balance</li>
                   <li>• PayPal Credit</li>
-                  <li>• Coming Soon: Cryptocurrency</li>
+                  <li>• Cards linked to PayPal</li>
+                  <li>• Bank accounts linked to PayPal</li>
                 </ul>
+                <p className="text-xs text-muted-foreground dark:text-gray-400 mt-2">
+                  PayPal requires authentication for each payment but provides access to all your PayPal payment
+                  methods.
+                </p>
               </div>
             </div>
           </CardContent>
