@@ -96,7 +96,7 @@ export async function getOrCreateStripeCustomer() {
 
     // Check if billing customer already exists (using new table name)
     const { data: billingCustomer, error: billingError } = await supabase
-      .from("stripe_billing")
+      .from("user_stripe_data")
       .select("*")
       .eq("user_id", user.id)
       .single()
@@ -129,7 +129,7 @@ export async function getOrCreateStripeCustomer() {
 
     // Save billing customer to new table
     const { data: newBillingCustomer, error: insertError } = await supabase
-      .from("stripe_billing")
+      .from("user_stripe_data")
       .insert({
         user_id: user.id,
         stripe_customer_id: customerResult.customerId,
