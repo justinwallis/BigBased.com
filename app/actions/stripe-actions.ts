@@ -95,17 +95,31 @@ export async function getOrCreateStripeCustomer() {
     // Check if profile exists and has stripe_customer_id
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("id, stripe_customer_id")
+      .select("*") // Select all columns to avoid schema cache issues
       .eq("id", user.id)
       .single()
 
     if (profileError) {
       console.error("Error fetching profile:", profileError)
-      return { success: false, error: "Failed to access user profile" }
-    }
 
-    // If profile exists and has a Stripe customer ID, return it
-    if (profile?.stripe_customer_id) {
+      // Try with service role client as fallback
+      const serviceClient = createClient(true)
+      const { data: serviceProfile, error: serviceProfileError } = await serviceClient
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single()
+
+      if (serviceProfileError) {
+        console.error("Service role profile fetch error:", serviceProfileError)
+        return { success: false, error: "Failed to access user profile" }
+      }
+
+      // Use service profile if available
+      if (serviceProfile?.stripe_customer_id) {
+        return { success: true, customerId: serviceProfile.stripe_customer_id }
+      }
+    } else if (profile?.stripe_customer_id) {
       return { success: true, customerId: profile.stripe_customer_id }
     }
 
@@ -119,15 +133,26 @@ export async function getOrCreateStripeCustomer() {
       return customerResult
     }
 
-    // Save customer ID to profile
+    // Try to update with regular client first
     const { error: updateError } = await supabase
       .from("profiles")
       .update({ stripe_customer_id: customerResult.customerId })
       .eq("id", user.id)
 
     if (updateError) {
-      console.error("Error saving Stripe customer ID:", updateError)
-      return { success: false, error: "Failed to save customer information" }
+      console.error("Regular client update error:", updateError)
+
+      // Try with service role client as fallback
+      const serviceClient = createClient(true)
+      const { error: serviceUpdateError } = await serviceClient
+        .from("profiles")
+        .update({ stripe_customer_id: customerResult.customerId })
+        .eq("id", user.id)
+
+      if (serviceUpdateError) {
+        console.error("Service role update error:", serviceUpdateError)
+        return { success: false, error: "Failed to save customer information" }
+      }
     }
 
     return { success: true, customerId: customerResult.customerId }
