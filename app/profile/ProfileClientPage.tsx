@@ -91,7 +91,7 @@ const ProfileClientPage = () => {
                   <CreditCard className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                   <p className="text-muted-foreground mb-4">Manage your payment methods and billing information</p>
                   <Link href="/profile/billing">
-                    <Button>Go to Billing</Button>
+                    <Button variant="outline">Add Payment Method</Button>
                   </Link>
                 </div>
               </CardContent>
