@@ -8,8 +8,8 @@ export async function debugUserProfile() {
     "Checking environment variables...",
     "Testing regular Supabase client...",
     "Testing profiles table...",
-    "Testing billing_customers table...",
-    "Checking database connection details...",
+    "Testing billing_customers table with service role...",
+    "Testing billing_customers table with regular client...",
   ]
   const errors: string[] = []
 
@@ -23,17 +23,14 @@ export async function debugUserProfile() {
       nextPublicSupabaseAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       stripeSecretKey: !!process.env.STRIPE_SECRET_KEY,
       stripePublishableKey: !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
-      // Check if Neon variables exist (they shouldn't be used for Supabase)
       neonDatabaseUrl: !!process.env.NEON_DATABASE_URL,
       databaseUrl: !!process.env.DATABASE_URL,
     }
 
-    // Log actual URLs (first 20 chars for security)
+    // Connection info
     const connectionInfo = {
-      supabaseUrl: process.env.SUPABASE_URL?.substring(0, 30) + "...",
-      nextPublicSupabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + "...",
-      databaseUrl: process.env.DATABASE_URL?.substring(0, 30) + "...",
-      neonUrl: process.env.NEON_DATABASE_URL?.substring(0, 30) + "...",
+      supabaseUrl: process.env.SUPABASE_URL?.substring(0, 50) + "...",
+      nextPublicSupabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 50) + "...",
     }
 
     // Test regular Supabase client
@@ -60,7 +57,21 @@ export async function debugUserProfile() {
       error: profileError,
     }
 
-    // Test billing_customers table
+    // Test billing_customers table with service role
+    const supabaseServiceRole = createClient(true)
+    const { data: billingDataService, error: billingErrorService } = await supabaseServiceRole
+      .from("billing_customers")
+      .select("*")
+      .limit(1)
+
+    const serviceRoleTest = {
+      success: !billingErrorService,
+      data: billingDataService,
+      error: billingErrorService,
+      count: billingDataService?.length || 0,
+    }
+
+    // Test billing_customers table with regular client
     const { data: billingData, error: billingError } = await supabase
       .from("billing_customers")
       .select("*")
@@ -82,6 +93,7 @@ export async function debugUserProfile() {
       connectionInfo,
       regularClient,
       profileData,
+      serviceRoleTest,
       billingTableTest,
     }
   } catch (error: any) {
@@ -94,6 +106,7 @@ export async function debugUserProfile() {
       connectionInfo: {},
       regularClient: { error: error.message },
       profileData: { error: error.message },
+      serviceRoleTest: { error: error.message },
       billingTableTest: { error: error.message },
     }
   }
@@ -103,9 +116,9 @@ export async function testStripeCustomerCreation() {
   const timestamp = new Date().toISOString()
   const steps = [
     "Getting user data...",
+    "Testing direct table insert...",
     "Testing getOrCreateStripeCustomer...",
     "Verifying billing_customers table...",
-    "Checking actual database connection...",
   ]
   const errors: string[] = []
 
@@ -130,6 +143,31 @@ export async function testStripeCustomerCreation() {
       metadata: userData.user.user_metadata,
     }
 
+    // Test direct insert with service role
+    const supabaseServiceRole = createClient(true)
+    const testCustomerId = `cus_test_${Date.now()}`
+
+    const { data: directInsert, error: directInsertError } = await supabaseServiceRole
+      .from("billing_customers")
+      .insert({
+        user_id: userData.user.id,
+        stripe_customer_id: testCustomerId,
+      })
+      .select()
+      .single()
+
+    const directInsertTest = {
+      success: !directInsertError,
+      data: directInsert,
+      error: directInsertError,
+      testCustomerId,
+    }
+
+    // Clean up test data if successful
+    if (directInsert) {
+      await supabaseServiceRole.from("billing_customers").delete().eq("id", directInsert.id)
+    }
+
     // Test the actual function
     const { getOrCreateStripeCustomer } = await import("@/app/actions/stripe-actions")
     const result = await getOrCreateStripeCustomer()
@@ -141,23 +179,17 @@ export async function testStripeCustomerCreation() {
       .eq("user_id", userData.user.id)
       .single()
 
-    // Check what database we're actually connecting to
-    const connectionTest = {
-      supabaseUrl: process.env.SUPABASE_URL?.substring(0, 50) + "...",
-      clientUrl: "Check if client is using correct URL",
-    }
-
     return {
       timestamp,
       steps,
       errors,
       user,
+      directInsertTest,
       result,
       verification: {
         billingCustomer,
         billingError,
       },
-      connectionTest,
     }
   } catch (error: any) {
     errors.push(error.message)
