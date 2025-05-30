@@ -565,7 +565,7 @@ export default function PushNotificationsClientPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <Link href="/profile?tab=notifications">
-            <Button variant="outline" size="sm" className="flex items-center space-x-2">
+            <Button variant="outline" size="sm" className="flex items-center space-x-2 text-foreground">
               <ArrowLeft className="h-4 w-4" />
               <span>Back to Profile</span>
             </Button>
@@ -575,7 +575,7 @@ export default function PushNotificationsClientPage() {
 
         {/* Page Title */}
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Push Notifications</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Push Notifications</h1>
           <p className="text-muted-foreground">
             Manage your push notification preferences and get instant updates on your devices.
           </p>
