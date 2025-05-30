@@ -1,13 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Check, Info, Loader2 } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Loader2, ArrowLeft, Check, Crown, Star, Zap, AlertCircle } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { useRouter, useSearchParams } from "next/navigation"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { createCheckoutSession } from "@/app/actions/subscription-actions"
 import { SUBSCRIPTION_PLANS, type PlanId } from "@/lib/subscription-plans"
-import { useToast } from "@/hooks/use-toast"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
 interface UpgradeClientPageProps {
   currentPlanId: PlanId
@@ -16,252 +18,242 @@ interface UpgradeClientPageProps {
 
 export default function UpgradeClientPage({ currentPlanId, isActive }: UpgradeClientPageProps) {
   const { toast } = useToast()
-  const [isLoading, setIsLoading] = useState<PlanId | null>(null)
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [isUpgrading, setIsUpgrading] = useState<string | null>(null)
+
+  useEffect(() => {
+    const canceled = searchParams.get("canceled")
+    if (canceled === "true") {
+      toast({
+        title: "Upgrade Canceled",
+        description: "You can upgrade anytime from your billing page",
+      })
+      // Remove query parameters from URL
+      const url = new URL(window.location.href)
+      url.searchParams.delete("canceled")
+      window.history.replaceState({}, "", url.toString())
+    }
+  }, [searchParams, toast])
 
   const handleUpgrade = async (planId: PlanId) => {
-    if (planId === currentPlanId) return
-
     const plan = SUBSCRIPTION_PLANS[planId]
     if (!plan.stripePriceId) {
+      console.error(`Missing Stripe price ID for plan: ${planId}`, plan)
       toast({
         title: "Configuration Error",
-        description: "This plan is not available for purchase at this time.",
+        description: "This plan is not available for purchase yet. Missing Stripe price ID.",
         variant: "destructive",
       })
       return
     }
 
-    setIsLoading(planId)
-
+    setIsUpgrading(planId)
     try {
+      console.log(`Creating checkout session for plan: ${planId} with price ID: ${plan.stripePriceId}`)
       const result = await createCheckoutSession(plan.stripePriceId, planId)
+      console.log("Checkout session result:", result)
 
       if (result.success && result.sessionUrl) {
         window.location.href = result.sessionUrl
       } else {
         toast({
           title: "Error",
-          description: result.error || "Failed to create checkout session",
+          description: result.error || "Failed to start checkout",
           variant: "destructive",
         })
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Error creating checkout session:", error)
       toast({
         title: "Error",
-        description: "An unexpected error occurred",
+        description: error.message || "An unexpected error occurred",
         variant: "destructive",
       })
     } finally {
-      setIsLoading(null)
+      setIsUpgrading(null)
     }
   }
 
-  const faqs = [
-    {
-      question: "How do subscriptions work?",
-      answer:
-        "Subscriptions are billed monthly or annually, depending on the plan you choose. You can cancel anytime, and your subscription will remain active until the end of the current billing period.",
-    },
-    {
-      question: "Can I change plans later?",
-      answer:
-        "Yes, you can upgrade or downgrade your plan at any time. When upgrading, you'll be charged the prorated difference for the remainder of your billing period. When downgrading, your new plan will take effect at the end of your current billing period.",
-    },
-    {
-      question: "What payment methods are accepted?",
-      answer:
-        "We accept all major credit cards, debit cards, and digital wallets including Apple Pay, Google Pay, and Link by Stripe. For US customers, we also accept bank transfers.",
-    },
-    {
-      question: "Is there a refund policy?",
-      answer:
-        "We don't offer refunds for subscription payments, but you can cancel your subscription at any time to prevent future charges.",
-    },
-  ]
+  const getPlanIcon = (planId: PlanId) => {
+    switch (planId) {
+      case "free":
+        return <Star className="h-6 w-6 text-gray-500" />
+      case "based_supporter":
+        return <Zap className="h-6 w-6 text-blue-500" />
+      case "based_patriot":
+        return <Crown className="h-6 w-6 text-purple-500" />
+      default:
+        return <Star className="h-6 w-6 text-gray-500" />
+    }
+  }
+
+  const getPlanGradient = (planId: PlanId) => {
+    switch (planId) {
+      case "based_supporter":
+        return "from-blue-500 to-blue-600"
+      case "based_patriot":
+        return "from-purple-500 to-purple-600"
+      default:
+        return "from-gray-500 to-gray-600"
+    }
+  }
+
+  const isCurrentPlan = (planId: PlanId) => planId === currentPlanId
 
   return (
-    <div className="container max-w-6xl py-8">
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold mb-2">Choose Your Plan</h1>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          Select the plan that best fits your needs. All plans include access to our core features.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        {/* Free Plan */}
-        <Card className={`border ${currentPlanId === "free" ? "border-primary" : "border-border"}`}>
-          <CardHeader>
-            <CardTitle>Free</CardTitle>
-            <CardDescription>Basic access to Big Based</CardDescription>
-            <div className="mt-4">
-              <span className="text-3xl font-bold">$0</span>
-              <span className="text-muted-foreground">/month</span>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ul className="space-y-2">
-              {SUBSCRIPTION_PLANS.free.features.map((feature, i) => (
-                <li key={i} className="flex items-start">
-                  <Check className="h-5 w-5 text-green-500 mr-2 shrink-0" />
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="pt-4">
-              <div className="flex items-center justify-between text-sm">
-                <span>Downloads</span>
-                <span>{SUBSCRIPTION_PLANS.free.limits.downloads} per month</span>
-              </div>
-              <div className="flex items-center justify-between text-sm mt-2">
-                <span>Bookmarks</span>
-                <span>Up to {SUBSCRIPTION_PLANS.free.limits.bookmarks}</span>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter>
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center space-x-4">
             <Button
-              className="w-full"
-              variant={currentPlanId === "free" ? "outline" : "default"}
-              disabled={currentPlanId === "free"}
+              variant="ghost"
+              size="sm"
+              onClick={() => router.back()}
+              className="flex items-center space-x-2 dark:text-white"
             >
-              Current Plan
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back to Billing</span>
             </Button>
-          </CardFooter>
-        </Card>
-
-        {/* Based Supporter */}
-        <Card className={`border ${currentPlanId === "based_supporter" ? "border-primary" : "border-border"} relative`}>
-          {currentPlanId !== "based_supporter" && (
-            <div className="absolute -top-4 left-0 right-0 flex justify-center">
-              <span className="bg-primary text-primary-foreground text-sm font-medium py-1 px-3 rounded-full">
-                Popular
-              </span>
+            <div>
+              <h1 className="text-3xl font-bold dark:text-white">Choose Your Plan</h1>
+              <p className="text-muted-foreground dark:text-gray-400">
+                Upgrade to unlock premium features and support our mission
+              </p>
             </div>
-          )}
-          <CardHeader>
-            <CardTitle>Based Supporter</CardTitle>
-            <CardDescription>Enhanced access and features</CardDescription>
-            <div className="mt-4">
-              <span className="text-3xl font-bold">$9.99</span>
-              <span className="text-muted-foreground">/month</span>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ul className="space-y-2">
-              {SUBSCRIPTION_PLANS.based_supporter.features.map((feature, i) => (
-                <li key={i} className="flex items-start">
-                  <Check className="h-5 w-5 text-green-500 mr-2 shrink-0" />
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="pt-4">
-              <div className="flex items-center justify-between text-sm">
-                <span>Downloads</span>
-                <span>Unlimited</span>
-              </div>
-              <div className="flex items-center justify-between text-sm mt-2">
-                <span>Bookmarks</span>
-                <span>Up to {SUBSCRIPTION_PLANS.based_supporter.limits.bookmarks}</span>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-            {currentPlanId === "based_supporter" ? (
-              <Button className="w-full" variant="outline" disabled>
-                Current Plan
-              </Button>
-            ) : (
-              <Button className="w-full" onClick={() => handleUpgrade("based_supporter")} disabled={isLoading !== null}>
-                {isLoading === "based_supporter" ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : currentPlanId === "based_patriot" ? (
-                  "Downgrade"
-                ) : (
-                  "Upgrade"
-                )}
-              </Button>
-            )}
-          </CardFooter>
-        </Card>
-
-        {/* Based Patriot */}
-        <Card className={`border ${currentPlanId === "based_patriot" ? "border-primary" : "border-border"}`}>
-          <CardHeader>
-            <CardTitle>Based Patriot</CardTitle>
-            <CardDescription>Premium access and exclusive content</CardDescription>
-            <div className="mt-4">
-              <span className="text-3xl font-bold">$19.99</span>
-              <span className="text-muted-foreground">/month</span>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ul className="space-y-2">
-              {SUBSCRIPTION_PLANS.based_patriot.features.map((feature, i) => (
-                <li key={i} className="flex items-start">
-                  <Check className="h-5 w-5 text-green-500 mr-2 shrink-0" />
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="pt-4">
-              <div className="flex items-center justify-between text-sm">
-                <span>Downloads</span>
-                <span>Unlimited</span>
-              </div>
-              <div className="flex items-center justify-between text-sm mt-2">
-                <span>Bookmarks</span>
-                <span>Unlimited</span>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-            {currentPlanId === "based_patriot" ? (
-              <Button className="w-full" variant="outline" disabled>
-                Current Plan
-              </Button>
-            ) : (
-              <Button className="w-full" onClick={() => handleUpgrade("based_patriot")} disabled={isLoading !== null}>
-                {isLoading === "based_patriot" ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  "Upgrade"
-                )}
-              </Button>
-            )}
-          </CardFooter>
-        </Card>
-      </div>
-
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-muted/50 rounded-lg p-4 flex items-start mb-8">
-          <Info className="h-5 w-5 text-blue-500 mr-3 mt-0.5 shrink-0" />
-          <div>
-            <h3 className="font-medium mb-1">About Subscriptions</h3>
-            <p className="text-sm text-muted-foreground">
-              Subscriptions are billed monthly and can be canceled at any time. When you upgrade, you'll be charged
-              immediately for the new plan. When you downgrade, your new plan will take effect at the end of your
-              current billing period.
-            </p>
           </div>
+          <ThemeToggle />
         </div>
 
-        <h2 className="text-2xl font-bold mb-4">Frequently Asked Questions</h2>
-        <Accordion type="single" collapsible className="w-full">
-          {faqs.map((faq, i) => (
-            <AccordionItem key={i} value={`item-${i}`}>
-              <AccordionTrigger>{faq.question}</AccordionTrigger>
-              <AccordionContent>{faq.answer}</AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+        {/* Current Plan Notice */}
+        {currentPlanId !== "free" && (
+          <Card className="mb-8 border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <div>
+                  <p className="font-medium text-blue-900 dark:text-blue-100">
+                    Current Plan: {SUBSCRIPTION_PLANS[currentPlanId].name}
+                  </p>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    You can upgrade or downgrade your plan at any time. Changes will be prorated.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Plans Grid */}
+        <div className="grid md:grid-cols-3 gap-8">
+          {Object.entries(SUBSCRIPTION_PLANS).map(([planId, plan]) => {
+            const isPopular = planId === "based_supporter"
+            const isCurrent = isCurrentPlan(planId as PlanId)
+
+            return (
+              <Card
+                key={planId}
+                className={`relative overflow-hidden transition-all duration-200 hover:shadow-lg ${
+                  isPopular ? "border-blue-500 shadow-lg scale-105" : ""
+                } ${isCurrent ? "ring-2 ring-green-500" : ""}`}
+              >
+                {isPopular && (
+                  <div
+                    className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${getPlanGradient(planId as PlanId)}`}
+                  />
+                )}
+                {isCurrent && <Badge className="absolute top-4 right-4 bg-green-500">Current Plan</Badge>}
+                {isPopular && !isCurrent && <Badge className="absolute top-4 right-4 bg-blue-500">Most Popular</Badge>}
+
+                <CardHeader className="text-center pb-4">
+                  <div className="flex justify-center mb-4">{getPlanIcon(planId as PlanId)}</div>
+                  <CardTitle className="text-2xl dark:text-white">{plan.name}</CardTitle>
+                  <div className="flex items-baseline justify-center space-x-1">
+                    <span className="text-4xl font-bold dark:text-white">${plan.price}</span>
+                    {plan.interval && (
+                      <span className="text-muted-foreground dark:text-gray-400">/{plan.interval}</span>
+                    )}
+                  </div>
+                </CardHeader>
+
+                <CardContent className="space-y-6">
+                  <ul className="space-y-3">
+                    {plan.features.map((feature, index) => (
+                      <li key={index} className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                        <span className="text-sm dark:text-gray-300">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="pt-4">
+                    {planId === "free" ? (
+                      <Button variant="outline" className="w-full" disabled>
+                        Current Plan
+                      </Button>
+                    ) : isCurrent ? (
+                      <Button variant="outline" className="w-full" disabled>
+                        Current Plan
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => handleUpgrade(planId as PlanId)}
+                        disabled={isUpgrading !== null}
+                        className={`w-full ${
+                          isPopular
+                            ? `bg-gradient-to-r ${getPlanGradient(planId as PlanId)} text-white hover:opacity-90`
+                            : ""
+                        }`}
+                      >
+                        {isUpgrading === planId ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Processing...
+                          </>
+                        ) : currentPlanId === "free" ? (
+                          "Upgrade Now"
+                        ) : (
+                          "Switch Plan"
+                        )}
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+
+        {/* FAQ Section */}
+        <Card className="mt-12 dark:bg-gray-800 dark:border-gray-700">
+          <CardHeader>
+            <CardTitle className="dark:text-white">Frequently Asked Questions</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 dark:text-gray-300">
+            <div>
+              <h4 className="font-medium dark:text-white">Can I change my plan later?</h4>
+              <p className="text-sm text-muted-foreground dark:text-gray-400">
+                Yes, you can upgrade or downgrade your plan at any time. Changes are prorated and will be reflected in
+                your next billing cycle.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-medium dark:text-white">What payment methods do you accept?</h4>
+              <p className="text-sm text-muted-foreground dark:text-gray-400">
+                We accept all major credit cards, PayPal, Apple Pay, Google Pay, and US bank accounts through our secure
+                payment processor.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-medium dark:text-white">Can I cancel anytime?</h4>
+              <p className="text-sm text-muted-foreground dark:text-gray-400">
+                Yes, you can cancel your subscription at any time. You'll continue to have access to premium features
+                until the end of your billing period.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

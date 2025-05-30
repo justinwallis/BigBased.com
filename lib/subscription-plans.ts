@@ -16,7 +16,7 @@ export const SUBSCRIPTION_PLANS = {
     name: "Based Supporter",
     price: 9.99,
     interval: "month",
-    stripePriceId: process.env.STRIPE_BASED_SUPPORTER_PRICE_ID,
+    stripePriceId: process.env.STRIPE_BASED_SUPPORTER_PRICE_ID || "",
     features: [
       "All Free features",
       "Unlimited downloads",
@@ -35,7 +35,7 @@ export const SUBSCRIPTION_PLANS = {
     name: "Based Patriot",
     price: 19.99,
     interval: "month",
-    stripePriceId: process.env.STRIPE_BASED_PATRIOT_PRICE_ID,
+    stripePriceId: process.env.STRIPE_BASED_PATRIOT_PRICE_ID || "",
     features: [
       "All Based Supporter features",
       "Premium content library",
