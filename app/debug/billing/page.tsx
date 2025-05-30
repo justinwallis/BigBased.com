@@ -60,6 +60,11 @@ export default function BillingDebugPage() {
     return await response.json()
   }
 
+  const testDirectColumn = async () => {
+    const response = await fetch("/api/debug/direct-column-test", { method: "POST" })
+    return await response.json()
+  }
+
   const runAllTests = async () => {
     await runTest("environment", testEnvironment)
     await runTest("connectionDetails", testConnectionDetails)
@@ -176,6 +181,16 @@ export default function BillingDebugPage() {
                   {isLoading === "billingFlow" && <Loader2 className="h-4 w-4 animate-spin" />}
                   <CreditCard className="h-4 w-4" />
                   <span>Test Full Flow</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => runTest("directColumn", testDirectColumn)}
+                  disabled={isLoading !== null}
+                  className="flex items-center space-x-2"
+                >
+                  {isLoading === "directColumn" && <Loader2 className="h-4 w-4 animate-spin" />}
+                  <Database className="h-4 w-4" />
+                  <span>Test Direct Column Access</span>
                 </Button>
               </div>
             </CardContent>
