@@ -14,6 +14,32 @@ interface PaymentMethodCardProps {
   onUpdate?: () => void
 }
 
+const formatCardBrand = (brand: string) => {
+  return brand.charAt(0).toUpperCase() + brand.slice(1)
+}
+
+// Add this helper function at the top of the component
+const getPaymentMethodDisplay = (paymentMethod: any) => {
+  if (paymentMethod.type === "card") {
+    return {
+      icon: <CreditCard className="h-5 w-5 text-muted-foreground" />,
+      title: `${formatCardBrand(paymentMethod.card.brand)} •••• ${paymentMethod.card.last4}`,
+      subtitle: `Expires ${paymentMethod.card.exp_month}/${paymentMethod.card.exp_year}`,
+    }
+  } else if (paymentMethod.type === "link") {
+    return {
+      icon: <CreditCard className="h-5 w-5 text-blue-500" />,
+      title: `Link ${paymentMethod.link?.email ? `(${paymentMethod.link.email})` : ""}`,
+      subtitle: "Link by Stripe",
+    }
+  }
+  return {
+    icon: <CreditCard className="h-5 w-5 text-muted-foreground" />,
+    title: "Payment Method",
+    subtitle: paymentMethod.type,
+  }
+}
+
 export function PaymentMethodCard({ paymentMethod, customerId, isDefault, onUpdate }: PaymentMethodCardProps) {
   const { toast } = useToast()
   const [isDeleting, setIsDeleting] = useState(false)
@@ -81,23 +107,17 @@ export function PaymentMethodCard({ paymentMethod, customerId, isDefault, onUpda
     }
   }
 
-  const formatCardBrand = (brand: string) => {
-    return brand.charAt(0).toUpperCase() + brand.slice(1)
-  }
+  const paymentDisplay = getPaymentMethodDisplay(paymentMethod)
 
   return (
     <Card className={`overflow-hidden ${isDefault ? "border-purple-500" : ""}`}>
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <CreditCard className="h-5 w-5 text-muted-foreground" />
+            {paymentDisplay.icon}
             <div>
-              <p className="font-medium">
-                {formatCardBrand(paymentMethod.card.brand)} •••• {paymentMethod.card.last4}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Expires {paymentMethod.card.exp_month}/{paymentMethod.card.exp_year}
-              </p>
+              <p className="font-medium">{paymentDisplay.title}</p>
+              <p className="text-xs text-muted-foreground">{paymentDisplay.subtitle}</p>
             </div>
           </div>
           <div className="flex items-center space-x-2">

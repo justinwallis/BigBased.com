@@ -23,11 +23,23 @@ export async function createCustomer(email: string, name?: string) {
 export async function getCustomerPaymentMethods(customerId: string) {
   try {
     const stripe = getStripe()
-    const paymentMethods = await stripe.paymentMethods.list({
-      customer: customerId,
-      type: "card",
-    })
-    return { success: true, paymentMethods: paymentMethods.data }
+
+    // Fetch both card and link payment methods
+    const [cardMethods, linkMethods] = await Promise.all([
+      stripe.paymentMethods.list({
+        customer: customerId,
+        type: "card",
+      }),
+      stripe.paymentMethods.list({
+        customer: customerId,
+        type: "link",
+      }),
+    ])
+
+    // Combine both types of payment methods
+    const allPaymentMethods = [...cardMethods.data, ...linkMethods.data]
+
+    return { success: true, paymentMethods: allPaymentMethods }
   } catch (error) {
     console.error("Error fetching payment methods:", error)
     return { success: false, error: "Failed to fetch payment methods" }
