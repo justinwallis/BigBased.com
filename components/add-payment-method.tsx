@@ -3,15 +3,15 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js"
+import { PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { CreditCard, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { Plus } from "lucide-react"
 
 interface AddPaymentMethodProps {
   clientSecret: string
-  onSuccess: () => void
+  onSuccess?: () => void
 }
 
 export function AddPaymentMethod({ clientSecret, onSuccess }: AddPaymentMethodProps) {
@@ -21,8 +21,8 @@ export function AddPaymentMethod({ clientSecret, onSuccess }: AddPaymentMethodPr
   const [isLoading, setIsLoading] = useState(false)
   const [showForm, setShowForm] = useState(false)
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault()
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
 
     if (!stripe || !elements) {
       return
@@ -30,80 +30,70 @@ export function AddPaymentMethod({ clientSecret, onSuccess }: AddPaymentMethodPr
 
     setIsLoading(true)
 
-    const cardElement = elements.getElement(CardElement)
+    try {
+      const result = await stripe.confirmSetup({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/profile/billing`,
+        },
+        redirect: "if_required",
+      })
 
-    if (!cardElement) {
-      setIsLoading(false)
-      return
-    }
-
-    const { error } = await stripe.confirmSetup({
-      elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/profile/billing`,
-      },
-      redirect: "if_required",
-    })
-
-    if (error) {
+      if (result.error) {
+        toast({
+          title: "Payment method error",
+          description: result.error.message || "Failed to add payment method",
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: "Payment method added",
+          description: "Your payment method has been added successfully",
+        })
+        setShowForm(false)
+        if (onSuccess) {
+          onSuccess()
+        }
+      }
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to add payment method",
+        description: error.message || "An unexpected error occurred",
         variant: "destructive",
       })
-    } else {
-      toast({
-        title: "Payment method added",
-        description: "Your payment method has been successfully added.",
-      })
-      setShowForm(false)
-      onSuccess()
+    } finally {
+      setIsLoading(false)
     }
-
-    setIsLoading(false)
-  }
-
-  if (!showForm) {
-    return (
-      <Button onClick={() => setShowForm(true)} className="w-full" variant="outline">
-        <Plus className="h-4 w-4 mr-2" />
-        Add Payment Method
-      </Button>
-    )
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Add Payment Method</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="p-3 border rounded-md">
-            <CardElement
-              options={{
-                style: {
-                  base: {
-                    fontSize: "16px",
-                    color: "#424770",
-                    "::placeholder": {
-                      color: "#aab7c4",
-                    },
-                  },
-                },
-              }}
-            />
-          </div>
-          <div className="flex space-x-2">
-            <Button type="submit" disabled={!stripe || isLoading} className="flex-1">
-              {isLoading ? "Adding..." : "Add Payment Method"}
-            </Button>
-            <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
-              Cancel
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+    <div className="mt-6">
+      {!showForm ? (
+        <Button onClick={() => setShowForm(true)} className="w-full">
+          <CreditCard className="h-4 w-4 mr-2" />
+          Add Payment Method
+        </Button>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>Add Payment Method</CardTitle>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent>
+              <PaymentElement />
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button type="button" variant="outline" onClick={() => setShowForm(false)} disabled={isLoading}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={!stripe || isLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save Payment Method
+              </Button>
+            </CardFooter>
+          </form>
+        </Card>
+      )}
+    </div>
   )
 }

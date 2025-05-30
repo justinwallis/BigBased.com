@@ -2,7 +2,6 @@
 
 import { getStripe } from "@/lib/stripe"
 import { createClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
 
 export async function createCustomer(email: string, name?: string) {
   try {
@@ -86,48 +85,23 @@ export async function getOrCreateStripeCustomer() {
     const { data: userData, error: userError } = await supabase.auth.getUser()
 
     if (userError || !userData?.user) {
-      redirect("/auth/sign-in?redirect=/profile/billing")
+      return {
+        success: false,
+        error: "Authentication required",
+        debug: { authError: userError },
+      }
     }
 
     const user = userData.user
 
-    // Check if profile exists in Supabase, if not create it
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single()
+    // Try to get profile using RPC function
+    const { data: profileData, error: profileError } = await supabase.rpc("get_profile_stripe_customer", {
+      user_id: user.id,
+    })
 
-    let currentProfile = profile
-
-    if (profileError && profileError.code === "PGRST116") {
-      // Profile doesn't exist, create it
-      const { data: newProfile, error: createError } = await supabase
-        .from("profiles")
-        .insert({
-          id: user.id,
-          email: user.email,
-          full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email,
-          username: user.user_metadata?.username || user.email?.split("@")[0] || "",
-          social_links: {},
-        })
-        .select()
-        .single()
-
-      if (createError) {
-        console.error("Error creating profile:", createError)
-        return { success: false, error: "Failed to create user profile" }
-      }
-
-      currentProfile = newProfile
-    } else if (profileError) {
-      console.error("Error fetching profile:", profileError)
-      return { success: false, error: "Failed to access user profile" }
-    }
-
-    // If we have a stripe customer ID, return it
-    if (currentProfile?.stripe_customer_id) {
-      return { success: true, customerId: currentProfile.stripe_customer_id }
+    // If profile exists and has a stripe_customer_id, return it
+    if (profileData && profileData.stripe_customer_id) {
+      return { success: true, customerId: profileData.stripe_customer_id }
     }
 
     // Create new Stripe customer
@@ -137,26 +111,35 @@ export async function getOrCreateStripeCustomer() {
     )
 
     if (!customerResult.success) {
-      return customerResult
+      return {
+        success: false,
+        error: customerResult.error || "Failed to create Stripe customer",
+        debug: { customerError: customerResult },
+      }
     }
 
-    // Save customer ID to profile
-    const { error: updateError } = await supabase
-      .from("profiles")
-      .update({
-        stripe_customer_id: customerResult.customerId,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", user.id)
+    // Update profile with customer ID using RPC function
+    const { data: updatedProfile, error: updateError } = await supabase.rpc("update_profile_stripe_customer", {
+      customer_id: customerResult.customerId,
+      user_id: user.id,
+    })
 
     if (updateError) {
       console.error("Error saving Stripe customer ID:", updateError)
-      return { success: false, error: "Failed to save customer information" }
+      return {
+        success: false,
+        error: "Failed to save customer information",
+        debug: { updateError, customerId: customerResult.customerId },
+      }
     }
 
     return { success: true, customerId: customerResult.customerId }
   } catch (error: any) {
     console.error("Error in getOrCreateStripeCustomer:", error)
-    return { success: false, error: "An unexpected error occurred" }
+    return {
+      success: false,
+      error: "An unexpected error occurred",
+      debug: { unexpectedError: error.message, stack: error.stack },
+    }
   }
 }

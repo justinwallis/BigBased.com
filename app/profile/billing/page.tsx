@@ -1,16 +1,24 @@
+import { Suspense } from "react"
+import BillingClientPage from "./BillingClientPage"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
-import BillingClientPage from "./BillingClientPage"
+
+export const metadata = {
+  title: "Billing & Payment Methods | Big Based",
+  description: "Manage your payment methods and billing information",
+}
 
 export default async function BillingPage() {
   const supabase = createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data, error } = await supabase.auth.getUser()
 
-  if (!user) {
-    redirect("/auth/sign-in")
+  if (error || !data?.user) {
+    redirect("/auth/sign-in?redirect=/profile/billing")
   }
 
-  return <BillingClientPage />
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <BillingClientPage />
+    </Suspense>
+  )
 }
