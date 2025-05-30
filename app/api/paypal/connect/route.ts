@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     // Generate a random state value for CSRF protection
     const state = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
 
-    // Store the state in Neon database using the new oauth_states table
+    // Store the state in Neon database
     const sql = neon(process.env.DATABASE_URL!)
     await sql`
       INSERT INTO oauth_states (user_id, state_value, provider, session_data, expires_at)
@@ -28,17 +28,15 @@ export async function GET(request: Request) {
       )
     `
 
-    // Get the redirect URL from the request
     const url = new URL(request.url)
     const redirectUri = `${url.origin}/api/paypal/callback`
-
-    // Build the PayPal OAuth URL
     const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
+
     if (!clientId) {
       return NextResponse.json({ success: false, error: "PayPal client ID not configured" }, { status: 500 })
     }
 
-    // Try a simpler OAuth approach first
+    // Use LIVE PayPal OAuth endpoint (since you're using live credentials)
     const authUrl = new URL("https://www.paypal.com/signin/authorize")
     authUrl.searchParams.append("client_id", clientId)
     authUrl.searchParams.append("response_type", "code")
@@ -46,23 +44,11 @@ export async function GET(request: Request) {
     authUrl.searchParams.append("redirect_uri", redirectUri)
     authUrl.searchParams.append("state", state)
 
-    // Log debug info
-    console.log("PayPal OAuth Debug:", {
-      clientId: clientId.substring(0, 10) + "...",
-      redirectUri,
-      authUrl: authUrl.toString(),
-      state,
-    })
+    console.log("PayPal Live OAuth URL:", authUrl.toString())
 
-    // Return the authorization URL
     return NextResponse.json({
       success: true,
       authUrl: authUrl.toString(),
-      debug: {
-        clientId: clientId.substring(0, 10) + "...",
-        redirectUri,
-        state,
-      },
     })
   } catch (error: any) {
     console.error("PayPal connect error:", error)

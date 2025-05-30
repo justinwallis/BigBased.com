@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { neon } from "@neondatabase/serverless"
 
-// PayPal OAuth endpoints
+// PayPal LIVE OAuth endpoints (since you're using live credentials)
 const PAYPAL_TOKEN_URL = "https://api-m.paypal.com/v1/oauth2/token"
 const PAYPAL_USER_INFO_URL = "https://api-m.paypal.com/v1/identity/oauth2/userinfo?schema=paypalv1.1"
 
@@ -12,6 +12,8 @@ export async function GET(request: Request) {
     const state = url.searchParams.get("state")
     const error = url.searchParams.get("error")
     const errorDescription = url.searchParams.get("error_description")
+
+    console.log("PayPal callback received:", { code: !!code, state: !!state, error, errorDescription })
 
     // Handle PayPal errors
     if (error) {
@@ -31,7 +33,7 @@ export async function GET(request: Request) {
       return Response.redirect(`${url.origin}/profile/billing?error=Authentication required`)
     }
 
-    // Verify the state parameter to prevent CSRF attacks using Neon
+    // Verify the state parameter using Neon
     const sql = neon(process.env.DATABASE_URL!)
     const oauthStates = await sql`
       SELECT session_data FROM oauth_states 
@@ -65,6 +67,8 @@ export async function GET(request: Request) {
       return Response.redirect(`${url.origin}/profile/billing?error=PayPal credentials not configured`)
     }
 
+    console.log("Exchanging code for token...")
+
     const tokenResponse = await fetch(PAYPAL_TOKEN_URL, {
       method: "POST",
       headers: {
@@ -87,6 +91,8 @@ export async function GET(request: Request) {
     const tokenData = await tokenResponse.json()
     const { access_token, refresh_token, expires_in } = tokenData
 
+    console.log("Got PayPal token, fetching user info...")
+
     // Get user info from PayPal
     const userInfoResponse = await fetch(PAYPAL_USER_INFO_URL, {
       headers: {
@@ -102,6 +108,8 @@ export async function GET(request: Request) {
 
     const userInfo = await userInfoResponse.json()
     const paypalEmail = userInfo.emails?.[0]?.value || userInfo.email
+
+    console.log("PayPal user info received:", { email: paypalEmail })
 
     if (!paypalEmail) {
       return Response.redirect(`${url.origin}/profile/billing?error=Could not retrieve PayPal email`)
@@ -141,6 +149,8 @@ export async function GET(request: Request) {
       console.error("Error updating profile with PayPal info:", updateError)
       return Response.redirect(`${url.origin}/profile/billing?error=Failed to save PayPal connection`)
     }
+
+    console.log("PayPal connection saved successfully")
 
     // Redirect back to the billing page with success
     return Response.redirect(
