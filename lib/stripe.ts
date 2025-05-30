@@ -54,3 +54,6 @@ export function validateStripeKeys(): void {
     throw new Error("Stripe keys mismatch: one is live and one is test")
   }
 }
+
+// Export the stripe instance for direct use
+export const stripe = getStripe()
