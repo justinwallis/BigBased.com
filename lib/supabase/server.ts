@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import type { Database } from "@/types/supabase"
 
-export function createServerSupabaseClient(useServiceRole = false) {
+export function createClient(useServiceRole = false) {
   const cookieStore = cookies()
 
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -38,8 +38,5 @@ export function createServerSupabaseClient(useServiceRole = false) {
   })
 }
 
-// Export the function with the expected name for backward compatibility
-export { createServerSupabaseClient as createServerClient }
-
-// Keep the old function name for backward compatibility
-export const createClient = createServerSupabaseClient
+// Keep backward compatibility
+export { createClient as createServerSupabaseClient, createClient as createServerClient }
