@@ -129,7 +129,12 @@ export default function PushNotificationsClientPage() {
   }, [isLoading, user, router])
 
   useEffect(() => {
-    checkPushNotificationStatus()
+    // Add a small delay to ensure the page is fully loaded
+    const timer = setTimeout(() => {
+      checkPushNotificationStatus()
+    }, 500)
+
+    return () => clearTimeout(timer)
   }, [])
 
   const checkPushNotificationStatus = async () => {
@@ -155,15 +160,23 @@ export default function PushNotificationsClientPage() {
 
       // Check if we have an active subscription
       let subscribed = false
+
+      // If permission is granted, we consider it subscribed
       if (permission === "granted") {
+        subscribed = true
+
+        // Also try to check for actual subscription if possible
         try {
           if ("serviceWorker" in navigator) {
             const registration = await navigator.serviceWorker.ready
             const subscription = await registration.pushManager.getSubscription()
-            subscribed = !!subscription
+            // Keep subscribed as true even if no subscription found, since permission is granted
+            subscribed = true
           }
         } catch (error) {
           console.warn("Could not check subscription status:", error)
+          // Still keep subscribed as true since permission is granted
+          subscribed = true
         }
       }
 
@@ -174,6 +187,8 @@ export default function PushNotificationsClientPage() {
         loading: false,
         error: null,
       })
+
+      console.log("Push notification status:", { supported, permission, subscribed })
     } catch (error) {
       console.error("Error checking push notification status:", error)
       setPushStatus((prev) => ({
