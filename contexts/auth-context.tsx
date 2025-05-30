@@ -6,6 +6,7 @@ import { createContext, useContext, useEffect, useState } from "react"
 import type { User, Session } from "@supabase/supabase-js"
 import { createClient } from "@/lib/supabase/client"
 import { cleanupSession, trackSession } from "@/app/actions/session-actions"
+import { checkUserMfaStatus, verifyMfaForLogin } from "@/app/actions/mfa-actions"
 
 interface AuthContextType {
   user: User | null
@@ -87,12 +88,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string, mfaCode?: string) => {
     try {
-      console.log("Auth context signIn called with:", { email, hasMfaCode: !!mfaCode })
+      console.log("=== Auth Context SignIn ===")
+      console.log("Email:", email)
+      console.log("Has MFA Code:", !!mfaCode)
 
       if (!email || !password) {
         return { error: { message: "Email and password are required" } }
       }
 
+      // First, check if user has MFA enabled
+      console.log("Checking MFA status for user...")
+      const mfaStatusResult = await checkUserMfaStatus(email)
+      console.log("MFA status result:", mfaStatusResult)
+
+      const userHasMfa = mfaStatusResult.success && mfaStatusResult.data?.enabled
+
+      // If user has MFA enabled but no code provided, require MFA
+      if (userHasMfa && !mfaCode) {
+        console.log("MFA required but no code provided")
+        return {
+          data: null,
+          error: null,
+          mfaRequired: true,
+        }
+      }
+
+      // If user has MFA and code is provided, verify it first
+      if (userHasMfa && mfaCode) {
+        console.log("Verifying MFA code...")
+        const mfaVerifyResult = await verifyMfaForLogin(email, mfaCode)
+        console.log("MFA verification result:", mfaVerifyResult)
+
+        if (!mfaVerifyResult.success) {
+          return {
+            error: { message: mfaVerifyResult.error || "Invalid verification code" },
+          }
+        }
+        console.log("MFA verification successful, proceeding with login...")
+      }
+
+      // Proceed with normal login
+      console.log("Attempting Supabase signIn...")
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -103,12 +139,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: { message: error.message } }
       }
 
-      // If MFA is required, return mfaRequired flag
-      if (data?.session && !data.session.access_token && !mfaCode) {
-        return { data: null, error: null, mfaRequired: true }
-      }
+      console.log("Supabase signIn successful:", {
+        user: data.user?.email,
+        hasSession: !!data.session,
+      })
 
-      console.log("Sign in successful:", { user: data.user?.email, hasSession: !!data.session })
       return { data, error: null }
     } catch (error: any) {
       console.error("Auth context signIn error:", error)
