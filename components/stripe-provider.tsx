@@ -33,10 +33,8 @@ export function StripeProvider({ children, clientSecret, appearance }: StripePro
         borderRadius: "6px",
       },
     },
-    // Add currency for Elements that require it
-    currency: "usd",
-    // Specify the mode for setup intents
-    mode: "setup" as const,
+    // Remove mode since we're providing clientSecret
+    // When clientSecret is provided, Stripe automatically determines the mode
   }
 
   return (
