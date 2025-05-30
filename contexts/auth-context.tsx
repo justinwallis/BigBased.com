@@ -11,6 +11,7 @@ interface AuthContextType {
   user: User | null
   session: Session | null
   isLoading: boolean
+  signIn: (email: string, password: string, mfaCode?: string) => Promise<any>
   signOut: () => Promise<void>
 }
 
@@ -18,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   isLoading: true,
+  signIn: async () => ({ error: "Auth context not initialized" }),
   signOut: async () => {},
 })
 
@@ -83,6 +85,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [supabase.auth])
 
+  const signIn = async (email: string, password: string, mfaCode?: string) => {
+    try {
+      console.log("Auth context signIn called with:", { email, hasMfaCode: !!mfaCode })
+
+      if (!email || !password) {
+        return { error: { message: "Email and password are required" } }
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) {
+        console.error("Supabase signIn error:", error)
+        return { error: { message: error.message } }
+      }
+
+      // If MFA is required, return mfaRequired flag
+      if (data?.session && !data.session.access_token && !mfaCode) {
+        return { data: null, error: null, mfaRequired: true }
+      }
+
+      console.log("Sign in successful:", { user: data.user?.email, hasSession: !!data.session })
+      return { data, error: null }
+    } catch (error: any) {
+      console.error("Auth context signIn error:", error)
+      return { error: { message: error.message || "An unexpected error occurred" } }
+    }
+  }
+
   const signOut = async () => {
     try {
       // Clean up session before signing out
@@ -103,6 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         session,
         isLoading,
+        signIn,
         signOut,
       }}
     >
