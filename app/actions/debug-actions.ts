@@ -73,6 +73,26 @@ export async function debugUserProfile() {
       }
     }
 
+    steps.push("Testing stripe_customer_id column access...")
+
+    // Test stripe_customer_id column specifically
+    let stripeColumnTest: any = { success: false, error: null }
+
+    if (userData?.user) {
+      const { data: stripeTest, error: stripeError } = await supabase
+        .from("profiles")
+        .select("id, stripe_customer_id")
+        .eq("id", userData.user.id)
+        .single()
+
+      stripeColumnTest = {
+        success: !stripeError,
+        data: stripeTest,
+        error: stripeError,
+        hasStripeCustomerId: !!stripeTest?.stripe_customer_id,
+      }
+    }
+
     return {
       timestamp,
       steps,
@@ -81,6 +101,7 @@ export async function debugUserProfile() {
       regularClient,
       profileData,
       directTableTest,
+      stripeColumnTest, // Add this new test
     }
   } catch (error: any) {
     errors.push(`Unexpected error: ${error.message}`)
