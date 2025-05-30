@@ -24,6 +24,9 @@ export async function getCustomerPaymentMethods(customerId: string) {
   try {
     const stripe = getStripe()
 
+    // Get the customer to see their default payment method
+    const customer = await stripe.customers.retrieve(customerId)
+
     // Fetch both card and link payment methods
     const [cardMethods, linkMethods] = await Promise.all([
       stripe.paymentMethods.list({
@@ -39,7 +42,15 @@ export async function getCustomerPaymentMethods(customerId: string) {
     // Combine both types of payment methods
     const allPaymentMethods = [...cardMethods.data, ...linkMethods.data]
 
-    return { success: true, paymentMethods: allPaymentMethods }
+    // Get the default payment method ID from customer
+    const defaultPaymentMethodId =
+      typeof customer === "object" && !customer.deleted ? customer.invoice_settings?.default_payment_method : null
+
+    return {
+      success: true,
+      paymentMethods: allPaymentMethods,
+      defaultPaymentMethodId,
+    }
   } catch (error) {
     console.error("Error fetching payment methods:", error)
     return { success: false, error: "Failed to fetch payment methods" }
@@ -110,6 +121,98 @@ export async function setDefaultPaymentMethod(customerId: string, paymentMethodI
   } catch (error) {
     console.error("Error setting default payment method:", error)
     return { success: false, error: "Failed to set default payment method" }
+  }
+}
+
+// New function to set PayPal as default
+export async function setPayPalAsDefault(customerId: string) {
+  try {
+    const supabase = createClient(false)
+    const { data: userData, error: userError } = await supabase.auth.getUser()
+
+    if (userError || !userData?.user) {
+      return { success: false, error: "Authentication required" }
+    }
+
+    // Get user profile
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userData.user.id)
+      .single()
+
+    if (profileError) {
+      return { success: false, error: "Profile not found" }
+    }
+
+    // Update social_links to include default payment preference
+    const socialLinks = profile.social_links || {}
+    const updatedSocialLinks = {
+      ...socialLinks,
+      stripe_customer_id: customerId,
+      default_payment_method: "paypal",
+    }
+
+    // Clear Stripe's default payment method since we're using PayPal
+    const stripe = getStripe()
+    await stripe.customers.update(customerId, {
+      invoice_settings: {
+        default_payment_method: null,
+      },
+    })
+
+    // Update profile
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({
+        social_links: updatedSocialLinks,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", userData.user.id)
+
+    if (updateError) {
+      return { success: false, error: "Failed to update default payment method" }
+    }
+
+    return { success: true }
+  } catch (error: any) {
+    console.error("Error setting PayPal as default:", error)
+    return { success: false, error: "An unexpected error occurred" }
+  }
+}
+
+// New function to get default payment method preference
+export async function getDefaultPaymentMethodPreference() {
+  try {
+    const supabase = createClient(false)
+    const { data: userData, error: userError } = await supabase.auth.getUser()
+
+    if (userError || !userData?.user) {
+      return { success: false, error: "Authentication required" }
+    }
+
+    // Get user profile
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("social_links")
+      .eq("id", userData.user.id)
+      .single()
+
+    if (profileError) {
+      return { success: false, error: "Profile not found" }
+    }
+
+    const socialLinks = profile.social_links || {}
+    const defaultPaymentMethod = socialLinks.default_payment_method || "stripe"
+
+    return {
+      success: true,
+      defaultPaymentMethod,
+      isPayPalDefault: defaultPaymentMethod === "paypal",
+    }
+  } catch (error: any) {
+    console.error("Error getting default payment method preference:", error)
+    return { success: false, error: "An unexpected error occurred" }
   }
 }
 

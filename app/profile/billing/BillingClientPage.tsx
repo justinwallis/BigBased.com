@@ -3,12 +3,18 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Loader2, CreditCard, AlertCircle, ArrowLeft, CreditCardIcon, Info } from "lucide-react"
+import { Loader2, CreditCard, AlertCircle, ArrowLeft, CreditCardIcon, Info, CheckCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { StripeProvider } from "@/components/stripe-provider"
 import { AddPaymentMethod } from "@/components/add-payment-method"
 import { PaymentMethodCard } from "@/components/payment-method-card"
-import { getOrCreateStripeCustomer, getCustomerPaymentMethods, createSetupIntent } from "@/app/actions/stripe-actions"
+import {
+  getOrCreateStripeCustomer,
+  getCustomerPaymentMethods,
+  createSetupIntent,
+  setPayPalAsDefault,
+  getDefaultPaymentMethodPreference,
+} from "@/app/actions/stripe-actions"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
@@ -25,6 +31,9 @@ export default function BillingClientPage() {
   const { theme } = useTheme()
   const [activeTab, setActiveTab] = useState("stripe")
   const [paypalConnected, setPaypalConnected] = useState(false)
+  const [defaultPaymentMethodId, setDefaultPaymentMethodId] = useState<string | null>(null)
+  const [isPayPalDefault, setIsPayPalDefault] = useState(false)
+  const [isSettingPayPalDefault, setIsSettingPayPalDefault] = useState(false)
 
   const router = useRouter()
 
@@ -42,10 +51,21 @@ export default function BillingClientPage() {
 
       setCustomerId(customerResult.customerId)
 
-      // Get payment methods
+      // Get payment methods and default payment method
       const paymentMethodsResult = await getCustomerPaymentMethods(customerResult.customerId)
       if (paymentMethodsResult.success) {
         setPaymentMethods(paymentMethodsResult.paymentMethods || [])
+        setDefaultPaymentMethodId(paymentMethodsResult.defaultPaymentMethodId)
+      }
+
+      // Get default payment method preference (PayPal vs Stripe)
+      const preferenceResult = await getDefaultPaymentMethodPreference()
+      if (preferenceResult.success) {
+        setIsPayPalDefault(preferenceResult.isPayPalDefault)
+        // If PayPal is set as default, assume it's connected
+        if (preferenceResult.isPayPalDefault) {
+          setPaypalConnected(true)
+        }
       }
 
       // Create setup intent for adding new payment methods
@@ -75,6 +95,37 @@ export default function BillingClientPage() {
       title: "PayPal Connected",
       description: "PayPal is now available for payments",
     })
+  }
+
+  const handleSetPayPalAsDefault = async () => {
+    if (!customerId) return
+
+    setIsSettingPayPalDefault(true)
+    try {
+      const result = await setPayPalAsDefault(customerId)
+      if (result.success) {
+        setIsPayPalDefault(true)
+        setDefaultPaymentMethodId(null) // Clear Stripe default since PayPal is now default
+        toast({
+          title: "Default payment method updated",
+          description: "PayPal is now your default payment method",
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to set PayPal as default",
+          variant: "destructive",
+        })
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSettingPayPalDefault(false)
+    }
   }
 
   if (isLoading) {
@@ -125,6 +176,27 @@ export default function BillingClientPage() {
           <ThemeToggle />
         </div>
 
+        {/* Default Payment Method Indicator */}
+        {(isPayPalDefault || defaultPaymentMethodId) && (
+          <Card className="mb-6 border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <div>
+                  <p className="font-medium text-blue-900 dark:text-blue-100">
+                    Default Payment Method: {isPayPalDefault ? "PayPal" : "Stripe Payment Method"}
+                  </p>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    {isPayPalDefault
+                      ? "PayPal will be used for all payments by default"
+                      : "Your selected Stripe payment method will be used by default"}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Payment Methods Management */}
         <Card className="dark:bg-gray-800 dark:border-gray-700 mb-8">
           <CardHeader>
@@ -143,47 +215,75 @@ export default function BillingClientPage() {
                     key={pm.id}
                     paymentMethod={pm}
                     customerId={customerId!}
+                    isDefault={defaultPaymentMethodId === pm.id && !isPayPalDefault}
                     onUpdate={handlePaymentMethodUpdate}
                   />
                 ))}
 
                 {/* Show PayPal as connected if setup */}
                 {paypalConnected && (
-                  <div className="flex items-center justify-between p-4 border rounded-lg dark:border-gray-600 dark:bg-gray-700">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="h-5 w-5 text-blue-600 dark:text-blue-400"
-                        >
-                          <path d="M7 11l5-7" />
-                          <path d="M21 11V6a2 2 0 0 0-2-2h-4l5 7" />
-                          <path d="M3 11v5a2 2 0 0 0 2 2h4l5-7" />
-                          <path d="M17 11v5a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2v-5" />
-                        </svg>
+                  <Card
+                    className={`overflow-hidden ${isPayPalDefault ? "border-green-500 bg-green-50 dark:bg-green-950 dark:border-green-400" : ""}`}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="h-5 w-5 text-blue-600 dark:text-blue-400"
+                            >
+                              <path d="M7 11l5-7" />
+                              <path d="M21 11V6a2 2 0 0 0-2-2h-4l5 7" />
+                              <path d="M3 11v5a2 2 0 0 0 2 2h4l5-7" />
+                              <path d="M17 11v5a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2v-5" />
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="font-medium dark:text-white">PayPal Account</p>
+                            <p className="text-sm text-muted-foreground dark:text-gray-400">
+                              Connected • Available for payments
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          {isPayPalDefault ? (
+                            <div className="flex items-center text-xs text-green-600 dark:text-green-400 font-medium">
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Default
+                            </div>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={handleSetPayPalAsDefault}
+                              disabled={isSettingPayPalDefault}
+                            >
+                              {isSettingPayPalDefault ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <span className="text-xs">Set Default</span>
+                              )}
+                            </Button>
+                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPaypalConnected(false)}
+                            className="dark:border-gray-600 dark:text-gray-300"
+                          >
+                            Disconnect
+                          </Button>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium dark:text-white">PayPal Account</p>
-                        <p className="text-sm text-muted-foreground dark:text-gray-400">
-                          Connected • Available for payments
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPaypalConnected(false)}
-                      className="dark:border-gray-600 dark:text-gray-300"
-                    >
-                      Disconnect
-                    </Button>
-                  </div>
+                    </CardContent>
+                  </Card>
                 )}
               </div>
             )}
@@ -274,9 +374,21 @@ export default function BillingClientPage() {
                         </svg>
                       </div>
                       <h3 className="text-lg font-medium dark:text-white mb-2">PayPal Connected</h3>
-                      <p className="text-muted-foreground dark:text-gray-400">
+                      <p className="text-muted-foreground dark:text-gray-400 mb-4">
                         Your PayPal account is ready for payments
                       </p>
+                      {!isPayPalDefault && (
+                        <Button onClick={handleSetPayPalAsDefault} disabled={isSettingPayPalDefault} className="mt-2">
+                          {isSettingPayPalDefault ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              Setting as Default...
+                            </>
+                          ) : (
+                            "Set as Default Payment Method"
+                          )}
+                        </Button>
+                      )}
                     </div>
                   )}
                 </CardContent>

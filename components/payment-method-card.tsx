@@ -110,7 +110,9 @@ export function PaymentMethodCard({ paymentMethod, customerId, isDefault, onUpda
   const paymentDisplay = getPaymentMethodDisplay(paymentMethod)
 
   return (
-    <Card className={`overflow-hidden ${isDefault ? "border-purple-500" : ""}`}>
+    <Card
+      className={`overflow-hidden ${isDefault ? "border-green-500 bg-green-50 dark:bg-green-950 dark:border-green-400" : ""}`}
+    >
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -122,7 +124,7 @@ export function PaymentMethodCard({ paymentMethod, customerId, isDefault, onUpda
           </div>
           <div className="flex items-center space-x-2">
             {isDefault ? (
-              <div className="flex items-center text-xs text-green-500">
+              <div className="flex items-center text-xs text-green-600 dark:text-green-400 font-medium">
                 <CheckCircle className="h-3 w-3 mr-1" />
                 Default
               </div>
