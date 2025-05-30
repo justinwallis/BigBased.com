@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, CreditCard, AlertCircle } from "lucide-react"
+import { ArrowLeft, CreditCard, AlertCircle, RefreshCw } from "lucide-react"
 import Link from "next/link"
 import { StripeProvider } from "@/components/stripe-provider"
 import { AddPaymentMethod } from "@/components/add-payment-method"
@@ -18,6 +18,7 @@ export default function BillingClientPage() {
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [debugInfo, setDebugInfo] = useState<any>(null)
   const [defaultPaymentMethod, setDefaultPaymentMethod] = useState<string | null>(null)
 
   useEffect(() => {
@@ -26,12 +27,19 @@ export default function BillingClientPage() {
 
   const initializeStripe = async () => {
     try {
+      setIsLoading(true)
       setError(null)
+      setDebugInfo(null)
 
       // Get or create Stripe customer
       const customerResult = await getOrCreateStripeCustomer()
+      console.log("Customer result:", customerResult)
+
       if (!customerResult.success) {
         setError(customerResult.error || "Failed to initialize billing")
+        if (customerResult.debug) {
+          setDebugInfo(customerResult.debug)
+        }
         return
       }
 
@@ -46,10 +54,14 @@ export default function BillingClientPage() {
         setClientSecret(setupResult.clientSecret!)
       } else {
         setError("Failed to initialize payment setup")
+        if (setupResult.debug) {
+          setDebugInfo(setupResult.debug)
+        }
       }
     } catch (error) {
       console.error("Billing initialization error:", error)
       setError("Failed to initialize billing system")
+      setDebugInfo(error)
     } finally {
       setIsLoading(false)
     }
@@ -86,7 +98,10 @@ export default function BillingClientPage() {
             <h1 className="text-3xl font-bold text-foreground">Billing & Payment Methods</h1>
           </div>
           <div className="flex items-center justify-center py-12">
-            <div className="text-foreground">Loading billing information...</div>
+            <div className="flex items-center space-x-2 text-foreground">
+              <RefreshCw className="h-5 w-5 animate-spin" />
+              <span>Loading billing information...</span>
+            </div>
           </div>
         </div>
       </div>
@@ -108,13 +123,20 @@ export default function BillingClientPage() {
           </div>
           <Card>
             <CardContent className="p-6">
-              <div className="flex items-center space-x-3 text-destructive">
+              <div className="flex items-center space-x-3 text-destructive mb-4">
                 <AlertCircle className="h-5 w-5" />
                 <div>
                   <p className="font-medium">Billing System Error</p>
                   <p className="text-sm text-muted-foreground">{error}</p>
                 </div>
               </div>
+
+              {process.env.NODE_ENV === "development" && debugInfo && (
+                <div className="mt-4 p-4 bg-gray-800 rounded-md overflow-auto max-h-60">
+                  <pre className="text-xs text-gray-300">{JSON.stringify(debugInfo, null, 2)}</pre>
+                </div>
+              )}
+
               <Button onClick={initializeStripe} className="mt-4">
                 Retry
               </Button>

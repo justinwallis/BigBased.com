@@ -1,50 +1,56 @@
 import Stripe from "stripe"
 
-// Only initialize Stripe on the server side
-let stripe: Stripe | null = null
+// Initialize Stripe with the secret key
+let stripeInstance: Stripe | null = null
 
-export const getStripe = () => {
-  if (typeof window !== "undefined") {
-    throw new Error("Stripe should only be used on the server side")
-  }
+export function getStripe(): Stripe {
+  if (!stripeInstance) {
+    const stripeKey = process.env.STRIPE_SECRET_KEY
 
-  if (!stripe) {
-    if (!process.env.STRIPE_SECRET_KEY) {
+    if (!stripeKey) {
       throw new Error("STRIPE_SECRET_KEY is not set")
     }
 
-    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: "2024-06-20",
-      typescript: true,
+    stripeInstance = new Stripe(stripeKey, {
+      apiVersion: "2023-10-16", // Use the latest API version
+      appInfo: {
+        name: "Big Based",
+        version: "1.0.0",
+      },
     })
   }
 
-  return stripe
+  return stripeInstance
 }
 
-export const getStripePublishableKey = () => {
-  if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+export function getPublishableKey(): string {
+  const key = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  if (!key) {
     throw new Error("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set")
   }
-  return process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  return key
 }
 
-// Validate that we're using the correct environment keys
-export const validateStripeKeys = () => {
-  const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+// Export with the expected name for compatibility
+export const getStripePublishableKey = getPublishableKey
+
+export function validateStripeKeys(): void {
   const secretKey = process.env.STRIPE_SECRET_KEY
+  const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 
-  if (!publishableKey || !secretKey) {
-    throw new Error("Stripe keys are not configured")
+  if (!secretKey) {
+    throw new Error("STRIPE_SECRET_KEY is not set")
   }
 
-  // Check if keys match environment (both should be live or both should be test)
-  const isPublishableLive = publishableKey.startsWith("pk_live_")
-  const isSecretLive = secretKey.startsWith("sk_live_")
-
-  if (isPublishableLive !== isSecretLive) {
-    throw new Error("Stripe key environment mismatch - publishable and secret keys must both be live or test")
+  if (!publishableKey) {
+    throw new Error("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set")
   }
 
-  return { isLive: isPublishableLive }
+  // Check that the keys match (both live or both test)
+  const secretIsLive = secretKey.startsWith("sk_live_")
+  const publishableIsLive = publishableKey.startsWith("pk_live_")
+
+  if (secretIsLive !== publishableIsLive) {
+    throw new Error("Stripe keys mismatch: one is live and one is test")
+  }
 }
