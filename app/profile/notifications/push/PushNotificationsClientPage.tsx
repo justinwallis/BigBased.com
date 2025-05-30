@@ -31,7 +31,11 @@ import {
 import Link from "next/link"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/hooks/use-toast"
-import { sendTestNotification } from "@/app/actions/notification-actions"
+import {
+  sendTestNotification,
+  savePushPreferences,
+  getNotificationPreferences,
+} from "@/app/actions/notification-actions"
 
 interface NotificationPreferences {
   // Security & Account
@@ -121,6 +125,7 @@ export default function PushNotificationsClientPage() {
   const [saveMessage, setSaveMessage] = useState("")
   const [isSendingTest, setIsSendingTest] = useState(false)
   const [activeTab, setActiveTab] = useState("preferences")
+  const [isLoadingPreferences, setIsLoadingPreferences] = useState(true)
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -136,6 +141,29 @@ export default function PushNotificationsClientPage() {
 
     return () => clearTimeout(timer)
   }, [])
+
+  // Load saved preferences when the component mounts
+  useEffect(() => {
+    async function loadPreferences() {
+      try {
+        setIsLoadingPreferences(true)
+        const result = await getNotificationPreferences()
+
+        if (result.success && result.data) {
+          setPreferences(result.data.pushPreferences)
+          console.log("Loaded preferences:", result.data.pushPreferences)
+        }
+      } catch (error) {
+        console.error("Error loading preferences:", error)
+      } finally {
+        setIsLoadingPreferences(false)
+      }
+    }
+
+    if (user) {
+      loadPreferences()
+    }
+  }, [user])
 
   const checkPushNotificationStatus = async () => {
     try {
@@ -253,10 +281,29 @@ export default function PushNotificationsClientPage() {
     try {
       setPushStatus((prev) => ({ ...prev, loading: true, error: null }))
 
+      // Try to disable OneSignal if available
       if (window.OneSignal) {
-        await window.OneSignal.setSubscription(false)
+        try {
+          await window.OneSignal.setSubscription(false)
+        } catch (error) {
+          console.warn("Failed to disable OneSignal subscription:", error)
+        }
       }
 
+      // Try to unsubscribe from push manager if available
+      try {
+        if ("serviceWorker" in navigator) {
+          const registration = await navigator.serviceWorker.ready
+          const subscription = await registration.pushManager.getSubscription()
+          if (subscription) {
+            await subscription.unsubscribe()
+          }
+        }
+      } catch (error) {
+        console.warn("Failed to unsubscribe from push manager:", error)
+      }
+
+      // Update UI state
       setPushStatus((prev) => ({
         ...prev,
         subscribed: false,
@@ -268,6 +315,11 @@ export default function PushNotificationsClientPage() {
         description: "You will no longer receive notifications on this device.",
         variant: "default",
       })
+
+      // Force reload to ensure browser state is updated
+      setTimeout(() => {
+        window.location.reload()
+      }, 1500)
     } catch (error) {
       console.error("Error disabling notifications:", error)
       setPushStatus((prev) => ({
@@ -328,23 +380,28 @@ export default function PushNotificationsClientPage() {
     setSaveMessage("")
 
     try {
-      // TODO: Implement API call to save preferences
-      // await saveNotificationPreferences(user.id, preferences)
+      // Save preferences to database
+      const result = await savePushPreferences(preferences)
 
-      // Set OneSignal tags based on preferences
-      if (window.OneSignal) {
-        const tags: Record<string, string> = {}
-
-        // Convert boolean preferences to string tags
-        Object.entries(preferences).forEach(([key, value]) => {
-          tags[key] = value ? "true" : "false"
-        })
-
-        await window.OneSignal.sendTags(tags)
+      if (!result.success) {
+        throw new Error(result.error || "Failed to save preferences")
       }
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      // Set OneSignal tags based on preferences if available
+      if (window.OneSignal) {
+        try {
+          const tags: Record<string, string> = {}
+
+          // Convert boolean preferences to string tags
+          Object.entries(preferences).forEach(([key, value]) => {
+            tags[key] = value ? "true" : "false"
+          })
+
+          await window.OneSignal.sendTags(tags)
+        } catch (error) {
+          console.warn("Failed to set OneSignal tags:", error)
+        }
+      }
 
       setSaveMessage("Push notification preferences saved successfully!")
       toast({
@@ -581,376 +638,400 @@ export default function PushNotificationsClientPage() {
                 <CardDescription>Choose which types of push notifications you want to receive.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Quick Actions */}
-                <div className="flex items-center space-x-2">
-                  <Button onClick={handleEnableAll} variant="outline" size="sm">
-                    Enable All
-                  </Button>
-                  <Button onClick={handleDisableAll} variant="outline" size="sm">
-                    <BellOff className="h-4 w-4 mr-2" />
-                    Disable All (Keep Security)
-                  </Button>
-                </div>
-
-                <Separator />
-
-                {/* Security & Account Notifications */}
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Shield className="h-5 w-5 text-blue-600" />
-                    <h3 className="text-lg font-semibold">Security & Account</h3>
-                    <Badge variant="secondary">Recommended</Badge>
+                {isLoadingPreferences ? (
+                  <div className="flex justify-center py-8">
+                    <RefreshCw className="h-8 w-8 animate-spin text-blue-500" />
                   </div>
-
-                  <div className="space-y-3 ml-7">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="securityAlerts" className="text-base">
-                          Security Alerts
-                        </Label>
-                        <p className="text-sm text-muted-foreground">
-                          Suspicious login attempts, password changes, and security breaches
-                        </p>
-                      </div>
-                      <Switch
-                        id="securityAlerts"
-                        checked={preferences.securityAlerts}
-                        onCheckedChange={(checked) => handlePreferenceChange("securityAlerts", checked)}
-                      />
+                ) : (
+                  <>
+                    {/* Quick Actions */}
+                    <div className="flex items-center space-x-2">
+                      <Button onClick={handleEnableAll} variant="outline" size="sm">
+                        Enable All
+                      </Button>
+                      <Button onClick={handleDisableAll} variant="outline" size="sm">
+                        <BellOff className="h-4 w-4 mr-2" />
+                        Disable All (Keep Security)
+                      </Button>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="loginNotifications" className="text-base">
-                          Login Notifications
-                        </Label>
-                        <p className="text-sm text-muted-foreground">New device logins and session activity</p>
+                    <Separator />
+
+                    {/* Security & Account Notifications */}
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <Shield className="h-5 w-5 text-blue-600" />
+                        <h3 className="text-lg font-semibold">Security & Account</h3>
+                        <Badge variant="secondary">Recommended</Badge>
                       </div>
-                      <Switch
-                        id="loginNotifications"
-                        checked={preferences.loginNotifications}
-                        onCheckedChange={(checked) => handlePreferenceChange("loginNotifications", checked)}
-                      />
+
+                      <div className="space-y-3 ml-7">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="securityAlerts" className="text-base">
+                              Security Alerts
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              Suspicious login attempts, password changes, and security breaches
+                            </p>
+                          </div>
+                          <Switch
+                            id="securityAlerts"
+                            checked={preferences.securityAlerts}
+                            onCheckedChange={(checked) => handlePreferenceChange("securityAlerts", checked)}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="loginNotifications" className="text-base">
+                              Login Notifications
+                            </Label>
+                            <p className="text-sm text-muted-foreground">New device logins and session activity</p>
+                          </div>
+                          <Switch
+                            id="loginNotifications"
+                            checked={preferences.loginNotifications}
+                            onCheckedChange={(checked) => handlePreferenceChange("loginNotifications", checked)}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="accountChanges" className="text-base">
+                              Account Changes
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              Profile updates, email changes, and account modifications
+                            </p>
+                          </div>
+                          <Switch
+                            id="accountChanges"
+                            checked={preferences.accountChanges}
+                            onCheckedChange={(checked) => handlePreferenceChange("accountChanges", checked)}
+                          />
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="accountChanges" className="text-base">
-                          Account Changes
-                        </Label>
-                        <p className="text-sm text-muted-foreground">
-                          Profile updates, email changes, and account modifications
-                        </p>
+                    <Separator />
+
+                    {/* Platform Updates */}
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <Globe className="h-5 w-5 text-green-600" />
+                        <h3 className="text-lg font-semibold">Platform Updates</h3>
                       </div>
-                      <Switch
-                        id="accountChanges"
-                        checked={preferences.accountChanges}
-                        onCheckedChange={(checked) => handlePreferenceChange("accountChanges", checked)}
-                      />
-                    </div>
-                  </div>
-                </div>
 
-                <Separator />
+                      <div className="space-y-3 ml-7">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="platformUpdates" className="text-base">
+                              Platform Updates
+                            </Label>
+                            <p className="text-sm text-muted-foreground">Major platform changes and improvements</p>
+                          </div>
+                          <Switch
+                            id="platformUpdates"
+                            checked={preferences.platformUpdates}
+                            onCheckedChange={(checked) => handlePreferenceChange("platformUpdates", checked)}
+                          />
+                        </div>
 
-                {/* Platform Updates */}
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Globe className="h-5 w-5 text-green-600" />
-                    <h3 className="text-lg font-semibold">Platform Updates</h3>
-                  </div>
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="newFeatures" className="text-base">
+                              New Features
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              Announcements about new tools and capabilities
+                            </p>
+                          </div>
+                          <Switch
+                            id="newFeatures"
+                            checked={preferences.newFeatures}
+                            onCheckedChange={(checked) => handlePreferenceChange("newFeatures", checked)}
+                          />
+                        </div>
 
-                  <div className="space-y-3 ml-7">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="platformUpdates" className="text-base">
-                          Platform Updates
-                        </Label>
-                        <p className="text-sm text-muted-foreground">Major platform changes and improvements</p>
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="maintenanceAlerts" className="text-base">
+                              Maintenance Alerts
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              Scheduled maintenance and service interruptions
+                            </p>
+                          </div>
+                          <Switch
+                            id="maintenanceAlerts"
+                            checked={preferences.maintenanceAlerts}
+                            onCheckedChange={(checked) => handlePreferenceChange("maintenanceAlerts", checked)}
+                          />
+                        </div>
                       </div>
-                      <Switch
-                        id="platformUpdates"
-                        checked={preferences.platformUpdates}
-                        onCheckedChange={(checked) => handlePreferenceChange("platformUpdates", checked)}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="newFeatures" className="text-base">
-                          New Features
-                        </Label>
-                        <p className="text-sm text-muted-foreground">Announcements about new tools and capabilities</p>
-                      </div>
-                      <Switch
-                        id="newFeatures"
-                        checked={preferences.newFeatures}
-                        onCheckedChange={(checked) => handlePreferenceChange("newFeatures", checked)}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="maintenanceAlerts" className="text-base">
-                          Maintenance Alerts
-                        </Label>
-                        <p className="text-sm text-muted-foreground">Scheduled maintenance and service interruptions</p>
-                      </div>
-                      <Switch
-                        id="maintenanceAlerts"
-                        checked={preferences.maintenanceAlerts}
-                        onCheckedChange={(checked) => handlePreferenceChange("maintenanceAlerts", checked)}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                {/* Community */}
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Users className="h-5 w-5 text-purple-600" />
-                    <h3 className="text-lg font-semibold">Community</h3>
-                  </div>
-
-                  <div className="space-y-3 ml-7">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="communityUpdates" className="text-base">
-                          Community Updates
-                        </Label>
-                        <p className="text-sm text-muted-foreground">Important community announcements and changes</p>
-                      </div>
-                      <Switch
-                        id="communityUpdates"
-                        checked={preferences.communityUpdates}
-                        onCheckedChange={(checked) => handlePreferenceChange("communityUpdates", checked)}
-                      />
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="newMembers" className="text-base">
-                          New Members
-                        </Label>
-                        <p className="text-sm text-muted-foreground">Welcome notifications for new community members</p>
+                    <Separator />
+
+                    {/* Community */}
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <Users className="h-5 w-5 text-purple-600" />
+                        <h3 className="text-lg font-semibold">Community</h3>
                       </div>
-                      <Switch
-                        id="newMembers"
-                        checked={preferences.newMembers}
-                        onCheckedChange={(checked) => handlePreferenceChange("newMembers", checked)}
-                      />
+
+                      <div className="space-y-3 ml-7">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="communityUpdates" className="text-base">
+                              Community Updates
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              Important community announcements and changes
+                            </p>
+                          </div>
+                          <Switch
+                            id="communityUpdates"
+                            checked={preferences.communityUpdates}
+                            onCheckedChange={(checked) => handlePreferenceChange("communityUpdates", checked)}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="newMembers" className="text-base">
+                              New Members
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              Welcome notifications for new community members
+                            </p>
+                          </div>
+                          <Switch
+                            id="newMembers"
+                            checked={preferences.newMembers}
+                            onCheckedChange={(checked) => handlePreferenceChange("newMembers", checked)}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="communityEvents" className="text-base">
+                              Community Events
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              Live streams, discussions, and community gatherings
+                            </p>
+                          </div>
+                          <Switch
+                            id="communityEvents"
+                            checked={preferences.communityEvents}
+                            onCheckedChange={(checked) => handlePreferenceChange("communityEvents", checked)}
+                          />
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="communityEvents" className="text-base">
-                          Community Events
-                        </Label>
-                        <p className="text-sm text-muted-foreground">
-                          Live streams, discussions, and community gatherings
-                        </p>
+                    <Separator />
+
+                    {/* Content & Library */}
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <BookOpen className="h-5 w-5 text-orange-600" />
+                        <h3 className="text-lg font-semibold">Content & Library</h3>
                       </div>
-                      <Switch
-                        id="communityEvents"
-                        checked={preferences.communityEvents}
-                        onCheckedChange={(checked) => handlePreferenceChange("communityEvents", checked)}
-                      />
-                    </div>
-                  </div>
-                </div>
 
-                <Separator />
+                      <div className="space-y-3 ml-7">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="newContent" className="text-base">
+                              New Content
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              New articles, videos, and educational materials
+                            </p>
+                          </div>
+                          <Switch
+                            id="newContent"
+                            checked={preferences.newContent}
+                            onCheckedChange={(checked) => handlePreferenceChange("newContent", checked)}
+                          />
+                        </div>
 
-                {/* Content & Library */}
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <BookOpen className="h-5 w-5 text-orange-600" />
-                    <h3 className="text-lg font-semibold">Content & Library</h3>
-                  </div>
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="libraryUpdates" className="text-base">
+                              Library Updates
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              New books, documents, and resources added to the library
+                            </p>
+                          </div>
+                          <Switch
+                            id="libraryUpdates"
+                            checked={preferences.libraryUpdates}
+                            onCheckedChange={(checked) => handlePreferenceChange("libraryUpdates", checked)}
+                          />
+                        </div>
 
-                  <div className="space-y-3 ml-7">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="newContent" className="text-base">
-                          New Content
-                        </Label>
-                        <p className="text-sm text-muted-foreground">New articles, videos, and educational materials</p>
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="bookRecommendations" className="text-base">
+                              Book Recommendations
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              Personalized book suggestions based on your interests
+                            </p>
+                          </div>
+                          <Switch
+                            id="bookRecommendations"
+                            checked={preferences.bookRecommendations}
+                            onCheckedChange={(checked) => handlePreferenceChange("bookRecommendations", checked)}
+                          />
+                        </div>
                       </div>
-                      <Switch
-                        id="newContent"
-                        checked={preferences.newContent}
-                        onCheckedChange={(checked) => handlePreferenceChange("newContent", checked)}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="libraryUpdates" className="text-base">
-                          Library Updates
-                        </Label>
-                        <p className="text-sm text-muted-foreground">
-                          New books, documents, and resources added to the library
-                        </p>
-                      </div>
-                      <Switch
-                        id="libraryUpdates"
-                        checked={preferences.libraryUpdates}
-                        onCheckedChange={(checked) => handlePreferenceChange("libraryUpdates", checked)}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="bookRecommendations" className="text-base">
-                          Book Recommendations
-                        </Label>
-                        <p className="text-sm text-muted-foreground">
-                          Personalized book suggestions based on your interests
-                        </p>
-                      </div>
-                      <Switch
-                        id="bookRecommendations"
-                        checked={preferences.bookRecommendations}
-                        onCheckedChange={(checked) => handlePreferenceChange("bookRecommendations", checked)}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                {/* Prayer & Spiritual */}
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Heart className="h-5 w-5 text-red-600" />
-                    <h3 className="text-lg font-semibold">Prayer & Spiritual</h3>
-                  </div>
-
-                  <div className="space-y-3 ml-7">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="prayerRequests" className="text-base">
-                          Prayer Requests
-                        </Label>
-                        <p className="text-sm text-muted-foreground">New prayer requests from the community</p>
-                      </div>
-                      <Switch
-                        id="prayerRequests"
-                        checked={preferences.prayerRequests}
-                        onCheckedChange={(checked) => handlePreferenceChange("prayerRequests", checked)}
-                      />
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="spiritualContent" className="text-base">
-                          Spiritual Content
-                        </Label>
-                        <p className="text-sm text-muted-foreground">Inspirational messages and spiritual guidance</p>
+                    <Separator />
+
+                    {/* Prayer & Spiritual */}
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <Heart className="h-5 w-5 text-red-600" />
+                        <h3 className="text-lg font-semibold">Prayer & Spiritual</h3>
                       </div>
-                      <Switch
-                        id="spiritualContent"
-                        checked={preferences.spiritualContent}
-                        onCheckedChange={(checked) => handlePreferenceChange("spiritualContent", checked)}
-                      />
+
+                      <div className="space-y-3 ml-7">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="prayerRequests" className="text-base">
+                              Prayer Requests
+                            </Label>
+                            <p className="text-sm text-muted-foreground">New prayer requests from the community</p>
+                          </div>
+                          <Switch
+                            id="prayerRequests"
+                            checked={preferences.prayerRequests}
+                            onCheckedChange={(checked) => handlePreferenceChange("prayerRequests", checked)}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="spiritualContent" className="text-base">
+                              Spiritual Content
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              Inspirational messages and spiritual guidance
+                            </p>
+                          </div>
+                          <Switch
+                            id="spiritualContent"
+                            checked={preferences.spiritualContent}
+                            onCheckedChange={(checked) => handlePreferenceChange("spiritualContent", checked)}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="dailyDevotions" className="text-base">
+                              Daily Devotions
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              Daily spiritual reflections and Bible verses
+                            </p>
+                          </div>
+                          <Switch
+                            id="dailyDevotions"
+                            checked={preferences.dailyDevotions}
+                            onCheckedChange={(checked) => handlePreferenceChange("dailyDevotions", checked)}
+                          />
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="dailyDevotions" className="text-base">
-                          Daily Devotions
-                        </Label>
-                        <p className="text-sm text-muted-foreground">Daily spiritual reflections and Bible verses</p>
+                    <Separator />
+
+                    {/* Marketing & Events */}
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <Megaphone className="h-5 w-5 text-indigo-600" />
+                        <h3 className="text-lg font-semibold">Marketing & Events</h3>
                       </div>
-                      <Switch
-                        id="dailyDevotions"
-                        checked={preferences.dailyDevotions}
-                        onCheckedChange={(checked) => handlePreferenceChange("dailyDevotions", checked)}
-                      />
-                    </div>
-                  </div>
-                </div>
 
-                <Separator />
+                      <div className="space-y-3 ml-7">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="newsletters" className="text-base">
+                              Newsletters
+                            </Label>
+                            <p className="text-sm text-muted-foreground">Weekly and monthly newsletter updates</p>
+                          </div>
+                          <Switch
+                            id="newsletters"
+                            checked={preferences.newsletters}
+                            onCheckedChange={(checked) => handlePreferenceChange("newsletters", checked)}
+                          />
+                        </div>
 
-                {/* Marketing & Events */}
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Megaphone className="h-5 w-5 text-indigo-600" />
-                    <h3 className="text-lg font-semibold">Marketing & Events</h3>
-                  </div>
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="eventInvitations" className="text-base">
+                              Event Invitations
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              Invitations to webinars, conferences, and special events
+                            </p>
+                          </div>
+                          <Switch
+                            id="eventInvitations"
+                            checked={preferences.eventInvitations}
+                            onCheckedChange={(checked) => handlePreferenceChange("eventInvitations", checked)}
+                          />
+                        </div>
 
-                  <div className="space-y-3 ml-7">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="newsletters" className="text-base">
-                          Newsletters
-                        </Label>
-                        <p className="text-sm text-muted-foreground">Weekly and monthly newsletter updates</p>
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="specialOffers" className="text-base">
+                              Special Offers
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              Exclusive deals, discounts, and promotional content
+                            </p>
+                          </div>
+                          <Switch
+                            id="specialOffers"
+                            checked={preferences.specialOffers}
+                            onCheckedChange={(checked) => handlePreferenceChange("specialOffers", checked)}
+                          />
+                        </div>
                       </div>
-                      <Switch
-                        id="newsletters"
-                        checked={preferences.newsletters}
-                        onCheckedChange={(checked) => handlePreferenceChange("newsletters", checked)}
-                      />
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="eventInvitations" className="text-base">
-                          Event Invitations
-                        </Label>
-                        <p className="text-sm text-muted-foreground">
-                          Invitations to webinars, conferences, and special events
-                        </p>
+                    {/* Save Button */}
+                    <div className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          {saveMessage && (
+                            <p
+                              className={`text-sm ${saveMessage.includes("Failed") ? "text-red-600" : "text-green-600"}`}
+                            >
+                              {saveMessage}
+                            </p>
+                          )}
+                        </div>
+                        <Button onClick={handleSavePreferences} disabled={isSaving || !pushStatus.subscribed}>
+                          {isSaving ? "Saving..." : "Save Preferences"}
+                        </Button>
                       </div>
-                      <Switch
-                        id="eventInvitations"
-                        checked={preferences.eventInvitations}
-                        onCheckedChange={(checked) => handlePreferenceChange("eventInvitations", checked)}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="specialOffers" className="text-base">
-                          Special Offers
-                        </Label>
-                        <p className="text-sm text-muted-foreground">
-                          Exclusive deals, discounts, and promotional content
-                        </p>
-                      </div>
-                      <Switch
-                        id="specialOffers"
-                        checked={preferences.specialOffers}
-                        onCheckedChange={(checked) => handlePreferenceChange("specialOffers", checked)}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Save Button */}
-                <div className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      {saveMessage && (
-                        <p className={`text-sm ${saveMessage.includes("Failed") ? "text-red-600" : "text-green-600"}`}>
-                          {saveMessage}
+                      {!pushStatus.subscribed && (
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Enable push notifications above to save your preferences.
                         </p>
                       )}
                     </div>
-                    <Button onClick={handleSavePreferences} disabled={isSaving || !pushStatus.subscribed}>
-                      {isSaving ? "Saving..." : "Save Preferences"}
-                    </Button>
-                  </div>
-                  {!pushStatus.subscribed && (
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Enable push notifications above to save your preferences.
-                    </p>
-                  )}
-                </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
