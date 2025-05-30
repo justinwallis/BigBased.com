@@ -1,20 +1,32 @@
-import { createServerClient } from "@supabase/ssr"
+import { createServerClient as _createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
-import type { Database } from "@/types/supabase"
 
 export function createClient(useServiceRole = false) {
   const cookieStore = cookies()
 
+  // Make sure we're using the correct Supabase URL and keys
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseKey = useServiceRole
     ? process.env.SUPABASE_SERVICE_ROLE_KEY
     : process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseKey) {
+    console.error("Missing Supabase environment variables:", {
+      hasUrl: !!supabaseUrl,
+      hasKey: !!supabaseKey,
+      useServiceRole,
+    })
     throw new Error("Missing Supabase environment variables")
   }
 
-  return createServerClient<Database>(supabaseUrl, supabaseKey, {
+  // Log connection info for debugging (first 30 chars only)
+  console.log("Supabase client connecting to:", {
+    url: supabaseUrl.substring(0, 30) + "...",
+    keyType: useServiceRole ? "service_role" : "anon",
+    keyPrefix: supabaseKey.substring(0, 10) + "...",
+  })
+
+  return _createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
       get(name: string) {
         return cookieStore.get(name)?.value
@@ -23,7 +35,6 @@ export function createClient(useServiceRole = false) {
         try {
           cookieStore.set({ name, value, ...options })
         } catch (error) {
-          // Handle cookies in edge functions or other environments where setting cookies might fail
           console.error("Error setting cookie:", error)
         }
       },
@@ -38,5 +49,9 @@ export function createClient(useServiceRole = false) {
   })
 }
 
-// Keep backward compatibility
-export { createClient as createServerSupabaseClient, createClient as createServerClient }
+// Export all the required named exports for backward compatibility
+export const createServerSupabaseClient = createClient
+export const createServerClient = createClient
+
+// Default export
+export default createClient
