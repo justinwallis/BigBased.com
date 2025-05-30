@@ -3,39 +3,35 @@
 import { createClient } from "@/lib/supabase/server"
 
 export async function debugUserProfile() {
-  const debugInfo: any = {
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || "unknown",
-    steps: [],
-    errors: [],
-  }
+  const timestamp = new Date().toISOString()
+  const environment = process.env.NODE_ENV || "development"
+  const steps: string[] = []
+  const errors: string[] = []
 
   try {
-    // Check environment variables
-    debugInfo.steps.push("Checking environment variables...")
-    const supabaseUrl = process.env.SUPABASE_URL
-    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-    const nextPublicSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const nextPublicSupabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    steps.push("Checking environment variables...")
 
-    debugInfo.envVars = {
-      supabaseUrl: !!supabaseUrl,
-      supabaseAnonKey: !!supabaseAnonKey,
-      supabaseServiceKey: !!supabaseServiceKey,
-      nextPublicSupabaseUrl: !!nextPublicSupabaseUrl,
-      nextPublicSupabaseAnonKey: !!nextPublicSupabaseAnonKey,
+    // Check environment variables
+    const envVars = {
+      supabaseUrl: !!process.env.SUPABASE_URL || !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      supabaseAnonKey: !!process.env.SUPABASE_ANON_KEY || !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      supabaseServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      nextPublicSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      nextPublicSupabaseAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      stripeSecretKey: !!process.env.STRIPE_SECRET_KEY,
+      stripePublishableKey: !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
     }
 
+    steps.push("Testing regular Supabase client...")
+
     // Test regular client
-    debugInfo.steps.push("Testing regular Supabase client...")
     const regularClient = createClient(false)
     const { data: userData, error: userError } = await regularClient.auth.getUser()
 
-    debugInfo.regularClient = {
+    const regularClientResult = {
       hasUser: !!userData?.user,
-      userId: userData?.user?.id,
-      userEmail: userData?.user?.email,
+      userId: userData?.user?.id || null,
+      userEmail: userData?.user?.email || null,
       error: userError
         ? {
             message: userError.message,
@@ -44,153 +40,189 @@ export async function debugUserProfile() {
         : null,
     }
 
-    if (!userData?.user) {
-      debugInfo.errors.push("No authenticated user found")
-      return debugInfo
+    steps.push("Testing new RPC functions...")
+
+    // Test the new RPC functions
+    let rpcTest = null
+    if (userData?.user) {
+      try {
+        const { data: stripeData, error: stripeError } = await regularClient.rpc("get_profile_stripe_customer", {
+          user_id: userData.user.id,
+        })
+
+        rpcTest = {
+          success: !stripeError,
+          data: stripeData,
+          error: stripeError
+            ? {
+                message: stripeError.message,
+                code: stripeError.code,
+                details: stripeError.details,
+                hint: stripeError.hint,
+              }
+            : null,
+        }
+      } catch (error: any) {
+        rpcTest = {
+          success: false,
+          error: {
+            message: error.message,
+            type: "exception",
+          },
+        }
+      }
     }
 
-    // Test profile access with regular client
-    debugInfo.steps.push("Testing profile access with regular client...")
-    const { data: regularProfile, error: regularProfileError } = await regularClient
-      .from("profiles")
-      .select("*")
-      .eq("id", userData.user.id)
-      .single()
-
-    debugInfo.regularProfileAccess = {
-      hasProfile: !!regularProfile,
-      profileData: regularProfile,
-      error: regularProfileError
-        ? {
-            message: regularProfileError.message,
-            code: regularProfileError.code,
-            details: regularProfileError.details,
-            hint: regularProfileError.hint,
-          }
-        : null,
-    }
+    steps.push("Testing service role client...")
 
     // Test service role client
-    debugInfo.steps.push("Testing service role Supabase client...")
     const serviceClient = createClient(true)
-    const { data: serviceProfile, error: serviceProfileError } = await serviceClient
-      .from("profiles")
-      .select("*")
-      .eq("id", userData.user.id)
-      .single()
+    let serviceRpcTest = null
+    if (userData?.user) {
+      try {
+        const { data: serviceStripeData, error: serviceStripeError } = await serviceClient.rpc(
+          "get_profile_stripe_customer",
+          {
+            user_id: userData.user.id,
+          },
+        )
 
-    debugInfo.serviceProfileAccess = {
-      hasProfile: !!serviceProfile,
-      profileData: serviceProfile,
-      error: serviceProfileError
-        ? {
-            message: serviceProfileError.message,
-            code: serviceProfileError.code,
-            details: serviceProfileError.details,
-            hint: serviceProfileError.hint,
-          }
-        : null,
+        serviceRpcTest = {
+          success: !serviceStripeError,
+          data: serviceStripeData,
+          error: serviceStripeError
+            ? {
+                message: serviceStripeError.message,
+                code: serviceStripeError.code,
+                details: serviceStripeError.details,
+                hint: serviceStripeError.hint,
+              }
+            : null,
+        }
+      } catch (error: any) {
+        serviceRpcTest = {
+          success: false,
+          error: {
+            message: error.message,
+            type: "exception",
+          },
+        }
+      }
     }
 
-    // Test table structure
-    debugInfo.steps.push("Testing table structure...")
-    const { data: tableData, error: tableError } = await serviceClient.rpc("check_table_exists", {
-      table_name: "profiles",
-    })
-
-    debugInfo.tableTest = {
-      canAccessTable: !!tableData,
-      error: tableError
-        ? {
-            message: tableError.message,
-            code: tableError.code,
-            details: tableError.details,
-            hint: tableError.hint,
-          }
-        : null,
+    return {
+      timestamp,
+      environment,
+      steps,
+      errors,
+      envVars,
+      regularClient: regularClientResult,
+      rpcTest,
+      serviceRpcTest,
     }
-
-    // Test RLS policies
-    debugInfo.steps.push("Testing RLS policies...")
-    const { data: rlsData, error: rlsError } = await regularClient.rpc("get_auth_uid")
-
-    debugInfo.rlsTest = {
-      authUid: rlsData,
-      error: rlsError
-        ? {
-            message: rlsError.message,
-            code: rlsError.code,
-            details: rlsError.details,
-            hint: rlsError.hint,
-          }
-        : null,
-    }
-
-    return debugInfo
   } catch (error: any) {
-    debugInfo.errors.push(error.message)
-    return debugInfo
+    errors.push(`Debug error: ${error.message}`)
+    return {
+      timestamp,
+      environment,
+      steps,
+      errors,
+      exception: error.message,
+    }
   }
 }
 
-export async function testProfileCreation() {
-  const debugInfo: any = {
-    timestamp: new Date().toISOString(),
-    steps: [],
-    errors: [],
-  }
+export async function testStripeCustomerCreation() {
+  const timestamp = new Date().toISOString()
+  const steps: string[] = []
+  const errors: string[] = []
 
   try {
-    debugInfo.steps.push("Attempting to create profile...")
+    steps.push("Getting user data...")
 
-    // Get current user
-    const supabase = createClient(false)
+    const supabase = createClient(true) // Use service role
     const { data: userData, error: userError } = await supabase.auth.getUser()
 
     if (userError || !userData?.user) {
-      debugInfo.errors.push("No authenticated user found")
-      return debugInfo
+      return {
+        timestamp,
+        steps,
+        errors: ["No authenticated user found"],
+        user: null,
+      }
     }
 
-    debugInfo.user = {
-      id: userData.user.id,
-      email: userData.user.email,
-      metadata: userData.user.user_metadata,
-    }
+    const user = userData.user
 
-    // Try to insert a profile
-    const serviceClient = createClient(true)
-    const { data: insertData, error: insertError } = await serviceClient
-      .from("profiles")
-      .upsert(
-        {
-          id: userData.user.id,
-          email: userData.user.email,
-          full_name: userData.user.user_metadata?.full_name || userData.user.user_metadata?.name || "",
-          username: userData.user.user_metadata?.username || userData.user.email?.split("@")[0] || "",
-          social_links: {},
-          stripe_customer_id: "test_" + Date.now(),
-        },
-        { onConflict: "id" },
-      )
-      .select()
+    steps.push("Testing get_profile_stripe_customer RPC...")
 
-    debugInfo.insertResult = {
-      success: !insertError,
-      data: insertData,
-      error: insertError
+    // Test getting existing stripe customer
+    const { data: existingCustomer, error: getError } = await supabase.rpc("get_profile_stripe_customer", {
+      user_id: user.id,
+    })
+
+    const getResult = {
+      success: !getError,
+      data: existingCustomer,
+      error: getError
         ? {
-            message: insertError.message,
-            code: insertError.code,
-            details: insertError.details,
-            hint: insertError.hint,
+            message: getError.message,
+            code: getError.code,
+            details: getError.details,
+            hint: getError.hint,
           }
         : null,
     }
 
-    return debugInfo
+    steps.push("Testing update_profile_stripe_customer RPC...")
+
+    // Test updating stripe customer (with a test ID)
+    const testCustomerId = `cus_test_${Date.now()}`
+    const { error: updateError } = await supabase.rpc("update_profile_stripe_customer", {
+      user_id: user.id,
+      customer_id: testCustomerId,
+    })
+
+    const updateResult = {
+      success: !updateError,
+      testCustomerId,
+      error: updateError
+        ? {
+            message: updateError.message,
+            code: updateError.code,
+            details: updateError.details,
+            hint: updateError.hint,
+          }
+        : null,
+    }
+
+    // Clean up - remove the test customer ID
+    if (!updateError) {
+      await supabase.rpc("update_profile_stripe_customer", {
+        user_id: user.id,
+        customer_id: null,
+      })
+    }
+
+    return {
+      timestamp,
+      steps,
+      errors,
+      user: {
+        id: user.id,
+        email: user.email,
+        metadata: user.user_metadata,
+      },
+      getResult,
+      updateResult,
+    }
   } catch (error: any) {
-    debugInfo.errors.push(error.message)
-    return debugInfo
+    errors.push(`Test error: ${error.message}`)
+    return {
+      timestamp,
+      steps,
+      errors,
+      exception: error.message,
+    }
   }
 }

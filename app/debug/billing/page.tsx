@@ -3,9 +3,9 @@
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Bug, RefreshCw, Database, User } from "lucide-react"
+import { ArrowLeft, Bug, RefreshCw, Database, User, CreditCard } from "lucide-react"
 import Link from "next/link"
-import { debugUserProfile, testProfileCreation } from "@/app/actions/debug-actions"
+import { debugUserProfile, testStripeCustomerCreation } from "@/app/actions/debug-actions"
 
 export default function BillingDebugPage() {
   const [debugInfo, setDebugInfo] = useState<any>(null)
@@ -18,7 +18,7 @@ export default function BillingDebugPage() {
     try {
       const result = await debugUserProfile()
       setDebugInfo(result)
-    } catch (error) {
+    } catch (error: any) {
       setDebugInfo({ error: error.message })
     } finally {
       setIsLoading(false)
@@ -26,13 +26,13 @@ export default function BillingDebugPage() {
     }
   }
 
-  const testProfileCreate = async () => {
+  const testStripeRPC = async () => {
     setIsLoading(true)
-    setActiveTest("profile-create")
+    setActiveTest("stripe-rpc")
     try {
-      const result = await testProfileCreation()
+      const result = await testStripeCustomerCreation()
       setDebugInfo(result)
-    } catch (error) {
+    } catch (error: any) {
       setDebugInfo({ error: error.message })
     } finally {
       setIsLoading(false)
@@ -76,29 +76,36 @@ export default function BillingDebugPage() {
                 ) : (
                   <>
                     <Database className="h-4 w-4 mr-2" />
-                    Debug Profile Access
+                    Debug Profile & Environment
                   </>
                 )}
               </Button>
 
               <Button
-                onClick={testProfileCreate}
+                onClick={testStripeRPC}
                 disabled={isLoading}
                 className="w-full"
-                variant={activeTest === "profile-create" ? "secondary" : "outline"}
+                variant={activeTest === "stripe-rpc" ? "secondary" : "outline"}
               >
-                {isLoading && activeTest === "profile-create" ? (
+                {isLoading && activeTest === "stripe-rpc" ? (
                   <>
                     <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    Testing Profile Creation...
+                    Testing Stripe RPC...
                   </>
                 ) : (
                   <>
-                    <User className="h-4 w-4 mr-2" />
-                    Test Profile Creation
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Test Stripe RPC Functions
                   </>
                 )}
               </Button>
+
+              <Link href="/profile/billing" className="block">
+                <Button variant="outline" className="w-full">
+                  <User className="h-4 w-4 mr-2" />
+                  Test Actual Billing Page
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
@@ -109,14 +116,16 @@ export default function BillingDebugPage() {
             <CardContent>
               <div className="space-y-2 text-sm text-muted-foreground">
                 <p>
-                  <strong>Profile Debug:</strong> Tests user authentication, profile access with both regular and
-                  service role clients, and RLS policies.
+                  <strong>Profile & Environment:</strong> Tests user authentication, environment variables, and basic
+                  connectivity.
                 </p>
                 <p>
-                  <strong>Profile Creation:</strong> Attempts to create a profile for the current user to test database
-                  permissions.
+                  <strong>Stripe RPC Functions:</strong> Tests the new SQL functions that bypass schema cache issues.
                 </p>
-                <p>Check the debug output below for detailed information about what's failing.</p>
+                <p>
+                  <strong>Actual Billing Page:</strong> Test the real billing functionality with the new RPC approach.
+                </p>
+                <p>The RPC functions should work even if the schema cache has issues with direct table access.</p>
               </div>
             </CardContent>
           </Card>
