@@ -94,20 +94,31 @@ export async function getOrCreateStripeCustomer() {
 
     const user = userData.user
 
-    // Try to get profile using RPC function
-    const { data: profileData, error: profileError } = await supabase.rpc("get_profile_stripe_customer", {
-      user_id: user.id,
-    })
+    // Try to get profile with direct table query
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single()
+
+    if (profileError && profileError.code !== "PGRST116") {
+      console.error("Error fetching profile:", profileError)
+      return {
+        success: false,
+        error: "Failed to access user profile",
+        debug: { profileError },
+      }
+    }
 
     // If profile exists and has a stripe_customer_id, return it
-    if (profileData && profileData.stripe_customer_id) {
-      return { success: true, customerId: profileData.stripe_customer_id }
+    if (profile?.stripe_customer_id) {
+      return { success: true, customerId: profile.stripe_customer_id }
     }
 
     // Create new Stripe customer
     const customerResult = await createCustomer(
       user.email!,
-      user.user_metadata?.full_name || user.user_metadata?.name || user.email,
+      user.user_metadata?.full_name || user.user_metadata?.name || profile?.full_name || user.email,
     )
 
     if (!customerResult.success) {
@@ -118,11 +129,16 @@ export async function getOrCreateStripeCustomer() {
       }
     }
 
-    // Update profile with customer ID using RPC function
-    const { data: updatedProfile, error: updateError } = await supabase.rpc("update_profile_stripe_customer", {
-      customer_id: customerResult.customerId,
-      user_id: user.id,
-    })
+    // Update profile with customer ID using direct table update
+    const { data: updatedProfile, error: updateError } = await supabase
+      .from("profiles")
+      .update({
+        stripe_customer_id: customerResult.customerId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", user.id)
+      .select()
+      .single()
 
     if (updateError) {
       console.error("Error saving Stripe customer ID:", updateError)
@@ -133,7 +149,11 @@ export async function getOrCreateStripeCustomer() {
       }
     }
 
-    return { success: true, customerId: customerResult.customerId }
+    return {
+      success: true,
+      customerId: customerResult.customerId,
+      debug: { profileUpdated: updatedProfile },
+    }
   } catch (error: any) {
     console.error("Error in getOrCreateStripeCustomer:", error)
     return {
