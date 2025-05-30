@@ -4,26 +4,27 @@ import { cookies } from "next/headers"
 export function createClient(useServiceRole = false) {
   const cookieStore = cookies()
 
-  // Make sure we're using the correct Supabase URL and keys
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+  // IMPORTANT: Make sure we're using Supabase URLs, not Neon
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
   const supabaseKey = useServiceRole
     ? process.env.SUPABASE_SERVICE_ROLE_KEY
-    : process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseKey) {
     console.error("Missing Supabase environment variables:", {
       hasUrl: !!supabaseUrl,
       hasKey: !!supabaseKey,
       useServiceRole,
+      urlPreview: supabaseUrl?.substring(0, 30) + "...",
     })
     throw new Error("Missing Supabase environment variables")
   }
 
-  // Log connection info for debugging (first 30 chars only)
-  console.log("Supabase client connecting to:", {
-    url: supabaseUrl.substring(0, 30) + "...",
+  // Log what we're connecting to
+  console.log("Supabase client config:", {
+    url: supabaseUrl.substring(0, 50) + "...",
     keyType: useServiceRole ? "service_role" : "anon",
-    keyPrefix: supabaseKey.substring(0, 10) + "...",
+    keyPrefix: supabaseKey.substring(0, 20) + "...",
   })
 
   return _createServerClient(supabaseUrl, supabaseKey, {

@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { AlertCircle, CheckCircle, Loader2, Database, CreditCard, User, Settings } from "lucide-react"
+import { AlertCircle, CheckCircle, Loader2, Database, CreditCard, User, Settings, Wifi } from "lucide-react"
 
 export default function BillingDebugPage() {
   const [results, setResults] = useState<any>({})
@@ -35,6 +35,11 @@ export default function BillingDebugPage() {
     return await response.json()
   }
 
+  const testConnectionDetails = async () => {
+    const response = await fetch("/api/debug/connection-test", { method: "POST" })
+    return await response.json()
+  }
+
   const testProfilesTable = async () => {
     const response = await fetch("/api/debug/profiles", { method: "POST" })
     return await response.json()
@@ -57,6 +62,7 @@ export default function BillingDebugPage() {
 
   const runAllTests = async () => {
     await runTest("environment", testEnvironment)
+    await runTest("connectionDetails", testConnectionDetails)
     await runTest("supabase", testSupabaseConnection)
     await runTest("profiles", testProfilesTable)
     await runTest("stripe", testStripeConnection)
@@ -100,6 +106,16 @@ export default function BillingDebugPage() {
                 <Button onClick={runAllTests} disabled={isLoading !== null} className="flex items-center space-x-2">
                   {isLoading === "all" && <Loader2 className="h-4 w-4 animate-spin" />}
                   <span>Run All Tests</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => runTest("connectionDetails", testConnectionDetails)}
+                  disabled={isLoading !== null}
+                  className="flex items-center space-x-2"
+                >
+                  {isLoading === "connectionDetails" && <Loader2 className="h-4 w-4 animate-spin" />}
+                  <Wifi className="h-4 w-4" />
+                  <span>Test Connection Details</span>
                 </Button>
                 <Button
                   variant="outline"
