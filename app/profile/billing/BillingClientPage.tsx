@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Loader2, CreditCard, AlertCircle, ArrowLeft } from "lucide-react"
+import { Loader2, CreditCard, AlertCircle, ArrowLeft, CreditCardIcon } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { StripeProvider } from "@/components/stripe-provider"
 import { AddPaymentMethod } from "@/components/add-payment-method"
@@ -12,6 +12,8 @@ import { getOrCreateStripeCustomer, getCustomerPaymentMethods, createSetupIntent
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { PayPalPayment } from "@/components/paypal-payment"
 
 export default function BillingClientPage() {
   const { toast } = useToast()
@@ -21,6 +23,7 @@ export default function BillingClientPage() {
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const { theme } = useTheme()
+  const [activeTab, setActiveTab] = useState("stripe")
 
   const router = useRouter()
 
@@ -63,6 +66,14 @@ export default function BillingClientPage() {
 
   const handlePaymentMethodUpdate = () => {
     loadBillingData()
+  }
+
+  const handlePayPalSuccess = (details: any) => {
+    toast({
+      title: "PayPal Payment Successful",
+      description: `Transaction ID: ${details.id}`,
+    })
+    // Here you would typically call a server action to record the payment
   }
 
   if (isLoading) {
@@ -139,13 +150,78 @@ export default function BillingClientPage() {
           </CardContent>
         </Card>
 
-        {/* Add Payment Methods */}
+        {/* Add Payment Methods with Tabs */}
         <div className="mt-6">
-          {clientSecret && (
-            <StripeProvider clientSecret={clientSecret} appearance={{ theme: theme === "dark" ? "night" : "stripe" }}>
-              <AddPaymentMethod clientSecret={clientSecret} onSuccess={handlePaymentMethodUpdate} />
-            </StripeProvider>
-          )}
+          <Tabs defaultValue="stripe" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid grid-cols-2 mb-4">
+              <TabsTrigger value="stripe" className="flex items-center space-x-2">
+                <CreditCardIcon className="h-4 w-4" />
+                <span>Card & Digital Wallets</span>
+              </TabsTrigger>
+              <TabsTrigger value="paypal" className="flex items-center space-x-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                >
+                  <path d="M7 11l5-7" />
+                  <path d="M21 11V6a2 2 0 0 0-2-2h-4l5 7" />
+                  <path d="M3 11v5a2 2 0 0 0 2 2h4l5-7" />
+                  <path d="M17 11v5a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2v-5" />
+                </svg>
+                <span>PayPal</span>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="stripe">
+              {clientSecret && (
+                <StripeProvider
+                  clientSecret={clientSecret}
+                  appearance={{ theme: theme === "dark" ? "night" : "stripe" }}
+                >
+                  <AddPaymentMethod
+                    clientSecret={clientSecret}
+                    customerId={customerId!}
+                    onSuccess={handlePaymentMethodUpdate}
+                  />
+                </StripeProvider>
+              )}
+            </TabsContent>
+
+            <TabsContent value="paypal">
+              <Card className="dark:bg-gray-700 dark:border-gray-600">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2 dark:text-white">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-5 w-5"
+                    >
+                      <path d="M7 11l5-7" />
+                      <path d="M21 11V6a2 2 0 0 0-2-2h-4l5 7" />
+                      <path d="M3 11v5a2 2 0 0 0 2 2h4l5-7" />
+                      <path d="M17 11v5a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2v-5" />
+                    </svg>
+                    <span>PayPal Payment</span>
+                  </CardTitle>
+                  <CardDescription className="dark:text-gray-300">Make a payment using PayPal</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <PayPalPayment amount={10} onSuccess={handlePayPalSuccess} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
 
         {/* Payment Methods Info */}
@@ -162,14 +238,15 @@ export default function BillingClientPage() {
                   <li>• Apple Pay (Safari on iOS/macOS)</li>
                   <li>• Google Pay (Chrome)</li>
                   <li>• Link by Stripe (Save for faster checkout)</li>
+                  <li>• US Bank Accounts (ACH)</li>
                 </ul>
               </div>
               <div>
-                <h3 className="font-medium mb-2 dark:text-white">Coming Soon</h3>
+                <h3 className="font-medium mb-2 dark:text-white">Other Payment Methods</h3>
                 <ul className="space-y-1 text-sm">
                   <li>• PayPal</li>
-                  <li>• Bank transfers</li>
-                  <li>• Cryptocurrency</li>
+                  <li>• PayPal Credit</li>
+                  <li>• Coming Soon: Cryptocurrency</li>
                 </ul>
               </div>
             </div>

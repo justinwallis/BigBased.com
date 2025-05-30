@@ -209,3 +209,26 @@ export async function getOrCreateStripeCustomer() {
     }
   }
 }
+
+// Add this new function to check for duplicate Link methods
+export async function checkForDuplicateLink(customerId: string, email: string) {
+  try {
+    const stripe = getStripe()
+    const linkMethods = await stripe.paymentMethods.list({
+      customer: customerId,
+      type: "link",
+    })
+
+    // Check if any existing Link payment method has the same email
+    const duplicate = linkMethods.data.find((method) => method.link?.email?.toLowerCase() === email.toLowerCase())
+
+    return {
+      success: true,
+      isDuplicate: !!duplicate,
+      duplicateId: duplicate?.id,
+    }
+  } catch (error) {
+    console.error("Error checking for duplicate Link methods:", error)
+    return { success: false, error: "Failed to check for duplicates" }
+  }
+}
