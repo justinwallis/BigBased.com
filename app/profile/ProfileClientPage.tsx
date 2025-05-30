@@ -1,8 +1,8 @@
-import { CreditCard } from "lucide-react"
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function ProfileClientPage() {
@@ -24,19 +24,37 @@ export default function ProfileClientPage() {
           </CardContent>
         </Card>
       </TabsContent>
+      {/* Billing Tab */}
       <TabsContent value="billing">
         <Card>
           <CardHeader>
-            <CardTitle>Billing</CardTitle>
-            <CardDescription>Manage your subscription and billing details here.</CardDescription>
+            <CardTitle>Billing & Subscription</CardTitle>
+            <CardDescription>Manage your subscription and billing information.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Link href="/profile/billing/upgrade">
-              <Button className="w-full">
-                <CreditCard className="mr-2 h-4 w-4" />
-                Upgrade Plan
-              </Button>
-            </Link>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium">Current Plan</h4>
+                  <p className="text-sm text-muted-foreground">Free Plan - No active subscription</p>
+                </div>
+                <Link href="/profile/billing/upgrade">
+                  <Button>Upgrade Plan</Button>
+                </Link>
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium">Payment Methods</h4>
+                  <p className="text-sm text-muted-foreground">No payment methods on file</p>
+                </div>
+                <Link href="/profile/billing">
+                  <Button variant="outline">Add Payment Method</Button>
+                </Link>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </TabsContent>
