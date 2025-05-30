@@ -38,11 +38,30 @@ export default function UpgradeClientPage({ currentPlanId, isActive }: UpgradeCl
 
   const handleUpgrade = async (planId: PlanId) => {
     const plan = SUBSCRIPTION_PLANS[planId]
+
+    // Check if this is the free plan
+    if (planId === "free") {
+      toast({
+        title: "Already on Free Plan",
+        description: "You're already on the free plan. Choose a paid plan to upgrade.",
+      })
+      return
+    }
+
+    // Check if this is the current plan
+    if (planId === currentPlanId) {
+      toast({
+        title: "Current Plan",
+        description: "You're already on this plan.",
+      })
+      return
+    }
+
     if (!plan.stripePriceId) {
       console.error(`Missing Stripe price ID for plan: ${planId}`, plan)
       toast({
         title: "Configuration Error",
-        description: "This plan is not available for purchase yet. Missing Stripe price ID.",
+        description: "This plan is not available for purchase yet. Please contact support.",
         variant: "destructive",
       })
       return
@@ -55,6 +74,7 @@ export default function UpgradeClientPage({ currentPlanId, isActive }: UpgradeCl
       console.log("Checkout session result:", result)
 
       if (result.success && result.sessionUrl) {
+        // Redirect to Stripe checkout
         window.location.href = result.sessionUrl
       } else {
         toast({
@@ -100,6 +120,24 @@ export default function UpgradeClientPage({ currentPlanId, isActive }: UpgradeCl
   }
 
   const isCurrentPlan = (planId: PlanId) => planId === currentPlanId
+
+  const getButtonText = (planId: PlanId) => {
+    if (isCurrentPlan(planId)) {
+      return "Current Plan"
+    }
+    if (planId === "free") {
+      return "Free Plan"
+    }
+    if (currentPlanId === "free") {
+      return "Upgrade Now"
+    }
+    // Determine if it's an upgrade or downgrade
+    const planOrder = { free: 0, based_supporter: 1, based_patriot: 2 }
+    const currentOrder = planOrder[currentPlanId]
+    const targetOrder = planOrder[planId as keyof typeof planOrder]
+
+    return targetOrder > currentOrder ? "Upgrade" : "Downgrade"
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -188,36 +226,25 @@ export default function UpgradeClientPage({ currentPlanId, isActive }: UpgradeCl
                   </ul>
 
                   <div className="pt-4">
-                    {planId === "free" ? (
-                      <Button variant="outline" className="w-full" disabled>
-                        Current Plan
-                      </Button>
-                    ) : isCurrent ? (
-                      <Button variant="outline" className="w-full" disabled>
-                        Current Plan
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={() => handleUpgrade(planId as PlanId)}
-                        disabled={isUpgrading !== null}
-                        className={`w-full ${
-                          isPopular
-                            ? `bg-gradient-to-r ${getPlanGradient(planId as PlanId)} text-white hover:opacity-90`
-                            : ""
-                        }`}
-                      >
-                        {isUpgrading === planId ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Processing...
-                          </>
-                        ) : currentPlanId === "free" ? (
-                          "Upgrade Now"
-                        ) : (
-                          "Switch Plan"
-                        )}
-                      </Button>
-                    )}
+                    <Button
+                      onClick={() => handleUpgrade(planId as PlanId)}
+                      disabled={isUpgrading !== null || isCurrent || planId === "free"}
+                      className={`w-full ${
+                        isPopular && !isCurrent
+                          ? `bg-gradient-to-r ${getPlanGradient(planId as PlanId)} text-white hover:opacity-90`
+                          : ""
+                      } ${isCurrent ? "opacity-50" : ""}`}
+                      variant={isCurrent ? "outline" : "default"}
+                    >
+                      {isUpgrading === planId ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        getButtonText(planId as PlanId)
+                      )}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

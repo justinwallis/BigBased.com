@@ -106,8 +106,11 @@ export async function getCurrentSubscription() {
 
 export async function createCheckoutSession(priceId: string, planId: PlanId) {
   try {
+    console.log(`Creating checkout session for plan: ${planId} with price ID: ${priceId}`)
+
     const customerResult = await getOrCreateStripeCustomer()
     if (!customerResult.success) {
+      console.error("Failed to get/create Stripe customer:", customerResult.error)
       return { success: false, error: customerResult.error }
     }
 
@@ -138,6 +141,7 @@ export async function createCheckoutSession(priceId: string, planId: PlanId) {
       billing_address_collection: "auto",
     })
 
+    console.log("Checkout session created successfully:", session.id)
     return { success: true, sessionUrl: session.url }
   } catch (error: any) {
     console.error("Error creating checkout session:", error)
