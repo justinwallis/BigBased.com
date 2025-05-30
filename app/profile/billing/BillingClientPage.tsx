@@ -15,8 +15,9 @@ import {
   setPayPalAsDefault,
   getDefaultPaymentMethodPreference,
 } from "@/app/actions/stripe-actions"
+import { getPayPalConnectionStatus, disconnectPayPal } from "@/app/actions/paypal-actions"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useTheme } from "next-themes"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PayPalPayment } from "@/components/paypal-payment"
@@ -35,8 +36,43 @@ export default function BillingClientPage() {
   const [defaultPaymentMethodId, setDefaultPaymentMethodId] = useState<string | null>(null)
   const [isPayPalDefault, setIsPayPalDefault] = useState(false)
   const [isSettingPayPalDefault, setIsSettingPayPalDefault] = useState(false)
+  const [isDisconnectingPayPal, setIsDisconnectingPayPal] = useState(false)
 
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Check for PayPal connection callback parameters
+  useEffect(() => {
+    const paypalConnected = searchParams.get("paypal_connected")
+    const paypalEmail = searchParams.get("email")
+    const error = searchParams.get("error")
+
+    if (paypalConnected === "true" && paypalEmail) {
+      setPaypalConnected(true)
+      setPaypalEmail(decodeURIComponent(paypalEmail))
+      toast({
+        title: "PayPal Connected",
+        description: `PayPal account ${decodeURIComponent(paypalEmail)} is now available for payments`,
+      })
+
+      // Remove query parameters from URL
+      const url = new URL(window.location.href)
+      url.searchParams.delete("paypal_connected")
+      url.searchParams.delete("email")
+      window.history.replaceState({}, "", url.toString())
+    } else if (error) {
+      toast({
+        title: "PayPal Connection Error",
+        description: decodeURIComponent(error),
+        variant: "destructive",
+      })
+
+      // Remove error parameter from URL
+      const url = new URL(window.location.href)
+      url.searchParams.delete("error")
+      window.history.replaceState({}, "", url.toString())
+    }
+  }, [searchParams, toast])
 
   const loadBillingData = async () => {
     try {
@@ -59,14 +95,17 @@ export default function BillingClientPage() {
         setDefaultPaymentMethodId(paymentMethodsResult.defaultPaymentMethodId)
       }
 
+      // Get PayPal connection status
+      const paypalResult = await getPayPalConnectionStatus()
+      if (paypalResult.success) {
+        setPaypalConnected(paypalResult.isConnected)
+        setPaypalEmail(paypalResult.paypalEmail)
+      }
+
       // Get default payment method preference (PayPal vs Stripe)
       const preferenceResult = await getDefaultPaymentMethodPreference()
       if (preferenceResult.success) {
         setIsPayPalDefault(preferenceResult.isPayPalDefault)
-        // If PayPal is set as default, assume it's connected
-        if (preferenceResult.isPayPalDefault) {
-          setPaypalConnected(true)
-        }
       }
 
       // Create setup intent for adding new payment methods
@@ -91,14 +130,7 @@ export default function BillingClientPage() {
   }
 
   const handlePayPalSetup = (details: any) => {
-    setPaypalConnected(true)
-    // Extract email from PayPal response
-    const email = details.payer?.email_address || details.email || "user@paypal.com"
-    setPaypalEmail(email)
-    toast({
-      title: "PayPal Connected",
-      description: `PayPal account ${email} is now available for payments`,
-    })
+    // This is now handled by the OAuth callback
   }
 
   const handleSetPayPalAsDefault = async () => {
@@ -129,6 +161,38 @@ export default function BillingClientPage() {
       })
     } finally {
       setIsSettingPayPalDefault(false)
+    }
+  }
+
+  const handleDisconnectPayPal = async () => {
+    setIsDisconnectingPayPal(true)
+    try {
+      const result = await disconnectPayPal()
+      if (result.success) {
+        setPaypalConnected(false)
+        setPaypalEmail(null)
+        if (isPayPalDefault) {
+          setIsPayPalDefault(false)
+        }
+        toast({
+          title: "PayPal Disconnected",
+          description: "Your PayPal account has been disconnected",
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to disconnect PayPal",
+          variant: "destructive",
+        })
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      })
+    } finally {
+      setIsDisconnectingPayPal(false)
     }
   }
 
@@ -284,13 +348,11 @@ export default function BillingClientPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => {
-                              setPaypalConnected(false)
-                              setPaypalEmail(null)
-                            }}
+                            onClick={handleDisconnectPayPal}
+                            disabled={isDisconnectingPayPal}
                             className="dark:border-gray-600 dark:text-gray-300"
                           >
-                            Disconnect
+                            {isDisconnectingPayPal ? <Loader2 className="h-3 w-3 animate-spin" /> : "Disconnect"}
                           </Button>
                         </div>
                       </div>
