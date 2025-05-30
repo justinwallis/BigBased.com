@@ -33,25 +33,28 @@ export async function GET(request: Request) {
 
     // Verify the state parameter to prevent CSRF attacks using Neon
     const sql = neon(process.env.DATABASE_URL!)
-    const sessions = await sql`
-      SELECT session_data FROM user_sessions 
+    const oauthStates = await sql`
+      SELECT session_data FROM oauth_states 
       WHERE user_id = ${userData.user.id} 
+      AND state_value = ${state}
+      AND provider = 'paypal'
+      AND expires_at > NOW()
       ORDER BY created_at DESC 
       LIMIT 1
     `
 
-    if (
-      !sessions ||
-      sessions.length === 0 ||
-      !sessions[0].session_data?.paypal_oauth_state ||
-      sessions[0].session_data.paypal_oauth_state !== state
-    ) {
-      console.error("Invalid OAuth state:", "State mismatch or not found")
-      return Response.redirect(`${url.origin}/profile/billing?error=Invalid authentication state`)
+    if (!oauthStates || oauthStates.length === 0) {
+      console.error("Invalid OAuth state:", "State not found or expired")
+      return Response.redirect(`${url.origin}/profile/billing?error=Invalid or expired authentication state`)
     }
 
     // Clean up the used state
-    await sql`DELETE FROM user_sessions WHERE user_id = ${userData.user.id} AND session_data->>'paypal_oauth_state' = ${state}`
+    await sql`
+      DELETE FROM oauth_states 
+      WHERE user_id = ${userData.user.id} 
+      AND state_value = ${state} 
+      AND provider = 'paypal'
+    `
 
     // Exchange the authorization code for an access token
     const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID

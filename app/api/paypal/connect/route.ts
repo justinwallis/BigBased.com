@@ -16,13 +16,19 @@ export async function GET(request: Request) {
     }
 
     // Generate a random state value for CSRF protection
-    const state = Math.random().toString(36).substring(2, 15)
+    const state = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
 
-    // Store the state in Neon database
+    // Store the state in Neon database using the new oauth_states table
     const sql = neon(process.env.DATABASE_URL!)
     await sql`
-      INSERT INTO user_sessions (user_id, session_data, expires_at)
-      VALUES (${userData.user.id}, ${JSON.stringify({ paypal_oauth_state: state })}, ${new Date(Date.now() + 1000 * 60 * 10).toISOString()})
+      INSERT INTO oauth_states (user_id, state_value, provider, session_data, expires_at)
+      VALUES (
+        ${userData.user.id}, 
+        ${state}, 
+        'paypal', 
+        ${JSON.stringify({ paypal_oauth_state: state })}, 
+        ${new Date(Date.now() + 1000 * 60 * 10).toISOString()}
+      )
     `
 
     // Get the redirect URL from the request or use a default
