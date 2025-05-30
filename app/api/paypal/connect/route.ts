@@ -2,12 +2,6 @@ import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { neon } from "@neondatabase/serverless"
 
-// PayPal OAuth endpoints - Use sandbox for testing, production for live
-const PAYPAL_BASE_URL =
-  process.env.NODE_ENV === "production" ? "https://www.paypal.com" : "https://www.sandbox.paypal.com"
-
-const PAYPAL_AUTH_URL = `${PAYPAL_BASE_URL}/connect`
-
 export async function GET(request: Request) {
   try {
     // Get the authenticated user
@@ -38,25 +32,37 @@ export async function GET(request: Request) {
     const url = new URL(request.url)
     const redirectUri = `${url.origin}/api/paypal/callback`
 
-    // Build the PayPal Connect URL (for merchant onboarding)
+    // Build the PayPal OAuth URL
     const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
     if (!clientId) {
       return NextResponse.json({ success: false, error: "PayPal client ID not configured" }, { status: 500 })
     }
 
-    // Use PayPal's Connect flow for linking accounts
-    const authUrl = new URL(PAYPAL_AUTH_URL)
-    authUrl.searchParams.append("flowEntry", "static")
+    // Try a simpler OAuth approach first
+    const authUrl = new URL("https://www.paypal.com/signin/authorize")
     authUrl.searchParams.append("client_id", clientId)
     authUrl.searchParams.append("response_type", "code")
-    authUrl.searchParams.append("scope", "openid email https://uri.paypal.com/services/payments/payment")
+    authUrl.searchParams.append("scope", "openid email")
     authUrl.searchParams.append("redirect_uri", redirectUri)
     authUrl.searchParams.append("state", state)
+
+    // Log debug info
+    console.log("PayPal OAuth Debug:", {
+      clientId: clientId.substring(0, 10) + "...",
+      redirectUri,
+      authUrl: authUrl.toString(),
+      state,
+    })
 
     // Return the authorization URL
     return NextResponse.json({
       success: true,
       authUrl: authUrl.toString(),
+      debug: {
+        clientId: clientId.substring(0, 10) + "...",
+        redirectUri,
+        state,
+      },
     })
   } catch (error: any) {
     console.error("PayPal connect error:", error)
