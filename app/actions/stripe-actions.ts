@@ -112,11 +112,44 @@ export async function deletePaymentMethod(paymentMethodId: string) {
 export async function setDefaultPaymentMethod(customerId: string, paymentMethodId: string) {
   try {
     const stripe = getStripe()
+
+    // Set the Stripe payment method as default
     await stripe.customers.update(customerId, {
       invoice_settings: {
         default_payment_method: paymentMethodId,
       },
     })
+
+    // Clear PayPal as default since we're setting a Stripe method as default
+    const supabase = createClient(false)
+    const { data: userData, error: userError } = await supabase.auth.getUser()
+
+    if (userData?.user) {
+      // Get user profile
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("social_links")
+        .eq("id", userData.user.id)
+        .single()
+
+      if (!profileError && profile) {
+        const socialLinks = profile.social_links || {}
+        const updatedSocialLinks = {
+          ...socialLinks,
+          default_payment_method: "stripe", // Set to stripe instead of paypal
+        }
+
+        // Update profile to clear PayPal default
+        await supabase
+          .from("profiles")
+          .update({
+            social_links: updatedSocialLinks,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", userData.user.id)
+      }
+    }
+
     return { success: true }
   } catch (error) {
     console.error("Error setting default payment method:", error)

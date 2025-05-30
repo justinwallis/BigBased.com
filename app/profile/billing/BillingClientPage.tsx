@@ -196,6 +196,25 @@ export default function BillingClientPage() {
     }
   }
 
+  // Helper function to get the default payment method display name
+  const getDefaultPaymentMethodDisplay = () => {
+    if (isPayPalDefault && paypalEmail) {
+      return `PayPal (${paypalEmail})`
+    } else if (defaultPaymentMethodId && !isPayPalDefault) {
+      const defaultMethod = paymentMethods.find((pm) => pm.id === defaultPaymentMethodId)
+      if (defaultMethod) {
+        if (defaultMethod.type === "card") {
+          const brand = defaultMethod.card.brand.charAt(0).toUpperCase() + defaultMethod.card.brand.slice(1)
+          return `${brand} •••• ${defaultMethod.card.last4}`
+        } else if (defaultMethod.type === "link") {
+          return `Link (${defaultMethod.link?.email || "Stripe"})`
+        }
+        return "Stripe Payment Method"
+      }
+    }
+    return null
+  }
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -224,6 +243,8 @@ export default function BillingClientPage() {
     )
   }
 
+  const defaultMethodDisplay = getDefaultPaymentMethodDisplay()
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
@@ -245,19 +266,19 @@ export default function BillingClientPage() {
         </div>
 
         {/* Default Payment Method Indicator */}
-        {(isPayPalDefault || defaultPaymentMethodId) && (
+        {defaultMethodDisplay && (
           <Card className="mb-6 border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
             <CardContent className="p-4">
               <div className="flex items-center space-x-2">
                 <CheckCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 <div>
                   <p className="font-medium text-blue-900 dark:text-blue-100">
-                    Default Payment Method: {isPayPalDefault ? `PayPal (${paypalEmail})` : "Stripe Payment Method"}
+                    Default Payment Method: {defaultMethodDisplay}
                   </p>
                   <p className="text-sm text-blue-700 dark:text-blue-300">
                     {isPayPalDefault
                       ? "PayPal will be used for all payments by default"
-                      : "Your selected Stripe payment method will be used by default"}
+                      : "This payment method will be used for all payments by default"}
                   </p>
                 </div>
               </div>
