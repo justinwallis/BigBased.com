@@ -94,7 +94,7 @@ export async function getOrCreateStripeCustomer() {
 
     const user = userData.user
 
-    // Get user profile (which now includes stripe_customer_id)
+    // Get user profile
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("*")
@@ -109,12 +109,16 @@ export async function getOrCreateStripeCustomer() {
       }
     }
 
-    // If stripe customer already exists, return it
-    if (profile.stripe_customer_id) {
+    // Store Stripe customer ID in social_links JSON field instead
+    // This bypasses the schema cache issue with stripe_customer_id column
+    const socialLinks = profile.social_links || {}
+
+    // If stripe customer already exists in social_links, return it
+    if (socialLinks.stripe_customer_id) {
       return {
         success: true,
-        customerId: profile.stripe_customer_id,
-        debug: { existingCustomer: profile.stripe_customer_id },
+        customerId: socialLinks.stripe_customer_id,
+        debug: { existingCustomer: socialLinks.stripe_customer_id },
       }
     }
 
@@ -132,11 +136,17 @@ export async function getOrCreateStripeCustomer() {
       }
     }
 
-    // Update profile with stripe customer ID
+    // Update social_links with stripe customer ID
+    const updatedSocialLinks = {
+      ...socialLinks,
+      stripe_customer_id: customerResult.customerId,
+    }
+
+    // Update profile with stripe customer ID in social_links
     const { error: updateError } = await supabase
       .from("profiles")
       .update({
-        stripe_customer_id: customerResult.customerId,
+        social_links: updatedSocialLinks,
         updated_at: new Date().toISOString(),
       })
       .eq("id", user.id)
