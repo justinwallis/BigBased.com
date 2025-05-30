@@ -8,8 +8,8 @@ export async function debugUserProfile() {
     "Checking environment variables...",
     "Testing regular Supabase client...",
     "Testing profiles table...",
-    "Testing billing_customers table with service role...",
-    "Testing billing_customers table with regular client...",
+    "Testing stripe_billing table with service role...",
+    "Testing stripe_billing table with regular client...",
   ]
   const errors: string[] = []
 
@@ -57,10 +57,10 @@ export async function debugUserProfile() {
       error: profileError,
     }
 
-    // Test billing_customers table with service role
+    // Test stripe_billing table with service role
     const supabaseServiceRole = createClient(true)
     const { data: billingDataService, error: billingErrorService } = await supabaseServiceRole
-      .from("billing_customers")
+      .from("stripe_billing")
       .select("*")
       .limit(1)
 
@@ -71,9 +71,9 @@ export async function debugUserProfile() {
       count: billingDataService?.length || 0,
     }
 
-    // Test billing_customers table with regular client
+    // Test stripe_billing table with regular client
     const { data: billingData, error: billingError } = await supabase
-      .from("billing_customers")
+      .from("stripe_billing")
       .select("*")
       .eq("user_id", userData?.user?.id || "")
       .single()
@@ -118,7 +118,7 @@ export async function testStripeCustomerCreation() {
     "Getting user data...",
     "Testing direct table insert...",
     "Testing getOrCreateStripeCustomer...",
-    "Verifying billing_customers table...",
+    "Verifying stripe_billing table...",
   ]
   const errors: string[] = []
 
@@ -148,7 +148,7 @@ export async function testStripeCustomerCreation() {
     const testCustomerId = `cus_test_${Date.now()}`
 
     const { data: directInsert, error: directInsertError } = await supabaseServiceRole
-      .from("billing_customers")
+      .from("stripe_billing")
       .insert({
         user_id: userData.user.id,
         stripe_customer_id: testCustomerId,
@@ -165,16 +165,16 @@ export async function testStripeCustomerCreation() {
 
     // Clean up test data if successful
     if (directInsert) {
-      await supabaseServiceRole.from("billing_customers").delete().eq("id", directInsert.id)
+      await supabaseServiceRole.from("stripe_billing").delete().eq("id", directInsert.id)
     }
 
     // Test the actual function
     const { getOrCreateStripeCustomer } = await import("@/app/actions/stripe-actions")
     const result = await getOrCreateStripeCustomer()
 
-    // Verify billing_customers table after the operation
+    // Verify stripe_billing table after the operation
     const { data: billingCustomer, error: billingError } = await supabase
-      .from("billing_customers")
+      .from("stripe_billing")
       .select("*")
       .eq("user_id", userData.user.id)
       .single()
