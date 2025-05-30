@@ -3,14 +3,17 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2, CreditCard, AlertCircle, ArrowLeft } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { StripeProvider } from "@/components/stripe-provider"
 import { AddPaymentMethod } from "@/components/add-payment-method"
 import { PaymentMethodCard } from "@/components/payment-method-card"
+import { PayPalPayment } from "@/components/paypal-payment"
 import { getOrCreateStripeCustomer, getCustomerPaymentMethods, createSetupIntent } from "@/app/actions/stripe-actions"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useRouter } from "next/navigation"
+import { useTheme } from "next-themes"
 
 export default function BillingClientPage() {
   const { toast } = useToast()
@@ -19,6 +22,7 @@ export default function BillingClientPage() {
   const [paymentMethods, setPaymentMethods] = useState<any[]>([])
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const { theme } = useTheme()
 
   const router = useRouter()
 
@@ -63,6 +67,14 @@ export default function BillingClientPage() {
     loadBillingData()
   }
 
+  const handlePayPalSuccess = (details: any) => {
+    console.log("PayPal payment successful:", details)
+    toast({
+      title: "PayPal Payment Successful",
+      description: `Payment ID: ${details.id}`,
+    })
+  }
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -97,7 +109,12 @@ export default function BillingClientPage() {
         {/* Header with navigation and theme toggle */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" onClick={() => router.back()} className="flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.back()}
+              className="flex items-center space-x-2 dark:text-white"
+            >
               <ArrowLeft className="h-4 w-4" />
               <span>Back</span>
             </Button>
@@ -106,18 +123,19 @@ export default function BillingClientPage() {
           <ThemeToggle />
         </div>
 
-        <Card className="dark:bg-gray-800 dark:border-gray-700">
+        {/* Payment Methods Management */}
+        <Card className="dark:bg-gray-800 dark:border-gray-700 mb-8">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2 dark:text-white">
               <CreditCard className="h-5 w-5" />
-              <span>Payment Methods</span>
+              <span>Saved Payment Methods</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             {paymentMethods.length === 0 ? (
-              <p className="text-muted-foreground mb-4">No payment methods added yet.</p>
+              <p className="text-muted-foreground dark:text-gray-300 mb-4">No payment methods saved yet.</p>
             ) : (
-              <div className="space-y-4 mb-6">
+              <div className="space-y-4">
                 {paymentMethods.map((pm) => (
                   <PaymentMethodCard
                     key={pm.id}
@@ -128,12 +146,61 @@ export default function BillingClientPage() {
                 ))}
               </div>
             )}
+          </CardContent>
+        </Card>
 
+        {/* Add Payment Methods */}
+        <Tabs defaultValue="stripe" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 dark:bg-gray-800">
+            <TabsTrigger value="stripe" className="dark:text-white">
+              Cards & Digital Wallets
+            </TabsTrigger>
+            <TabsTrigger value="paypal" className="dark:text-white">
+              PayPal
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="stripe" className="mt-6">
             {clientSecret && (
-              <StripeProvider clientSecret={clientSecret}>
+              <StripeProvider clientSecret={clientSecret} appearance={{ theme: theme === "dark" ? "night" : "stripe" }}>
                 <AddPaymentMethod clientSecret={clientSecret} onSuccess={handlePaymentMethodUpdate} />
               </StripeProvider>
             )}
+          </TabsContent>
+
+          <TabsContent value="paypal" className="mt-6">
+            <PayPalPayment amount={0} onSuccess={handlePayPalSuccess} />
+            <p className="text-sm text-muted-foreground dark:text-gray-400 mt-4">
+              PayPal payments are processed separately and don't require saving payment methods.
+            </p>
+          </TabsContent>
+        </Tabs>
+
+        {/* Payment Methods Info */}
+        <Card className="mt-8 dark:bg-gray-800 dark:border-gray-700">
+          <CardHeader>
+            <CardTitle className="dark:text-white">Supported Payment Methods</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-6 dark:text-gray-300">
+              <div>
+                <h3 className="font-medium mb-2 dark:text-white">Cards & Digital Wallets</h3>
+                <ul className="space-y-1 text-sm">
+                  <li>• Credit & Debit Cards (Visa, Mastercard, Amex)</li>
+                  <li>• Apple Pay (Safari on iOS/macOS)</li>
+                  <li>• Google Pay (Chrome)</li>
+                  <li>• Link by Stripe (Save for faster checkout)</li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-medium mb-2 dark:text-white">Alternative Methods</h3>
+                <ul className="space-y-1 text-sm">
+                  <li>• PayPal</li>
+                  <li>• Bank transfers (coming soon)</li>
+                  <li>• Cryptocurrency (coming soon)</li>
+                </ul>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

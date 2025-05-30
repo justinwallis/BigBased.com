@@ -39,7 +39,7 @@ export async function createSetupIntent(customerId: string) {
     const stripe = getStripe()
     const setupIntent = await stripe.setupIntents.create({
       customer: customerId,
-      payment_method_types: ["card"],
+      payment_method_types: ["card", "us_bank_account", "link"], // Added Link support
       usage: "off_session",
       metadata: {
         source: "bigbased_billing",
@@ -49,6 +49,29 @@ export async function createSetupIntent(customerId: string) {
   } catch (error) {
     console.error("Error creating setup intent:", error)
     return { success: false, error: "Failed to create setup intent" }
+  }
+}
+
+export async function createPaymentIntent(customerId: string, amount: number, currency = "usd") {
+  try {
+    const stripe = getStripe()
+    const paymentIntent = await stripe.paymentIntents.create({
+      customer: customerId,
+      amount: amount * 100, // Convert to cents
+      currency,
+      payment_method_types: ["card", "link"],
+      automatic_payment_methods: {
+        enabled: true,
+        allow_redirects: "never",
+      },
+      metadata: {
+        source: "bigbased_billing",
+      },
+    })
+    return { success: true, clientSecret: paymentIntent.client_secret }
+  } catch (error) {
+    console.error("Error creating payment intent:", error)
+    return { success: false, error: "Failed to create payment intent" }
   }
 }
 
