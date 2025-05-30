@@ -94,31 +94,29 @@ export async function getOrCreateStripeCustomer() {
 
     const user = userData.user
 
-    // Try to get profile with direct table query
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
+    // Check if billing customer already exists
+    const { data: billingCustomer, error: billingError } = await supabase
+      .from("billing_customers")
       .select("*")
-      .eq("id", user.id)
+      .eq("user_id", user.id)
       .single()
 
-    if (profileError && profileError.code !== "PGRST116") {
-      console.error("Error fetching profile:", profileError)
+    // If billing customer exists, return the stripe customer ID
+    if (billingCustomer && !billingError) {
       return {
-        success: false,
-        error: "Failed to access user profile",
-        debug: { profileError },
+        success: true,
+        customerId: billingCustomer.stripe_customer_id,
+        debug: { existingCustomer: billingCustomer },
       }
     }
 
-    // If profile exists and has a stripe_customer_id, return it
-    if (profile?.stripe_customer_id) {
-      return { success: true, customerId: profile.stripe_customer_id }
-    }
+    // Get user profile for name
+    const { data: profile } = await supabase.from("profiles").select("full_name, email").eq("id", user.id).single()
 
     // Create new Stripe customer
     const customerResult = await createCustomer(
       user.email!,
-      user.user_metadata?.full_name || user.user_metadata?.name || profile?.full_name || user.email,
+      profile?.full_name || user.user_metadata?.full_name || user.user_metadata?.name || user.email,
     )
 
     if (!customerResult.success) {
@@ -129,30 +127,31 @@ export async function getOrCreateStripeCustomer() {
       }
     }
 
-    // Update profile with customer ID using direct table update
-    const { data: updatedProfile, error: updateError } = await supabase
-      .from("profiles")
-      .update({
+    // Save billing customer to new table
+    const { data: newBillingCustomer, error: insertError } = await supabase
+      .from("billing_customers")
+      .insert({
+        user_id: user.id,
         stripe_customer_id: customerResult.customerId,
+        created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
-      .eq("id", user.id)
       .select()
       .single()
 
-    if (updateError) {
-      console.error("Error saving Stripe customer ID:", updateError)
+    if (insertError) {
+      console.error("Error saving billing customer:", insertError)
       return {
         success: false,
         error: "Failed to save customer information",
-        debug: { updateError, customerId: customerResult.customerId },
+        debug: { insertError, customerId: customerResult.customerId },
       }
     }
 
     return {
       success: true,
       customerId: customerResult.customerId,
-      debug: { profileUpdated: updatedProfile },
+      debug: { newCustomer: newBillingCustomer },
     }
   } catch (error: any) {
     console.error("Error in getOrCreateStripeCustomer:", error)

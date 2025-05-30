@@ -54,42 +54,23 @@ export async function debugUserProfile() {
       }
     }
 
-    steps.push("Testing direct table operations...")
+    steps.push("Testing billing_customers table...")
 
-    // Test direct table operations for stripe_customer_id
-    let directTableTest: any = { success: false, error: null }
-
-    if (userData?.user) {
-      const { data: stripeTest, error: stripeError } = await supabase
-        .from("profiles")
-        .select("stripe_customer_id")
-        .eq("id", userData.user.id)
-        .single()
-
-      directTableTest = {
-        success: !stripeError,
-        data: stripeTest,
-        error: stripeError,
-      }
-    }
-
-    steps.push("Testing stripe_customer_id column access...")
-
-    // Test stripe_customer_id column specifically
-    let stripeColumnTest: any = { success: false, error: null }
+    // Test billing_customers table access
+    let billingTableTest: any = { success: false, error: null }
 
     if (userData?.user) {
-      const { data: stripeTest, error: stripeError } = await supabase
-        .from("profiles")
-        .select("id, stripe_customer_id")
-        .eq("id", userData.user.id)
+      const { data: billingData, error: billingError } = await supabase
+        .from("billing_customers")
+        .select("*")
+        .eq("user_id", userData.user.id)
         .single()
 
-      stripeColumnTest = {
-        success: !stripeError,
-        data: stripeTest,
-        error: stripeError,
-        hasStripeCustomerId: !!stripeTest?.stripe_customer_id,
+      billingTableTest = {
+        success: !billingError || billingError.code === "PGRST116", // PGRST116 means no rows found, which is OK
+        data: billingData,
+        error: billingError,
+        hasStripeCustomer: !!billingData?.stripe_customer_id,
       }
     }
 
@@ -100,8 +81,7 @@ export async function debugUserProfile() {
       envVars,
       regularClient,
       profileData,
-      directTableTest,
-      stripeColumnTest, // Add this new test
+      billingTableTest,
     }
   } catch (error: any) {
     errors.push(`Unexpected error: ${error.message}`)
@@ -141,12 +121,25 @@ export async function testStripeCustomerCreation() {
     // Test the main function
     const result = await getOrCreateStripeCustomer()
 
+    steps.push("Verifying billing_customers table...")
+
+    // Verify the billing customer was created
+    const { data: billingCustomer, error: billingError } = await supabase
+      .from("billing_customers")
+      .select("*")
+      .eq("user_id", userData.user.id)
+      .single()
+
     return {
       timestamp,
       steps,
       errors,
       user,
       result,
+      verification: {
+        billingCustomer,
+        billingError,
+      },
     }
   } catch (error: any) {
     errors.push(`Unexpected error: ${error.message}`)
