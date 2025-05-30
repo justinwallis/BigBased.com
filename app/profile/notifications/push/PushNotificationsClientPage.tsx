@@ -128,6 +128,7 @@ export default function PushNotificationsClientPage() {
   const [activeTab, setActiveTab] = useState("preferences")
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(true)
   const [showDisableDialog, setShowDisableDialog] = useState(false)
+  const [isDisablingInDialog, setIsDisablingInDialog] = useState(false)
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -298,7 +299,8 @@ export default function PushNotificationsClientPage() {
 
   const disableNotifications = async () => {
     try {
-      setPushStatus((prev) => ({ ...prev, loading: true, error: null }))
+      setIsDisablingInDialog(true)
+      setPushStatus((prev) => ({ ...prev, error: null }))
 
       // Try to disable OneSignal if available
       if (window.OneSignal) {
@@ -360,6 +362,8 @@ export default function PushNotificationsClientPage() {
         description: "There was an issue disabling notifications. Please try again.",
         variant: "destructive",
       })
+    } finally {
+      setIsDisablingInDialog(false)
     }
   }
 
@@ -1150,7 +1154,7 @@ export default function PushNotificationsClientPage() {
           open={showDisableDialog}
           onOpenChange={setShowDisableDialog}
           onConfirmDisable={disableNotifications}
-          isDisabling={pushStatus.loading}
+          isDisabling={isDisablingInDialog}
         />
       </div>
     </div>
