@@ -36,6 +36,7 @@ import {
   savePushPreferences,
   getNotificationPreferences,
 } from "@/app/actions/notification-actions"
+import NotificationDisableDialog from "@/components/notification-disable-dialog"
 
 interface NotificationPreferences {
   // Security & Account
@@ -126,6 +127,7 @@ export default function PushNotificationsClientPage() {
   const [isSendingTest, setIsSendingTest] = useState(false)
   const [activeTab, setActiveTab] = useState("preferences")
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(true)
+  const [showDisableDialog, setShowDisableDialog] = useState(false)
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -342,8 +344,7 @@ export default function PushNotificationsClientPage() {
 
       toast({
         title: "Push notifications disabled",
-        description:
-          "You will no longer receive notifications on this device. To fully disable, you may need to block notifications in your browser settings.",
+        description: "You have been unsubscribed from Big Based notifications.",
         variant: "default",
       })
     } catch (error) {
@@ -604,7 +605,12 @@ export default function PushNotificationsClientPage() {
                   </Button>
                 )}
                 {pushStatus.subscribed && (
-                  <Button onClick={disableNotifications} disabled={pushStatus.loading} variant="outline" size="sm">
+                  <Button
+                    onClick={() => setShowDisableDialog(true)}
+                    disabled={pushStatus.loading}
+                    variant="outline"
+                    size="sm"
+                  >
                     {pushStatus.loading ? "Disabling..." : "Disable"}
                   </Button>
                 )}
@@ -1139,6 +1145,13 @@ export default function PushNotificationsClientPage() {
             </Card>
           </TabsContent>
         </Tabs>
+        {/* Disable Dialog */}
+        <NotificationDisableDialog
+          open={showDisableDialog}
+          onOpenChange={setShowDisableDialog}
+          onConfirmDisable={disableNotifications}
+          isDisabling={pushStatus.loading}
+        />
       </div>
     </div>
   )
