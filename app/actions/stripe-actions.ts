@@ -81,8 +81,8 @@ export async function setDefaultPaymentMethod(customerId: string, paymentMethodI
 
 export async function getOrCreateStripeCustomer() {
   try {
-    // Use regular client first
-    const supabase = createClient(false)
+    // Use service role client to bypass any RLS issues
+    const supabase = createClient(true)
 
     const { data: userData, error: userError } = await supabase.auth.getUser()
 
@@ -92,35 +92,30 @@ export async function getOrCreateStripeCustomer() {
 
     const user = userData.user
 
-    // Check if profile exists and has stripe_customer_id
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("*") // Select all columns to avoid schema cache issues
-      .eq("id", user.id)
-      .single()
+    // Use raw SQL to check for stripe_customer_id to bypass schema cache issues
+    const { data: profileData, error: profileError } = await supabase.rpc("get_profile_stripe_customer", {
+      user_id: user.id,
+    })
 
     if (profileError) {
-      console.error("Error fetching profile:", profileError)
+      console.error("Error fetching profile stripe customer:", profileError)
 
-      // Try with service role client as fallback
-      const serviceClient = createClient(true)
-      const { data: serviceProfile, error: serviceProfileError } = await serviceClient
+      // Fallback: try to get the profile data directly
+      const { data: fallbackProfile, error: fallbackError } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, username, full_name")
         .eq("id", user.id)
         .single()
 
-      if (serviceProfileError) {
-        console.error("Service role profile fetch error:", serviceProfileError)
+      if (fallbackError) {
+        console.error("Fallback profile fetch error:", fallbackError)
         return { success: false, error: "Failed to access user profile" }
       }
+    }
 
-      // Use service profile if available
-      if (serviceProfile?.stripe_customer_id) {
-        return { success: true, customerId: serviceProfile.stripe_customer_id }
-      }
-    } else if (profile?.stripe_customer_id) {
-      return { success: true, customerId: profile.stripe_customer_id }
+    // If we have a stripe customer ID, return it
+    if (profileData && profileData.length > 0 && profileData[0]?.stripe_customer_id) {
+      return { success: true, customerId: profileData[0].stripe_customer_id }
     }
 
     // Create new Stripe customer
@@ -133,26 +128,15 @@ export async function getOrCreateStripeCustomer() {
       return customerResult
     }
 
-    // Try to update with regular client first
-    const { error: updateError } = await supabase
-      .from("profiles")
-      .update({ stripe_customer_id: customerResult.customerId })
-      .eq("id", user.id)
+    // Use raw SQL to update stripe_customer_id to bypass schema cache issues
+    const { error: updateError } = await supabase.rpc("update_profile_stripe_customer", {
+      user_id: user.id,
+      customer_id: customerResult.customerId,
+    })
 
     if (updateError) {
-      console.error("Regular client update error:", updateError)
-
-      // Try with service role client as fallback
-      const serviceClient = createClient(true)
-      const { error: serviceUpdateError } = await serviceClient
-        .from("profiles")
-        .update({ stripe_customer_id: customerResult.customerId })
-        .eq("id", user.id)
-
-      if (serviceUpdateError) {
-        console.error("Service role update error:", serviceUpdateError)
-        return { success: false, error: "Failed to save customer information" }
-      }
+      console.error("Error saving Stripe customer ID:", updateError)
+      return { success: false, error: "Failed to save customer information" }
     }
 
     return { success: true, customerId: customerResult.customerId }
