@@ -31,6 +31,7 @@ import {
 import Link from "next/link"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/hooks/use-toast"
+import { sendTestNotification } from "@/app/actions/notification-actions"
 
 interface NotificationPreferences {
   // Security & Account
@@ -152,17 +153,17 @@ export default function PushNotificationsClientPage() {
       // Check current permission
       const permission = Notification.permission
 
-      // Check if OneSignal is available and get subscription status
+      // Check if we have an active subscription
       let subscribed = false
-      if (window.OneSignal) {
+      if (permission === "granted") {
         try {
-          await window.OneSignal.init({
-            appId: process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID || "",
-            allowLocalhostAsSecureOrigin: true,
-          })
-          subscribed = (await window.OneSignal.getNotificationPermission()) === "granted"
+          if ("serviceWorker" in navigator) {
+            const registration = await navigator.serviceWorker.ready
+            const subscription = await registration.pushManager.getSubscription()
+            subscribed = !!subscription
+          }
         } catch (error) {
-          console.error("OneSignal initialization error:", error)
+          console.warn("Could not check subscription status:", error)
         }
       }
 
@@ -187,20 +188,34 @@ export default function PushNotificationsClientPage() {
     try {
       setPushStatus((prev) => ({ ...prev, loading: true, error: null }))
 
+      // Check if OneSignal is available
       if (!window.OneSignal) {
-        throw new Error("OneSignal is not available")
+        // Try to initialize OneSignal if not already done
+        if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID) {
+          const OneSignal = (await import("react-onesignal")).default
+          await OneSignal.init({
+            appId: process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID,
+            allowLocalhostAsSecureOrigin: true,
+          })
+        } else {
+          throw new Error("OneSignal is not available or app ID is missing")
+        }
       }
 
-      // Request permission through OneSignal
-      const permission = await window.OneSignal.requestPermission()
+      // Request permission using browser API first
+      const permission = await Notification.requestPermission()
 
-      if (permission) {
-        // Get the user ID for backend storage
-        const userId = await window.OneSignal.getUserId()
-        console.log("OneSignal User ID:", userId)
-
-        // TODO: Save the OneSignal user ID to your backend
-        // await saveOneSignalUserId(user.id, userId)
+      if (permission === "granted") {
+        // Now try to get OneSignal subscription
+        if (window.OneSignal) {
+          try {
+            await window.OneSignal.setSubscription(true)
+            const userId = await window.OneSignal.getUserId()
+            console.log("OneSignal User ID:", userId)
+          } catch (onesignalError) {
+            console.warn("OneSignal subscription failed, but browser permission granted:", onesignalError)
+          }
+        }
 
         setPushStatus((prev) => ({
           ...prev,
@@ -210,25 +225,36 @@ export default function PushNotificationsClientPage() {
         }))
 
         toast({
-          title: "Push notifications enabled",
+          title: "Push notifications enabled! 🎉",
           description: "You will now receive notifications on this device.",
-          variant: "success",
         })
       } else {
         setPushStatus((prev) => ({
           ...prev,
-          permission: "denied",
+          permission: permission,
           subscribed: false,
           loading: false,
         }))
+
+        toast({
+          title: "Permission denied",
+          description: "Push notifications were not enabled. You can enable them in your browser settings.",
+          variant: "destructive",
+        })
       }
     } catch (error) {
       console.error("Error requesting notification permission:", error)
       setPushStatus((prev) => ({
         ...prev,
         loading: false,
-        error: "Failed to request notification permission",
+        error: "Failed to request notification permission. Please try refreshing the page.",
       }))
+
+      toast({
+        title: "Error enabling notifications",
+        description: "Please try refreshing the page and try again.",
+        variant: "destructive",
+      })
     }
   }
 
@@ -349,32 +375,44 @@ export default function PushNotificationsClientPage() {
     }
   }
 
-  const sendTestNotification = async () => {
+  const handleSendTestNotification = async () => {
     setIsSendingTest(true)
 
     try {
-      // Check if OneSignal is available and user is subscribed
-      if (!window.OneSignal || !pushStatus.subscribed) {
+      // Check if notifications are enabled
+      if (!pushStatus.subscribed && Notification.permission !== "granted") {
         throw new Error("Push notifications are not enabled")
       }
 
       toast({
         title: "Sending test notification...",
         description: "You should receive a notification shortly.",
-        variant: "default",
       })
 
-      // Call the server action to send the test notification
-      const result = await sendTestNotification()
-
-      if (result.success) {
-        toast({
-          title: "Test notification sent successfully! 🎉",
-          description: "Check your notifications. If you don't see it, make sure your browser allows notifications.",
-          variant: "success",
+      // Send a simple browser notification first
+      if (Notification.permission === "granted") {
+        new Notification("Big Based Test Notification", {
+          body: "This is a test notification from Big Based! 🎉",
+          icon: "/favicon-32x32.png",
+          badge: "/favicon-16x16.png",
         })
-      } else {
-        throw new Error(result.error || "Failed to send test notification")
+      }
+
+      // Also try to send via server action if available
+      try {
+        const result = await sendTestNotification()
+        if (result.success) {
+          toast({
+            title: "Test notification sent successfully! 🎉",
+            description: "Check your notifications. If you don't see it, make sure your browser allows notifications.",
+          })
+        }
+      } catch (serverError) {
+        console.warn("Server notification failed, but browser notification sent:", serverError)
+        toast({
+          title: "Test notification sent! 🎉",
+          description: "A browser notification was sent. Server notifications may not be configured yet.",
+        })
       }
     } catch (error) {
       console.error("Error sending test notification:", error)
@@ -953,7 +991,7 @@ export default function PushNotificationsClientPage() {
 
                 <div className="flex flex-col items-center justify-center py-8 space-y-4">
                   <Button
-                    onClick={sendTestNotification}
+                    onClick={handleSendTestNotification}
                     disabled={isSendingTest || !pushStatus.subscribed}
                     size="lg"
                     className="w-full max-w-xs"

@@ -161,8 +161,8 @@ export default function EmailNotificationsClientPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container py-10 px-4">
-        <div className="flex items-center justify-between mb-8">
+      <div className="container mx-auto max-w-4xl py-10 px-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">
             <Link href="/profile?tab=notifications">
               <Button variant="outline" size="sm" className="flex items-center space-x-2">
