@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Loader2 } from "lucide-react"
+import { Loader2, ExternalLink } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 declare global {
@@ -17,7 +17,7 @@ interface PayPalPaymentProps {
   currency?: string
   onSuccess: (details: any) => void
   onError?: (error: any) => void
-  mode?: "payment" | "setup" // Add mode prop
+  mode?: "payment" | "setup"
 }
 
 export function PayPalPayment({
@@ -151,8 +151,62 @@ export function PayPalPayment({
         throw new Error(data.error || "Failed to start PayPal connection")
       }
 
-      // Redirect to PayPal for authentication
-      window.location.href = data.authUrl
+      // Open PayPal in a new popup window
+      const popup = window.open(
+        data.authUrl,
+        "paypal-connect",
+        "width=600,height=700,scrollbars=yes,resizable=yes,status=yes,location=yes",
+      )
+
+      if (!popup) {
+        // Fallback to same tab if popup was blocked
+        window.location.href = data.authUrl
+        return
+      }
+
+      // Listen for the popup to close or for a message from the callback
+      const checkClosed = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(checkClosed)
+          setIsConnecting(false)
+          // Refresh the page to show updated payment methods
+          window.location.reload()
+        }
+      }, 1000)
+
+      // Listen for messages from the popup
+      const messageListener = (event: MessageEvent) => {
+        if (event.origin !== window.location.origin) return
+
+        if (event.data.type === "PAYPAL_CONNECT_SUCCESS") {
+          clearInterval(checkClosed)
+          popup.close()
+          setIsConnecting(false)
+          onSuccess(event.data.details)
+          window.removeEventListener("message", messageListener)
+        } else if (event.data.type === "PAYPAL_CONNECT_ERROR") {
+          clearInterval(checkClosed)
+          popup.close()
+          setIsConnecting(false)
+          onError?.(event.data.error)
+          window.removeEventListener("message", messageListener)
+        }
+      }
+
+      window.addEventListener("message", messageListener)
+
+      // Cleanup after 5 minutes
+      setTimeout(
+        () => {
+          clearInterval(checkClosed)
+          window.removeEventListener("message", messageListener)
+          if (!popup.closed) {
+            popup.close()
+          }
+          setIsConnecting(false)
+        },
+        5 * 60 * 1000,
+      )
     } catch (error: any) {
       console.error("Error connecting PayPal:", error)
       toast({
@@ -200,12 +254,19 @@ export function PayPalPayment({
           {isConnecting ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.26-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81.515.588.848 1.26 1.012 2.107z" />
-            </svg>
+            <>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.26-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81.515.588.848 1.26 1.012 2.107z" />
+              </svg>
+              <ExternalLink className="h-4 w-4" />
+            </>
           )}
           {isConnecting ? "Connecting..." : "Connect PayPal Account"}
         </Button>
+
+        <p className="text-xs text-muted-foreground dark:text-gray-400 text-center">
+          Opens in a new window for secure authentication
+        </p>
       </div>
     )
   }
