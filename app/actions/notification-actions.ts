@@ -19,7 +19,7 @@ interface NotificationPreferences {
 /**
  * Save a user's OneSignal ID to the database
  */
-export async function saveOneSignalUserId(oneSignalUserId: string) {
+export async function saveOneSignalUserId(oneSignalUserId: string | null) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {

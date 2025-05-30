@@ -183,11 +183,28 @@ export default function PushNotificationsClientPage() {
         return
       }
 
-      // Get the current permission - this is the most reliable indicator
+      // Get the current permission
       const permission = Notification.permission
 
-      // If permission is granted, we consider notifications enabled
-      const subscribed = permission === "granted"
+      // Check if we have an active subscription
+      let subscribed = false
+
+      if (permission === "granted") {
+        // Check OneSignal subscription status
+        if (window.OneSignal) {
+          try {
+            const isSubscribed = await window.OneSignal.isSubscribed()
+            subscribed = isSubscribed
+          } catch (error) {
+            console.warn("Failed to check OneSignal subscription:", error)
+            // Fallback to just checking permission
+            subscribed = true
+          }
+        } else {
+          // If OneSignal isn't available, just check permission
+          subscribed = true
+        }
+      }
 
       setPushStatus({
         supported: true,
@@ -285,6 +302,7 @@ export default function PushNotificationsClientPage() {
       if (window.OneSignal) {
         try {
           await window.OneSignal.setSubscription(false)
+          console.log("OneSignal subscription disabled")
         } catch (error) {
           console.warn("Failed to disable OneSignal subscription:", error)
         }
@@ -297,29 +315,37 @@ export default function PushNotificationsClientPage() {
           const subscription = await registration.pushManager.getSubscription()
           if (subscription) {
             await subscription.unsubscribe()
+            console.log("Push manager subscription unsubscribed")
           }
         }
       } catch (error) {
         console.warn("Failed to unsubscribe from push manager:", error)
       }
 
-      // Update UI state
-      setPushStatus((prev) => ({
-        ...prev,
-        subscribed: false,
+      // Clear OneSignal user ID from database
+      try {
+        const { saveOneSignalUserId } = await import("@/app/actions/notification-actions")
+        await saveOneSignalUserId(null)
+        console.log("OneSignal user ID cleared from database")
+      } catch (error) {
+        console.warn("Failed to clear OneSignal user ID:", error)
+      }
+
+      // Update UI state immediately
+      setPushStatus({
+        supported: true,
+        permission: Notification.permission, // Keep the actual browser permission
+        subscribed: false, // But mark as not subscribed in our app
         loading: false,
-      }))
+        error: null,
+      })
 
       toast({
         title: "Push notifications disabled",
-        description: "You will no longer receive notifications on this device.",
+        description:
+          "You will no longer receive notifications on this device. To fully disable, you may need to block notifications in your browser settings.",
         variant: "default",
       })
-
-      // Force reload to ensure browser state is updated
-      setTimeout(() => {
-        window.location.reload()
-      }, 1500)
     } catch (error) {
       console.error("Error disabling notifications:", error)
       setPushStatus((prev) => ({
@@ -327,6 +353,12 @@ export default function PushNotificationsClientPage() {
         loading: false,
         error: "Failed to disable notifications",
       }))
+
+      toast({
+        title: "Error disabling notifications",
+        description: "There was an issue disabling notifications. Please try again.",
+        variant: "destructive",
+      })
     }
   }
 
