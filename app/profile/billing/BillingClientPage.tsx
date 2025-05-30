@@ -502,18 +502,30 @@ export default function BillingClientPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-2 gap-6 dark:text-gray-300">
+            <div className="grid md:grid-cols-3 gap-6 dark:text-gray-300">
               <div>
                 <h3 className="font-medium mb-2 dark:text-white">Cards & Digital Wallets</h3>
                 <ul className="space-y-1 text-sm">
                   <li>• Credit & Debit Cards (Visa, Mastercard, Amex)</li>
                   <li>• Apple Pay (Safari on iOS/macOS)</li>
-                  <li>• Google Pay (Chrome)</li>
+                  <li>• Google Pay (Chrome on Android/Desktop)</li>
                   <li>• Link by Stripe (Save for faster checkout)</li>
-                  <li>• US Bank Accounts (ACH)</li>
                 </ul>
                 <p className="text-xs text-muted-foreground dark:text-gray-400 mt-2">
-                  These payment methods are saved securely and can be reused.
+                  These payment methods are saved securely and can be reused. Digital wallets require compatible
+                  browsers.
+                </p>
+              </div>
+              <div>
+                <h3 className="font-medium mb-2 dark:text-white">Bank Accounts</h3>
+                <ul className="space-y-1 text-sm">
+                  <li>• US Bank Accounts (ACH Direct Debit)</li>
+                  <li>• Requires account verification</li>
+                  <li>• 3-5 business day processing</li>
+                  <li>• Lower processing fees</li>
+                </ul>
+                <p className="text-xs text-muted-foreground dark:text-gray-400 mt-2">
+                  Bank accounts require micro-deposit verification and are US-only.
                 </p>
               </div>
               <div>
