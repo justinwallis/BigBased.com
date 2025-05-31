@@ -3,6 +3,27 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 
+export interface Profile {
+  id: string
+  username: string
+  full_name: string
+  bio: string
+  avatar_url: string
+  banner_url: string
+  banner_position: string
+  social_links: any
+  personal_info: any
+  contact_info: any
+  location: any
+  work_education: any
+  personal_details: any
+  interests: any
+  life_events: any
+  quotes: any
+  created_at: string
+  updated_at: string
+}
+
 export async function createProfile(profileData: {
   id: string
   email: string
@@ -24,6 +45,18 @@ export async function createProfile(profileData: {
       username,
       full_name: profileData.full_name || "",
       avatar_url: avatarUrl,
+      bio: "",
+      banner_url: "",
+      banner_position: "center",
+      social_links: {},
+      personal_info: {},
+      contact_info: {},
+      location: {},
+      work_education: {},
+      personal_details: {},
+      interests: {},
+      life_events: {},
+      quotes: {},
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
@@ -103,10 +136,19 @@ export async function checkUsernameAvailability(
 export async function updateCurrentUserProfile(profileData: {
   username?: string
   full_name?: string
+  bio?: string
   avatar_url?: string
   banner_url?: string
-  bio?: string
+  banner_position?: string
   social_links?: any
+  personal_info?: any
+  contact_info?: any
+  location?: any
+  work_education?: any
+  personal_details?: any
+  interests?: any
+  life_events?: any
+  quotes?: any
 }): Promise<{ success: boolean; error?: string; debug?: any }> {
   try {
     const supabase = createServerSupabaseClient()
@@ -144,18 +186,31 @@ export async function updateCurrentUserProfile(profileData: {
     // First, check if profile exists
     const { data: existingProfile } = await supabase.from("profiles").select("id").eq("id", user.id).single()
 
+    const updateData = {
+      username: profileData.username,
+      full_name: profileData.full_name,
+      bio: profileData.bio,
+      avatar_url: profileData.avatar_url,
+      banner_url: profileData.banner_url,
+      banner_position: profileData.banner_position,
+      social_links: profileData.social_links,
+      personal_info: profileData.personal_info,
+      contact_info: profileData.contact_info,
+      location: profileData.location,
+      work_education: profileData.work_education,
+      personal_details: profileData.personal_details,
+      interests: profileData.interests,
+      life_events: profileData.life_events,
+      quotes: profileData.quotes,
+      updated_at: new Date().toISOString(),
+    }
+
     if (!existingProfile) {
       // Create profile if it doesn't exist
       const { error: insertError } = await supabase.from("profiles").insert({
         id: user.id,
-        username: profileData.username || user.email?.split("@")[0] || "",
-        full_name: profileData.full_name || "",
-        avatar_url: profileData.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
-        banner_url: profileData.banner_url || "",
-        bio: profileData.bio || "",
-        social_links: profileData.social_links || {},
+        ...updateData,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       })
 
       if (insertError) {
@@ -164,18 +219,7 @@ export async function updateCurrentUserProfile(profileData: {
       }
     } else {
       // Update existing profile
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update({
-          username: profileData.username,
-          full_name: profileData.full_name,
-          avatar_url: profileData.avatar_url,
-          banner_url: profileData.banner_url,
-          bio: profileData.bio,
-          social_links: profileData.social_links,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", user.id)
+      const { error: updateError } = await supabase.from("profiles").update(updateData).eq("id", user.id)
 
       if (updateError) {
         console.error("Error updating profile:", updateError)
@@ -200,10 +244,19 @@ export async function updateUserProfile(
   profileData: {
     username?: string
     full_name?: string
+    bio?: string
     avatar_url?: string
     banner_url?: string
-    bio?: string
+    banner_position?: string
     social_links?: any
+    personal_info?: any
+    contact_info?: any
+    location?: any
+    work_education?: any
+    personal_details?: any
+    interests?: any
+    life_events?: any
+    quotes?: any
   },
 ): Promise<{ success: boolean; error?: string }> {
   try {
@@ -214,10 +267,19 @@ export async function updateUserProfile(
       .update({
         username: profileData.username,
         full_name: profileData.full_name,
+        bio: profileData.bio,
         avatar_url: profileData.avatar_url,
         banner_url: profileData.banner_url,
-        bio: profileData.bio,
+        banner_position: profileData.banner_position,
         social_links: profileData.social_links,
+        personal_info: profileData.personal_info,
+        contact_info: profileData.contact_info,
+        location: profileData.location,
+        work_education: profileData.work_education,
+        personal_details: profileData.personal_details,
+        interests: profileData.interests,
+        life_events: profileData.life_events,
+        quotes: profileData.quotes,
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)
@@ -238,7 +300,7 @@ export async function updateUserProfile(
   }
 }
 
-export async function getUserProfile(userId: string): Promise<any> {
+export async function getUserProfile(userId: string): Promise<Profile | null> {
   try {
     const supabase = createServerSupabaseClient()
 
@@ -256,7 +318,7 @@ export async function getUserProfile(userId: string): Promise<any> {
   }
 }
 
-export async function getCurrentUserProfile(): Promise<any> {
+export async function getCurrentUserProfile(): Promise<Profile | null> {
   try {
     const supabase = createServerSupabaseClient()
 
@@ -287,10 +349,19 @@ export async function getCurrentUserProfile(): Promise<any> {
           id: user.id,
           username: user.email?.split("@")[0] || "",
           full_name: "",
+          bio: "",
           avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
           banner_url: "",
-          bio: "",
+          banner_position: "center",
           social_links: {},
+          personal_info: {},
+          contact_info: {},
+          location: {},
+          work_education: {},
+          personal_details: {},
+          interests: {},
+          life_events: {},
+          quotes: {},
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         }
@@ -316,7 +387,7 @@ export async function getCurrentUserProfile(): Promise<any> {
   }
 }
 
-export async function getUserProfileByUsername(username: string): Promise<any> {
+export async function getUserProfileByUsername(username: string): Promise<Profile | null> {
   try {
     const supabase = createServerSupabaseClient()
 
