@@ -8,10 +8,8 @@ import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/theme-provider"
 
-export default function MenuBar() {
-  const { user: authUser }
-  from
-  useAuth()
+export function TopNavigationBar() {
+  const { user: authUser } = useAuth()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { theme } = useTheme()
 
@@ -85,3 +83,5 @@ export default function MenuBar() {
     </div>
   )
 }
+
+export default TopNavigationBar

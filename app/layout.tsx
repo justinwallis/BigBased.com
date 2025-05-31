@@ -1,19 +1,35 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { baseMetadata, viewportConfig } from "./metadata-config"
-import ClientRootLayout from "./client-layout"
+import { Inter } from "next/font/google"
+import "./globals.css"
+import { Toaster } from "@/components/ui/toast"
+import { ThemeProvider } from "@/components/theme-provider"
+import { AuthProvider } from "@/contexts/auth-context"
+import ClientLayout from "./client-layout"
 
-export const metadata: Metadata = baseMetadata
+const inter = Inter({ subsets: ["latin"] })
 
-export const viewport = viewportConfig
+export const metadata: Metadata = {
+  title: "Big Based",
+  description: "Connect with friends and join our community",
+    generator: 'v0.dev'
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  return <ClientRootLayout>{children}</ClientRootLayout>
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <AuthProvider>
+            <ClientLayout>{children}</ClientLayout>
+            <Toaster />
+          </AuthProvider>
+        </ThemeProvider>
+      </body>
+    </html>
+  )
 }
-
-
-import './globals.css'
