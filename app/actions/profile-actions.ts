@@ -140,10 +140,12 @@ export async function updateCurrentUserProfile(profileData: {
   avatar_url?: string
   banner_url?: string
   banner_position?: string
+  website?: string
+  location?: string
   social_links?: any
+  // Remove the fields that don't exist in DB
   personal_info?: any
   contact_info?: any
-  location?: any
   work_education?: any
   personal_details?: any
   interests?: any
@@ -186,6 +188,7 @@ export async function updateCurrentUserProfile(profileData: {
     // First, check if profile exists
     const { data: existingProfile } = await supabase.from("profiles").select("id").eq("id", user.id).single()
 
+    // Only update fields that exist in the database
     const updateData = {
       username: profileData.username,
       full_name: profileData.full_name,
@@ -193,15 +196,9 @@ export async function updateCurrentUserProfile(profileData: {
       avatar_url: profileData.avatar_url,
       banner_url: profileData.banner_url,
       banner_position: profileData.banner_position,
-      social_links: profileData.social_links,
-      personal_info: profileData.personal_info,
-      contact_info: profileData.contact_info,
+      website: profileData.website,
       location: profileData.location,
-      work_education: profileData.work_education,
-      personal_details: profileData.personal_details,
-      interests: profileData.interests,
-      life_events: profileData.life_events,
-      quotes: profileData.quotes,
+      social_links: profileData.social_links,
       updated_at: new Date().toISOString(),
     }
 
@@ -209,6 +206,7 @@ export async function updateCurrentUserProfile(profileData: {
       // Create profile if it doesn't exist
       const { error: insertError } = await supabase.from("profiles").insert({
         id: user.id,
+        email: user.email,
         ...updateData,
         created_at: new Date().toISOString(),
       })
@@ -347,21 +345,16 @@ export async function getCurrentUserProfile(): Promise<Profile | null> {
         console.log("Profile doesn't exist, creating default profile")
         const defaultProfile = {
           id: user.id,
+          email: user.email,
           username: user.email?.split("@")[0] || "",
           full_name: "",
           bio: "",
           avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
           banner_url: "",
           banner_position: "center",
+          website: "",
+          location: "",
           social_links: {},
-          personal_info: {},
-          contact_info: {},
-          location: {},
-          work_education: {},
-          personal_details: {},
-          interests: {},
-          life_events: {},
-          quotes: {},
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         }

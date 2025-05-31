@@ -25,7 +25,7 @@ import Link from "next/link"
 import { ProfileCompletionWizard } from "@/components/profile-completion-wizard"
 import { SocialMediaPreview } from "@/components/social-media-preview"
 import { ProfileInsights } from "@/components/profile-insights"
-import { ExpandedProfileForm } from "@/components/expanded-profile-form"
+// import { ExpandedProfileForm } from "@/components/expanded-profile-form"
 
 interface ProfileData {
   id: string
@@ -53,7 +53,7 @@ export default function ProfileClientPage() {
   // Get initial tab from URL parameter
   const initialTab = searchParams.get("tab") || "general"
 
-  // Form states
+  // Form states - simplified to match actual database schema
   const [formData, setFormData] = useState({
     username: "",
     full_name: "",
@@ -61,6 +61,8 @@ export default function ProfileClientPage() {
     avatar_url: "",
     banner_url: "",
     banner_position: "center",
+    website: "",
+    location: "",
     social_links: {
       x: "",
       linkedin: "",
@@ -74,55 +76,6 @@ export default function ProfileClientPage() {
       facebook: "",
       therealworld: "",
       rumble: "",
-    },
-    // New expanded fields
-    personal_info: {
-      first_name: "",
-      last_name: "",
-      middle_name: "",
-      nickname: "",
-      birthday: "",
-      gender: "",
-      languages: [],
-    },
-    contact_info: {
-      phone: "",
-      alt_email: "",
-    },
-    location: {
-      current_city: "",
-      current_state: "",
-      current_country: "",
-      zip_code: "",
-      hometown_city: "",
-      hometown_state: "",
-    },
-    work_education: {
-      work_experience: [],
-      education: [],
-      skills: [],
-    },
-    personal_details: {
-      relationship_status: "",
-      looking_for: "",
-      political_views: "",
-      religious_views: "",
-      about_me: "",
-      family: [],
-    },
-    interests: {
-      music: [],
-      movies: [],
-      books: [],
-      sports: [],
-      games: [],
-      other: [],
-    },
-    life_events: {
-      events: [],
-    },
-    quotes: {
-      favorite_quotes: [],
     },
   })
 
@@ -200,55 +153,9 @@ export default function ProfileClientPage() {
           avatar_url: profileData.avatar_url || "",
           banner_url: profileData.banner_url || "",
           banner_position: profileData.banner_position || "center",
+          website: profileData.website || "",
+          location: profileData.location || "",
           social_links: { ...defaultSocialLinks, ...(profileData.social_links || {}) },
-          personal_info: profileData.personal_info || {
-            first_name: "",
-            last_name: "",
-            middle_name: "",
-            nickname: "",
-            birthday: "",
-            gender: "",
-            languages: [],
-          },
-          contact_info: profileData.contact_info || {
-            phone: "",
-            alt_email: "",
-          },
-          location: profileData.location || {
-            current_city: "",
-            current_state: "",
-            current_country: "",
-            zip_code: "",
-            hometown_city: "",
-            hometown_state: "",
-          },
-          work_education: profileData.work_education || {
-            work_experience: [],
-            education: [],
-            skills: [],
-          },
-          personal_details: profileData.personal_details || {
-            relationship_status: "",
-            looking_for: "",
-            political_views: "",
-            religious_views: "",
-            about_me: "",
-            family: [],
-          },
-          interests: profileData.interests || {
-            music: [],
-            movies: [],
-            books: [],
-            sports: [],
-            games: [],
-            other: [],
-          },
-          life_events: profileData.life_events || {
-            events: [],
-          },
-          quotes: profileData.quotes || {
-            favorite_quotes: [],
-          },
         })
         setUsernameStatus((prev) => ({
           ...prev,
@@ -265,6 +172,8 @@ export default function ProfileClientPage() {
           avatar_url: "",
           banner_url: "",
           banner_position: "center",
+          website: "",
+          location: "",
           social_links: {
             x: "",
             linkedin: "",
@@ -278,54 +187,6 @@ export default function ProfileClientPage() {
             facebook: "",
             therealworld: "",
             rumble: "",
-          },
-          personal_info: {
-            first_name: "",
-            last_name: "",
-            middle_name: "",
-            nickname: "",
-            birthday: "",
-            gender: "",
-            languages: [],
-          },
-          contact_info: {
-            phone: "",
-            alt_email: "",
-          },
-          location: {
-            current_city: "",
-            current_state: "",
-            current_country: "",
-            zip_code: "",
-            hometown_city: "",
-            hometown_state: "",
-          },
-          work_education: {
-            work_experience: [],
-            education: [],
-            skills: [],
-          },
-          personal_details: {
-            relationship_status: "",
-            looking_for: "",
-            political_views: "",
-            religious_views: "",
-            about_me: "",
-            family: [],
-          },
-          interests: {
-            music: [],
-            movies: [],
-            books: [],
-            sports: [],
-            games: [],
-            other: [],
-          },
-          life_events: {
-            events: [],
-          },
-          quotes: {
-            favorite_quotes: [],
           },
         })
         setUsernameStatus((prev) => ({
@@ -736,6 +597,28 @@ export default function ProfileClientPage() {
                         />
                       </div>
 
+                      {/* Website */}
+                      <div className="space-y-2">
+                        <Label htmlFor="website">Website</Label>
+                        <Input
+                          id="website"
+                          value={formData.website}
+                          onChange={(e) => handleInputChange("website", e.target.value)}
+                          placeholder="https://yourwebsite.com"
+                        />
+                      </div>
+
+                      {/* Location */}
+                      <div className="space-y-2">
+                        <Label htmlFor="location">Location</Label>
+                        <Input
+                          id="location"
+                          value={formData.location}
+                          onChange={(e) => handleInputChange("location", e.target.value)}
+                          placeholder="City, State/Country"
+                        />
+                      </div>
+
                       {/* Social Links */}
                       <div className="space-y-4">
                         <h4 className="font-medium">Social Links</h4>
@@ -983,13 +866,13 @@ export default function ProfileClientPage() {
                 </Card>
 
                 {/* Extended Profile Form */}
-                <ExpandedProfileForm
+                {/* <ExpandedProfileForm
                   formData={formData}
                   onInputChange={handleInputChange}
                   onSave={handleSaveProfile}
                   isSaving={isSaving}
                   saveMessage={saveMessage}
-                />
+                /> */}
               </div>
 
               {/* Sidebar */}
