@@ -87,6 +87,28 @@ export default function ProfileClientPage() {
       therealworld: "",
       rumble: "",
     },
+    personal_info: {
+      nickname: "",
+      birthday: "",
+      gender: "",
+      languages: [],
+    },
+    location: {
+      current_city: "",
+      current_state: "",
+      current_country: "",
+      hometown: "",
+    },
+    contact_info: {
+      phone: "",
+      alt_email: "",
+    },
+    personal_details: {
+      about_me: "",
+      relationship_status: "",
+      political_views: "",
+      religious_views: "",
+    },
   })
 
   const [usernameStatus, setUsernameStatus] = useState<{
@@ -164,6 +186,28 @@ export default function ProfileClientPage() {
           banner_url: profileData.banner_url || "",
           banner_position: profileData.banner_position || "center",
           social_links: { ...defaultSocialLinks, ...(profileData.social_links || {}) },
+          personal_info: {
+            nickname: profileData.personal_info?.nickname || "",
+            birthday: profileData.personal_info?.birthday || "",
+            gender: profileData.personal_info?.gender || "",
+            languages: profileData.personal_info?.languages || [],
+          },
+          location: {
+            current_city: profileData.location?.current_city || "",
+            current_state: profileData.location?.current_state || "",
+            current_country: profileData.location?.current_country || "",
+            hometown: profileData.location?.hometown || "",
+          },
+          contact_info: {
+            phone: profileData.contact_info?.phone || "",
+            alt_email: profileData.contact_info?.alt_email || "",
+          },
+          personal_details: {
+            about_me: profileData.personal_details?.about_me || "",
+            relationship_status: profileData.personal_details?.relationship_status || "",
+            political_views: profileData.personal_details?.political_views || "",
+            religious_views: profileData.personal_details?.religious_views || "",
+          },
         })
         setUsernameStatus((prev) => ({
           ...prev,
@@ -193,6 +237,28 @@ export default function ProfileClientPage() {
             facebook: "",
             therealworld: "",
             rumble: "",
+          },
+          personal_info: {
+            nickname: "",
+            birthday: "",
+            gender: "",
+            languages: [],
+          },
+          location: {
+            current_city: "",
+            current_state: "",
+            current_country: "",
+            hometown: "",
+          },
+          contact_info: {
+            phone: "",
+            alt_email: "",
+          },
+          personal_details: {
+            about_me: "",
+            relationship_status: "",
+            political_views: "",
+            religious_views: "",
           },
         })
         setUsernameStatus((prev) => ({
@@ -816,6 +882,293 @@ export default function ProfileClientPage() {
                                 onChange={(e) => handleSocialLinkChange("website", e.target.value)}
                                 placeholder="https://yoursite.com"
                               />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Extended Profile Information */}
+                        <Separator className="my-6" />
+
+                        {/* Personal Information Section */}
+                        <div className="space-y-4">
+                          <Label className="text-base font-medium">Personal Information</Label>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="nickname">Nickname</Label>
+                              <Input
+                                id="nickname"
+                                value={formData.personal_info?.nickname || ""}
+                                onChange={(e) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    personal_info: { ...prev.personal_info, nickname: e.target.value },
+                                  }))
+                                }
+                                placeholder="What do friends call you?"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="birthday">Birthday</Label>
+                              <Input
+                                id="birthday"
+                                type="date"
+                                value={formData.personal_info?.birthday || ""}
+                                onChange={(e) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    personal_info: { ...prev.personal_info, birthday: e.target.value },
+                                  }))
+                                }
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="gender">Gender</Label>
+                              <select
+                                id="gender"
+                                value={formData.personal_info?.gender || ""}
+                                onChange={(e) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    personal_info: { ...prev.personal_info, gender: e.target.value },
+                                  }))
+                                }
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                <option value="">Select gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="non-binary">Non-binary</option>
+                                <option value="prefer-not-to-say">Prefer not to say</option>
+                              </select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="languages">Languages (comma separated)</Label>
+                              <Input
+                                id="languages"
+                                value={formData.personal_info?.languages?.join(", ") || ""}
+                                onChange={(e) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    personal_info: {
+                                      ...prev.personal_info,
+                                      languages: e.target.value
+                                        .split(",")
+                                        .map((lang) => lang.trim())
+                                        .filter(Boolean),
+                                    },
+                                  }))
+                                }
+                                placeholder="English, Spanish, French"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Location Information */}
+                        <div className="space-y-4">
+                          <Label className="text-base font-medium">Location</Label>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="current_city">Current City</Label>
+                              <Input
+                                id="current_city"
+                                value={formData.location?.current_city || ""}
+                                onChange={(e) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    location: { ...prev.location, current_city: e.target.value },
+                                  }))
+                                }
+                                placeholder="New York"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="current_state">Current State/Province</Label>
+                              <Input
+                                id="current_state"
+                                value={formData.location?.current_state || ""}
+                                onChange={(e) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    location: { ...prev.location, current_state: e.target.value },
+                                  }))
+                                }
+                                placeholder="NY"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="current_country">Current Country</Label>
+                              <Input
+                                id="current_country"
+                                value={formData.location?.current_country || ""}
+                                onChange={(e) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    location: { ...prev.location, current_country: e.target.value },
+                                  }))
+                                }
+                                placeholder="United States"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="hometown">Hometown</Label>
+                              <Input
+                                id="hometown"
+                                value={formData.location?.hometown || ""}
+                                onChange={(e) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    location: { ...prev.location, hometown: e.target.value },
+                                  }))
+                                }
+                                placeholder="Where you grew up"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Contact Information */}
+                        <div className="space-y-4">
+                          <Label className="text-base font-medium">Contact Information</Label>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="phone">Phone Number</Label>
+                              <Input
+                                id="phone"
+                                value={formData.contact_info?.phone || ""}
+                                onChange={(e) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    contact_info: { ...prev.contact_info, phone: e.target.value },
+                                  }))
+                                }
+                                placeholder="+1 (555) 123-4567"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="alt_email">Alternative Email</Label>
+                              <Input
+                                id="alt_email"
+                                type="email"
+                                value={formData.contact_info?.alt_email || ""}
+                                onChange={(e) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    contact_info: { ...prev.contact_info, alt_email: e.target.value },
+                                  }))
+                                }
+                                placeholder="alternative@email.com"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Personal Details */}
+                        <div className="space-y-4">
+                          <Label className="text-base font-medium">Personal Details</Label>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="about_me">About Me</Label>
+                            <Textarea
+                              id="about_me"
+                              value={formData.personal_details?.about_me || ""}
+                              onChange={(e) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  personal_details: { ...prev.personal_details, about_me: e.target.value },
+                                }))
+                              }
+                              placeholder="Tell us more about yourself, your interests, goals, and what makes you unique..."
+                              rows={4}
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="relationship_status">Relationship Status</Label>
+                              <select
+                                id="relationship_status"
+                                value={formData.personal_details?.relationship_status || ""}
+                                onChange={(e) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    personal_details: { ...prev.personal_details, relationship_status: e.target.value },
+                                  }))
+                                }
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                <option value="">Select status</option>
+                                <option value="single">Single</option>
+                                <option value="in_relationship">In a relationship</option>
+                                <option value="engaged">Engaged</option>
+                                <option value="married">Married</option>
+                                <option value="divorced">Divorced</option>
+                                <option value="widowed">Widowed</option>
+                                <option value="complicated">It's complicated</option>
+                              </select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="political_views">Political Views</Label>
+                              <select
+                                id="political_views"
+                                value={formData.personal_details?.political_views || ""}
+                                onChange={(e) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    personal_details: { ...prev.personal_details, political_views: e.target.value },
+                                  }))
+                                }
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                <option value="">Select views</option>
+                                <option value="conservative">Conservative</option>
+                                <option value="liberal">Liberal</option>
+                                <option value="libertarian">Libertarian</option>
+                                <option value="moderate">Moderate</option>
+                                <option value="progressive">Progressive</option>
+                                <option value="independent">Independent</option>
+                                <option value="other">Other</option>
+                              </select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="religious_views">Religious Views</Label>
+                              <select
+                                id="religious_views"
+                                value={formData.personal_details?.religious_views || ""}
+                                onChange={(e) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    personal_details: { ...prev.personal_details, religious_views: e.target.value },
+                                  }))
+                                }
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                <option value="">Select views</option>
+                                <option value="christian">Christian</option>
+                                <option value="catholic">Catholic</option>
+                                <option value="protestant">Protestant</option>
+                                <option value="orthodox">Orthodox</option>
+                                <option value="jewish">Jewish</option>
+                                <option value="muslim">Muslim</option>
+                                <option value="hindu">Hindu</option>
+                                <option value="buddhist">Buddhist</option>
+                                <option value="spiritual">Spiritual</option>
+                                <option value="agnostic">Agnostic</option>
+                                <option value="atheist">Atheist</option>
+                                <option value="other">Other</option>
+                              </select>
                             </div>
                           </div>
                         </div>
