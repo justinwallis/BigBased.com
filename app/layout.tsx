@@ -1,10 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
-import "./globals.css"
-import { Toaster } from "@/components/toaster"
-import { ThemeProvider } from "@/components/theme-provider"
-import { AuthProvider } from "@/contexts/auth-context"
 import { baseMetadata, viewportConfig } from "./metadata-config"
+import ClientRootLayout from "./client-layout"
 
 export const metadata: Metadata = baseMetadata
 
@@ -15,16 +12,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <body>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <AuthProvider>
-            {children}
-            <Toaster />
-          </AuthProvider>
-        </ThemeProvider>
-      </body>
-    </html>
-  )
+  return <ClientRootLayout>{children}</ClientRootLayout>
 }
+
+
+import './globals.css'

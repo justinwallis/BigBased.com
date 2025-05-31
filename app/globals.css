@@ -994,3 +994,12 @@ html:not(.dark) {
 .page-fade-wrapper:not([data-pathname="/"]) {
   transition-duration: 1.2s;
 }
+
+/* Add this to your globals.css or a similar global stylesheet */
+.sticky {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100; /* Ensure it's above other content */
+}
