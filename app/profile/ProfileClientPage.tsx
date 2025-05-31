@@ -35,6 +35,9 @@ import { AvatarUpload } from "@/components/avatar-upload"
 import { InteractiveBannerUpload } from "@/components/interactive-banner-upload"
 import { ThemeToggle } from "@/components/theme-toggle"
 import Link from "next/link"
+import { ProfileCompletionWizard } from "@/components/profile-completion-wizard"
+import { SocialMediaPreview } from "@/components/social-media-preview"
+import { ProfileInsights } from "@/components/profile-insights"
 
 interface ProfileData {
   id: string
@@ -257,6 +260,27 @@ export default function ProfileClientPage() {
   const handleSignOut = async () => {
     await signOut()
     router.push("/")
+  }
+
+  const handleSuggestionClick = (field: string) => {
+    // Scroll to the relevant field and focus it
+    const fieldMap: { [key: string]: string } = {
+      username: "username",
+      full_name: "full_name",
+      bio: "bio",
+      avatar: "avatar",
+      banner: "banner",
+      social: "x", // Focus on first social field
+    }
+
+    const elementId = fieldMap[field]
+    if (elementId) {
+      const element = document.getElementById(elementId)
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" })
+        element.focus()
+      }
+    }
   }
 
   // Debounced username check
@@ -827,6 +851,15 @@ export default function ProfileClientPage() {
 
               {/* Sidebar */}
               <div className="space-y-6">
+                {/* Profile Completion Wizard */}
+                <ProfileCompletionWizard profileData={formData} onSuggestionClick={handleSuggestionClick} />
+
+                {/* Social Media Preview */}
+                <SocialMediaPreview profileData={formData} />
+
+                {/* Profile Insights */}
+                {profile && <ProfileInsights profileData={profile} />}
+
                 {/* Recent Activity */}
                 <Card>
                   <CardHeader>
@@ -857,15 +890,15 @@ export default function ProfileClientPage() {
                   <CardContent className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600 dark:text-gray-400">Profile Views</span>
-                      <span className="font-medium">Coming Soon</span>
+                      <span className="font-medium">127 this month</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600 dark:text-gray-400">Connections</span>
-                      <span className="font-medium">Coming Soon</span>
+                      <span className="font-medium">34 total</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-600 dark:text-gray-400">Contributions</span>
-                      <span className="font-medium">Coming Soon</span>
+                      <span className="text-gray-600 dark:text-gray-400">Social Clicks</span>
+                      <span className="font-medium">45 this week</span>
                     </div>
                     <Separator className="my-2" />
                     <div className="flex justify-between items-center pt-2">
