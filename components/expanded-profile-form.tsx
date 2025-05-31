@@ -230,7 +230,7 @@ export function ExpandedProfileForm({
                 </Popover>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="gender">Gender</Label>
                   <Select
@@ -243,20 +243,9 @@ export function ExpandedProfileForm({
                     <SelectContent>
                       <SelectItem value="male">Male</SelectItem>
                       <SelectItem value="female">Female</SelectItem>
-                      <SelectItem value="non-binary">Non-binary</SelectItem>
                       <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
-                      <SelectItem value="custom">Custom</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="pronouns">Pronouns</Label>
-                  <Input
-                    id="pronouns"
-                    value={formData.personal_info?.pronouns || ""}
-                    onChange={(e) => handleNestedChange("personal_info", "pronouns", e.target.value)}
-                    placeholder="e.g., he/him, she/her, they/them"
-                  />
                 </div>
               </div>
 
