@@ -125,7 +125,6 @@ export async function updateCurrentUserProfile(profileData: {
   banner_url?: string
   banner_position?: string
   website?: string
-  location?: string
   social_links?: any
   personal_info?: any
   location?: any
@@ -190,7 +189,6 @@ export async function updateCurrentUserProfile(profileData: {
         avatar_url: profileData.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
         banner_url: profileData.banner_url || "",
         website: profileData.website || "",
-        location: profileData.location || "",
         social_links: extendedSocialLinks,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -214,7 +212,6 @@ export async function updateCurrentUserProfile(profileData: {
       if (profileData.avatar_url !== undefined) updateData.avatar_url = profileData.avatar_url
       if (profileData.banner_url !== undefined) updateData.banner_url = profileData.banner_url
       if (profileData.website !== undefined) updateData.website = profileData.website
-      if (profileData.location !== undefined) updateData.location = profileData.location
 
       // Always update social_links with extended data
       updateData.social_links = extendedSocialLinks
