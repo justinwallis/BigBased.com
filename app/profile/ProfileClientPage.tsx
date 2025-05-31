@@ -193,10 +193,10 @@ export default function ProfileClientPage() {
             languages: profileData.personal_info?.languages || [],
           },
           location: {
-            current_city: profileData.location?.current_city || "",
-            current_state: profileData.location?.current_state || "",
-            current_country: profileData.location?.current_country || "",
-            hometown: profileData.location?.hometown || "",
+            current_city: profileData.location_info?.current_city || "",
+            current_state: profileData.location_info?.current_state || "",
+            current_country: profileData.location_info?.current_country || "",
+            hometown: profileData.location_info?.hometown || "",
           },
           contact_info: {
             phone: profileData.contact_info?.phone || "",

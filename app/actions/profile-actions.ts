@@ -11,32 +11,10 @@ export interface Profile {
   bio: string
   avatar_url: string
   banner_url: string
-  banner_position: string
+  banner_position?: string
   website?: string
   location?: string
   social_links: any
-  personal_info?: {
-    nickname?: string
-    birthday?: string
-    gender?: string
-    languages?: string[]
-  }
-  location_info?: {
-    current_city?: string
-    current_state?: string
-    current_country?: string
-    hometown?: string
-  }
-  contact_info?: {
-    phone?: string
-    alt_email?: string
-  }
-  personal_details?: {
-    about_me?: string
-    relationship_status?: string
-    political_views?: string
-    religious_views?: string
-  }
   stripe_customer_id?: string
   created_at: string
   updated_at: string
@@ -150,7 +128,7 @@ export async function updateCurrentUserProfile(profileData: {
   location?: string
   social_links?: any
   personal_info?: any
-  location_info?: any
+  location?: any
   contact_info?: any
   personal_details?: any
 }): Promise<{ success: boolean; error?: string; debug?: any }> {
@@ -188,26 +166,32 @@ export async function updateCurrentUserProfile(profileData: {
     console.log("Updating profile for user:", user.id)
 
     // First, check if profile exists
-    const { data: existingProfile } = await supabase.from("profiles").select("id").eq("id", user.id).single()
+    const { data: existingProfile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
+
+    // Prepare extended data to store in social_links
+    const extendedSocialLinks = {
+      ...(profileData.social_links || {}),
+      // Store extended profile data in the social_links JSON field
+      _extended: {
+        personal_info: profileData.personal_info || {},
+        location_info: profileData.location || {},
+        contact_info: profileData.contact_info || {},
+        personal_details: profileData.personal_details || {},
+      },
+    }
 
     if (!existingProfile) {
       // Create profile if it doesn't exist
       const insertData = {
         id: user.id,
-        email: user.email,
         username: profileData.username || user.email?.split("@")[0] || "",
         full_name: profileData.full_name || "",
         bio: profileData.bio || "",
         avatar_url: profileData.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
         banner_url: profileData.banner_url || "",
-        banner_position: profileData.banner_position || "center",
         website: profileData.website || "",
         location: profileData.location || "",
-        social_links: profileData.social_links || {},
-        personal_info: profileData.personal_info || {},
-        location_info: profileData.location_info || {},
-        contact_info: profileData.contact_info || {},
-        personal_details: profileData.personal_details || {},
+        social_links: extendedSocialLinks,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }
@@ -219,7 +203,7 @@ export async function updateCurrentUserProfile(profileData: {
         return { success: false, error: insertError.message }
       }
     } else {
-      // Update existing profile
+      // Update existing profile - only update fields that exist in the schema
       const updateData: any = {
         updated_at: new Date().toISOString(),
       }
@@ -231,11 +215,9 @@ export async function updateCurrentUserProfile(profileData: {
       if (profileData.banner_url !== undefined) updateData.banner_url = profileData.banner_url
       if (profileData.website !== undefined) updateData.website = profileData.website
       if (profileData.location !== undefined) updateData.location = profileData.location
-      if (profileData.social_links !== undefined) updateData.social_links = profileData.social_links
-      if (profileData.personal_info !== undefined) updateData.personal_info = profileData.personal_info
-      if (profileData.location_info !== undefined) updateData.location_info = profileData.location_info
-      if (profileData.contact_info !== undefined) updateData.contact_info = profileData.contact_info
-      if (profileData.personal_details !== undefined) updateData.personal_details = profileData.personal_details
+
+      // Always update social_links with extended data
+      updateData.social_links = extendedSocialLinks
 
       const { error: updateError } = await supabase.from("profiles").update(updateData).eq("id", user.id)
 
@@ -311,6 +293,19 @@ export async function getUserProfile(userId: string): Promise<any> {
       return null
     }
 
+    // Extract extended data from social_links
+    if (data && data.social_links && data.social_links._extended) {
+      const extended = data.social_links._extended
+      data.personal_info = extended.personal_info || {}
+      data.location_info = extended.location_info || {}
+      data.contact_info = extended.contact_info || {}
+      data.personal_details = extended.personal_details || {}
+
+      // Remove _extended from social_links for clean data
+      const { _extended, ...cleanSocialLinks } = data.social_links
+      data.social_links = cleanSocialLinks
+    }
+
     return data
   } catch (error) {
     console.error("Error in getUserProfile:", error)
@@ -370,6 +365,25 @@ export async function getCurrentUserProfile(): Promise<any> {
       return null
     }
 
+    // Extract extended data from social_links if it exists
+    if (data && data.social_links && data.social_links._extended) {
+      const extended = data.social_links._extended
+      data.personal_info = extended.personal_info || {}
+      data.location_info = extended.location_info || {}
+      data.contact_info = extended.contact_info || {}
+      data.personal_details = extended.personal_details || {}
+
+      // Remove _extended from social_links for clean data
+      const { _extended, ...cleanSocialLinks } = data.social_links
+      data.social_links = cleanSocialLinks
+    } else {
+      // Set default empty objects if no extended data exists
+      data.personal_info = {}
+      data.location_info = {}
+      data.contact_info = {}
+      data.personal_details = {}
+    }
+
     console.log("Profile fetched successfully:", data)
     return data
   } catch (error) {
@@ -387,6 +401,19 @@ export async function getUserProfileByUsername(username: string): Promise<any> {
     if (error) {
       console.error("Error fetching profile by username:", error)
       return null
+    }
+
+    // Extract extended data from social_links
+    if (data && data.social_links && data.social_links._extended) {
+      const extended = data.social_links._extended
+      data.personal_info = extended.personal_info || {}
+      data.location_info = extended.location_info || {}
+      data.contact_info = extended.contact_info || {}
+      data.personal_details = extended.personal_details || {}
+
+      // Remove _extended from social_links for clean data
+      const { _extended, ...cleanSocialLinks } = data.social_links
+      data.social_links = cleanSocialLinks
     }
 
     return data
