@@ -22,7 +22,7 @@ import { useTheme } from "next-themes"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PayPalPayment } from "@/components/paypal-payment"
 import { SUBSCRIPTION_PLANS } from "@/lib/subscription-plans"
-import { getCurrentSubscription, createCheckoutSession } from "@/app/actions/subscription-actions"
+import { getCurrentSubscription, createCheckoutSession, cancelSubscription } from "@/app/actions/subscription-actions"
 
 export default function BillingClientPage() {
   const { toast } = useToast()
@@ -41,9 +41,27 @@ export default function BillingClientPage() {
   const [isDisconnectingPayPal, setIsDisconnectingPayPal] = useState(false)
   const [currentSubscription, setCurrentSubscription] = useState<any>(null)
   const [isCreatingCheckout, setIsCreatingCheckout] = useState<string | null>(null)
+  const [isCancelingSubscription, setIsCancelingSubscription] = useState(false)
 
   const router = useRouter()
   const searchParams = useSearchParams()
+
+  // Check for success message when returning from checkout
+  useEffect(() => {
+    const success = searchParams.get("success")
+
+    if (success === "true") {
+      toast({
+        title: "Subscription Activated",
+        description: "Your subscription has been activated successfully.",
+      })
+
+      // Remove query parameters from URL
+      const url = new URL(window.location.href)
+      url.searchParams.delete("success")
+      window.history.replaceState({}, "", url.toString())
+    }
+  }, [searchParams, toast])
 
   // Check for PayPal connection callback parameters
   useEffect(() => {
@@ -213,7 +231,7 @@ export default function BillingClientPage() {
     try {
       const result = await createCheckoutSession(planId, customerId)
       if (result.success && result.url) {
-        window.location.href = result.url
+        router.push(result.url)
       } else {
         toast({
           title: "Error",
@@ -229,6 +247,39 @@ export default function BillingClientPage() {
       })
     } finally {
       setIsCreatingCheckout(null)
+    }
+  }
+
+  const handleCancelSubscription = async () => {
+    setIsCancelingSubscription(true)
+    try {
+      const result = await cancelSubscription()
+      if (result.success) {
+        toast({
+          title: "Subscription Updated",
+          description: "Your subscription will be canceled at the end of the current billing period.",
+        })
+
+        // Update the local state
+        setCurrentSubscription({
+          ...currentSubscription,
+          cancelAtPeriodEnd: true,
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to cancel subscription",
+          variant: "destructive",
+        })
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      })
+    } finally {
+      setIsCancelingSubscription(false)
     }
   }
 
@@ -321,6 +372,129 @@ export default function BillingClientPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Subscription Plans Section */}
+        <Card className="mb-8 dark:bg-gray-800 dark:border-gray-700">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2 dark:text-white">
+              <CreditCard className="h-5 w-5" />
+              <span>Subscription Plans</span>
+            </CardTitle>
+            <CardDescription className="dark:text-gray-300">
+              {currentSubscription?.planId !== "free"
+                ? `You're currently on the ${currentSubscription?.name || "Unknown"} plan`
+                : "Choose a plan that fits your needs"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-6">
+              {Object.values(SUBSCRIPTION_PLANS)
+                .filter((plan) => plan.id !== "free")
+                .map((plan: any) => {
+                  const isCurrentPlan = currentSubscription?.planId === plan.id
+                  const isCreatingThisPlan = isCreatingCheckout === plan.id
+
+                  return (
+                    <Card
+                      key={plan.id}
+                      className={`relative ${isCurrentPlan ? "border-blue-500 bg-blue-50 dark:bg-blue-950" : "dark:bg-gray-700"}`}
+                    >
+                      <CardHeader>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle className="dark:text-white">{plan.name}</CardTitle>
+                            <div className="flex items-baseline space-x-1 mt-2">
+                              <span className="text-3xl font-bold dark:text-white">${plan.price}</span>
+                              <span className="text-muted-foreground dark:text-gray-400">/{plan.interval}</span>
+                            </div>
+                          </div>
+                          {isCurrentPlan && (
+                            <div className="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                              Current Plan
+                            </div>
+                          )}
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="space-y-2 mb-6">
+                          {plan.features.slice(0, 4).map((feature: string, index: number) => (
+                            <li key={index} className="flex items-center space-x-2 text-sm dark:text-gray-300">
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                          {plan.features.length > 4 && (
+                            <li className="text-sm text-muted-foreground dark:text-gray-400">
+                              +{plan.features.length - 4} more features
+                            </li>
+                          )}
+                        </ul>
+
+                        {isCurrentPlan ? (
+                          <Button
+                            onClick={handleCancelSubscription}
+                            disabled={isCancelingSubscription || currentSubscription?.cancelAtPeriodEnd}
+                            className="w-full"
+                            variant="outline"
+                          >
+                            {isCancelingSubscription ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                Processing...
+                              </>
+                            ) : currentSubscription?.cancelAtPeriodEnd ? (
+                              "Cancels at Period End"
+                            ) : (
+                              "Cancel Subscription"
+                            )}
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={() => handleUpgrade(plan.id)}
+                            disabled={isCreatingThisPlan || !customerId}
+                            className="w-full"
+                          >
+                            {isCreatingThisPlan ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                Processing...
+                              </>
+                            ) : (
+                              `Upgrade to ${plan.name}`
+                            )}
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+            </div>
+
+            {currentSubscription?.planId !== "free" && (
+              <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <h4 className="font-medium dark:text-white mb-2">Current Subscription Details</h4>
+                <div className="grid md:grid-cols-3 gap-4 text-sm dark:text-gray-300">
+                  <div>
+                    <span className="text-muted-foreground dark:text-gray-400">Status:</span>
+                    <div className="font-medium">{currentSubscription?.isActive ? "Active" : "Inactive"}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground dark:text-gray-400">Next Billing:</span>
+                    <div className="font-medium">
+                      {currentSubscription?.currentPeriodEnd
+                        ? new Date(currentSubscription.currentPeriodEnd).toLocaleDateString()
+                        : "N/A"}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground dark:text-gray-400">Auto Renewal:</span>
+                    <div className="font-medium">{currentSubscription?.cancelAtPeriodEnd ? "Disabled" : "Enabled"}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Payment Methods Management */}
         <Card className="dark:bg-gray-800 dark:border-gray-700 mb-8">
@@ -528,112 +702,6 @@ export default function BillingClientPage() {
             </TabsContent>
           </Tabs>
         </div>
-
-        {/* Subscription Plans Section */}
-        <Card className="mt-8 dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 dark:text-white">
-              <CreditCard className="h-5 w-5" />
-              <span>Subscription Plans</span>
-            </CardTitle>
-            <CardDescription className="dark:text-gray-300">
-              {currentSubscription?.planId !== "free"
-                ? `You're currently on the ${currentSubscription?.name || "Unknown"} plan`
-                : "Choose a plan that fits your needs"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-6">
-              {Object.values(SUBSCRIPTION_PLANS)
-                .filter((plan) => plan.id !== "free")
-                .map((plan: any) => {
-                  const isCurrentPlan = currentSubscription?.planId === plan.id
-                  const isCreatingThisPlan = isCreatingCheckout === plan.id
-
-                  return (
-                    <Card
-                      key={plan.id}
-                      className={`relative ${isCurrentPlan ? "border-blue-500 bg-blue-50 dark:bg-blue-950" : "dark:bg-gray-700"}`}
-                    >
-                      <CardHeader>
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle className="dark:text-white">{plan.name}</CardTitle>
-                            <div className="flex items-baseline space-x-1 mt-2">
-                              <span className="text-3xl font-bold dark:text-white">${plan.price}</span>
-                              <span className="text-muted-foreground dark:text-gray-400">/{plan.interval}</span>
-                            </div>
-                          </div>
-                          {isCurrentPlan && (
-                            <div className="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                              Current Plan
-                            </div>
-                          )}
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <ul className="space-y-2 mb-6">
-                          {plan.features.slice(0, 4).map((feature: string, index: number) => (
-                            <li key={index} className="flex items-center space-x-2 text-sm dark:text-gray-300">
-                              <CheckCircle className="h-4 w-4 text-green-500" />
-                              <span>{feature}</span>
-                            </li>
-                          ))}
-                          {plan.features.length > 4 && (
-                            <li className="text-sm text-muted-foreground dark:text-gray-400">
-                              +{plan.features.length - 4} more features
-                            </li>
-                          )}
-                        </ul>
-
-                        <Button
-                          onClick={() => handleUpgrade(plan.id)}
-                          disabled={isCurrentPlan || isCreatingThisPlan || !customerId}
-                          className="w-full"
-                          variant={isCurrentPlan ? "outline" : "default"}
-                        >
-                          {isCreatingThisPlan ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                              Creating Checkout...
-                            </>
-                          ) : isCurrentPlan ? (
-                            "Current Plan"
-                          ) : (
-                            `Upgrade to ${plan.name}`
-                          )}
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  )
-                })}
-            </div>
-
-            {currentSubscription?.planId !== "free" && (
-              <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <h4 className="font-medium dark:text-white mb-2">Current Subscription Details</h4>
-                <div className="grid md:grid-cols-3 gap-4 text-sm dark:text-gray-300">
-                  <div>
-                    <span className="text-muted-foreground dark:text-gray-400">Status:</span>
-                    <div className="font-medium">{currentSubscription?.isActive ? "Active" : "Inactive"}</div>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground dark:text-gray-400">Next Billing:</span>
-                    <div className="font-medium">
-                      {currentSubscription?.currentPeriodEnd
-                        ? new Date(currentSubscription.currentPeriodEnd).toLocaleDateString()
-                        : "N/A"}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground dark:text-gray-400">Auto Renewal:</span>
-                    <div className="font-medium">{currentSubscription?.cancelAtPeriodEnd ? "Disabled" : "Enabled"}</div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
 
         {/* Payment Methods Info */}
         <Card className="mt-8 dark:bg-gray-800 dark:border-gray-700">
