@@ -21,6 +21,8 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useTheme } from "next-themes"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PayPalPayment } from "@/components/paypal-payment"
+import { SUBSCRIPTION_PLANS } from "@/lib/subscription-plans"
+import { getCurrentSubscription, createCheckoutSession } from "@/app/actions/subscription-actions"
 
 export default function BillingClientPage() {
   const { toast } = useToast()
@@ -37,6 +39,8 @@ export default function BillingClientPage() {
   const [isPayPalDefault, setIsPayPalDefault] = useState(false)
   const [isSettingPayPalDefault, setIsSettingPayPalDefault] = useState(false)
   const [isDisconnectingPayPal, setIsDisconnectingPayPal] = useState(false)
+  const [currentSubscription, setCurrentSubscription] = useState<any>(null)
+  const [isCreatingCheckout, setIsCreatingCheckout] = useState<string | null>(null)
 
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -112,6 +116,12 @@ export default function BillingClientPage() {
       const setupIntentResult = await createSetupIntent(customerResult.customerId)
       if (setupIntentResult.success) {
         setClientSecret(setupIntentResult.clientSecret)
+      }
+
+      // Get current subscription
+      const subscriptionResult = await getCurrentSubscription()
+      if (subscriptionResult) {
+        setCurrentSubscription(subscriptionResult)
       }
     } catch (error: any) {
       console.error("Error loading billing data:", error)
@@ -193,6 +203,32 @@ export default function BillingClientPage() {
       })
     } finally {
       setIsDisconnectingPayPal(false)
+    }
+  }
+
+  const handleUpgrade = async (planId: string) => {
+    if (!customerId) return
+
+    setIsCreatingCheckout(planId)
+    try {
+      const result = await createCheckoutSession(planId, customerId)
+      if (result.success && result.url) {
+        window.location.href = result.url
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to create checkout session",
+          variant: "destructive",
+        })
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      })
+    } finally {
+      setIsCreatingCheckout(null)
     }
   }
 
@@ -492,6 +528,112 @@ export default function BillingClientPage() {
             </TabsContent>
           </Tabs>
         </div>
+
+        {/* Subscription Plans Section */}
+        <Card className="mt-8 dark:bg-gray-800 dark:border-gray-700">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2 dark:text-white">
+              <CreditCard className="h-5 w-5" />
+              <span>Subscription Plans</span>
+            </CardTitle>
+            <CardDescription className="dark:text-gray-300">
+              {currentSubscription?.planId !== "free"
+                ? `You're currently on the ${currentSubscription?.name || "Unknown"} plan`
+                : "Choose a plan that fits your needs"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-6">
+              {Object.values(SUBSCRIPTION_PLANS)
+                .filter((plan) => plan.id !== "free")
+                .map((plan: any) => {
+                  const isCurrentPlan = currentSubscription?.planId === plan.id
+                  const isCreatingThisPlan = isCreatingCheckout === plan.id
+
+                  return (
+                    <Card
+                      key={plan.id}
+                      className={`relative ${isCurrentPlan ? "border-blue-500 bg-blue-50 dark:bg-blue-950" : "dark:bg-gray-700"}`}
+                    >
+                      <CardHeader>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle className="dark:text-white">{plan.name}</CardTitle>
+                            <div className="flex items-baseline space-x-1 mt-2">
+                              <span className="text-3xl font-bold dark:text-white">${plan.price}</span>
+                              <span className="text-muted-foreground dark:text-gray-400">/{plan.interval}</span>
+                            </div>
+                          </div>
+                          {isCurrentPlan && (
+                            <div className="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                              Current Plan
+                            </div>
+                          )}
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="space-y-2 mb-6">
+                          {plan.features.slice(0, 4).map((feature: string, index: number) => (
+                            <li key={index} className="flex items-center space-x-2 text-sm dark:text-gray-300">
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                          {plan.features.length > 4 && (
+                            <li className="text-sm text-muted-foreground dark:text-gray-400">
+                              +{plan.features.length - 4} more features
+                            </li>
+                          )}
+                        </ul>
+
+                        <Button
+                          onClick={() => handleUpgrade(plan.id)}
+                          disabled={isCurrentPlan || isCreatingThisPlan || !customerId}
+                          className="w-full"
+                          variant={isCurrentPlan ? "outline" : "default"}
+                        >
+                          {isCreatingThisPlan ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              Creating Checkout...
+                            </>
+                          ) : isCurrentPlan ? (
+                            "Current Plan"
+                          ) : (
+                            `Upgrade to ${plan.name}`
+                          )}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+            </div>
+
+            {currentSubscription?.planId !== "free" && (
+              <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <h4 className="font-medium dark:text-white mb-2">Current Subscription Details</h4>
+                <div className="grid md:grid-cols-3 gap-4 text-sm dark:text-gray-300">
+                  <div>
+                    <span className="text-muted-foreground dark:text-gray-400">Status:</span>
+                    <div className="font-medium">{currentSubscription?.isActive ? "Active" : "Inactive"}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground dark:text-gray-400">Next Billing:</span>
+                    <div className="font-medium">
+                      {currentSubscription?.currentPeriodEnd
+                        ? new Date(currentSubscription.currentPeriodEnd).toLocaleDateString()
+                        : "N/A"}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground dark:text-gray-400">Auto Renewal:</span>
+                    <div className="font-medium">{currentSubscription?.cancelAtPeriodEnd ? "Disabled" : "Enabled"}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Payment Methods Info */}
         <Card className="mt-8 dark:bg-gray-800 dark:border-gray-700">
