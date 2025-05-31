@@ -248,15 +248,41 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
         <div className="container mx-auto px-4">
           <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-4 md:grid-cols-6 lg:w-fit lg:grid-cols-none">
-              <TabsTrigger value="posts">Posts</TabsTrigger>
-              <TabsTrigger value="about">About</TabsTrigger>
-              <TabsTrigger value="photos">Photos</TabsTrigger>
-              <TabsTrigger value="videos">Videos</TabsTrigger>
-              <TabsTrigger value="groups" className="hidden md:inline-flex">
+            <TabsList className="h-10 bg-transparent border-0 p-0 space-x-0">
+              <TabsTrigger
+                value="posts"
+                className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+              >
+                Posts
+              </TabsTrigger>
+              <TabsTrigger
+                value="about"
+                className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+              >
+                About
+              </TabsTrigger>
+              <TabsTrigger
+                value="photos"
+                className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+              >
+                Photos
+              </TabsTrigger>
+              <TabsTrigger
+                value="videos"
+                className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+              >
+                Videos
+              </TabsTrigger>
+              <TabsTrigger
+                value="groups"
+                className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hidden md:flex"
+              >
                 Groups
               </TabsTrigger>
-              <TabsTrigger value="more" className="hidden md:inline-flex">
+              <TabsTrigger
+                value="more"
+                className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hidden lg:flex"
+              >
                 More
               </TabsTrigger>
             </TabsList>
