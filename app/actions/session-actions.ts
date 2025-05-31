@@ -127,35 +127,53 @@ export async function trackSession() {
     // Get location from IP
     const location = await getLocationFromIP(ipAddress)
 
-    // Check if session already exists in Neon
-    const existingSessions = await sql`
-      SELECT * FROM user_sessions 
-      WHERE session_token = ${session.access_token}
-    `
-
-    if (existingSessions.length > 0) {
-      // Update last activity and location
-      await sql`
-        UPDATE user_sessions 
-        SET 
-          last_activity = NOW(),
-          ip_address = ${ipAddress},
-          user_agent = ${userAgent},
-          location = ${location}
+    try {
+      // Check if session already exists in Neon
+      const existingSessions = await sql`
+        SELECT * FROM user_sessions 
         WHERE session_token = ${session.access_token}
       `
-    } else {
-      // Create new session record
-      await sql`
-        INSERT INTO user_sessions (
-          user_id, session_token, ip_address, user_agent, 
-          device_type, browser, os, location, created_at, last_activity, expires_at
-        ) VALUES (
-          ${user.id}, ${session.access_token}, ${ipAddress}, ${userAgent},
-          ${deviceType}, ${browser}, ${os}, ${location}, NOW(), NOW(), 
-          ${new Date(session.expires_at! * 1000).toISOString()}
-        )
-      `
+
+      if (existingSessions.length > 0) {
+        // Update last activity and location
+        await sql`
+          UPDATE user_sessions 
+          SET 
+            last_activity = NOW(),
+            ip_address = ${ipAddress},
+            user_agent = ${userAgent},
+            location = ${location}
+          WHERE session_token = ${session.access_token}
+        `
+      } else {
+        // Create new session record
+        await sql`
+          INSERT INTO user_sessions (
+            user_id, session_token, ip_address, user_agent, 
+            device_type, browser, os, location, created_at, last_activity, expires_at
+          ) VALUES (
+            ${user.id}, ${session.access_token}, ${ipAddress}, ${userAgent},
+            ${deviceType}, ${browser}, ${os}, ${location}, NOW(), NOW(), 
+            ${new Date(session.expires_at! * 1000).toISOString()}
+          )
+        `
+      }
+    } catch (error) {
+      // If there's a duplicate key error, just update the session
+      if (error.code === "23505") {
+        await sql`
+          UPDATE user_sessions 
+          SET 
+            last_activity = NOW(),
+            ip_address = ${ipAddress},
+            user_agent = ${userAgent},
+            location = ${location}
+          WHERE session_token = ${session.access_token}
+        `
+      } else {
+        // Re-throw other errors
+        throw error
+      }
     }
 
     return { success: true }
