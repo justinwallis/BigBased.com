@@ -1,11 +1,25 @@
 "use client"
 
+import { useState } from "react"
 import { notFound } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { CalendarDays, Linkedin, Github, Globe, Instagram, Youtube, Home } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  CalendarDays,
+  Linkedin,
+  Github,
+  Globe,
+  Instagram,
+  Youtube,
+  Home,
+  MapPin,
+  Briefcase,
+  GraduationCap,
+  Volume2,
+  Info,
+} from "lucide-react"
 import type { Profile } from "@/app/actions/profile-actions"
 import { ThemeToggle } from "@/components/theme-toggle"
 import Link from "next/link"
@@ -15,6 +29,8 @@ interface PublicProfilePageClientProps {
 }
 
 export function PublicProfilePageClient({ profile }: PublicProfilePageClientProps) {
+  const [activeTab, setActiveTab] = useState("posts")
+
   if (!profile) {
     notFound()
   }
@@ -131,84 +147,250 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
     { key: "therealworld", icon: TheRealWorldIcon, label: "The Real World" },
   ]
 
+  // Get current location string
+  const getCurrentLocation = () => {
+    if (!profile.location_info) return null
+
+    const parts = [
+      profile.location_info.current_city,
+      profile.location_info.current_state,
+      profile.location_info.current_country,
+    ].filter(Boolean)
+
+    return parts.length > 0 ? parts.join(", ") : null
+  }
+
+  // Generate a short bio from profile data
+  const generateShortBio = () => {
+    const parts = []
+
+    if (profile.personal_details?.religious_views) {
+      parts.push(profile.personal_details.religious_views)
+    }
+
+    if (profile.personal_details?.political_views) {
+      parts.push(profile.personal_details.political_views)
+    }
+
+    if (profile.personal_info?.gender) {
+      parts.push(profile.personal_info.gender)
+    }
+
+    return parts.join(" · ")
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto py-4 space-y-8">
-        {/* Profile Header with Banner */}
-        <Card className="border-0 shadow-lg overflow-hidden">
-          {/* Banner Section */}
-          <div
-            className="h-48 md:h-64 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative"
-            style={{
-              backgroundImage: profile?.banner_url ? `url(${profile.banner_url})` : undefined,
-              backgroundSize: "cover",
-              backgroundPosition: profile?.banner_position || "center",
-            }}
-          >
-            <div className="absolute inset-0 bg-black/20"></div>
-            <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6">
-              <Avatar className="h-20 w-20 md:h-24 md:w-24 border-4 border-white shadow-lg">
-                <AvatarImage
-                  src={profile?.avatar_url || "/placeholder.svg"}
-                  alt={profile?.full_name || profile?.username}
-                />
-                <AvatarFallback className="text-xl md:text-2xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                  {getInitials(profile?.full_name || profile?.username || "U")}
-                </AvatarFallback>
-              </Avatar>
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+      {/* Cover Photo and Profile Info */}
+      <div className="relative">
+        {/* Cover Photo */}
+        <div
+          className="h-80 w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative"
+          style={{
+            backgroundImage: profile?.banner_url ? `url(${profile.banner_url})` : undefined,
+            backgroundSize: "cover",
+            backgroundPosition: profile?.banner_position || "center",
+          }}
+        >
+          <div className="absolute inset-0 bg-black/20"></div>
+        </div>
+
+        {/* Profile Info Overlay */}
+        <div className="container mx-auto px-4">
+          <div className="relative -mt-8 sm:-mt-16 md:-mt-24 lg:-mt-32 flex flex-col md:flex-row items-start md:items-end pb-4">
+            {/* Profile Picture */}
+            <div className="z-10 ml-4 md:ml-8 mb-4 md:mb-6">
+              <div className="relative">
+                <Avatar className="h-32 w-32 md:h-40 md:w-40 border-4 border-white dark:border-gray-900 shadow-lg">
+                  <AvatarImage
+                    src={profile?.avatar_url || "/placeholder.svg"}
+                    alt={profile?.full_name || profile?.username}
+                  />
+                  <AvatarFallback className="text-3xl md:text-4xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                    {getInitials(profile?.full_name || profile?.username || "U")}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+            </div>
+
+            {/* Name and Stats */}
+            <div className="flex-1 ml-4 md:ml-6 mb-4 md:mb-6 text-white drop-shadow-md">
+              <h1 className="text-2xl md:text-4xl font-bold">{profile?.full_name || profile?.username}</h1>
+              <div className="flex items-center mt-1 space-x-2">
+                <p className="text-sm md:text-base opacity-90">@{profile?.username}</p>
+                <Badge className="bg-green-500/80 text-white border-0">Active Member</Badge>
+              </div>
+              <div className="flex items-center mt-2 text-sm md:text-base">
+                <span className="mr-4">0 followers</span>
+                <span>0 following</span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center space-x-2 ml-auto mt-4 md:mt-0 mb-4 md:mb-6">
+              <Link href="/">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-white/90 dark:bg-gray-800/90 flex items-center space-x-2"
+                >
+                  <Home className="h-4 w-4" />
+                  <span>Back to Big Based</span>
+                </Button>
+              </Link>
+              <ThemeToggle variant="button" />
             </div>
           </div>
+        </div>
+      </div>
 
-          <CardHeader className="pt-4 pb-6">
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                    {profile?.full_name || profile?.username}
-                  </CardTitle>
-                  <div className="flex items-center space-x-2">
-                    <Link href="/">
-                      <Button variant="outline" size="sm" className="flex items-center space-x-2">
-                        <Home className="h-4 w-4" />
-                        <span>Back to Big Based</span>
-                      </Button>
-                    </Link>
-                    <ThemeToggle variant="button" />
+      {/* Navigation Tabs */}
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+        <div className="container mx-auto px-4">
+          <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
+            <TabsList className="grid grid-cols-4 md:grid-cols-6 lg:w-fit lg:grid-cols-none">
+              <TabsTrigger value="posts">Posts</TabsTrigger>
+              <TabsTrigger value="about">About</TabsTrigger>
+              <TabsTrigger value="photos">Photos</TabsTrigger>
+              <TabsTrigger value="videos">Videos</TabsTrigger>
+              <TabsTrigger value="groups" className="hidden md:inline-flex">
+                Groups
+              </TabsTrigger>
+              <TabsTrigger value="more" className="hidden md:inline-flex">
+                More
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Sidebar - Intro */}
+          <div className="space-y-6">
+            {/* Intro Card */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h2 className="text-xl font-semibold mb-4">Intro</h2>
+
+              {/* Bio */}
+              {profile.bio && <p className="text-gray-700 dark:text-gray-300 mb-4">{profile.bio}</p>}
+
+              {/* Short Bio Tags */}
+              {generateShortBio() && <p className="text-gray-700 dark:text-gray-300 mb-4">{generateShortBio()}</p>}
+
+              {/* Website Link */}
+              {socialLinks.website && (
+                <a
+                  href={getSocialUrl("website", socialLinks.website)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center text-blue-600 dark:text-blue-400 hover:underline mb-4"
+                >
+                  <Globe className="h-4 w-4 mr-2" />
+                  {socialLinks.website.replace(/^https?:\/\//, "")}
+                </a>
+              )}
+
+              {/* Profile Info List */}
+              <div className="space-y-3">
+                {/* Work */}
+                {profile.work_info?.company && (
+                  <div className="flex items-center">
+                    <Briefcase className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                    <div>
+                      <p className="text-sm">
+                        {profile.work_info.position ? `${profile.work_info.position} at ` : "Works at "}
+                        <span className="font-medium">{profile.work_info.company}</span>
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Education */}
+                {profile.education_info?.school && (
+                  <div className="flex items-center">
+                    <GraduationCap className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                    <div>
+                      <p className="text-sm">
+                        Studied {profile.education_info.degree || "at"}
+                        <span className="font-medium"> {profile.education_info.school}</span>
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Location */}
+                {getCurrentLocation() && (
+                  <div className="flex items-center">
+                    <MapPin className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                    <div>
+                      <p className="text-sm">
+                        Lives in <span className="font-medium">{getCurrentLocation()}</span>
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Hometown */}
+                {profile.location_info?.hometown && (
+                  <div className="flex items-center">
+                    <Home className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                    <div>
+                      <p className="text-sm">
+                        From <span className="font-medium">{profile.location_info.hometown}</span>
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Joined Date */}
+                <div className="flex items-center">
+                  <CalendarDays className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                  <div>
+                    <p className="text-sm">
+                      Joined{" "}
+                      {new Date(profile?.created_at || Date.now()).toLocaleDateString("en-US", {
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </p>
                   </div>
                 </div>
-                <CardDescription className="text-lg text-gray-600 dark:text-gray-400">
-                  @{profile?.username}
-                </CardDescription>
+
+                {/* Nickname */}
+                {profile.personal_info?.nickname && (
+                  <div className="flex items-center">
+                    <Info className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                    <div>
+                      <p className="text-sm">
+                        Nickname: <span className="font-medium">{profile.personal_info.nickname}</span>
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Pronounciation */}
+                {profile.personal_info?.name_pronunciation && (
+                  <div className="flex items-center">
+                    <Volume2 className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                    <div>
+                      <p className="text-sm">
+                        Pronounces name: <span className="font-medium">{profile.personal_info.name_pronunciation}</span>
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                <div className="flex items-center space-x-1">
-                  <CalendarDays className="h-4 w-4" />
-                  <span>
-                    Joined{" "}
-                    {new Date(profile?.created_at || Date.now()).toLocaleDateString("en-US", {
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </span>
-                </div>
-
-                <Badge
-                  variant="secondary"
-                  className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                >
-                  Active Member
-                </Badge>
-              </div>
-
-              {/* Social Links */}
+              {/* Social Media Links */}
               {(socialPlatforms.some((platform) => socialLinks[platform.key]) ||
                 specialPlatforms.some((platform) => socialLinks[platform.key])) && (
-                <div className="flex flex-wrap items-center gap-3 pt-2">
+                <div className="flex flex-wrap items-center gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                   {/* Regular social platforms with links */}
                   {socialPlatforms.map(({ key, icon: Icon, label }) => {
                     const url = getSocialUrl(key, socialLinks[key])
-                    if (!url) return null
+                    if (!url || key === "website") return null // Website already shown above
 
                     return (
                       <a
@@ -216,7 +398,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                         href={url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors"
+                        className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
                         title={label}
                       >
                         <Icon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
@@ -244,7 +426,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                       <button
                         key={key}
                         onClick={handleSpecialClick}
-                        className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors"
+                        className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
                         title={`${label}: ${socialLinks[key]}`}
                       >
                         <Icon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
@@ -254,227 +436,11 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                 </div>
               )}
             </div>
-          </CardHeader>
 
-          {profile?.bio && (
-            <CardContent className="pt-0">
-              <div className="prose prose-gray dark:prose-invert max-w-none">
-                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{profile.bio}</p>
-              </div>
-            </CardContent>
-          )}
-
-          {/* Extended Profile Information */}
-          {profile?.personal_info || profile?.location_info || profile?.contact_info || profile?.personal_details ? (
-            <CardContent className="pt-0 border-t">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Personal Information */}
-                {(profile.personal_info?.nickname ||
-                  profile.personal_info?.birthday ||
-                  profile.personal_info?.gender ||
-                  (profile.personal_info?.languages && profile.personal_info.languages.length > 0)) && (
-                  <div className="space-y-3">
-                    <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Personal Info</h3>
-                    <div className="space-y-2">
-                      {profile.personal_info?.nickname && (
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[80px]">
-                            Nickname:
-                          </span>
-                          <span className="text-sm text-gray-900 dark:text-white">
-                            {profile.personal_info.nickname}
-                          </span>
-                        </div>
-                      )}
-                      {profile.personal_info?.birthday && (
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[80px]">
-                            Birthday:
-                          </span>
-                          <span className="text-sm text-gray-900 dark:text-white">
-                            {new Date(profile.personal_info.birthday).toLocaleDateString("en-US", {
-                              month: "long",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
-                          </span>
-                        </div>
-                      )}
-                      {profile.personal_info?.gender && (
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[80px]">
-                            Gender:
-                          </span>
-                          <span className="text-sm text-gray-900 dark:text-white capitalize">
-                            {profile.personal_info.gender}
-                          </span>
-                        </div>
-                      )}
-                      {profile.personal_info?.languages && profile.personal_info.languages.length > 0 && (
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[80px]">
-                            Languages:
-                          </span>
-                          <span className="text-sm text-gray-900 dark:text-white">
-                            {Array.isArray(profile.personal_info.languages)
-                              ? profile.personal_info.languages.join(", ")
-                              : profile.personal_info.languages}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Location Information */}
-                {(profile.location_info?.current_city ||
-                  profile.location_info?.current_state ||
-                  profile.location_info?.current_country ||
-                  profile.location_info?.hometown) && (
-                  <div className="space-y-3">
-                    <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Location</h3>
-                    <div className="space-y-2">
-                      {(profile.location_info?.current_city ||
-                        profile.location_info?.current_state ||
-                        profile.location_info?.current_country) && (
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[80px]">
-                            Current:
-                          </span>
-                          <span className="text-sm text-gray-900 dark:text-white">
-                            {[
-                              profile.location_info.current_city,
-                              profile.location_info.current_state,
-                              profile.location_info.current_country,
-                            ]
-                              .filter(Boolean)
-                              .join(", ")}
-                          </span>
-                        </div>
-                      )}
-                      {profile.location_info?.hometown && (
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[80px]">
-                            Hometown:
-                          </span>
-                          <span className="text-sm text-gray-900 dark:text-white">
-                            {profile.location_info.hometown}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Contact Information */}
-                {(profile.contact_info?.phone || profile.contact_info?.alt_email) && (
-                  <div className="space-y-3">
-                    <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Contact</h3>
-                    <div className="space-y-2">
-                      {profile.contact_info?.phone && (
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[80px]">
-                            Phone:
-                          </span>
-                          <span className="text-sm text-gray-900 dark:text-white">{profile.contact_info.phone}</span>
-                        </div>
-                      )}
-                      {profile.contact_info?.alt_email && (
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[80px]">
-                            Alt Email:
-                          </span>
-                          <span className="text-sm text-gray-900 dark:text-white">
-                            {profile.contact_info.alt_email}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Personal Details */}
-                {(profile.personal_details?.about_me ||
-                  profile.personal_details?.relationship_status ||
-                  profile.personal_details?.political_views ||
-                  profile.personal_details?.religious_views) && (
-                  <div className="space-y-3 md:col-span-2">
-                    <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Personal Details</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {profile.personal_details?.about_me && (
-                        <div className="md:col-span-2">
-                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 block mb-1">
-                            About Me:
-                          </span>
-                          <p className="text-sm text-gray-900 dark:text-white leading-relaxed">
-                            {profile.personal_details.about_me}
-                          </p>
-                        </div>
-                      )}
-                      {profile.personal_details?.relationship_status && (
-                        <div>
-                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 block mb-1">
-                            Relationship:
-                          </span>
-                          <span className="text-sm text-gray-900 dark:text-white capitalize">
-                            {profile.personal_details.relationship_status.replace(/_/g, " ")}
-                          </span>
-                        </div>
-                      )}
-                      {profile.personal_details?.political_views && (
-                        <div>
-                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 block mb-1">
-                            Political Views:
-                          </span>
-                          <span className="text-sm text-gray-900 dark:text-white capitalize">
-                            {profile.personal_details.political_views}
-                          </span>
-                        </div>
-                      )}
-                      {profile.personal_details?.religious_views && (
-                        <div>
-                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 block mb-1">
-                            Religious Views:
-                          </span>
-                          <span className="text-sm text-gray-900 dark:text-white capitalize">
-                            {profile.personal_details.religious_views}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          ) : null}
-        </Card>
-
-        {/* Profile Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <span>Recent Activity</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  <p>No recent activity to display.</p>
-                  <p className="text-sm mt-2">Check back later for updates!</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Profile Stats</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+            {/* Stats Card */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h2 className="text-xl font-semibold mb-4">Profile Stats</h2>
+              <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600 dark:text-gray-400">Member Since</span>
                   <span className="font-medium">{new Date(profile?.created_at || Date.now()).getFullYear()}</span>
@@ -487,19 +453,243 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   <span className="text-gray-600 dark:text-gray-400">Contributions</span>
                   <span className="font-medium">Coming Soon</span>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+          </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Connect</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-                  <p className="text-sm">Follow and connect with this user!</p>
+          {/* Main Content Area */}
+          <div className="lg:col-span-2">
+            <Tabs defaultValue="posts" value={activeTab} className="w-full">
+              {/* Posts Tab */}
+              <TabsContent value="posts" className="mt-0">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <p>No posts to display yet.</p>
+                    <p className="text-sm mt-2">Check back later for updates!</p>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              </TabsContent>
+
+              {/* About Tab */}
+              <TabsContent value="about" className="mt-0">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 className="text-xl font-semibold mb-4">About</h3>
+                    {profile.personal_details?.about_me ? (
+                      <p className="text-gray-700 dark:text-gray-300">{profile.personal_details.about_me}</p>
+                    ) : (
+                      <p className="text-gray-500 dark:text-gray-400">No additional information provided.</p>
+                    )}
+                  </div>
+
+                  {/* Personal Information */}
+                  {(profile.personal_info?.nickname ||
+                    profile.personal_info?.birthday ||
+                    profile.personal_info?.gender ||
+                    (profile.personal_info?.languages && profile.personal_info.languages.length > 0)) && (
+                    <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                      <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
+                      <div className="space-y-3">
+                        {profile.personal_info?.nickname && (
+                          <div className="flex items-start">
+                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                              Nickname:
+                            </span>
+                            <span className="text-sm text-gray-900 dark:text-white">
+                              {profile.personal_info.nickname}
+                            </span>
+                          </div>
+                        )}
+                        {profile.personal_info?.birthday && (
+                          <div className="flex items-start">
+                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                              Birthday:
+                            </span>
+                            <span className="text-sm text-gray-900 dark:text-white">
+                              {new Date(profile.personal_info.birthday).toLocaleDateString("en-US", {
+                                month: "long",
+                                day: "numeric",
+                                year: "numeric",
+                              })}
+                            </span>
+                          </div>
+                        )}
+                        {profile.personal_info?.gender && (
+                          <div className="flex items-start">
+                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                              Gender:
+                            </span>
+                            <span className="text-sm text-gray-900 dark:text-white capitalize">
+                              {profile.personal_info.gender}
+                            </span>
+                          </div>
+                        )}
+                        {profile.personal_info?.languages && profile.personal_info.languages.length > 0 && (
+                          <div className="flex items-start">
+                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                              Languages:
+                            </span>
+                            <span className="text-sm text-gray-900 dark:text-white">
+                              {Array.isArray(profile.personal_info.languages)
+                                ? profile.personal_info.languages.join(", ")
+                                : profile.personal_info.languages}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Location Information */}
+                  {(profile.location_info?.current_city ||
+                    profile.location_info?.current_state ||
+                    profile.location_info?.current_country ||
+                    profile.location_info?.hometown) && (
+                    <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                      <h3 className="text-lg font-semibold mb-4">Location</h3>
+                      <div className="space-y-3">
+                        {(profile.location_info?.current_city ||
+                          profile.location_info?.current_state ||
+                          profile.location_info?.current_country) && (
+                          <div className="flex items-start">
+                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                              Current:
+                            </span>
+                            <span className="text-sm text-gray-900 dark:text-white">
+                              {[
+                                profile.location_info.current_city,
+                                profile.location_info.current_state,
+                                profile.location_info.current_country,
+                              ]
+                                .filter(Boolean)
+                                .join(", ")}
+                            </span>
+                          </div>
+                        )}
+                        {profile.location_info?.hometown && (
+                          <div className="flex items-start">
+                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                              Hometown:
+                            </span>
+                            <span className="text-sm text-gray-900 dark:text-white">
+                              {profile.location_info.hometown}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Contact Information */}
+                  {(profile.contact_info?.phone || profile.contact_info?.alt_email) && (
+                    <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                      <h3 className="text-lg font-semibold mb-4">Contact</h3>
+                      <div className="space-y-3">
+                        {profile.contact_info?.phone && (
+                          <div className="flex items-start">
+                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                              Phone:
+                            </span>
+                            <span className="text-sm text-gray-900 dark:text-white">{profile.contact_info.phone}</span>
+                          </div>
+                        )}
+                        {profile.contact_info?.alt_email && (
+                          <div className="flex items-start">
+                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                              Alt Email:
+                            </span>
+                            <span className="text-sm text-gray-900 dark:text-white">
+                              {profile.contact_info.alt_email}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Personal Details */}
+                  {(profile.personal_details?.relationship_status ||
+                    profile.personal_details?.political_views ||
+                    profile.personal_details?.religious_views) && (
+                    <div className="p-6">
+                      <h3 className="text-lg font-semibold mb-4">Personal Details</h3>
+                      <div className="space-y-3">
+                        {profile.personal_details?.relationship_status && (
+                          <div className="flex items-start">
+                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                              Relationship:
+                            </span>
+                            <span className="text-sm text-gray-900 dark:text-white capitalize">
+                              {profile.personal_details.relationship_status.replace(/_/g, " ")}
+                            </span>
+                          </div>
+                        )}
+                        {profile.personal_details?.political_views && (
+                          <div className="flex items-start">
+                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                              Political Views:
+                            </span>
+                            <span className="text-sm text-gray-900 dark:text-white capitalize">
+                              {profile.personal_details.political_views}
+                            </span>
+                          </div>
+                        )}
+                        {profile.personal_details?.religious_views && (
+                          <div className="flex items-start">
+                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                              Religious Views:
+                            </span>
+                            <span className="text-sm text-gray-900 dark:text-white capitalize">
+                              {profile.personal_details.religious_views}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+
+              {/* Photos Tab */}
+              <TabsContent value="photos" className="mt-0">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <p>No photos to display yet.</p>
+                    <p className="text-sm mt-2">Photos will appear here when shared.</p>
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* Videos Tab */}
+              <TabsContent value="videos" className="mt-0">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <p>No videos to display yet.</p>
+                    <p className="text-sm mt-2">Videos will appear here when shared.</p>
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* Groups Tab */}
+              <TabsContent value="groups" className="mt-0">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <p>No groups to display yet.</p>
+                    <p className="text-sm mt-2">Groups will appear here when joined.</p>
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* More Tab */}
+              <TabsContent value="more" className="mt-0">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <p>Additional content coming soon.</p>
+                    <p className="text-sm mt-2">Stay tuned for more features!</p>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </div>
