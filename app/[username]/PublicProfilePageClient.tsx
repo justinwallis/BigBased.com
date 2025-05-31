@@ -263,6 +263,184 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               </div>
             </CardContent>
           )}
+
+          {/* Extended Profile Information */}
+          {profile?.social_links?._extended && (
+            <CardContent className="pt-0 border-t">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Personal Information */}
+                {(profile.social_links._extended.personal_info?.nickname ||
+                  profile.social_links._extended.personal_info?.birthday ||
+                  profile.social_links._extended.personal_info?.gender ||
+                  profile.social_links._extended.personal_info?.languages) && (
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Personal Info</h3>
+                    <div className="space-y-2">
+                      {profile.social_links._extended.personal_info?.nickname && (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[80px]">
+                            Nickname:
+                          </span>
+                          <span className="text-sm text-gray-900 dark:text-white">
+                            {profile.social_links._extended.personal_info.nickname}
+                          </span>
+                        </div>
+                      )}
+                      {profile.social_links._extended.personal_info?.birthday && (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[80px]">
+                            Birthday:
+                          </span>
+                          <span className="text-sm text-gray-900 dark:text-white">
+                            {new Date(profile.social_links._extended.personal_info.birthday).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "long",
+                                day: "numeric",
+                                year: "numeric",
+                              },
+                            )}
+                          </span>
+                        </div>
+                      )}
+                      {profile.social_links._extended.personal_info?.gender && (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[80px]">
+                            Gender:
+                          </span>
+                          <span className="text-sm text-gray-900 dark:text-white">
+                            {profile.social_links._extended.personal_info.gender}
+                          </span>
+                        </div>
+                      )}
+                      {profile.social_links._extended.personal_info?.languages && (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[80px]">
+                            Languages:
+                          </span>
+                          <span className="text-sm text-gray-900 dark:text-white">
+                            {profile.social_links._extended.personal_info.languages}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Location Information */}
+                {(profile.social_links._extended.location_info?.current_location ||
+                  profile.social_links._extended.location_info?.hometown) && (
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Location</h3>
+                    <div className="space-y-2">
+                      {profile.social_links._extended.location_info?.current_location && (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[80px]">
+                            Current:
+                          </span>
+                          <span className="text-sm text-gray-900 dark:text-white">
+                            {profile.social_links._extended.location_info.current_location}
+                          </span>
+                        </div>
+                      )}
+                      {profile.social_links._extended.location_info?.hometown && (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[80px]">
+                            Hometown:
+                          </span>
+                          <span className="text-sm text-gray-900 dark:text-white">
+                            {profile.social_links._extended.location_info.hometown}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Contact Information */}
+                {(profile.social_links._extended.contact_info?.phone ||
+                  profile.social_links._extended.contact_info?.alternative_email) && (
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Contact</h3>
+                    <div className="space-y-2">
+                      {profile.social_links._extended.contact_info?.phone && (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[80px]">
+                            Phone:
+                          </span>
+                          <span className="text-sm text-gray-900 dark:text-white">
+                            {profile.social_links._extended.contact_info.phone}
+                          </span>
+                        </div>
+                      )}
+                      {profile.social_links._extended.contact_info?.alternative_email && (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[80px]">
+                            Alt Email:
+                          </span>
+                          <span className="text-sm text-gray-900 dark:text-white">
+                            {profile.social_links._extended.contact_info.alternative_email}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Personal Details */}
+                {(profile.social_links._extended.personal_details?.about_me ||
+                  profile.social_links._extended.personal_details?.relationship_status ||
+                  profile.social_links._extended.personal_details?.political_views ||
+                  profile.social_links._extended.personal_details?.religious_views) && (
+                  <div className="space-y-3 md:col-span-2">
+                    <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Personal Details</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {profile.social_links._extended.personal_details?.about_me && (
+                        <div className="md:col-span-2">
+                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 block mb-1">
+                            About Me:
+                          </span>
+                          <p className="text-sm text-gray-900 dark:text-white leading-relaxed">
+                            {profile.social_links._extended.personal_details.about_me}
+                          </p>
+                        </div>
+                      )}
+                      {profile.social_links._extended.personal_details?.relationship_status && (
+                        <div>
+                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 block mb-1">
+                            Relationship:
+                          </span>
+                          <span className="text-sm text-gray-900 dark:text-white">
+                            {profile.social_links._extended.personal_details.relationship_status}
+                          </span>
+                        </div>
+                      )}
+                      {profile.social_links._extended.personal_details?.political_views && (
+                        <div>
+                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 block mb-1">
+                            Political Views:
+                          </span>
+                          <span className="text-sm text-gray-900 dark:text-white">
+                            {profile.social_links._extended.personal_details.political_views}
+                          </span>
+                        </div>
+                      )}
+                      {profile.social_links._extended.personal_details?.religious_views && (
+                        <div>
+                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 block mb-1">
+                            Religious Views:
+                          </span>
+                          <span className="text-sm text-gray-900 dark:text-white">
+                            {profile.social_links._extended.personal_details.religious_views}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          )}
         </Card>
 
         {/* Profile Content */}
