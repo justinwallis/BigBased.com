@@ -5,22 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  CalendarDays,
-  Linkedin,
-  Github,
-  Globe,
-  Instagram,
-  Youtube,
-  Home,
-  MapPin,
-  Briefcase,
-  GraduationCap,
-  Heart,
-  Music,
-  Award,
-  Quote,
-} from "lucide-react"
+import { CalendarDays, Linkedin, Github, Globe, Instagram, Youtube, Home } from "lucide-react"
 import type { Profile } from "@/app/actions/profile-actions"
 import { ThemeToggle } from "@/components/theme-toggle"
 import Link from "next/link"
@@ -87,14 +72,6 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
   )
 
   const socialLinks = profile?.social_links || {}
-  const personalInfo = profile?.personal_info || {}
-  const contactInfo = profile?.contact_info || {}
-  const location = profile?.location || {}
-  const workEducation = profile?.work_education || {}
-  const personalDetails = profile?.personal_details || {}
-  const interests = profile?.interests || {}
-  const lifeEvents = profile?.life_events || {}
-  const quotes = profile?.quotes || {}
 
   // Helper function to get the correct URL for social links
   const getSocialUrl = (platform: string, value: string) => {
@@ -105,6 +82,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
     switch (platform) {
       case "therealworld":
+        // For The Real World, we don't return a URL since there's no public profile link
         return null
       case "x":
         return value.startsWith("http") ? value : `https://x.com/${cleanValue}`
@@ -125,6 +103,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
       case "rumble":
         return value.startsWith("http") ? value : `https://rumble.com/c/${cleanValue}`
       case "discord":
+        // Discord doesn't have direct profile links, so we return null
         return null
       case "website":
         return value.startsWith("http") ? value : `https://${value}`
@@ -151,16 +130,6 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
     { key: "discord", icon: DiscordIcon, label: "Discord" },
     { key: "therealworld", icon: TheRealWorldIcon, label: "The Real World" },
   ]
-
-  // Helper function to format relationship status
-  const formatRelationshipStatus = (status: string) => {
-    return status?.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()) || ""
-  }
-
-  // Helper function to format political/religious views
-  const formatView = (view: string) => {
-    return view?.charAt(0).toUpperCase() + view?.slice(1) || ""
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
@@ -196,9 +165,6 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
                     {profile?.full_name || profile?.username}
-                    {personalInfo?.nickname && (
-                      <span className="text-lg text-gray-500 ml-2">"{personalInfo.nickname}"</span>
-                    )}
                   </CardTitle>
                   <div className="flex items-center space-x-2">
                     <Link href="/">
@@ -226,31 +192,6 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     })}
                   </span>
                 </div>
-
-                {personalInfo?.birthday && (
-                  <div className="flex items-center space-x-1">
-                    <CalendarDays className="h-4 w-4" />
-                    <span>
-                      Born{" "}
-                      {new Date(personalInfo.birthday).toLocaleDateString("en-US", {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </span>
-                  </div>
-                )}
-
-                {location?.current_city && (
-                  <div className="flex items-center space-x-1">
-                    <MapPin className="h-4 w-4" />
-                    <span>
-                      {location.current_city}
-                      {location.current_state && `, ${location.current_state}`}
-                      {location.current_country && `, ${location.current_country}`}
-                    </span>
-                  </div>
-                )}
 
                 <Badge
                   variant="secondary"
@@ -292,7 +233,9 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                         alert(`Discord: ${socialLinks[key]}`)
                       } else if (key === "therealworld") {
                         alert(
-                          `The Real World member: ${socialLinks[key]}\n\nThe Real World is Andrew Tate's exclusive community platform for entrepreneurs and high-achievers.`,
+                          `The Real World member: ${
+                            socialLinks[key]
+                          }\n\nThe Real World is Andrew Tate's exclusive community platform for entrepreneurs and high-achievers.`,
                         )
                       }
                     }
@@ -313,12 +256,10 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
             </div>
           </CardHeader>
 
-          {(profile?.bio || personalDetails?.about_me) && (
+          {profile?.bio && (
             <CardContent className="pt-0">
               <div className="prose prose-gray dark:prose-invert max-w-none">
-                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                  {personalDetails?.about_me || profile?.bio}
-                </p>
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{profile.bio}</p>
               </div>
             </CardContent>
           )}
@@ -328,310 +269,23 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Work Experience */}
-            {workEducation?.work_experience && workEducation.work_experience.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Briefcase className="h-5 w-5" />
-                    <span>Work Experience</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {workEducation.work_experience.map((job: any, index: number) => (
-                    <div key={index} className="border-l-2 border-blue-200 pl-4 pb-4">
-                      <h4 className="font-semibold text-lg">{job.position}</h4>
-                      <p className="text-gray-600 dark:text-gray-400">{job.company}</p>
-                      {job.location && <p className="text-sm text-gray-500">{job.location}</p>}
-                      {job.current && (
-                        <Badge variant="secondary" className="mt-1">
-                          Current
-                        </Badge>
-                      )}
-                      {job.description && <p className="mt-2 text-gray-700 dark:text-gray-300">{job.description}</p>}
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Education */}
-            {workEducation?.education && workEducation.education.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <GraduationCap className="h-5 w-5" />
-                    <span>Education</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {workEducation.education.map((school: any, index: number) => (
-                    <div key={index} className="border-l-2 border-green-200 pl-4 pb-4">
-                      <h4 className="font-semibold text-lg">{school.degree}</h4>
-                      <p className="text-gray-600 dark:text-gray-400">{school.school}</p>
-                      {school.field_of_study && <p className="text-sm text-gray-500">{school.field_of_study}</p>}
-                      {school.current && (
-                        <Badge variant="secondary" className="mt-1">
-                          Currently Attending
-                        </Badge>
-                      )}
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Interests & Hobbies */}
-            {(interests?.music ||
-              interests?.movies ||
-              interests?.books ||
-              interests?.sports ||
-              interests?.games ||
-              interests?.other) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Music className="h-5 w-5" />
-                    <span>Interests & Hobbies</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {interests.music && interests.music.length > 0 && (
-                    <div>
-                      <h4 className="font-medium mb-2">Music</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {interests.music.map((item: string, index: number) => (
-                          <Badge key={index} variant="outline">
-                            {item}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {interests.movies && interests.movies.length > 0 && (
-                    <div>
-                      <h4 className="font-medium mb-2">Movies & TV</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {interests.movies.map((item: string, index: number) => (
-                          <Badge key={index} variant="outline">
-                            {item}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {interests.books && interests.books.length > 0 && (
-                    <div>
-                      <h4 className="font-medium mb-2">Books</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {interests.books.map((item: string, index: number) => (
-                          <Badge key={index} variant="outline">
-                            {item}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {interests.sports && interests.sports.length > 0 && (
-                    <div>
-                      <h4 className="font-medium mb-2">Sports & Activities</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {interests.sports.map((item: string, index: number) => (
-                          <Badge key={index} variant="outline">
-                            {item}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {interests.games && interests.games.length > 0 && (
-                    <div>
-                      <h4 className="font-medium mb-2">Gaming</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {interests.games.map((item: string, index: number) => (
-                          <Badge key={index} variant="outline">
-                            {item}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {interests.other && interests.other.length > 0 && (
-                    <div>
-                      <h4 className="font-medium mb-2">Other Interests</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {interests.other.map((item: string, index: number) => (
-                          <Badge key={index} variant="outline">
-                            {item}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Life Events */}
-            {lifeEvents?.events && lifeEvents.events.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Award className="h-5 w-5" />
-                    <span>Life Events</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {lifeEvents.events.map((event: any, index: number) => (
-                    <div key={index} className="border-l-2 border-purple-200 pl-4 pb-4">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-semibold">{event.title}</h4>
-                        {event.category && (
-                          <Badge variant="secondary" className="text-xs">
-                            {event.category.charAt(0).toUpperCase() + event.category.slice(1)}
-                          </Badge>
-                        )}
-                      </div>
-                      {event.description && <p className="text-gray-700 dark:text-gray-300">{event.description}</p>}
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Favorite Quotes */}
-            {quotes?.favorite_quotes && quotes.favorite_quotes.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Quote className="h-5 w-5" />
-                    <span>Favorite Quotes</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {quotes.favorite_quotes.map((quote: any, index: number) => (
-                    <div key={index} className="border-l-4 border-gray-300 pl-4 italic">
-                      <p className="text-gray-700 dark:text-gray-300 mb-2">"{quote.quote}"</p>
-                      <p className="text-sm text-gray-500">
-                        — {quote.author}
-                        {quote.context && `, ${quote.context}`}
-                      </p>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <span>Recent Activity</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <p>No recent activity to display.</p>
+                  <p className="text-sm mt-2">Check back later for updates!</p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Personal Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center space-x-2">
-                  <Heart className="h-5 w-5" />
-                  <span>Personal Details</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {personalDetails?.relationship_status && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">Relationship</span>
-                    <span className="font-medium">{formatRelationshipStatus(personalDetails.relationship_status)}</span>
-                  </div>
-                )}
-                {personalDetails?.political_views && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">Political Views</span>
-                    <span className="font-medium">{formatView(personalDetails.political_views)}</span>
-                  </div>
-                )}
-                {personalDetails?.religious_views && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">Religious Views</span>
-                    <span className="font-medium">{formatView(personalDetails.religious_views)}</span>
-                  </div>
-                )}
-                {personalInfo?.gender && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">Gender</span>
-                    <span className="font-medium">{formatView(personalInfo.gender)}</span>
-                  </div>
-                )}
-                {personalInfo?.languages && personalInfo.languages.length > 0 && (
-                  <div>
-                    <span className="text-gray-600 dark:text-gray-400 block mb-2">Languages</span>
-                    <div className="flex flex-wrap gap-1">
-                      {personalInfo.languages.map((language: string, index: number) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {language}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Skills */}
-            {workEducation?.skills && workEducation.skills.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Professional Skills</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {workEducation.skills.map((skill: string, index: number) => (
-                      <Badge key={index} variant="secondary">
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Family */}
-            {personalDetails?.family && personalDetails.family.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Family</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {personalDetails.family.map((member: any, index: number) => (
-                    <div key={index} className="flex justify-between items-center">
-                      <span className="text-gray-600 dark:text-gray-400">{member.relationship}</span>
-                      <span className="font-medium">{member.name}</span>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Contact Info */}
-            {(contactInfo?.phone || contactInfo?.alt_email) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Contact</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {contactInfo.phone && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600 dark:text-gray-400">Phone</span>
-                      <span className="font-medium">{contactInfo.phone}</span>
-                    </div>
-                  )}
-                  {contactInfo.alt_email && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600 dark:text-gray-400">Alt Email</span>
-                      <span className="font-medium">{contactInfo.alt_email}</span>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Profile Stats */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Profile Stats</CardTitle>
@@ -648,6 +302,17 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600 dark:text-gray-400">Contributions</span>
                   <span className="font-medium">Coming Soon</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Connect</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+                  <p className="text-sm">Follow and connect with this user!</p>
                 </div>
               </CardContent>
             </Card>

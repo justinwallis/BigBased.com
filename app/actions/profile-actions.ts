@@ -3,23 +3,6 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 
-export interface Profile {
-  id: string
-  email?: string
-  username: string
-  full_name: string
-  bio: string
-  avatar_url: string
-  banner_url: string
-  banner_position: string
-  website?: string
-  location?: string
-  social_links: any
-  stripe_customer_id?: string
-  created_at: string
-  updated_at: string
-}
-
 export async function createProfile(profileData: {
   id: string
   email: string
@@ -38,16 +21,9 @@ export async function createProfile(profileData: {
 
     const { error } = await supabase.from("profiles").insert({
       id: profileData.id,
-      email: profileData.email,
       username,
       full_name: profileData.full_name || "",
       avatar_url: avatarUrl,
-      bio: "",
-      banner_url: "",
-      banner_position: "center",
-      website: "",
-      location: "",
-      social_links: {},
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
@@ -127,12 +103,9 @@ export async function checkUsernameAvailability(
 export async function updateCurrentUserProfile(profileData: {
   username?: string
   full_name?: string
-  bio?: string
   avatar_url?: string
   banner_url?: string
-  banner_position?: string
-  website?: string
-  location?: string
+  bio?: string
   social_links?: any
 }): Promise<{ success: boolean; error?: string; debug?: any }> {
   try {
@@ -173,88 +146,40 @@ export async function updateCurrentUserProfile(profileData: {
 
     if (!existingProfile) {
       // Create profile if it doesn't exist
-      const insertData = {
+      const { error: insertError } = await supabase.from("profiles").insert({
         id: user.id,
-        email: user.email,
         username: profileData.username || user.email?.split("@")[0] || "",
         full_name: profileData.full_name || "",
-        bio: profileData.bio || "",
         avatar_url: profileData.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
         banner_url: profileData.banner_url || "",
-        banner_position: profileData.banner_position || "center",
-        website: profileData.website || "",
-        location: profileData.location || "",
+        bio: profileData.bio || "",
         social_links: profileData.social_links || {},
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      }
-
-      console.log("Creating new profile with data:", insertData)
-
-      const { error: insertError } = await supabase.from("profiles").insert(insertData)
+      })
 
       if (insertError) {
         console.error("Error creating profile:", insertError)
         return { success: false, error: insertError.message }
       }
     } else {
-      // Update existing profile using raw SQL to bypass schema cache issues
-      console.log("Updating existing profile")
-
-      // Use raw SQL query to avoid schema cache issues
-      const { error: updateError } = await supabase.rpc("update_user_profile", {
-        user_id: user.id,
-        profile_data: {
+      // Update existing profile
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({
           username: profileData.username,
           full_name: profileData.full_name,
-          bio: profileData.bio,
           avatar_url: profileData.avatar_url,
           banner_url: profileData.banner_url,
-          banner_position: profileData.banner_position,
-          website: profileData.website,
-          location: profileData.location,
+          bio: profileData.bio,
           social_links: profileData.social_links,
           updated_at: new Date().toISOString(),
-        },
-      })
+        })
+        .eq("id", user.id)
 
       if (updateError) {
-        console.error("RPC update failed, trying direct update:", updateError)
-
-        // Fallback to direct update with explicit column names
-        const updateData: any = {
-          updated_at: new Date().toISOString(),
-        }
-
-        if (profileData.username !== undefined) updateData.username = profileData.username
-        if (profileData.full_name !== undefined) updateData.full_name = profileData.full_name
-        if (profileData.bio !== undefined) updateData.bio = profileData.bio
-        if (profileData.avatar_url !== undefined) updateData.avatar_url = profileData.avatar_url
-        if (profileData.banner_url !== undefined) updateData.banner_url = profileData.banner_url
-        if (profileData.website !== undefined) updateData.website = profileData.website
-        if (profileData.location !== undefined) updateData.location = profileData.location
-        if (profileData.social_links !== undefined) updateData.social_links = profileData.social_links
-
-        // Try updating without banner_position first
-        const { error: fallbackError } = await supabase.from("profiles").update(updateData).eq("id", user.id)
-
-        if (fallbackError) {
-          console.error("Fallback update failed:", fallbackError)
-          return { success: false, error: fallbackError.message }
-        }
-
-        // If that worked, try to update banner_position separately
-        if (profileData.banner_position !== undefined) {
-          const { error: bannerError } = await supabase
-            .from("profiles")
-            .update({ banner_position: profileData.banner_position })
-            .eq("id", user.id)
-
-          if (bannerError) {
-            console.error("Banner position update failed:", bannerError)
-            // Don't fail the whole operation for this
-          }
-        }
+        console.error("Error updating profile:", updateError)
+        return { success: false, error: updateError.message }
       }
     }
 
@@ -270,7 +195,68 @@ export async function updateCurrentUserProfile(profileData: {
   }
 }
 
-export async function getCurrentUserProfile(): Promise<Profile | null> {
+export async function updateUserProfile(
+  id: string,
+  profileData: {
+    username?: string
+    full_name?: string
+    avatar_url?: string
+    banner_url?: string
+    bio?: string
+    social_links?: any
+  },
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = createServerSupabaseClient()
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        username: profileData.username,
+        full_name: profileData.full_name,
+        avatar_url: profileData.avatar_url,
+        banner_url: profileData.banner_url,
+        bio: profileData.bio,
+        social_links: profileData.social_links,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+
+    if (error) {
+      console.error("Error updating profile:", error)
+      return { success: false, error: error.message }
+    }
+
+    revalidatePath("/profile")
+    return { success: true }
+  } catch (error) {
+    console.error("Error in updateUserProfile:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error updating profile",
+    }
+  }
+}
+
+export async function getUserProfile(userId: string): Promise<any> {
+  try {
+    const supabase = createServerSupabaseClient()
+
+    const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single()
+
+    if (error) {
+      console.error("Error fetching profile:", error)
+      return null
+    }
+
+    return data
+  } catch (error) {
+    console.error("Error in getUserProfile:", error)
+    return null
+  }
+}
+
+export async function getCurrentUserProfile(): Promise<any> {
   try {
     const supabase = createServerSupabaseClient()
 
@@ -299,15 +285,11 @@ export async function getCurrentUserProfile(): Promise<Profile | null> {
         console.log("Profile doesn't exist, creating default profile")
         const defaultProfile = {
           id: user.id,
-          email: user.email,
           username: user.email?.split("@")[0] || "",
           full_name: "",
-          bio: "",
           avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
           banner_url: "",
-          banner_position: "center",
-          website: "",
-          location: "",
+          bio: "",
           social_links: {},
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -334,7 +316,7 @@ export async function getCurrentUserProfile(): Promise<Profile | null> {
   }
 }
 
-export async function getUserProfileByUsername(username: string): Promise<Profile | null> {
+export async function getUserProfileByUsername(username: string): Promise<any> {
   try {
     const supabase = createServerSupabaseClient()
 
@@ -348,24 +330,6 @@ export async function getUserProfileByUsername(username: string): Promise<Profil
     return data
   } catch (error) {
     console.error("Error in getUserProfileByUsername:", error)
-    return null
-  }
-}
-
-export async function getUserProfile(userId: string): Promise<Profile | null> {
-  try {
-    const supabase = createServerSupabaseClient()
-
-    const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single()
-
-    if (error) {
-      console.error("Error fetching profile:", error)
-      return null
-    }
-
-    return data
-  } catch (error) {
-    console.error("Error in getUserProfile:", error)
     return null
   }
 }
