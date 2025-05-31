@@ -297,7 +297,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
           <div className="space-y-6">
             {/* Intro Card */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4">Intro</h2>
+              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Intro</h2>
 
               {/* Bio */}
               {profile.bio && <p className="text-gray-700 dark:text-gray-300 mb-4">{profile.bio}</p>}
@@ -325,9 +325,9 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   <div className="flex items-center">
                     <Briefcase className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
                     <div>
-                      <p className="text-sm">
+                      <p className="text-sm text-gray-700 dark:text-gray-300">
                         {profile.work_info.position ? `${profile.work_info.position} at ` : "Works at "}
-                        <span className="font-medium">{profile.work_info.company}</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{profile.work_info.company}</span>
                       </p>
                     </div>
                   </div>
@@ -338,9 +338,12 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   <div className="flex items-center">
                     <GraduationCap className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
                     <div>
-                      <p className="text-sm">
+                      <p className="text-sm text-gray-700 dark:text-gray-300">
                         Studied {profile.education_info.degree || "at"}
-                        <span className="font-medium"> {profile.education_info.school}</span>
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {" "}
+                          {profile.education_info.school}
+                        </span>
                       </p>
                     </div>
                   </div>
@@ -351,8 +354,9 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   <div className="flex items-center">
                     <MapPin className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
                     <div>
-                      <p className="text-sm">
-                        Lives in <span className="font-medium">{getCurrentLocation()}</span>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">
+                        Lives in{" "}
+                        <span className="font-medium text-gray-900 dark:text-white">{getCurrentLocation()}</span>
                       </p>
                     </div>
                   </div>
@@ -363,8 +367,11 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   <div className="flex items-center">
                     <Home className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
                     <div>
-                      <p className="text-sm">
-                        From <span className="font-medium">{profile.location_info.hometown}</span>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">
+                        From{" "}
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {profile.location_info.hometown}
+                        </span>
                       </p>
                     </div>
                   </div>
@@ -374,7 +381,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                 <div className="flex items-center">
                   <CalendarDays className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
                   <div>
-                    <p className="text-sm">
+                    <p className="text-sm text-gray-700 dark:text-gray-300">
                       Joined{" "}
                       {new Date(profile?.created_at || Date.now()).toLocaleDateString("en-US", {
                         month: "long",
@@ -389,20 +396,26 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   <div className="flex items-center">
                     <Info className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
                     <div>
-                      <p className="text-sm">
-                        Nickname: <span className="font-medium">{profile.personal_info.nickname}</span>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">
+                        Nickname:{" "}
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {profile.personal_info.nickname}
+                        </span>
                       </p>
                     </div>
                   </div>
                 )}
 
-                {/* Pronounciation */}
+                {/* Pronunciation */}
                 {profile.personal_info?.name_pronunciation && (
                   <div className="flex items-center">
                     <Volume2 className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
                     <div>
-                      <p className="text-sm">
-                        Pronounces name: <span className="font-medium">{profile.personal_info.name_pronunciation}</span>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">
+                        Pronounces name:{" "}
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {profile.personal_info.name_pronunciation}
+                        </span>
                       </p>
                     </div>
                   </div>
@@ -465,19 +478,21 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
             {/* Stats Card */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4">Profile Stats</h2>
+              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Profile Stats</h2>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600 dark:text-gray-400">Member Since</span>
-                  <span className="font-medium">{new Date(profile?.created_at || Date.now()).getFullYear()}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {new Date(profile?.created_at || Date.now()).getFullYear()}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600 dark:text-gray-400">Profile Views</span>
-                  <span className="font-medium">Coming Soon</span>
+                  <span className="font-medium text-gray-900 dark:text-white">Coming Soon</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600 dark:text-gray-400">Contributions</span>
-                  <span className="font-medium">Coming Soon</span>
+                  <span className="font-medium text-gray-900 dark:text-white">Coming Soon</span>
                 </div>
               </div>
             </div>
@@ -500,7 +515,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               <TabsContent value="about" className="mt-0">
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-xl font-semibold mb-4">About</h3>
+                    <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">About</h3>
                     {profile.personal_details?.about_me ? (
                       <p className="text-gray-700 dark:text-gray-300">{profile.personal_details.about_me}</p>
                     ) : (
@@ -514,7 +529,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     profile.personal_info?.gender ||
                     (profile.personal_info?.languages && profile.personal_info.languages.length > 0)) && (
                     <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                      <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
+                      <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Personal Information</h3>
                       <div className="space-y-3">
                         {profile.personal_info?.nickname && (
                           <div className="flex items-start">
@@ -572,7 +587,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     profile.location_info?.current_country ||
                     profile.location_info?.hometown) && (
                     <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                      <h3 className="text-lg font-semibold mb-4">Location</h3>
+                      <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Location</h3>
                       <div className="space-y-3">
                         {(profile.location_info?.current_city ||
                           profile.location_info?.current_state ||
@@ -609,7 +624,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   {/* Contact Information */}
                   {(profile.contact_info?.phone || profile.contact_info?.alt_email) && (
                     <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                      <h3 className="text-lg font-semibold mb-4">Contact</h3>
+                      <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Contact</h3>
                       <div className="space-y-3">
                         {profile.contact_info?.phone && (
                           <div className="flex items-start">
@@ -638,7 +653,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     profile.personal_details?.political_views ||
                     profile.personal_details?.religious_views) && (
                     <div className="p-6">
-                      <h3 className="text-lg font-semibold mb-4">Personal Details</h3>
+                      <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Personal Details</h3>
                       <div className="space-y-3">
                         {profile.personal_details?.relationship_status && (
                           <div className="flex items-start">
