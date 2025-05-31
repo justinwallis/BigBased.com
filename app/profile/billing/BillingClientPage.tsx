@@ -23,6 +23,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PayPalPayment } from "@/components/paypal-payment"
 import { SUBSCRIPTION_PLANS } from "@/lib/subscription-plans"
 import { getCurrentSubscription, createCheckoutSession, cancelSubscription } from "@/app/actions/subscription-actions"
+import { BillingAnalytics } from "@/components/billing-analytics"
+import { InvoiceManager } from "@/components/invoice-manager"
+import { BillingAlerts } from "@/components/billing-alerts"
 
 export default function BillingClientPage() {
   const { toast } = useToast()
@@ -42,6 +45,7 @@ export default function BillingClientPage() {
   const [currentSubscription, setCurrentSubscription] = useState<any>(null)
   const [isCreatingCheckout, setIsCreatingCheckout] = useState<string | null>(null)
   const [isCancelingSubscription, setIsCancelingSubscription] = useState(false)
+  const [activeSection, setActiveSection] = useState("overview")
 
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -352,296 +356,287 @@ export default function BillingClientPage() {
           <ThemeToggle />
         </div>
 
-        {/* Default Payment Method Indicator */}
-        {defaultMethodDisplay && (
-          <Card className="mb-6 border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <CheckCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                <div>
-                  <p className="font-medium text-blue-900 dark:text-blue-100">
-                    Default Payment Method: {defaultMethodDisplay}
-                  </p>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
-                    {isPayPalDefault
-                      ? "PayPal will be used for all payments by default"
-                      : "This payment method will be used for all payments by default"}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* Tabbed Interface */}
+        <Tabs defaultValue="overview" value={activeSection} onValueChange={setActiveSection}>
+          <TabsList className="grid grid-cols-4 mb-6 dark:bg-gray-800">
+            <TabsTrigger value="overview" className="dark:data-[state=active]:bg-gray-700">
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="dark:data-[state=active]:bg-gray-700">
+              Analytics
+            </TabsTrigger>
+            <TabsTrigger value="invoices" className="dark:data-[state=active]:bg-gray-700">
+              Invoices
+            </TabsTrigger>
+            <TabsTrigger value="alerts" className="dark:data-[state=active]:bg-gray-700">
+              Alerts & Budgets
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Subscription Plans Section */}
-        <Card className="mb-8 dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 dark:text-white">
-              <CreditCard className="h-5 w-5" />
-              <span>Subscription Plans</span>
-            </CardTitle>
-            <CardDescription className="dark:text-gray-300">
-              {currentSubscription?.planId !== "free"
-                ? `You're currently on the ${currentSubscription?.name || "Unknown"} plan`
-                : "Choose a plan that fits your needs"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-6">
-              {Object.values(SUBSCRIPTION_PLANS)
-                .filter((plan) => plan.id !== "free")
-                .map((plan: any) => {
-                  const isCurrentPlan = currentSubscription?.planId === plan.id
-                  const isCreatingThisPlan = isCreatingCheckout === plan.id
-
-                  return (
-                    <Card
-                      key={plan.id}
-                      className={`relative ${isCurrentPlan ? "border-blue-500 bg-blue-50 dark:bg-blue-950" : "dark:bg-gray-700"}`}
-                    >
-                      <CardHeader>
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle className="dark:text-white">{plan.name}</CardTitle>
-                            <div className="flex items-baseline space-x-1 mt-2">
-                              <span className="text-3xl font-bold dark:text-white">${plan.price}</span>
-                              <span className="text-muted-foreground dark:text-gray-400">/{plan.interval}</span>
-                            </div>
-                          </div>
-                          {isCurrentPlan && (
-                            <div className="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                              Current Plan
-                            </div>
-                          )}
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <ul className="space-y-2 mb-6">
-                          {plan.features.slice(0, 4).map((feature: string, index: number) => (
-                            <li key={index} className="flex items-center space-x-2 text-sm dark:text-gray-300">
-                              <CheckCircle className="h-4 w-4 text-green-500" />
-                              <span>{feature}</span>
-                            </li>
-                          ))}
-                          {plan.features.length > 4 && (
-                            <li className="text-sm text-muted-foreground dark:text-gray-400">
-                              +{plan.features.length - 4} more features
-                            </li>
-                          )}
-                        </ul>
-
-                        {isCurrentPlan ? (
-                          <Button
-                            onClick={handleCancelSubscription}
-                            disabled={isCancelingSubscription || currentSubscription?.cancelAtPeriodEnd}
-                            className="w-full"
-                            variant="outline"
-                          >
-                            {isCancelingSubscription ? (
-                              <>
-                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                Processing...
-                              </>
-                            ) : currentSubscription?.cancelAtPeriodEnd ? (
-                              "Cancels at Period End"
-                            ) : (
-                              "Cancel Subscription"
-                            )}
-                          </Button>
-                        ) : (
-                          <Button
-                            onClick={() => handleUpgrade(plan.id)}
-                            disabled={isCreatingThisPlan || !customerId}
-                            className="w-full"
-                          >
-                            {isCreatingThisPlan ? (
-                              <>
-                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                Processing...
-                              </>
-                            ) : (
-                              `Upgrade to ${plan.name}`
-                            )}
-                          </Button>
-                        )}
-                      </CardContent>
-                    </Card>
-                  )
-                })}
-            </div>
-
-            {currentSubscription?.planId !== "free" && (
-              <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <h4 className="font-medium dark:text-white mb-2">Current Subscription Details</h4>
-                <div className="grid md:grid-cols-3 gap-4 text-sm dark:text-gray-300">
-                  <div>
-                    <span className="text-muted-foreground dark:text-gray-400">Status:</span>
-                    <div className="font-medium">{currentSubscription?.isActive ? "Active" : "Inactive"}</div>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground dark:text-gray-400">Next Billing:</span>
-                    <div className="font-medium">
-                      {currentSubscription?.currentPeriodEnd
-                        ? new Date(currentSubscription.currentPeriodEnd).toLocaleDateString()
-                        : "N/A"}
+          <TabsContent value="overview">
+            {/* Move all existing content here (subscription plans, payment methods, etc.) */}
+            {/* Default Payment Method Indicator */}
+            {defaultMethodDisplay && (
+              <Card className="mb-6 border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-2">
+                    <CheckCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <div>
+                      <p className="font-medium text-blue-900 dark:text-blue-100">
+                        Default Payment Method: {defaultMethodDisplay}
+                      </p>
+                      <p className="text-sm text-blue-700 dark:text-blue-300">
+                        {isPayPalDefault
+                          ? "PayPal will be used for all payments by default"
+                          : "This payment method will be used for all payments by default"}
+                      </p>
                     </div>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground dark:text-gray-400">Auto Renewal:</span>
-                    <div className="font-medium">{currentSubscription?.cancelAtPeriodEnd ? "Disabled" : "Enabled"}</div>
-                  </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             )}
-          </CardContent>
-        </Card>
 
-        {/* Payment Methods Management */}
-        <Card className="dark:bg-gray-800 dark:border-gray-700 mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 dark:text-white">
-              <CreditCard className="h-5 w-5" />
-              <span>Saved Payment Methods</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {paymentMethods.length === 0 && !paypalConnected ? (
-              <p className="text-muted-foreground dark:text-gray-300 mb-4">No payment methods saved yet.</p>
-            ) : (
-              <div className="space-y-4">
-                {paymentMethods.map((pm) => (
-                  <PaymentMethodCard
-                    key={pm.id}
-                    paymentMethod={pm}
-                    customerId={customerId!}
-                    isDefault={defaultPaymentMethodId === pm.id && !isPayPalDefault}
-                    onUpdate={handlePaymentMethodUpdate}
-                  />
-                ))}
+            {/* Subscription Plans Section */}
+            <Card className="mb-8 dark:bg-gray-800 dark:border-gray-700">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 dark:text-white">
+                  <CreditCard className="h-5 w-5" />
+                  <span>Subscription Plans</span>
+                </CardTitle>
+                <CardDescription className="dark:text-gray-300">
+                  {currentSubscription?.planId !== "free"
+                    ? `You're currently on the ${currentSubscription?.name || "Unknown"} plan`
+                    : "Choose a plan that fits your needs"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {Object.values(SUBSCRIPTION_PLANS)
+                    .filter((plan) => plan.id !== "free")
+                    .map((plan: any) => {
+                      const isCurrentPlan = currentSubscription?.planId === plan.id
+                      const isCreatingThisPlan = isCreatingCheckout === plan.id
 
-                {/* Show PayPal as connected if setup */}
-                {paypalConnected && (
-                  <Card
-                    className={`overflow-hidden ${isPayPalDefault ? "border-green-500 bg-green-50 dark:bg-green-950 dark:border-green-400" : ""}`}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="h-5 w-5 text-blue-600 dark:text-blue-400"
-                            >
-                              <path d="M7 11l5-7" />
-                              <path d="M21 11V6a2 2 0 0 0-2-2h-4l5 7" />
-                              <path d="M3 11v5a2 2 0 0 0 2 2h4l5-7" />
-                              <path d="M17 11v5a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2v-5" />
-                            </svg>
-                          </div>
-                          <div>
-                            <div className="flex items-center space-x-2">
-                              <p className="font-medium dark:text-white">PayPal</p>
-                              {paypalEmail && (
-                                <span className="text-sm text-muted-foreground dark:text-gray-400">{paypalEmail}</span>
+                      return (
+                        <Card
+                          key={plan.id}
+                          className={`relative ${isCurrentPlan ? "border-blue-500 bg-blue-50 dark:bg-blue-950" : "dark:bg-gray-700"}`}
+                        >
+                          <CardHeader>
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <CardTitle className="dark:text-white">{plan.name}</CardTitle>
+                                <div className="flex items-baseline space-x-1 mt-2">
+                                  <span className="text-3xl font-bold dark:text-white">${plan.price}</span>
+                                  <span className="text-muted-foreground dark:text-gray-400">/{plan.interval}</span>
+                                </div>
+                              </div>
+                              {isCurrentPlan && (
+                                <div className="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                                  Current Plan
+                                </div>
                               )}
                             </div>
-                            <p className="text-sm text-muted-foreground dark:text-gray-400">
-                              Connected • Available for payments
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          {isPayPalDefault ? (
-                            <div className="flex items-center text-xs text-green-600 dark:text-green-400 font-medium">
-                              <CheckCircle className="h-3 w-3 mr-1" />
-                              Default
-                            </div>
-                          ) : (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={handleSetPayPalAsDefault}
-                              disabled={isSettingPayPalDefault}
-                            >
-                              {isSettingPayPalDefault ? (
-                                <Loader2 className="h-3 w-3 animate-spin" />
-                              ) : (
-                                <span className="text-xs">Set Default</span>
+                          </CardHeader>
+                          <CardContent>
+                            <ul className="space-y-2 mb-6">
+                              {plan.features.slice(0, 4).map((feature: string, index: number) => (
+                                <li key={index} className="flex items-center space-x-2 text-sm dark:text-gray-300">
+                                  <CheckCircle className="h-4 w-4 text-green-500" />
+                                  <span>{feature}</span>
+                                </li>
+                              ))}
+                              {plan.features.length > 4 && (
+                                <li className="text-sm text-muted-foreground dark:text-gray-400">
+                                  +{plan.features.length - 4} more features
+                                </li>
                               )}
-                            </Button>
-                          )}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleDisconnectPayPal}
-                            disabled={isDisconnectingPayPal}
-                            className="dark:border-gray-600 dark:text-gray-300"
-                          >
-                            {isDisconnectingPayPal ? <Loader2 className="h-3 w-3 animate-spin" /> : "Disconnect"}
-                          </Button>
+                            </ul>
+
+                            {isCurrentPlan ? (
+                              <Button
+                                onClick={handleCancelSubscription}
+                                disabled={isCancelingSubscription || currentSubscription?.cancelAtPeriodEnd}
+                                className="w-full"
+                                variant="outline"
+                              >
+                                {isCancelingSubscription ? (
+                                  <>
+                                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                    Processing...
+                                  </>
+                                ) : currentSubscription?.cancelAtPeriodEnd ? (
+                                  "Cancels at Period End"
+                                ) : (
+                                  "Cancel Subscription"
+                                )}
+                              </Button>
+                            ) : (
+                              <Button
+                                onClick={() => handleUpgrade(plan.id)}
+                                disabled={isCreatingThisPlan || !customerId}
+                                className="w-full"
+                              >
+                                {isCreatingThisPlan ? (
+                                  <>
+                                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                    Processing...
+                                  </>
+                                ) : (
+                                  `Upgrade to ${plan.name}`
+                                )}
+                              </Button>
+                            )}
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
+                </div>
+
+                {currentSubscription?.planId !== "free" && (
+                  <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <h4 className="font-medium dark:text-white mb-2">Current Subscription Details</h4>
+                    <div className="grid md:grid-cols-3 gap-4 text-sm dark:text-gray-300">
+                      <div>
+                        <span className="text-muted-foreground dark:text-gray-400">Status:</span>
+                        <div className="font-medium">{currentSubscription?.isActive ? "Active" : "Inactive"}</div>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground dark:text-gray-400">Next Billing:</span>
+                        <div className="font-medium">
+                          {currentSubscription?.currentPeriodEnd
+                            ? new Date(currentSubscription.currentPeriodEnd).toLocaleDateString()
+                            : "N/A"}
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                      <div>
+                        <span className="text-muted-foreground dark:text-gray-400">Auto Renewal:</span>
+                        <div className="font-medium">
+                          {currentSubscription?.cancelAtPeriodEnd ? "Disabled" : "Enabled"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
 
-        {/* Add Payment Methods with Tabs */}
-        <div className="mt-6">
-          <Tabs defaultValue="stripe" value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-2 mb-4 dark:bg-gray-800">
-              <TabsTrigger value="stripe" className="flex items-center space-x-2 dark:data-[state=active]:bg-gray-700">
-                <CreditCardIcon className="h-4 w-4" />
-                <span>Card & Digital Wallets</span>
-              </TabsTrigger>
-              <TabsTrigger value="paypal" className="flex items-center space-x-2 dark:data-[state=active]:bg-gray-700">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-4 w-4"
-                >
-                  <path d="M7 11l5-7" />
-                  <path d="M21 11V6a2 2 0 0 0-2-2h-4l5 7" />
-                  <path d="M3 11v5a2 2 0 0 0 2 2h4l5-7" />
-                  <path d="M17 11v5a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2v-5" />
-                </svg>
-                <span>PayPal</span>
-              </TabsTrigger>
-            </TabsList>
+            {/* Payment Methods Management */}
+            <Card className="dark:bg-gray-800 dark:border-gray-700 mb-8">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 dark:text-white">
+                  <CreditCard className="h-5 w-5" />
+                  <span>Saved Payment Methods</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {paymentMethods.length === 0 && !paypalConnected ? (
+                  <p className="text-muted-foreground dark:text-gray-300 mb-4">No payment methods saved yet.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {paymentMethods.map((pm) => (
+                      <PaymentMethodCard
+                        key={pm.id}
+                        paymentMethod={pm}
+                        customerId={customerId!}
+                        isDefault={defaultPaymentMethodId === pm.id && !isPayPalDefault}
+                        onUpdate={handlePaymentMethodUpdate}
+                      />
+                    ))}
 
-            <TabsContent value="stripe">
-              {clientSecret && (
-                <StripeProvider
-                  clientSecret={clientSecret}
-                  appearance={{ theme: theme === "dark" ? "night" : "stripe" }}
-                >
-                  <AddPaymentMethod
-                    clientSecret={clientSecret}
-                    customerId={customerId!}
-                    onSuccess={handlePaymentMethodUpdate}
-                  />
-                </StripeProvider>
-              )}
-            </TabsContent>
+                    {/* Show PayPal as connected if setup */}
+                    {paypalConnected && (
+                      <Card
+                        className={`overflow-hidden ${isPayPalDefault ? "border-green-500 bg-green-50 dark:bg-green-950 dark:border-green-400" : ""}`}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  className="h-5 w-5 text-blue-600 dark:text-blue-400"
+                                >
+                                  <path d="M7 11l5-7" />
+                                  <path d="M21 11V6a2 2 0 0 0-2-2h-4l5 7" />
+                                  <path d="M3 11v5a2 2 0 0 0 2 2h4l5-7" />
+                                  <path d="M17 11v5a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2v-5" />
+                                </svg>
+                              </div>
+                              <div>
+                                <div className="flex items-center space-x-2">
+                                  <p className="font-medium dark:text-white">PayPal</p>
+                                  {paypalEmail && (
+                                    <span className="text-sm text-muted-foreground dark:text-gray-400">
+                                      {paypalEmail}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-sm text-muted-foreground dark:text-gray-400">
+                                  Connected • Available for payments
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              {isPayPalDefault ? (
+                                <div className="flex items-center text-xs text-green-600 dark:text-green-400 font-medium">
+                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                  Default
+                                </div>
+                              ) : (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={handleSetPayPalAsDefault}
+                                  disabled={isSettingPayPalDefault}
+                                >
+                                  {isSettingPayPalDefault ? (
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                  ) : (
+                                    <span className="text-xs">Set Default</span>
+                                  )}
+                                </Button>
+                              )}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleDisconnectPayPal}
+                                disabled={isDisconnectingPayPal}
+                                className="dark:border-gray-600 dark:text-gray-300"
+                              >
+                                {isDisconnectingPayPal ? <Loader2 className="h-3 w-3 animate-spin" /> : "Disconnect"}
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-            <TabsContent value="paypal">
-              <Card className="dark:bg-gray-800 dark:border-gray-700">
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2 dark:text-white">
+            {/* Add Payment Methods with Tabs */}
+            <div className="mt-6">
+              <Tabs defaultValue="stripe" value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid grid-cols-2 mb-4 dark:bg-gray-800">
+                  <TabsTrigger
+                    value="stripe"
+                    className="flex items-center space-x-2 dark:data-[state=active]:bg-gray-700"
+                  >
+                    <CreditCardIcon className="h-4 w-4" />
+                    <span>Card & Digital Wallets</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="paypal"
+                    className="flex items-center space-x-2 dark:data-[state=active]:bg-gray-700"
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -650,110 +645,168 @@ export default function BillingClientPage() {
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="h-5 w-5"
+                      className="h-4 w-4"
                     >
                       <path d="M7 11l5-7" />
                       <path d="M21 11V6a2 2 0 0 0-2-2h-4l5 7" />
                       <path d="M3 11v5a2 2 0 0 0 2 2h4l5-7" />
                       <path d="M17 11v5a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2v-5" />
                     </svg>
-                    <span>PayPal Setup</span>
-                  </CardTitle>
-                  <CardDescription className="dark:text-gray-300">
-                    Connect your PayPal account for payments
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="dark:bg-gray-800">
-                  {!paypalConnected ? (
-                    <PayPalPayment mode="setup" onSuccess={handlePayPalSetup} />
-                  ) : (
-                    <div className="text-center py-8">
-                      <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span>PayPal</span>
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="stripe">
+                  {clientSecret && (
+                    <StripeProvider
+                      clientSecret={clientSecret}
+                      appearance={{ theme: theme === "dark" ? "night" : "stripe" }}
+                    >
+                      <AddPaymentMethod
+                        clientSecret={clientSecret}
+                        customerId={customerId!}
+                        onSuccess={handlePaymentMethodUpdate}
+                      />
+                    </StripeProvider>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="paypal">
+                  <Card className="dark:bg-gray-800 dark:border-gray-700">
+                    <CardHeader>
+                      <CardTitle className="flex items-center space-x-2 dark:text-white">
                         <svg
-                          className="w-8 h-8 text-green-600 dark:text-green-400"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"
-                          viewBox="0 0 24 24"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="h-5 w-5"
                         >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                          <path d="M7 11l5-7" />
+                          <path d="M21 11V6a2 2 0 0 0-2-2h-4l5 7" />
+                          <path d="M3 11v5a2 2 0 0 0 2 2h4l5-7" />
+                          <path d="M17 11v5a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2v-5" />
                         </svg>
-                      </div>
-                      <h3 className="text-lg font-medium dark:text-white mb-2">PayPal Connected</h3>
-                      <p className="text-muted-foreground dark:text-gray-400 mb-2">
-                        Your PayPal account is ready for payments
-                      </p>
-                      {paypalEmail && <p className="text-sm text-blue-600 dark:text-blue-400 mb-4">{paypalEmail}</p>}
-                      {!isPayPalDefault && (
-                        <Button onClick={handleSetPayPalAsDefault} disabled={isSettingPayPalDefault} className="mt-2">
-                          {isSettingPayPalDefault ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                              Setting as Default...
-                            </>
-                          ) : (
-                            "Set as Default Payment Method"
+                        <span>PayPal Setup</span>
+                      </CardTitle>
+                      <CardDescription className="dark:text-gray-300">
+                        Connect your PayPal account for payments
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="dark:bg-gray-800">
+                      {!paypalConnected ? (
+                        <PayPalPayment mode="setup" onSuccess={handlePayPalSetup} />
+                      ) : (
+                        <div className="text-center py-8">
+                          <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg
+                              className="w-8 h-8 text-green-600 dark:text-green-400"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                          <h3 className="text-lg font-medium dark:text-white mb-2">PayPal Connected</h3>
+                          <p className="text-muted-foreground dark:text-gray-400 mb-2">
+                            Your PayPal account is ready for payments
+                          </p>
+                          {paypalEmail && (
+                            <p className="text-sm text-blue-600 dark:text-blue-400 mb-4">{paypalEmail}</p>
                           )}
-                        </Button>
+                          {!isPayPalDefault && (
+                            <Button
+                              onClick={handleSetPayPalAsDefault}
+                              disabled={isSettingPayPalDefault}
+                              className="mt-2"
+                            >
+                              {isSettingPayPalDefault ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                  Setting as Default...
+                                </>
+                              ) : (
+                                "Set as Default Payment Method"
+                              )}
+                            </Button>
+                          )}
+                        </div>
                       )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        {/* Payment Methods Info */}
-        <Card className="mt-8 dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 dark:text-white">
-              <Info className="h-5 w-5" />
-              <span>Payment Method Information</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-3 gap-6 dark:text-gray-300">
-              <div>
-                <h3 className="font-medium mb-2 dark:text-white">Cards & Digital Wallets</h3>
-                <ul className="space-y-1 text-sm">
-                  <li>• Credit & Debit Cards (Visa, Mastercard, Amex)</li>
-                  <li>• Apple Pay (Safari on iOS/macOS)</li>
-                  <li>• Google Pay (Chrome on Android/Desktop)</li>
-                  <li>• Link by Stripe (Save for faster checkout)</li>
-                </ul>
-                <p className="text-xs text-muted-foreground dark:text-gray-400 mt-2">
-                  These payment methods are saved securely and can be reused. Digital wallets require compatible
-                  browsers.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-medium mb-2 dark:text-white">Bank Accounts</h3>
-                <ul className="space-y-1 text-sm">
-                  <li>• US Bank Accounts (ACH Direct Debit)</li>
-                  <li>• Requires account verification</li>
-                  <li>• 3-5 business day processing</li>
-                  <li>• Lower processing fees</li>
-                </ul>
-                <p className="text-xs text-muted-foreground dark:text-gray-400 mt-2">
-                  Bank accounts require micro-deposit verification and are US-only.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-medium mb-2 dark:text-white">PayPal</h3>
-                <ul className="space-y-1 text-sm">
-                  <li>• PayPal Account Balance</li>
-                  <li>• PayPal Credit</li>
-                  <li>• Cards linked to PayPal</li>
-                  <li>• Bank accounts linked to PayPal</li>
-                </ul>
-                <p className="text-xs text-muted-foreground dark:text-gray-400 mt-2">
-                  PayPal requires authentication for each payment but provides access to all your PayPal payment
-                  methods.
-                </p>
-              </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
             </div>
-          </CardContent>
-        </Card>
+
+            {/* Payment Methods Info */}
+            <Card className="mt-8 dark:bg-gray-800 dark:border-gray-700">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 dark:text-white">
+                  <Info className="h-5 w-5" />
+                  <span>Payment Method Information</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-3 gap-6 dark:text-gray-300">
+                  <div>
+                    <h3 className="font-medium mb-2 dark:text-white">Cards & Digital Wallets</h3>
+                    <ul className="space-y-1 text-sm">
+                      <li>• Credit & Debit Cards (Visa, Mastercard, Amex)</li>
+                      <li>• Apple Pay (Safari on iOS/macOS)</li>
+                      <li>• Google Pay (Chrome on Android/Desktop)</li>
+                      <li>• Link by Stripe (Save for faster checkout)</li>
+                    </ul>
+                    <p className="text-xs text-muted-foreground dark:text-gray-400 mt-2">
+                      These payment methods are saved securely and can be reused. Digital wallets require compatible
+                      browsers.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-medium mb-2 dark:text-white">Bank Accounts</h3>
+                    <ul className="space-y-1 text-sm">
+                      <li>• US Bank Accounts (ACH Direct Debit)</li>
+                      <li>• Requires account verification</li>
+                      <li>• 3-5 business day processing</li>
+                      <li>• Lower processing fees</li>
+                    </ul>
+                    <p className="text-xs text-muted-foreground dark:text-gray-400 mt-2">
+                      Bank accounts require micro-deposit verification and are US-only.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-medium mb-2 dark:text-white">PayPal</h3>
+                    <ul className="space-y-1 text-sm">
+                      <li>• PayPal Account Balance</li>
+                      <li>• PayPal Credit</li>
+                      <li>• Cards linked to PayPal</li>
+                      <li>• Bank accounts linked to PayPal</li>
+                    </ul>
+                    <p className="text-xs text-muted-foreground dark:text-gray-400 mt-2">
+                      PayPal requires authentication for each payment but provides access to all your PayPal payment
+                      methods.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <BillingAnalytics customerId={customerId!} />
+          </TabsContent>
+
+          <TabsContent value="invoices">
+            <InvoiceManager />
+          </TabsContent>
+
+          <TabsContent value="alerts">
+            <BillingAlerts />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )
