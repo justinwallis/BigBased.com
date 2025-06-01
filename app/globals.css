@@ -1007,3 +1007,14 @@ html:not(.dark) {
   width: 100%;
   z-index: 100; /* Ensure it's above other content */
 }
+
+/* Ensure content doesn't get hidden behind fixed header */
+body {
+  padding-top: 0;
+}
+
+/* Add margin to main content areas to account for fixed header */
+main,
+.main-content {
+  margin-top: 4rem; /* 64px to match header height */
+}

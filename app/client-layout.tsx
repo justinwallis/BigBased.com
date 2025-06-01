@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useAuth } from "@/contexts/auth-context"
-import { TopNavigationBar } from "@/components/top-navigation-bar"
+import { SiteHeader } from "@/components/site-header"
 import { SignupPopup } from "@/components/signup-popup"
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
@@ -11,7 +11,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {user && <TopNavigationBar />}
+      <SiteHeader />
       {children}
       {!user && <SignupPopup />}
     </>

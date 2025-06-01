@@ -186,11 +186,11 @@ export function SiteHeader() {
 
   return (
     <>
+      <div className="h-16" /> {/* Spacer for fixed header */}
       <SearchPopup isOpen={isSearchPopupOpen} onClose={() => setIsSearchPopupOpen(false)} />
-
       <header
         className={cn(
-          "fixed top-0 left-0 right-0 z-[100] w-full border-b transition-all duration-200",
+          "fixed top-0 left-0 right-0 z-[100] w-full border-b transition-all duration-200 sticky",
           scrolled
             ? "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-md"
             : "bg-background",
