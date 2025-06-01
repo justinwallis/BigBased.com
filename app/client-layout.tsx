@@ -198,7 +198,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
       {/* Regular header at the top of the page */}
       {scrollState.isAtTop && (
-        <nav className="z-50 w-full flex items-center justify-between px-8 py-4 md:px-16 dark:text-white bg-transparent">
+        <nav className="z-50 w-full flex items-center justify-between px-8 py-2 md:px-16 dark:text-white bg-transparent">
           <div className="flex items-center space-x-8">
             <Link
               href="/"
@@ -249,8 +249,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         <nav
           className={cn(
             "fixed top-0 left-0 right-0 z-50 w-full",
-            "flex items-center justify-between px-8 py-4 md:px-16 dark:text-white",
-            "bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm shadow-md",
+            "flex items-center justify-between px-8 py-2 md:px-16 dark:text-white",
+            "bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm",
             "transition-transform duration-300",
             scrollState.isScrollingUp ? "translate-y-0" : "-translate-y-full",
           )}
