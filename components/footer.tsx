@@ -6,7 +6,7 @@ import { toggleSitemapEvent } from "./sitemap-container"
 import Image from "next/image"
 import { useTheme } from "@/components/theme-provider"
 
-export function Footer() {
+export default function Footer() {
   const { theme } = useTheme()
 
   // Use a more reliable approach with direct inline conditional
@@ -117,6 +117,3 @@ export function Footer() {
     </footer>
   )
 }
-
-// Named export
-export { Footer as default }

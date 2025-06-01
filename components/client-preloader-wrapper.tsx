@@ -1,17 +1,10 @@
 "use client"
 
-import type React from "react"
-
 import { useEffect, useState } from "react"
-import { Preloader } from "./preloader"
+import Preloader from "./preloader"
 import loadingManager from "@/utils/loading-manager"
 
-interface ClientPreloaderWrapperProps {
-  children: React.ReactNode
-  quotesToShow?: number
-}
-
-export function ClientPreloaderWrapper({ children, quotesToShow }: ClientPreloaderWrapperProps) {
+export default function ClientPreloaderWrapper({ children, quotesToShow }) {
   const [mounted, setMounted] = useState(false)
   const [preloaderDone, setPreloaderDone] = useState(false)
 
@@ -97,6 +90,3 @@ export function ClientPreloaderWrapper({ children, quotesToShow }: ClientPreload
     </>
   )
 }
-
-// Named export
-export { ClientPreloaderWrapper as default }

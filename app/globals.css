@@ -998,34 +998,3 @@ html:not(.dark) {
 .page-fade-wrapper:not([data-pathname="/"]) {
   transition-duration: 1.2s;
 }
-
-/* Add this to your globals.css or a similar global stylesheet */
-.sticky {
-  position: sticky;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 100; /* Ensure it's above other content */
-}
-
-/* Ensure content doesn't get hidden behind fixed header */
-body {
-  padding-top: 0;
-}
-
-/* Remove the margin-top from main content areas since we're using a spacer div */
-main,
-.main-content {
-  margin-top: 0;
-}
-
-/* Ensure the header has the right background in dark mode */
-.dark header {
-  background-color: #0f1117;
-  border-color: #2d3748;
-}
-
-/* Ensure the logo is visible in dark mode */
-.dark .logo-image {
-  filter: brightness(2);
-}

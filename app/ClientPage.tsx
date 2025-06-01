@@ -3,16 +3,30 @@
 import type { Viewport } from "next/types"
 import { viewportConfig } from "./metadata-config"
 import { useState, useEffect, Suspense } from "react"
+import { Search } from "lucide-react"
 import Link from "next/link"
+import Footer from "@/components/footer"
+import SideMenu from "@/components/side-menu"
 import HeroCarousel from "@/components/hero-carousel"
 import { useResourceLoading } from "@/hooks/use-resource-loading"
 import loadingManager from "@/utils/loading-manager"
-import { HeroCarouselSkeleton, LogoMarqueeSkeleton } from "@/components/loading-fallbacks"
+import { ErrorBoundary } from "@/components/error-boundary"
+import {
+  HeroCarouselSkeleton,
+  LogoMarqueeSkeleton,
+  ContentSectionSkeleton,
+  DomainMarqueeSkeleton,
+  WebsiteShowcaseSkeleton,
+} from "@/components/loading-fallbacks"
 import { errorLogger } from "@/utils/error-logger"
+import { ThemeToggle } from "@/components/theme-toggle"
 import OptimizedImage from "@/components/optimized-image"
+import FloatingNavigation from "@/components/floating-navigation"
 import ScrollAnimation from "@/components/scroll-animation"
 import { useTheme } from "@/components/theme-provider"
+import MegaMenu from "@/components/mega-menu"
 import { MenuIcons } from "@/components/menu-icons"
+import SearchPopup from "@/components/search-popup"
 
 // Add the import for LogoInfoSection at the top of the file with the other imports
 import LogoInfoSection from "@/components/logo-info-section"
@@ -20,14 +34,32 @@ import LogoInfoSection from "@/components/logo-info-section"
 import { logoItems } from "@/data/logo-items"
 // Add this import with the other imports at the top of the file
 import DigitalLibrarySection from "@/components/digital-library-section"
+// Import the new vertical domain scroller
+import VerticalDomainScroller from "@/components/vertical-domain-scroller"
 // Import the new About section
 import { AboutSection } from "@/components/about-section"
+// Add the import for SitemapContainer at the top of the file with the other imports
+import SitemapContainer from "@/components/sitemap-container"
+// Import the new website showcase component
+import WebsiteShowcase from "@/components/website-showcase"
 // Import the new FundraisingAndPrayerSection component
 import FundraisingAndPrayerSection from "@/components/fundraising-and-prayer-section"
-import InteractiveLearningCenter from "@/components/interactive-learning-center"
-import EnhancedDomainMarquee from "@/components/enhanced-domain-marquee"
-import { SectionObserver } from "@/components/section-observer"
-import { SectionPersistenceWrapper } from "@/components/section-persistence-wrapper"
+// Import CallToAction component - Fixed: Changed from named import to default import
+import CallToAction from "@/components/call-to-action"
+// Import the new XShareWidget component
+import XShareWidget from "@/components/x-share-widget"
+// Import the new MediaVotingPlatform component
+import MediaVotingPlatform from "@/components/media-voting-platform"
+// Import the new LiveBasedIndexModule component
+import LiveBasedIndexModule from "@/components/live-based-index-module"
+// Add the import for BasedProfileTease at the top of the file with the other imports
+import BasedProfileTease from "@/components/based-profile-tease"
+// Import the BBLogo component
+import BBLogo from "@/components/bb-logo"
+// Make sure to add the import at the top of the file:
+import BasedQuiz from "@/components/based-quiz"
+// Add this import with the other imports at the top of the file
+import AuthButton from "@/components/auth/auth-button"
 
 export const viewport: Viewport = viewportConfig
 
@@ -354,7 +386,6 @@ export default function ClientPage() {
   const [isHovering, setIsHovering] = useState(false)
   const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false)
   const { theme } = useTheme()
-  const [isClient, setIsClient] = useState(false)
 
   // Register main page component with loading manager
   const { markLoaded } = useResourceLoading("main-page", 3)
@@ -427,97 +458,239 @@ export default function ClientPage() {
     setIsSearchPopupOpen(true)
   }
 
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
-
   // Hide content until loaded to prevent flash
   if (typeof window !== "undefined" && !contentLoaded) {
     return null
   }
 
-  if (!isClient) {
-    return null
-  }
-
   return (
-    <div className="flex flex-col w-full">
-      {/* Hero Section */}
-      <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden">
-        <div className="container mx-auto px-4 py-24 md:py-32 relative z-10">
-          <ScrollAnimation animation="fadeInUp" delay={0.2}>
-            <p className="text-lg md:text-xl mb-4 text-center">Big Based is not just a Project, but</p>
-          </ScrollAnimation>
-          <ScrollAnimation animation="fadeInUp" delay={0.4}>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-center mb-6">Answer to Madness.</h1>
-          </ScrollAnimation>
-          <ScrollAnimation animation="fadeInUp" delay={0.6}>
-            <p className="text-lg md:text-xl max-w-3xl mx-auto text-center mb-8">
-              Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth,
-              faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform.
-            </p>
-          </ScrollAnimation>
-          <ScrollAnimation animation="fadeInUp" delay={0.8}>
-            <div className="flex justify-center">
-              <a
-                href="/transform"
-                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:bg-white dark:text-black dark:hover:bg-gray-200"
-              >
-                How We Transform →
-              </a>
+    <main className="min-h-screen bg-white dark:bg-gray-900">
+      {/* Side Menu */}
+      <ErrorBoundary>
+        <SideMenu isOpen={isSideMenuOpen} setIsOpen={setIsSideMenuOpen} openWithSearch={openWithSearch} />
+      </ErrorBoundary>
+
+      {/* Search Popup */}
+      <SearchPopup isOpen={isSearchPopupOpen} onClose={() => setIsSearchPopupOpen(false)} />
+
+      {/* Floating Dot Navigation */}
+      <FloatingNavigation />
+
+      {/* Navigation */}
+      <nav className="flex items-center justify-between px-8 py-4 md:px-16 relative z-50 dark:text-white">
+        <div className="flex items-center space-x-8">
+          <Link
+            href="/"
+            className={`font-bold text-2xl transition-transform duration-300 ${logoHovered ? "scale-110" : ""} flex items-center`}
+            onMouseEnter={() => setLogoHovered(true)}
+            onMouseLeave={() => setLogoHovered(false)}
+          >
+            <div className="relative w-16 h-16 transition-all duration-300 flex items-center justify-center">
+              <BBLogo size="lg" />
             </div>
-          </ScrollAnimation>
+          </Link>
+          <div className="hidden md:flex items-center space-x-6">
+            <Link
+              href="/about"
+              className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
+            >
+              About
+            </Link>
+            <MegaMenu
+              label="Features"
+              sections={featuresMegaMenu.sections}
+              sideSections={featuresMegaMenu.sideSections}
+              promoItem={featuresMegaMenu.promoItem}
+            />
+            <Link
+              href="/contact"
+              className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
+            >
+              Contact
+            </Link>
+          </div>
         </div>
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <img
-            src="/digitalcross.png"
-            alt="Digital Cross"
-            className="w-full max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl digital-cross-pulse"
-          />
+        <div className="flex items-center space-x-4">
+          <ThemeToggle />
+          <button
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors duration-200"
+            onClick={handleSearchClick}
+          >
+            <Search className="h-5 w-5 dark:text-white" />
+          </button>
+          <AuthButton />
         </div>
+      </nav>
+
+      {/* Hero Carousel */}
+      <section id="hero">
+        <LazyHeroCarousel />
       </section>
 
-      {/* Domain Marquee */}
-      <SectionPersistenceWrapper sectionId="domain-marquee">
-        <SectionObserver>
-          <EnhancedDomainMarquee />
-        </SectionObserver>
-      </SectionPersistenceWrapper>
+      {/* Enhanced Logos Marquee Section with Detailed Tooltips and Links */}
+      <section id="partners-marquee">
+        <ScrollAnimation animation="fade-up">
+          <ErrorBoundary>
+            <Suspense fallback={<LogoMarqueeSkeleton />}>
+              {logosLoaded ? <LogoMarquee logos={logos} /> : <LogoMarqueeSkeleton />}
+            </Suspense>
+          </ErrorBoundary>
+        </ScrollAnimation>
+      </section>
 
-      {/* About Section */}
-      <SectionPersistenceWrapper sectionId="about-section">
-        <SectionObserver>
-          <AboutSection />
-        </SectionObserver>
-      </SectionPersistenceWrapper>
+      {/* Add the new FundraisingAndPrayerSection component */}
+      <section id="fundraising">
+        <ScrollAnimation animation="fade-up">
+          <ErrorBoundary>
+            <FundraisingAndPrayerSection />
+          </ErrorBoundary>
+        </ScrollAnimation>
+      </section>
 
-      {/* Logo Info Section */}
-      <SectionPersistenceWrapper sectionId="logo-info-section">
-        <SectionObserver>
-          <LogoInfoSection />
-        </SectionObserver>
-      </SectionPersistenceWrapper>
+      {/* Add the new DigitalLibrarySection component */}
+      <section id="library">
+        <ScrollAnimation animation="fade-up" delay={100}>
+          <ErrorBoundary>
+            <Suspense fallback={<ContentSectionSkeleton />}>
+              <DigitalLibrarySection />
+            </Suspense>
+          </ErrorBoundary>
+        </ScrollAnimation>
+      </section>
 
-      {/* Digital Library Section */}
-      <SectionPersistenceWrapper sectionId="digital-library-section">
-        <SectionObserver>
-          <DigitalLibrarySection />
-        </SectionObserver>
-      </SectionPersistenceWrapper>
+      {/* Revolution Section - Extremely simplified */}
+      <section id="revolution">
+        <ScrollAnimation animation="fade-up" delay={200}>
+          <ErrorBoundary>
+            <Suspense fallback={<ContentSectionSkeleton />}>
+              <section className="py-24 px-8 md:px-16 bg-black text-white text-center relative">
+                {/* Background Image with 10% opacity */}
+                <div
+                  className="absolute inset-0 w-full h-full"
+                  style={{
+                    backgroundImage: "url('/BckgTech.png')",
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    opacity: 0.1,
+                  }}
+                ></div>
 
-      {/* Interactive Learning Center */}
-      <SectionPersistenceWrapper sectionId="interactive-learning-center">
-        <SectionObserver>
-          <InteractiveLearningCenter />
-        </SectionObserver>
-      </SectionPersistenceWrapper>
+                {/* Content with relative positioning to appear above the background */}
+                <div className="relative z-10">
+                  <p className="mb-8">The Revolution</p>
+                  <h2 className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto leading-tight mb-12">
+                    Convergence of Political, Religious, and Technological Transformation Shaping our Future.
+                  </h2>
+                  <p className="max-w-2xl mx-auto">
+                    Big Based represents the convergence of Political, Religious, and Technological transformation
+                    shaping our future. It's a bold initiative to reclaim control, decentralize power, and align
+                    technology with faith and freedom. As the world reaches a tipping point, Big Based offers the tools
+                    and vision to lead this cultural and digital renaissance
+                  </p>
+                </div>
+              </section>
+            </Suspense>
+          </ErrorBoundary>
+        </ScrollAnimation>
+      </section>
 
-      {/* Fundraising and Prayer Section */}
-      <SectionPersistenceWrapper sectionId="fundraising-section">
-        <SectionObserver>
-          <FundraisingAndPrayerSection />
-        </SectionObserver>
-      </SectionPersistenceWrapper>
-    </div>
+      {/* About Big Based Section */}
+      <section id="about">
+        <ScrollAnimation animation="fade-up" delay={300}>
+          <ErrorBoundary>
+            <Suspense fallback={<ContentSectionSkeleton />}>
+              <AboutSection />
+            </Suspense>
+          </ErrorBoundary>
+        </ScrollAnimation>
+      </section>
+
+      {/* Add the new Media Voting Platform component */}
+      <section id="media">
+        <ScrollAnimation animation="fade-up" delay={400}>
+          <ErrorBoundary>
+            <Suspense fallback={<ContentSectionSkeleton />}>
+              <MediaVotingPlatform />
+            </Suspense>
+          </ErrorBoundary>
+        </ScrollAnimation>
+      </section>
+
+      {/* Add the new Live Based Index Module component */}
+      <ScrollAnimation animation="fade-up" delay={500}>
+        <ErrorBoundary>
+          <Suspense fallback={<ContentSectionSkeleton />}>
+            <LiveBasedIndexModule />
+          </Suspense>
+        </ErrorBoundary>
+      </ScrollAnimation>
+
+      {/* Add the new Website Showcase section above the Domain Collection */}
+      <section id="website-showcase">
+        <ScrollAnimation animation="fade-up" delay={600}>
+          <ErrorBoundary>
+            <Suspense fallback={<WebsiteShowcaseSkeleton />}>
+              <WebsiteShowcase />
+            </Suspense>
+          </ErrorBoundary>
+        </ScrollAnimation>
+      </section>
+
+      {/* Share & Connect on X */}
+      <section id="x-share-widget">
+        <ScrollAnimation animation="fade-up" delay={700}>
+          <ErrorBoundary>
+            <XShareWidget />
+          </ErrorBoundary>
+        </ScrollAnimation>
+      </section>
+
+      {/* Domain Scroller - Now positioned directly above the footer */}
+      <section id="domains">
+        <ScrollAnimation animation="fade-up" delay={800}>
+          <ErrorBoundary>
+            <Suspense fallback={<DomainMarqueeSkeleton />}>
+              <VerticalDomainScroller />
+            </Suspense>
+          </ErrorBoundary>
+        </ScrollAnimation>
+      </section>
+
+      {/* Based Profile Tease Section */}
+      <ScrollAnimation animation="fade-up" delay={900}>
+        <ErrorBoundary>
+          <BasedProfileTease />
+        </ErrorBoundary>
+      </ScrollAnimation>
+
+      {/* Based Quiz Section */}
+      <section id="based-quiz">
+        <ScrollAnimation animation="fade-up" delay={1000}>
+          <ErrorBoundary>
+            <BasedQuiz />
+          </ErrorBoundary>
+        </ScrollAnimation>
+      </section>
+
+      {/* Add the SitemapContainer component here */}
+      <ScrollAnimation animation="fade-up" delay={1100}>
+        <ErrorBoundary>
+          <SitemapContainer />
+        </ErrorBoundary>
+      </ScrollAnimation>
+
+      {/* Call to Action Section - Moved to the end, right above the footer */}
+      <section id="call-to-action" className="pb-10 mb-5">
+        <ScrollAnimation animation="fade-up" delay={1200}>
+          <ErrorBoundary>
+            <CallToAction />
+          </ErrorBoundary>
+        </ScrollAnimation>
+      </section>
+
+      <ErrorBoundary>
+        <Footer />
+      </ErrorBoundary>
+    </main>
   )
 }

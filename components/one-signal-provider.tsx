@@ -3,23 +3,13 @@
 import type React from "react"
 import { useEffect } from "react"
 
-interface OneSignalProviderProps {
-  children: React.ReactNode
-}
-
-declare global {
-  interface Window {
-    OneSignal: any
-  }
-}
-
-export function OneSignalProvider({ children }: OneSignalProviderProps) {
+const OneSignalProvider: React.FC = ({ children }) => {
   useEffect(() => {
     try {
       // Existing OneSignal initialization code
       window.OneSignal = window.OneSignal || []
-      window.OneSignal.push(() => {
-        window.OneSignal.init({
+      OneSignal.push(() => {
+        OneSignal.init({
           appId: "YOUR_ONESIGNAL_APP_ID",
           safari_web_id: "YOUR_SAFARI_WEB_ID",
           notifyButton: {
@@ -45,5 +35,4 @@ export function OneSignalProvider({ children }: OneSignalProviderProps) {
   return <>{children}</>
 }
 
-// Named export
-export { OneSignalProvider as default }
+export default OneSignalProvider

@@ -9,7 +9,7 @@ interface PageTransitionProps {
   children: ReactNode
 }
 
-export function PageTransition({ children }: PageTransitionProps) {
+export default function PageTransition({ children }: PageTransitionProps) {
   const pathname = usePathname()
   const [showMatrixTransition, setShowMatrixTransition] = useState(false)
   const [previousPath, setPreviousPath] = useState<string | null>(null)
@@ -55,6 +55,3 @@ export function PageTransition({ children }: PageTransitionProps) {
     </>
   )
 }
-
-// Named export
-export { PageTransition as default }
