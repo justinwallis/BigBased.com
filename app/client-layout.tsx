@@ -147,9 +147,12 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const [logoHovered, setLogoHovered] = useState(false)
   const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false)
   const { theme } = useTheme()
-  const [visible, setVisible] = useState(true)
-  const [lastScrollY, setLastScrollY] = useState(0)
-  const [isAtTop, setIsAtTop] = useState(true)
+  const [scrollState, setScrollState] = useState({
+    isAtTop: true,
+    isScrollingUp: false,
+    hasScrolledDown: false,
+    lastScrollY: 0,
+  })
 
   const { user } = useAuth()
 
@@ -157,20 +160,16 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
+      const isAtTop = currentScrollY < 10
+      const isScrollingUp = currentScrollY < scrollState.lastScrollY
+      const hasScrolledDown = currentScrollY > 100 // Only consider "scrolled down" after 100px
 
-      // Check if we're at the top
-      setIsAtTop(currentScrollY < 10)
-
-      // Determine scroll direction and visibility
-      if (currentScrollY > lastScrollY && currentScrollY > 80) {
-        // Scrolling down & past threshold - hide header
-        setVisible(false)
-      } else {
-        // Scrolling up or at top - show header
-        setVisible(true)
-      }
-
-      setLastScrollY(currentScrollY)
+      setScrollState({
+        isAtTop,
+        isScrollingUp,
+        hasScrolledDown: hasScrolledDown || scrollState.hasScrolledDown,
+        lastScrollY: currentScrollY,
+      })
     }
 
     // Add event listener
@@ -178,11 +177,14 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
     // Clean up
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [lastScrollY])
+  }, [scrollState.lastScrollY, scrollState.hasScrolledDown])
 
   const handleSearchClick = () => {
     setIsSearchPopupOpen(true)
   }
+
+  // Determine if the header should be fixed
+  const shouldBeFixed = !scrollState.isAtTop && (scrollState.isScrollingUp || !scrollState.hasScrolledDown)
 
   return (
     <>
@@ -194,63 +196,109 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       {/* Search Popup */}
       <SearchPopup isOpen={isSearchPopupOpen} onClose={() => setIsSearchPopupOpen(false)} />
 
-      {/* Global Navigation Header */}
-      <nav
-        className={cn(
-          "fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300",
-          "flex items-center justify-between px-8 py-4 md:px-16 dark:text-white",
-          visible ? "translate-y-0" : "-translate-y-full",
-          isAtTop
-            ? "bg-transparent"
-            : "bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm supports-[backdrop-filter]:bg-white/90 dark:supports-[backdrop-filter]:bg-gray-900/90 shadow-md",
-        )}
-      >
-        <div className="flex items-center space-x-8">
-          <Link
-            href="/"
-            className={`font-bold text-2xl transition-transform duration-300 ${logoHovered ? "scale-110" : ""} flex items-center`}
-            onMouseEnter={() => setLogoHovered(true)}
-            onMouseLeave={() => setLogoHovered(false)}
-          >
-            <div className="relative w-16 h-16 transition-all duration-300 flex items-center justify-center">
-              <BBLogo size="lg" />
+      {/* Regular header at the top of the page */}
+      {scrollState.isAtTop && (
+        <nav className="z-50 w-full flex items-center justify-between px-8 py-4 md:px-16 dark:text-white bg-transparent">
+          <div className="flex items-center space-x-8">
+            <Link
+              href="/"
+              className={`font-bold text-2xl transition-transform duration-300 ${logoHovered ? "scale-110" : ""} flex items-center`}
+              onMouseEnter={() => setLogoHovered(true)}
+              onMouseLeave={() => setLogoHovered(false)}
+            >
+              <div className="relative w-16 h-16 transition-all duration-300 flex items-center justify-center">
+                <BBLogo size="lg" />
+              </div>
+            </Link>
+            <div className="hidden md:flex items-center space-x-6">
+              <Link
+                href="/about"
+                className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
+              >
+                About
+              </Link>
+              <MegaMenu
+                label="Features"
+                sections={featuresMegaMenu.sections}
+                sideSections={featuresMegaMenu.sideSections}
+                promoItem={featuresMegaMenu.promoItem}
+              />
+              <Link
+                href="/contact"
+                className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
+              >
+                Contact
+              </Link>
             </div>
-          </Link>
-          <div className="hidden md:flex items-center space-x-6">
-            <Link
-              href="/about"
-              className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
-            >
-              About
-            </Link>
-            <MegaMenu
-              label="Features"
-              sections={featuresMegaMenu.sections}
-              sideSections={featuresMegaMenu.sideSections}
-              promoItem={featuresMegaMenu.promoItem}
-            />
-            <Link
-              href="/contact"
-              className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
-            >
-              Contact
-            </Link>
           </div>
-        </div>
-        <div className="flex items-center space-x-4">
-          <ThemeToggle />
-          <button
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors duration-200"
-            onClick={handleSearchClick}
-          >
-            <Search className="h-5 w-5 dark:text-white" />
-          </button>
-          <AuthButton />
-        </div>
-      </nav>
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
+            <button
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors duration-200"
+              onClick={handleSearchClick}
+            >
+              <Search className="h-5 w-5 dark:text-white" />
+            </button>
+            <AuthButton />
+          </div>
+        </nav>
+      )}
 
-      {/* Spacer to prevent content from being hidden under fixed header */}
-      <div className="h-20"></div>
+      {/* Sticky header that appears when scrolling up */}
+      {shouldBeFixed && (
+        <nav
+          className={cn(
+            "fixed top-0 left-0 right-0 z-50 w-full",
+            "flex items-center justify-between px-8 py-4 md:px-16 dark:text-white",
+            "bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm shadow-md",
+            "transition-transform duration-300",
+            scrollState.isScrollingUp ? "translate-y-0" : "-translate-y-full",
+          )}
+        >
+          <div className="flex items-center space-x-8">
+            <Link
+              href="/"
+              className={`font-bold text-2xl transition-transform duration-300 ${logoHovered ? "scale-110" : ""} flex items-center`}
+              onMouseEnter={() => setLogoHovered(true)}
+              onMouseLeave={() => setLogoHovered(false)}
+            >
+              <div className="relative w-16 h-16 transition-all duration-300 flex items-center justify-center">
+                <BBLogo size="lg" />
+              </div>
+            </Link>
+            <div className="hidden md:flex items-center space-x-6">
+              <Link
+                href="/about"
+                className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
+              >
+                About
+              </Link>
+              <MegaMenu
+                label="Features"
+                sections={featuresMegaMenu.sections}
+                sideSections={featuresMegaMenu.sideSections}
+                promoItem={featuresMegaMenu.promoItem}
+              />
+              <Link
+                href="/contact"
+                className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
+              >
+                Contact
+              </Link>
+            </div>
+          </div>
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
+            <button
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors duration-200"
+              onClick={handleSearchClick}
+            >
+              <Search className="h-5 w-5 dark:text-white" />
+            </button>
+            <AuthButton />
+          </div>
+        </nav>
+      )}
 
       {/* Page Content */}
       {children}
