@@ -133,6 +133,11 @@ body {
   }
 }
 
+/* Header transition */
+header {
+  transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
 /* Preloader animations */
 @keyframes float {
   0%,
@@ -997,24 +1002,4 @@ html:not(.dark) {
 
 .page-fade-wrapper:not([data-pathname="/"]) {
   transition-duration: 1.2s;
-}
-
-/* Sticky header with hide/show animation */
-.header-transition {
-  transition: transform 0.3s ease-in-out, background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-
-/* Ensure header doesn't interfere with page content */
-.header-spacer {
-  height: 4rem; /* 64px - same as header height */
-}
-
-/* Smooth scroll behavior */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Prevent layout shift when header hides/shows */
-body {
-  padding-top: 0;
 }

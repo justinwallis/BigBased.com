@@ -166,27 +166,25 @@ export function SiteHeader() {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false)
-  const [isVisible, setIsVisible] = useState(true)
+  const [visible, setVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
+  const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false)
 
-  // Add scroll event listener for hide/show behavior
+  // Add scroll event listener
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
 
-      // Set scrolled state for styling
+      // Determine if scrolled past threshold
       setScrolled(currentScrollY > 10)
 
-      // Hide/show logic
-      if (currentScrollY < lastScrollY || currentScrollY < 100) {
-        // Scrolling up or near top - show header
-        setIsVisible(true)
-      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Scrolling down and past threshold - hide header
-        setIsVisible(false)
-        // Close mobile menu if open
-        setMobileMenuOpen(false)
+      // Determine scroll direction and visibility
+      if (currentScrollY > lastScrollY && currentScrollY > 80) {
+        // Scrolling down & past threshold - hide header
+        setVisible(false)
+      } else {
+        // Scrolling up or at top - show header
+        setVisible(true)
       }
 
       setLastScrollY(currentScrollY)
@@ -208,11 +206,11 @@ export function SiteHeader() {
 
       <header
         className={cn(
-          "fixed top-0 left-0 right-0 z-[100] w-full border-b transition-all duration-300 ease-in-out",
+          "fixed top-0 left-0 right-0 z-[100] w-full border-b transition-all duration-300",
           scrolled
             ? "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-md"
             : "bg-background",
-          isVisible ? "translate-y-0" : "-translate-y-full",
+          visible ? "translate-y-0" : "-translate-y-full",
         )}
       >
         <div className="container flex h-16 items-center justify-between">
@@ -319,9 +317,8 @@ export function SiteHeader() {
           </div>
         )}
       </header>
-
-      {/* Spacer to prevent content from being hidden behind fixed header */}
-      <div className="h-16" />
+      {/* Add a spacer to prevent content from being hidden under the header */}
+      <div className="h-16"></div>
     </>
   )
 }

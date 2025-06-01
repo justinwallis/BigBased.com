@@ -10,7 +10,7 @@ interface NotificationPopupProps {
   onClose: () => void
 }
 
-export function NotificationPopup({ show, onSubscribe, onClose }: NotificationPopupProps) {
+export default function NotificationPopup({ show, onSubscribe, onClose }: NotificationPopupProps) {
   const [isVisible, setIsVisible] = useState(false)
 
   // Control visibility with animation
@@ -124,6 +124,3 @@ export function NotificationPopup({ show, onSubscribe, onClose }: NotificationPo
     </AnimatePresence>
   )
 }
-
-// Keep the default export for backward compatibility
-export default NotificationPopup

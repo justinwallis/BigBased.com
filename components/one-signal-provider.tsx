@@ -3,13 +3,7 @@
 import type React from "react"
 import { useEffect } from "react"
 
-declare global {
-  interface Window {
-    OneSignal: any
-  }
-}
-
-export function OneSignalProvider({ children }: { children: React.ReactNode }) {
+const OneSignalProvider: React.FC = ({ children }) => {
   useEffect(() => {
     try {
       // Existing OneSignal initialization code
@@ -41,5 +35,4 @@ export function OneSignalProvider({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
-// Keep the default export for backward compatibility
 export default OneSignalProvider
