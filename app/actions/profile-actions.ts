@@ -411,8 +411,15 @@ export async function getUserProfileByUsername(username: string): Promise<any> {
       // Remove _extended from social_links for clean data
       const { _extended, ...cleanSocialLinks } = data.social_links
       data.social_links = cleanSocialLinks
+    } else {
+      // Set default empty objects if no extended data exists
+      data.personal_info = {}
+      data.location_info = {}
+      data.contact_info = {}
+      data.personal_details = {}
     }
 
+    console.log("Profile data for username:", username, data)
     return data
   } catch (error) {
     console.error("Error in getUserProfileByUsername:", error)
