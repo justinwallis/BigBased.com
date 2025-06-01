@@ -1,9 +1,19 @@
-import type { ReactNode } from "react"
+"use client"
 
-interface ClientLayoutProps {
-  children: ReactNode
+import type React from "react"
+
+import { useAuth } from "@/contexts/auth-context"
+import { SignupPopup } from "@/components/signup-popup"
+
+export function ClientLayout({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth()
+
+  return (
+    <>
+      {children}
+      {!user && <SignupPopup />}
+    </>
+  )
 }
 
-export default function ClientLayout({ children }: ClientLayoutProps) {
-  return <>{children}</>
-}
+export default ClientLayout

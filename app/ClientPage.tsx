@@ -27,6 +27,7 @@ import { useTheme } from "@/components/theme-provider"
 import MegaMenu from "@/components/mega-menu"
 import { MenuIcons } from "@/components/menu-icons"
 import SearchPopup from "@/components/search-popup"
+import { cn } from "@/lib/utils"
 
 // Add the import for LogoInfoSection at the top of the file with the other imports
 import LogoInfoSection from "@/components/logo-info-section"
@@ -386,6 +387,8 @@ export default function ClientPage() {
   const [isHovering, setIsHovering] = useState(false)
   const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false)
   const { theme } = useTheme()
+  const [visible, setVisible] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
 
   // Register main page component with loading manager
   const { markLoaded } = useResourceLoading("main-page", 3)
@@ -419,6 +422,30 @@ export default function ClientPage() {
   useEffect(() => {
     markLoaded()
   }, [markLoaded])
+
+  // Handle header visibility on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+
+      // Determine scroll direction and visibility
+      if (currentScrollY > lastScrollY && currentScrollY > 80) {
+        // Scrolling down & past threshold - hide header
+        setVisible(false)
+      } else {
+        // Scrolling up or at top - show header
+        setVisible(true)
+      }
+
+      setLastScrollY(currentScrollY)
+    }
+
+    // Add event listener
+    window.addEventListener("scroll", handleScroll, { passive: true })
+
+    // Clean up
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [lastScrollY])
 
   // Remove the initial preloader once React is hydrated and content is ready
   useEffect(() => {
@@ -477,7 +504,14 @@ export default function ClientPage() {
       <FloatingNavigation />
 
       {/* Navigation */}
-      <nav className="flex items-center justify-between px-8 py-4 md:px-16 relative z-50 dark:text-white">
+      <nav
+        className={cn(
+          "fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300",
+          "flex items-center justify-between px-8 py-4 md:px-16 dark:text-white",
+          "bg-white/95 dark:bg-gray-900/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-900/60 shadow-md",
+          visible ? "translate-y-0" : "-translate-y-full",
+        )}
+      >
         <div className="flex items-center space-x-8">
           <Link
             href="/"
@@ -521,6 +555,9 @@ export default function ClientPage() {
           <AuthButton />
         </div>
       </nav>
+
+      {/* Spacer to prevent content from being hidden under fixed header */}
+      <div className="h-20"></div>
 
       {/* Hero Carousel */}
       <section id="hero">
