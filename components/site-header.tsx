@@ -167,22 +167,40 @@ export function SiteHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false)
+  const [isVisible, setIsVisible] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
 
-  // Add scroll event listener
+  // Add scroll event listener for hide/show behavior
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 10)
+      const currentScrollY = window.scrollY
+
+      // Set scrolled state for styling
+      setScrolled(currentScrollY > 10)
+
+      // Hide/show logic
+      if (currentScrollY < lastScrollY || currentScrollY < 100) {
+        // Scrolling up or near top - show header
+        setIsVisible(true)
+      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Scrolling down and past threshold - hide header
+        setIsVisible(false)
+        // Close mobile menu if open
+        setMobileMenuOpen(false)
+      }
+
+      setLastScrollY(currentScrollY)
     }
 
     // Add event listener
-    window.addEventListener("scroll", handleScroll)
+    window.addEventListener("scroll", handleScroll, { passive: true })
 
     // Initial check
     handleScroll()
 
     // Clean up
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  }, [lastScrollY])
 
   return (
     <>
@@ -190,10 +208,11 @@ export function SiteHeader() {
 
       <header
         className={cn(
-          "z-[100] w-full border-b transition-all duration-200",
+          "fixed top-0 left-0 right-0 z-[100] w-full border-b transition-all duration-300 ease-in-out",
           scrolled
             ? "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-md"
             : "bg-background",
+          isVisible ? "translate-y-0" : "-translate-y-full",
         )}
       >
         <div className="container flex h-16 items-center justify-between">
@@ -300,6 +319,9 @@ export function SiteHeader() {
           </div>
         )}
       </header>
+
+      {/* Spacer to prevent content from being hidden behind fixed header */}
+      <div className="h-16" />
     </>
   )
 }
