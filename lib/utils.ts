@@ -5,19 +5,14 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-/**
- * Generates a random string of specified length
- * @param length The length of the random string
- * @returns A random string
- */
-export function generateRandomString(length: number): string {
-  const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+// Add the missing generateRandomString function
+export function generateRandomString(length = 8): string {
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
   let result = ""
-  const randomValues = new Uint8Array(length)
-  crypto.getRandomValues(randomValues)
+  const charactersLength = characters.length
 
   for (let i = 0; i < length; i++) {
-    result += charset[randomValues[i] % charset.length]
+    result += characters.charAt(Math.floor(Math.random() * charactersLength))
   }
 
   return result

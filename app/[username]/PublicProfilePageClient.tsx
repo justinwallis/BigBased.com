@@ -4,6 +4,7 @@ import { useState } from "react"
 import { notFound } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   CalendarDays,
@@ -20,6 +21,8 @@ import {
   Info,
 } from "lucide-react"
 import type { Profile } from "@/app/actions/profile-actions"
+import { ThemeToggle } from "@/components/theme-toggle"
+import Link from "next/link"
 
 interface PublicProfilePageClientProps {
   profile: Profile | null
@@ -146,12 +149,12 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
   // Get current location string
   const getCurrentLocation = () => {
-    if (!profile.location) return null
+    if (!profile?.location_info) return null
 
     const parts = [
-      profile.location.current_city,
-      profile.location.current_state,
-      profile.location.current_country,
+      profile?.location_info?.current_city,
+      profile?.location_info?.current_state,
+      profile?.location_info?.current_country,
     ].filter(Boolean)
 
     return parts.length > 0 ? parts.join(", ") : null
@@ -161,16 +164,16 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
   const generateShortBio = () => {
     const parts = []
 
-    if (profile.personal_details?.religious_views) {
-      parts.push(profile.personal_details.religious_views)
+    if (profile?.personal_details?.religious_views) {
+      parts.push(profile?.personal_details.religious_views)
     }
 
-    if (profile.personal_details?.political_views) {
-      parts.push(profile.personal_details.political_views)
+    if (profile?.personal_details?.political_views) {
+      parts.push(profile?.personal_details.political_views)
     }
 
-    if (profile.personal_info?.gender) {
-      parts.push(profile.personal_info.gender)
+    if (profile?.personal_info?.gender) {
+      parts.push(profile?.personal_info.gender)
     }
 
     return parts.join(" · ")
@@ -221,6 +224,21 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                 <span className="mr-4">0 followers</span>
                 <span>0 following</span>
               </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center space-x-2 ml-auto mt-4 md:mt-0 mb-4 md:mb-6">
+              <Link href="/">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-700 flex items-center space-x-2"
+                >
+                  <Home className="h-4 w-4" />
+                  <span>Back to Big Based</span>
+                </Button>
+              </Link>
+              <ThemeToggle variant="button" />
             </div>
           </div>
         </div>
@@ -282,7 +300,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Intro</h2>
 
               {/* Bio */}
-              {profile.bio && <p className="text-gray-700 dark:text-gray-300 mb-4">{profile.bio}</p>}
+              {profile?.bio && <p className="text-gray-700 dark:text-gray-300 mb-4">{profile.bio}</p>}
 
               {/* Short Bio Tags */}
               {generateShortBio() && <p className="text-gray-700 dark:text-gray-300 mb-4">{generateShortBio()}</p>}
@@ -303,28 +321,28 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               {/* Profile Info List */}
               <div className="space-y-3">
                 {/* Work */}
-                {profile.work_info?.company && (
+                {profile?.work_info?.company && (
                   <div className="flex items-center">
                     <Briefcase className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
                     <div>
                       <p className="text-sm text-gray-700 dark:text-gray-300">
-                        {profile.work_info.position ? `${profile.work_info.position} at ` : "Works at "}
-                        <span className="font-medium text-gray-900 dark:text-white">{profile.work_info.company}</span>
+                        {profile?.work_info?.position ? `${profile?.work_info.position} at ` : "Works at "}
+                        <span className="font-medium text-gray-900 dark:text-white">{profile?.work_info.company}</span>
                       </p>
                     </div>
                   </div>
                 )}
 
                 {/* Education */}
-                {profile.education_info?.school && (
+                {profile?.education_info?.school && (
                   <div className="flex items-center">
                     <GraduationCap className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
                     <div>
                       <p className="text-sm text-gray-700 dark:text-gray-300">
-                        Studied {profile.education_info.degree || "at"}
+                        Studied {profile?.education_info?.degree || "at"}
                         <span className="font-medium text-gray-900 dark:text-white">
                           {" "}
-                          {profile.education_info.school}
+                          {profile?.education_info.school}
                         </span>
                       </p>
                     </div>
@@ -345,13 +363,15 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                 )}
 
                 {/* Hometown */}
-                {profile.location?.hometown && (
+                {profile?.location_info?.hometown && (
                   <div className="flex items-center">
                     <Home className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
                     <div>
                       <p className="text-sm text-gray-700 dark:text-gray-300">
                         From{" "}
-                        <span className="font-medium text-gray-900 dark:text-white">{profile.location.hometown}</span>
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {profile?.location_info.hometown}
+                        </span>
                       </p>
                     </div>
                   </div>
@@ -372,14 +392,14 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                 </div>
 
                 {/* Nickname */}
-                {profile.personal_info?.nickname && (
+                {profile?.personal_info?.nickname && (
                   <div className="flex items-center">
                     <Info className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
                     <div>
                       <p className="text-sm text-gray-700 dark:text-gray-300">
                         Nickname:{" "}
                         <span className="font-medium text-gray-900 dark:text-white">
-                          {profile.personal_info.nickname}
+                          {profile?.personal_info.nickname}
                         </span>
                       </p>
                     </div>
@@ -387,14 +407,14 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                 )}
 
                 {/* Pronunciation */}
-                {profile.personal_info?.name_pronunciation && (
+                {profile?.personal_info?.name_pronunciation && (
                   <div className="flex items-center">
                     <Volume2 className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
                     <div>
                       <p className="text-sm text-gray-700 dark:text-gray-300">
                         Pronounces name:{" "}
                         <span className="font-medium text-gray-900 dark:text-white">
-                          {profile.personal_info.name_pronunciation}
+                          {profile?.personal_info.name_pronunciation}
                         </span>
                       </p>
                     </div>
@@ -496,38 +516,38 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">About</h3>
-                    {profile.personal_details?.about_me ? (
-                      <p className="text-gray-700 dark:text-gray-300">{profile.personal_details.about_me}</p>
+                    {profile?.personal_details?.about_me ? (
+                      <p className="text-gray-700 dark:text-gray-300">{profile?.personal_details.about_me}</p>
                     ) : (
                       <p className="text-gray-500 dark:text-gray-400">No additional information provided.</p>
                     )}
                   </div>
 
                   {/* Personal Information */}
-                  {(profile.personal_info?.nickname ||
-                    profile.personal_info?.birthday ||
-                    profile.personal_info?.gender ||
-                    (profile.personal_info?.languages && profile.personal_info.languages.length > 0)) && (
+                  {(profile?.personal_info?.nickname ||
+                    profile?.personal_info?.birthday ||
+                    profile?.personal_info?.gender ||
+                    (profile?.personal_info?.languages && profile?.personal_info.languages.length > 0)) && (
                     <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                       <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Personal Information</h3>
                       <div className="space-y-3">
-                        {profile.personal_info?.nickname && (
+                        {profile?.personal_info?.nickname && (
                           <div className="flex items-start">
                             <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
                               Nickname:
                             </span>
                             <span className="text-sm text-gray-900 dark:text-white">
-                              {profile.personal_info.nickname}
+                              {profile?.personal_info.nickname}
                             </span>
                           </div>
                         )}
-                        {profile.personal_info?.birthday && (
+                        {profile?.personal_info?.birthday && (
                           <div className="flex items-start">
                             <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
                               Birthday:
                             </span>
                             <span className="text-sm text-gray-900 dark:text-white">
-                              {new Date(profile.personal_info.birthday).toLocaleDateString("en-US", {
+                              {new Date(profile?.personal_info.birthday).toLocaleDateString("en-US", {
                                 month: "long",
                                 day: "numeric",
                                 year: "numeric",
@@ -535,25 +555,25 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
                             </span>
                           </div>
                         )}
-                        {profile.personal_info?.gender && (
+                        {profile?.personal_info?.gender && (
                           <div className="flex items-start">
                             <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
                               Gender:
                             </span>
                             <span className="text-sm text-gray-900 dark:text-white capitalize">
-                              {profile.personal_info.gender}
+                              {profile?.personal_info.gender}
                             </span>
                           </div>
                         )}
-                        {profile.personal_info?.languages && profile.personal_info.languages.length > 0 && (
+                        {profile?.personal_info?.languages && profile?.personal_info.languages.length > 0 && (
                           <div className="flex items-start">
                             <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
                               Languages:
                             </span>
                             <span className="text-sm text-gray-900 dark:text-white">
-                              {Array.isArray(profile.personal_info.languages)
-                                ? profile.personal_info.languages.join(", ")
-                                : profile.personal_info.languages}
+                              {Array.isArray(profile?.personal_info.languages)
+                                ? profile?.personal_info.languages.join(", ")
+                                : profile?.personal_info.languages}
                             </span>
                           </div>
                         )}
@@ -562,37 +582,39 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
                   )}
 
                   {/* Location Information */}
-                  {(profile.location?.current_city ||
-                    profile.location?.current_state ||
-                    profile.location?.current_country ||
-                    profile.location?.hometown) && (
+                  {(profile?.location_info?.current_city ||
+                    profile?.location_info?.current_state ||
+                    profile?.location_info?.current_country ||
+                    profile?.location_info?.hometown) && (
                     <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                       <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Location</h3>
                       <div className="space-y-3">
-                        {(profile.location?.current_city ||
-                          profile.location?.current_state ||
-                          profile.location?.current_country) && (
+                        {(profile?.location_info?.current_city ||
+                          profile?.location_info?.current_state ||
+                          profile?.location_info?.current_country) && (
                           <div className="flex items-start">
                             <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
                               Current:
                             </span>
                             <span className="text-sm text-gray-900 dark:text-white">
                               {[
-                                profile.location.current_city,
-                                profile.location.current_state,
-                                profile.location.current_country,
+                                profile?.location_info.current_city,
+                                profile?.location_info.current_state,
+                                profile?.location_info.current_country,
                               ]
                                 .filter(Boolean)
                                 .join(", ")}
                             </span>
                           </div>
                         )}
-                        {profile.location?.hometown && (
+                        {profile?.location_info?.hometown && (
                           <div className="flex items-start">
                             <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
                               Hometown:
                             </span>
-                            <span className="text-sm text-gray-900 dark:text-white">{profile.location.hometown}</span>
+                            <span className="text-sm text-gray-900 dark:text-white">
+                              {profile?.location_info.hometown}
+                            </span>
                           </div>
                         )}
                       </div>
@@ -600,25 +622,25 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
                   )}
 
                   {/* Contact Information */}
-                  {(profile.contact_info?.phone || profile.contact_info?.alt_email) && (
+                  {(profile?.contact_info?.phone || profile?.contact_info?.alt_email) && (
                     <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                       <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Contact</h3>
                       <div className="space-y-3">
-                        {profile.contact_info?.phone && (
+                        {profile?.contact_info?.phone && (
                           <div className="flex items-start">
                             <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
                               Phone:
                             </span>
-                            <span className="text-sm text-gray-900 dark:text-white">{profile.contact_info.phone}</span>
+                            <span className="text-sm text-gray-900 dark:text-white">{profile?.contact_info.phone}</span>
                           </div>
                         )}
-                        {profile.contact_info?.alt_email && (
+                        {profile?.contact_info?.alt_email && (
                           <div className="flex items-start">
                             <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
                               Alt Email:
                             </span>
                             <span className="text-sm text-gray-900 dark:text-white">
-                              {profile.contact_info.alt_email}
+                              {profile?.contact_info.alt_email}
                             </span>
                           </div>
                         )}
@@ -627,39 +649,39 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
                   )}
 
                   {/* Personal Details */}
-                  {(profile.personal_details?.relationship_status ||
-                    profile.personal_details?.political_views ||
-                    profile.personal_details?.religious_views) && (
+                  {(profile?.personal_details?.relationship_status ||
+                    profile?.personal_details?.political_views ||
+                    profile?.personal_details?.religious_views) && (
                     <div className="p-6">
                       <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Personal Details</h3>
                       <div className="space-y-3">
-                        {profile.personal_details?.relationship_status && (
+                        {profile?.personal_details?.relationship_status && (
                           <div className="flex items-start">
                             <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
                               Relationship:
                             </span>
                             <span className="text-sm text-gray-900 dark:text-white capitalize">
-                              {profile.personal_details.relationship_status.replace(/_/g, " ")}
+                              {profile?.personal_details.relationship_status.replace(/_/g, " ")}
                             </span>
                           </div>
                         )}
-                        {profile.personal_details?.political_views && (
+                        {profile?.personal_details?.political_views && (
                           <div className="flex items-start">
                             <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
                               Political Views:
                             </span>
                             <span className="text-sm text-gray-900 dark:text-white capitalize">
-                              {profile.personal_details.political_views}
+                              {profile?.personal_details.political_views}
                             </span>
                           </div>
                         )}
-                        {profile.personal_details?.religious_views && (
+                        {profile?.personal_details?.religious_views && (
                           <div className="flex items-start">
                             <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
                               Religious Views:
                             </span>
                             <span className="text-sm text-gray-900 dark:text-white capitalize">
-                              {profile.personal_details.religious_views}
+                              {profile?.personal_details.religious_views}
                             </span>
                           </div>
                         )}

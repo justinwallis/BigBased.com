@@ -28,6 +28,7 @@ import {
   Globe,
   Instagram,
   Youtube,
+  Home,
   Key,
 } from "lucide-react"
 import { AvatarUpload } from "@/components/avatar-upload"
@@ -540,8 +541,23 @@ export default function ProfileClientPage() {
           </div>
           <CardHeader className="pt-4">
             <div className="space-y-1">
-              <div>
+              <div className="flex items-center justify-between">
                 <CardTitle className="text-2xl">{formData.full_name || formData.username || "User"}</CardTitle>
+                <div className="flex items-center space-x-2">
+                  <Link href="/">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center space-x-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
+                    >
+                      <Home className="h-4 w-4" />
+                      <span>Back to Big Based</span>
+                    </Button>
+                  </Link>
+                  <Button variant="outline" size="sm" onClick={handleSignOut}>
+                    Sign Out
+                  </Button>
+                </div>
               </div>
               <CardDescription className="text-base">{user.email}</CardDescription>
               {formData.username && (
