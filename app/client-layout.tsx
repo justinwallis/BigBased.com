@@ -160,9 +160,11 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
-      const isAtTop = currentScrollY < 10
+
+      // Use different thresholds to prevent flashing
+      const isAtTop = scrollState.isAtTop ? currentScrollY < 50 : currentScrollY < 20
       const isScrollingUp = currentScrollY < scrollState.lastScrollY
-      const hasScrolledDown = currentScrollY > 100 // Only consider "scrolled down" after 100px
+      const hasScrolledDown = currentScrollY > 150
 
       setScrollState({
         isAtTop,
@@ -250,7 +252,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           className={cn(
             "fixed top-0 left-0 right-0 z-50 w-full",
             "flex items-center justify-between px-8 py-2 md:px-16 dark:text-white",
-            "bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm",
+            "bg-white/90 dark:bg-black/90 backdrop-blur-sm border-b border-gray-200/20 dark:border-gray-700/20",
             "transition-transform duration-300",
             scrollState.isScrollingUp ? "translate-y-0" : "-translate-y-full",
           )}
