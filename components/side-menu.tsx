@@ -99,7 +99,7 @@ function SimpleBreadcrumb() {
   )
 }
 
-export default function SideMenu({
+export function SideMenu({
   isOpen,
   setIsOpen,
   openWithSearch = false,
@@ -555,3 +555,6 @@ export default function SideMenu({
     </>
   )
 }
+
+// Named export
+export { SideMenu as default }

@@ -102,7 +102,7 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled
 }
 
-export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onComplete }: PreloaderProps) {
+export function Preloader({ minimumLoadingTime = 2500, quotesToShow, onComplete }: PreloaderProps) {
   const [loading, setLoading] = useState(true)
   const [progress, setProgress] = useState(0)
   const [currentMessage, setCurrentMessage] = useState("")
@@ -530,3 +530,6 @@ export default function Preloader({ minimumLoadingTime = 2500, quotesToShow, onC
     </AnimatePresence>
   )
 }
+
+// Named export
+export { Preloader as default }

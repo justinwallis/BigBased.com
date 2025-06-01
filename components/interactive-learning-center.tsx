@@ -48,7 +48,7 @@ interface UserProgress {
   }
 }
 
-export function InteractiveLearningCenter() {
+export default function InteractiveLearningCenter() {
   const [activeModule, setActiveModule] = useState<string>("mission")
   const [userProgress, setUserProgress] = useState<UserProgress>({})
   const [isVideoPlaying, setIsVideoPlaying] = useState(false)
@@ -549,3 +549,6 @@ export function InteractiveLearningCenter() {
     </div>
   )
 }
+
+// Named export
+export { InteractiveLearningCenter }

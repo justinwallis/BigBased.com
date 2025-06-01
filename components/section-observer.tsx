@@ -10,7 +10,7 @@ interface SectionObserverProps {
   children: React.ReactNode
 }
 
-export default function SectionObserver({ sectionId, children }: SectionObserverProps) {
+export function SectionObserver({ sectionId, children }: SectionObserverProps) {
   const { setActiveSection } = useNavigation()
   const sectionRef = useRef<HTMLDivElement>(null)
 
@@ -46,3 +46,6 @@ export default function SectionObserver({ sectionId, children }: SectionObserver
     </div>
   )
 }
+
+// Named export
+export { SectionObserver as default }

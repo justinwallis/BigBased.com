@@ -1013,8 +1013,19 @@ body {
   padding-top: 0;
 }
 
-/* Add margin to main content areas to account for fixed header */
+/* Remove the margin-top from main content areas since we're using a spacer div */
 main,
 .main-content {
-  margin-top: 4rem; /* 64px to match header height */
+  margin-top: 0;
+}
+
+/* Ensure the header has the right background in dark mode */
+.dark header {
+  background-color: #0f1117;
+  border-color: #2d3748;
+}
+
+/* Ensure the logo is visible in dark mode */
+.dark .logo-image {
+  filter: brightness(2);
 }

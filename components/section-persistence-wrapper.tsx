@@ -6,6 +6,9 @@ interface SectionPersistenceWrapperProps {
   children: ReactNode
 }
 
-export default function SectionPersistenceWrapper({ children }: SectionPersistenceWrapperProps) {
+export function SectionPersistenceWrapper({ children }: SectionPersistenceWrapperProps) {
   return <>{children}</>
 }
+
+// Named export
+export { SectionPersistenceWrapper as default }
