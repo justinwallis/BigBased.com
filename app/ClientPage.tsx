@@ -3,7 +3,6 @@
 import type { Viewport } from "next/types"
 import { viewportConfig } from "./metadata-config"
 import { useState, useEffect, Suspense } from "react"
-import { Search } from "lucide-react"
 import Link from "next/link"
 import Footer from "@/components/footer"
 import SideMenu from "@/components/side-menu"
@@ -19,15 +18,12 @@ import {
   WebsiteShowcaseSkeleton,
 } from "@/components/loading-fallbacks"
 import { errorLogger } from "@/utils/error-logger"
-import { ThemeToggle } from "@/components/theme-toggle"
 import OptimizedImage from "@/components/optimized-image"
 import FloatingNavigation from "@/components/floating-navigation"
 import ScrollAnimation from "@/components/scroll-animation"
 import { useTheme } from "@/components/theme-provider"
-import MegaMenu from "@/components/mega-menu"
 import { MenuIcons } from "@/components/menu-icons"
 import SearchPopup from "@/components/search-popup"
-import { cn } from "@/lib/utils"
 
 // Add the import for LogoInfoSection at the top of the file with the other imports
 import LogoInfoSection from "@/components/logo-info-section"
@@ -55,12 +51,8 @@ import MediaVotingPlatform from "@/components/media-voting-platform"
 import LiveBasedIndexModule from "@/components/live-based-index-module"
 // Add the import for BasedProfileTease at the top of the file with the other imports
 import BasedProfileTease from "@/components/based-profile-tease"
-// Import the BBLogo component
-import BBLogo from "@/components/bb-logo"
 // Make sure to add the import at the top of the file:
 import BasedQuiz from "@/components/based-quiz"
-// Add this import with the other imports at the top of the file
-import AuthButton from "@/components/auth/auth-button"
 
 export const viewport: Viewport = viewportConfig
 
@@ -387,8 +379,16 @@ export default function ClientPage() {
   const [isHovering, setIsHovering] = useState(false)
   const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false)
   const { theme } = useTheme()
-  const [visible, setVisible] = useState(true)
-  const [lastScrollY, setLastScrollY] = useState(0)
+  const [
+    /* Remove these state variables:
+   - `const [visible, setVisible] = useState(true)`
+   - `const [lastScrollY, setLastScrollY] = useState(0)` */
+  ] = useState(true)
+  const [
+    /* Remove these state variables:
+   - `const [visible, setVisible] = useState(true)`
+   - `const [lastScrollY, setLastScrollY] = useState(0)` */
+  ] = useState(0)
 
   // Register main page component with loading manager
   const { markLoaded } = useResourceLoading("main-page", 3)
@@ -423,29 +423,8 @@ export default function ClientPage() {
     markLoaded()
   }, [markLoaded])
 
-  // Handle header visibility on scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY
-
-      // Determine scroll direction and visibility
-      if (currentScrollY > lastScrollY && currentScrollY > 80) {
-        // Scrolling down & past threshold - hide header
-        setVisible(false)
-      } else {
-        // Scrolling up or at top - show header
-        setVisible(true)
-      }
-
-      setLastScrollY(currentScrollY)
-    }
-
-    // Add event listener
-    window.addEventListener("scroll", handleScroll, { passive: true })
-
-    // Clean up
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [lastScrollY])
+  // Remove the scroll handling useEffect that manages header visibility
+  /* Remove the scroll handling useEffect that manages header visibility */
 
   // Remove the initial preloader once React is hydrated and content is ready
   useEffect(() => {
@@ -503,61 +482,8 @@ export default function ClientPage() {
       {/* Floating Dot Navigation */}
       <FloatingNavigation />
 
-      {/* Navigation */}
-      <nav
-        className={cn(
-          "fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300",
-          "flex items-center justify-between px-8 py-4 md:px-16 dark:text-white",
-          "bg-white/95 dark:bg-gray-900/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-900/60 shadow-md",
-          visible ? "translate-y-0" : "-translate-y-full",
-        )}
-      >
-        <div className="flex items-center space-x-8">
-          <Link
-            href="/"
-            className={`font-bold text-2xl transition-transform duration-300 ${logoHovered ? "scale-110" : ""} flex items-center`}
-            onMouseEnter={() => setLogoHovered(true)}
-            onMouseLeave={() => setLogoHovered(false)}
-          >
-            <div className="relative w-16 h-16 transition-all duration-300 flex items-center justify-center">
-              <BBLogo size="lg" />
-            </div>
-          </Link>
-          <div className="hidden md:flex items-center space-x-6">
-            <Link
-              href="/about"
-              className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
-            >
-              About
-            </Link>
-            <MegaMenu
-              label="Features"
-              sections={featuresMegaMenu.sections}
-              sideSections={featuresMegaMenu.sideSections}
-              promoItem={featuresMegaMenu.promoItem}
-            />
-            <Link
-              href="/contact"
-              className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
-            >
-              Contact
-            </Link>
-          </div>
-        </div>
-        <div className="flex items-center space-x-4">
-          <ThemeToggle />
-          <button
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors duration-200"
-            onClick={handleSearchClick}
-          >
-            <Search className="h-5 w-5 dark:text-white" />
-          </button>
-          <AuthButton />
-        </div>
-      </nav>
-
-      {/* Spacer to prevent content from being hidden under fixed header */}
-      <div className="h-20"></div>
+      {/* Remove the entire navigation section: */}
+      {/* Remove the entire navigation section: */}
 
       {/* Hero Carousel */}
       <section id="hero">
