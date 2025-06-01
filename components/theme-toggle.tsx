@@ -1,6 +1,7 @@
 "use client"
+
 import { Moon, Sun } from "lucide-react"
-import { useTheme } from "@/components/theme-provider"
+import { useTheme } from "next-themes"
 
 interface ThemeToggleProps {
   variant?: "icon" | "button"
@@ -8,7 +9,11 @@ interface ThemeToggleProps {
 }
 
 export function ThemeToggle({ variant = "icon", className = "" }: ThemeToggleProps) {
-  const { theme, toggleTheme } = useTheme()
+  const { theme, setTheme } = useTheme()
+
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark")
+  }
 
   return (
     <button
