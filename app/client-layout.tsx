@@ -162,7 +162,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       const currentScrollY = window.scrollY
 
       // Use different thresholds to prevent flashing
-      const isAtTop = scrollState.isAtTop ? currentScrollY < 65 : currentScrollY < 35
+      const isAtTop = scrollState.isAtTop ? currentScrollY < 80 : currentScrollY < 40
       const isScrollingUp = currentScrollY < scrollState.lastScrollY
       const hasScrolledDown = currentScrollY > 150
 
@@ -200,7 +200,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
       {/* Regular header at the top of the page */}
       {scrollState.isAtTop && (
-        <nav className="z-50 w-full flex items-center justify-between px-8 py-1 md:px-16 dark:text-white dark:bg-black bg-transparent">
+        <nav className="z-50 w-full flex items-center justify-between px-8 py-2 md:px-16 dark:text-white dark:bg-black bg-transparent">
           <div className="flex items-center space-x-8">
             <Link
               href="/"
@@ -208,8 +208,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               onMouseEnter={() => setLogoHovered(true)}
               onMouseLeave={() => setLogoHovered(false)}
             >
-              <div className="relative w-12 h-12 transition-all duration-300 flex items-center justify-center">
-                <BBLogo size="md" />
+              <div className="relative w-16 h-16 transition-all duration-300 flex items-center justify-center">
+                <BBLogo size="lg" />
               </div>
             </Link>
             <div className="hidden md:flex items-center space-x-6">
@@ -246,15 +246,18 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         </nav>
       )}
 
+      {/* Spacer to prevent content from being cut off */}
+      <div className="h-20"></div>
+
       {/* Sticky header that appears when scrolling up */}
       {shouldBeFixed && (
         <nav
           className={cn(
             "fixed top-0 left-0 right-0 z-50 w-full",
-            "flex items-center justify-between px-8 py-1 md:px-16 dark:text-white",
+            "flex items-center justify-between px-8 py-2 md:px-16 dark:text-white",
             "bg-white/90 dark:bg-black/90 backdrop-blur-sm border-b border-gray-200/20 dark:border-gray-700/20",
-            "transition-transform duration-300",
-            scrollState.isScrollingUp ? "translate-y-0" : "-translate-y-full",
+            "transition-opacity duration-300",
+            scrollState.isScrollingUp ? "opacity-100" : "opacity-0 pointer-events-none",
           )}
         >
           <div className="flex items-center space-x-8">
@@ -264,8 +267,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               onMouseEnter={() => setLogoHovered(true)}
               onMouseLeave={() => setLogoHovered(false)}
             >
-              <div className="relative w-12 h-12 transition-all duration-300 flex items-center justify-center">
-                <BBLogo size="md" />
+              <div className="relative w-16 h-16 transition-all duration-300 flex items-center justify-center">
+                <BBLogo size="lg" />
               </div>
             </Link>
             <div className="hidden md:flex items-center space-x-6">
