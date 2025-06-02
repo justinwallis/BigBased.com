@@ -4,7 +4,6 @@ import { useState } from "react"
 import { notFound } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   CalendarDays,
@@ -21,8 +20,6 @@ import {
   Info,
 } from "lucide-react"
 import type { Profile } from "@/app/actions/profile-actions"
-import { ThemeToggle } from "@/components/theme-toggle"
-import Link from "next/link"
 
 interface PublicProfilePageClientProps {
   profile: Profile | null
@@ -227,19 +224,6 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center space-x-2 ml-auto mt-4 md:mt-0 mb-4 md:mb-6">
-              <Link href="/">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-700 flex items-center space-x-2"
-                >
-                  <Home className="h-4 w-4" />
-                  <span>Back to Big Based</span>
-                </Button>
-              </Link>
-              <ThemeToggle variant="button" />
-            </div>
           </div>
         </div>
       </div>
