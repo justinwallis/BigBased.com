@@ -48,7 +48,7 @@ export async function middleware(request: NextRequest) {
     console.log("No session found, redirecting to sign-in. Path:", path)
     console.log(
       "Available cookies:",
-      Array.from(request.cookies.entries()).map(([name]) => name),
+      request.cookies.getAll().map((cookie) => cookie.name),
     )
     const redirectUrl = new URL("/auth/sign-in", request.url)
     redirectUrl.searchParams.set("redirect", request.nextUrl.pathname)
