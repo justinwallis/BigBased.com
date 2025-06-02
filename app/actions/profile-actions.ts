@@ -30,24 +30,63 @@ export async function createProfile(profileData: {
   try {
     const supabase = createServerSupabaseClient()
 
-    // Generate a username if not provided
-    const username = profileData.username || profileData.email.split("@")[0]
+    // Generate a base username if not provided
+    const baseUsername = profileData.username || profileData.email.split("@")[0]
+    let username = baseUsername
+    let counter = 1
+
+    // Check if username exists and generate a unique one if needed
+    let usernameExists = true
+    while (usernameExists) {
+      const { data, error } = await supabase.from("profiles").select("username").eq("username", username).single()
+
+      if (error || !data) {
+        // Username doesn't exist
+        usernameExists = false
+      } else {
+        // Username exists, try with a number appended
+        username = `${baseUsername}${counter}`
+        counter++
+      }
+    }
 
     // Generate avatar URL if not provided
     const avatarUrl = profileData.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${username}`
 
-    const { error } = await supabase.from("profiles").insert({
-      id: profileData.id,
-      username,
-      full_name: profileData.full_name || "",
-      avatar_url: avatarUrl,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
+    // Check if a profile with this ID already exists
+    const { data: existingProfile } = await supabase.from("profiles").select("id").eq("id", profileData.id).single()
 
-    if (error) {
-      console.error("Error creating profile:", error)
-      return { success: false, error: error.message }
+    if (existingProfile) {
+      // Update existing profile
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({
+          username,
+          full_name: profileData.full_name || "",
+          avatar_url: avatarUrl,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", profileData.id)
+
+      if (updateError) {
+        console.error("Error updating profile:", updateError)
+        return { success: false, error: updateError.message }
+      }
+    } else {
+      // Create new profile
+      const { error } = await supabase.from("profiles").insert({
+        id: profileData.id,
+        username,
+        full_name: profileData.full_name || "",
+        avatar_url: avatarUrl,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+
+      if (error) {
+        console.error("Error creating profile:", error)
+        return { success: false, error: error.message }
+      }
     }
 
     revalidatePath("/profile")

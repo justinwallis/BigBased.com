@@ -21,6 +21,7 @@ export async function middleware(request: NextRequest) {
     path === "/faq" ||
     path === "/revolution" ||
     path.startsWith("/api/auth") ||
+    path.startsWith("/api/debug") ||
     path.startsWith("/auth/sign-in") ||
     path.startsWith("/auth/sign-up") ||
     path.startsWith("/auth/forgot-password") ||
@@ -35,13 +36,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Check for Supabase session token in cookies
-  const supabaseSession = request.cookies.get("sb-access-token") || request.cookies.get("supabase-auth-token")
+  // Check for Supabase session token in cookies - check more cookie variations
+  const supabaseSession =
+    request.cookies.get("sb-access-token") ||
+    request.cookies.get("supabase-auth-token") ||
+    request.cookies.get("sb-" + process.env.NEXT_PUBLIC_SUPABASE_URL?.split("//")[1]?.split(".")[0] + "-auth-token")
 
   // If it's a protected path and the user is not authenticated,
   // redirect to the sign-in page
   if (isProtectedPath && !supabaseSession) {
-    console.log("No session found, redirecting to sign-in")
+    console.log("No session found, redirecting to sign-in. Path:", path)
+    console.log(
+      "Available cookies:",
+      Array.from(request.cookies.entries()).map(([name]) => name),
+    )
     const redirectUrl = new URL("/auth/sign-in", request.url)
     redirectUrl.searchParams.set("redirect", request.nextUrl.pathname)
     return NextResponse.redirect(redirectUrl)
