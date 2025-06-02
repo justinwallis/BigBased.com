@@ -1,10 +1,16 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { Search } from "lucide-react"
+import Link from "next/link"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { useTheme } from "@/components/theme-provider"
+import MegaMenu from "@/components/mega-menu"
 import { MenuIcons } from "@/components/menu-icons"
 import SearchPopup from "@/components/search-popup"
 import SideMenu from "@/components/side-menu"
+import BBLogo from "@/components/bb-logo"
+import AuthButton from "@/components/auth/auth-button"
 import { cn } from "@/lib/utils"
 import { ErrorBoundary } from "@/components/error-boundary"
 import type React from "react"
@@ -192,8 +198,115 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       {/* Search Popup */}
       <SearchPopup isOpen={isSearchPopupOpen} onClose={() => setIsSearchPopupOpen(false)} />
 
+      {/* Consistent spacer to prevent layout shifts */}
+      <div className="h-14 bg-white dark:bg-gray-900"></div>
+
+      {/* Regular header at the top of the page */}
+      {scrollState.isAtTop && (
+        <nav className="absolute top-0 left-0 right-0 z-50 w-full flex items-center justify-between px-8 py-1 md:px-16 dark:text-white bg-transparent">
+          <div className="flex items-center space-x-8">
+            <Link
+              href="/"
+              className={`font-bold text-2xl transition-transform duration-300 ${logoHovered ? "scale-110" : ""} flex items-center`}
+              onMouseEnter={() => setLogoHovered(true)}
+              onMouseLeave={() => setLogoHovered(false)}
+            >
+              <div className="relative w-12 h-12 transition-all duration-300 flex items-center justify-center">
+                <BBLogo size="md" />
+              </div>
+            </Link>
+            <div className="hidden md:flex items-center space-x-6">
+              <Link
+                href="/about"
+                className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
+              >
+                About
+              </Link>
+              <MegaMenu
+                label="Features"
+                sections={featuresMegaMenu.sections}
+                sideSections={featuresMegaMenu.sideSections}
+                promoItem={featuresMegaMenu.promoItem}
+              />
+              <Link
+                href="/contact"
+                className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
+              >
+                Contact
+              </Link>
+            </div>
+          </div>
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
+            <button
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors duration-200"
+              onClick={handleSearchClick}
+            >
+              <Search className="h-5 w-5 dark:text-white" />
+            </button>
+            <AuthButton />
+          </div>
+        </nav>
+      )}
+
+      {/* Sticky header that appears when scrolling up */}
+      {shouldBeFixed && (
+        <nav
+          className={cn(
+            "fixed top-0 left-0 right-0 z-50 w-full",
+            "flex items-center justify-between px-8 py-1 md:px-16 dark:text-white",
+            "bg-white/5 dark:bg-black/5 backdrop-blur-sm border-b border-gray-200/20 dark:border-gray-700/20",
+            "transition-opacity duration-300",
+            scrollState.isScrollingUp ? "opacity-100" : "opacity-0 pointer-events-none",
+          )}
+        >
+          <div className="flex items-center space-x-8">
+            <Link
+              href="/"
+              className={`font-bold text-2xl transition-transform duration-300 ${logoHovered ? "scale-110" : ""} flex items-center`}
+              onMouseEnter={() => setLogoHovered(true)}
+              onMouseLeave={() => setLogoHovered(false)}
+            >
+              <div className="relative w-12 h-12 transition-all duration-300 flex items-center justify-center">
+                <BBLogo size="md" />
+              </div>
+            </Link>
+            <div className="hidden md:flex items-center space-x-6">
+              <Link
+                href="/about"
+                className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
+              >
+                About
+              </Link>
+              <MegaMenu
+                label="Features"
+                sections={featuresMegaMenu.sections}
+                sideSections={featuresMegaMenu.sideSections}
+                promoItem={featuresMegaMenu.promoItem}
+              />
+              <Link
+                href="/contact"
+                className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
+              >
+                Contact
+              </Link>
+            </div>
+          </div>
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
+            <button
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors duration-200"
+              onClick={handleSearchClick}
+            >
+              <Search className="h-5 w-5 dark:text-white" />
+            </button>
+            <AuthButton />
+          </div>
+        </nav>
+      )}
+
       {/* Page Content */}
-      <div className={cn("transition-all duration-300", scrollState.isAtTop ? "pt-0" : "pt-14")}>{children}</div>
+      {children}
       {!user && <SignupPopup />}
     </>
   )
