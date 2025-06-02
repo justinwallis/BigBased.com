@@ -36,11 +36,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Check for Supabase session token in cookies - check more cookie variations
+  // Check for Supabase session token in cookies - check the actual cookie pattern
   const supabaseSession =
     request.cookies.get("sb-access-token") ||
     request.cookies.get("supabase-auth-token") ||
-    request.cookies.get("sb-" + process.env.NEXT_PUBLIC_SUPABASE_URL?.split("//")[1]?.split(".")[0] + "-auth-token")
+    request.cookies.get("sb-zcmjnapixchrzafkbzhq-auth-token") || // Add the specific cookie name
+    request.cookies.getAll().find((cookie) => cookie.name.startsWith("sb-") && cookie.name.includes("-auth-token"))
 
   // If it's a protected path and the user is not authenticated,
   // redirect to the sign-in page

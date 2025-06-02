@@ -1,4 +1,4 @@
-import { createServerClient as _createServerClient } from "@supabase/ssr"
+import { createServerClient as _createServerClient, type CookieOptions } from "@supabase/ssr"
 import { cookies } from "next/headers"
 
 export function createClient(useServiceRole = false) {
@@ -32,14 +32,14 @@ export function createClient(useServiceRole = false) {
       get(name: string) {
         return cookieStore.get(name)?.value
       },
-      set(name: string, value: string, options: any) {
+      set(name: string, value: string, options: CookieOptions) {
         try {
           cookieStore.set({ name, value, ...options })
         } catch (error) {
           console.error("Error setting cookie:", error)
         }
       },
-      remove(name: string, options: any) {
+      remove(name: string, options: CookieOptions) {
         try {
           cookieStore.set({ name, value: "", ...options, maxAge: 0 })
         } catch (error) {
@@ -50,8 +50,15 @@ export function createClient(useServiceRole = false) {
   })
 }
 
+export function createServerSupabaseClient() {
+  return createClient()
+}
+
+export function createRouteHandlerClient() {
+  return createClient()
+}
+
 // Export all the required named exports for backward compatibility
-export const createServerSupabaseClient = createClient
 export const createServerClient = createClient
 
 // Default export
