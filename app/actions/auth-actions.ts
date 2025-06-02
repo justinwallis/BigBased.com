@@ -4,6 +4,7 @@ import { cookies } from "next/headers"
 import { createClient } from "@supabase/supabase-js"
 import { generateRandomString } from "@/lib/utils"
 import { validatePassword } from "@/lib/password-validation"
+import { createProfile } from "./profile-actions" // Add this import
 
 // Auth event constants (duplicated here to avoid import issues)
 const AUTH_EVENTS = {
@@ -176,7 +177,7 @@ export async function register(formData: FormData) {
     // Log signup attempt
     await logAuthEvent(null, AUTH_EVENTS.SIGNUP_ATTEMPT, AUTH_STATUS.PENDING, { email })
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -191,6 +192,16 @@ export async function register(formData: FormData) {
         error: error.message,
       })
       return { error: error.message }
+    }
+
+    // Create a profile for the new user
+    if (data.user) {
+      console.log("Creating profile for new user:", data.user.id)
+      await createProfile({
+        id: data.user.id,
+        email: data.user.email || email,
+        username: email.split("@")[0],
+      })
     }
 
     // Log signup success
