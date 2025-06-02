@@ -109,6 +109,16 @@ export default function AuthButton() {
     window.location.href = "/"
   }
 
+  useEffect(() => {
+    if (user) {
+      console.log("User metadata:", user.user_metadata)
+      console.log("Avatar URL sources:", {
+        avatar_url: user.user_metadata?.avatar_url,
+        picture: user.user_metadata?.picture,
+      })
+    }
+  }, [user])
+
   if (loading) {
     return <div className="w-[90px] h-[40px] bg-gray-300 dark:bg-gray-700 rounded-full animate-pulse"></div>
   }
@@ -118,7 +128,15 @@ export default function AuthButton() {
       <DropdownMenu>
         <DropdownMenuTrigger className="focus:outline-none">
           <Avatar className="h-9 w-9 border-2 border-white dark:border-gray-800">
-            <AvatarImage src={user.user_metadata?.avatar_url || user.user_metadata?.picture || ""} alt={user.email} />
+            <AvatarImage
+              src={user.user_metadata?.avatar_url || user.user_metadata?.picture || ""}
+              alt={user.email}
+              onLoad={() => console.log("Avatar loaded successfully")}
+              onError={(e) => {
+                console.log("Avatar failed to load:", e, "User metadata:", user.user_metadata)
+                ;(e.target as HTMLImageElement).style.display = "none"
+              }}
+            />
             <AvatarFallback className="bg-blue-500 text-white">
               {user.user_metadata?.full_name ? (
                 user.user_metadata.full_name.substring(0, 2).toUpperCase()
@@ -132,95 +150,110 @@ export default function AuthButton() {
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="w-72 bg-gray-900 dark:bg-gray-900 border-gray-700 dark:border-gray-700 text-white"
+          className="w-72 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white"
         >
-          {/* User Info Header */}
-          <div className="flex items-center px-4 py-3 border-b border-gray-700">
-            <Avatar className="h-10 w-10 mr-3">
-              <AvatarImage
-                src={user.user_metadata?.avatar_url || user.user_metadata?.picture || ""}
-                alt={user.user_metadata?.full_name || user.email}
-              />
-              <AvatarFallback className="bg-blue-500 text-white">
-                {user.user_metadata?.full_name ? (
-                  user.user_metadata.full_name.substring(0, 2).toUpperCase()
-                ) : user.email ? (
-                  user.email.substring(0, 2).toUpperCase()
-                ) : (
-                  <UserCircle className="h-5 w-5" />
-                )}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <div className="font-medium text-white">
-                {user.user_metadata?.full_name || user.email?.split("@")[0] || "User"}
+          {/* User Info Header - Make it clickable and link to profile */}
+          <Link href="/profile" className="block">
+            <div className="flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">
+              <Avatar className="h-12 w-12 mr-3">
+                <AvatarImage
+                  src={user.user_metadata?.avatar_url || user.user_metadata?.picture || ""}
+                  alt={user.user_metadata?.full_name || user.email}
+                  onError={(e) => {
+                    console.log("Avatar image failed to load:", e)
+                    ;(e.target as HTMLImageElement).style.display = "none"
+                  }}
+                />
+                <AvatarFallback className="bg-blue-500 text-white text-lg">
+                  {user.user_metadata?.full_name ? (
+                    user.user_metadata.full_name.substring(0, 2).toUpperCase()
+                  ) : user.email ? (
+                    user.email.substring(0, 2).toUpperCase()
+                  ) : (
+                    <UserCircle className="h-6 w-6" />
+                  )}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <div className="font-medium text-gray-900 dark:text-white">
+                  {user.user_metadata?.full_name || user.email?.split("@")[0] || "User"}
+                </div>
               </div>
             </div>
-          </div>
+          </Link>
 
-          {/* Menu Items */}
+          {/* Menu Items - Update for light/dark theme */}
           <div className="py-2">
-            <DropdownMenuItem asChild className="px-4 py-3 hover:bg-gray-800 focus:bg-gray-800 text-white">
+            <DropdownMenuItem
+              asChild
+              className="px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 focus:bg-gray-100 dark:focus:bg-gray-800 text-gray-900 dark:text-white"
+            >
               <Link href="/profile/security" className="flex items-center justify-between w-full cursor-pointer">
                 <div className="flex items-center">
-                  <Settings className="h-5 w-5 mr-3 text-gray-400" />
+                  <Settings className="h-5 w-5 mr-3 text-gray-500 dark:text-gray-400" />
                   <span>Settings & privacy</span>
                 </div>
-                <ChevronRight className="h-4 w-4 text-gray-400" />
+                <ChevronRight className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               </Link>
             </DropdownMenuItem>
 
-            <DropdownMenuItem asChild className="px-4 py-3 hover:bg-gray-800 focus:bg-gray-800 text-white">
+            <DropdownMenuItem
+              asChild
+              className="px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 focus:bg-gray-100 dark:focus:bg-gray-800 text-gray-900 dark:text-white"
+            >
               <Link href="/contact" className="flex items-center justify-between w-full cursor-pointer">
                 <div className="flex items-center">
-                  <HelpCircle className="h-5 w-5 mr-3 text-gray-400" />
+                  <HelpCircle className="h-5 w-5 mr-3 text-gray-500 dark:text-gray-400" />
                   <span>Help & support</span>
                 </div>
-                <ChevronRight className="h-4 w-4 text-gray-400" />
+                <ChevronRight className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               </Link>
             </DropdownMenuItem>
 
-            <DropdownMenuItem asChild className="px-4 py-3 hover:bg-gray-800 focus:bg-gray-800 text-white">
+            <DropdownMenuItem
+              asChild
+              className="px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 focus:bg-gray-100 dark:focus:bg-gray-800 text-gray-900 dark:text-white"
+            >
               <Link href="/profile" className="flex items-center justify-between w-full cursor-pointer">
                 <div className="flex items-center">
-                  <Moon className="h-5 w-5 mr-3 text-gray-400" />
+                  <Moon className="h-5 w-5 mr-3 text-gray-500 dark:text-gray-400" />
                   <span>Display & accessibility</span>
                 </div>
-                <ChevronRight className="h-4 w-4 text-gray-400" />
+                <ChevronRight className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               </Link>
             </DropdownMenuItem>
 
-            <DropdownMenuItem className="px-4 py-3 hover:bg-gray-800 focus:bg-gray-800 text-white cursor-pointer">
+            <DropdownMenuItem className="px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 focus:bg-gray-100 dark:focus:bg-gray-800 text-gray-900 dark:text-white cursor-pointer">
               <div className="flex items-center">
-                <MessageSquare className="h-5 w-5 mr-3 text-gray-400" />
+                <MessageSquare className="h-5 w-5 mr-3 text-gray-500 dark:text-gray-400" />
                 <span>Give feedback</span>
-                <span className="ml-auto text-xs text-gray-400">⌘ B</span>
+                <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">⌘ B</span>
               </div>
             </DropdownMenuItem>
 
             <DropdownMenuItem
               onClick={handleSignOut}
-              className="px-4 py-3 hover:bg-gray-800 focus:bg-gray-800 text-white cursor-pointer"
+              className="px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 focus:bg-gray-100 dark:focus:bg-gray-800 text-gray-900 dark:text-white cursor-pointer"
             >
               <div className="flex items-center">
-                <LogOut className="h-5 w-5 mr-3 text-gray-400" />
+                <LogOut className="h-5 w-5 mr-3 text-gray-500 dark:text-gray-400" />
                 <span>Log Out</span>
               </div>
             </DropdownMenuItem>
           </div>
 
-          {/* Footer */}
-          <div className="px-4 py-3 border-t border-gray-700 text-xs text-gray-400">
+          {/* Footer - Update for light/dark theme */}
+          <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
             <div className="flex flex-wrap gap-2 mb-1">
-              <Link href="/privacy" className="hover:text-gray-300">
+              <Link href="/privacy" className="hover:text-gray-700 dark:hover:text-gray-300">
                 Privacy
               </Link>
               <span>·</span>
-              <Link href="/terms" className="hover:text-gray-300">
+              <Link href="/terms" className="hover:text-gray-700 dark:hover:text-gray-300">
                 Terms
               </Link>
               <span>·</span>
-              <Link href="/contact" className="hover:text-gray-300">
+              <Link href="/contact" className="hover:text-gray-700 dark:hover:text-gray-300">
                 More
               </Link>
             </div>
