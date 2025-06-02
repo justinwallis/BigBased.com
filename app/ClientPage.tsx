@@ -470,7 +470,7 @@ export default function ClientPage() {
   }
 
   return (
-    <main className="min-h-screen bg-white dark:bg-gray-900">
+    <main className="min-h-screen bg-white dark:bg-gray-900 -mt-14">
       {/* Side Menu */}
       <ErrorBoundary>
         <SideMenu isOpen={isSideMenuOpen} setIsOpen={setIsSideMenuOpen} openWithSearch={openWithSearch} />
