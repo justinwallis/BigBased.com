@@ -1024,49 +1024,49 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                 <TabsList className="h-12 bg-transparent border-0 p-0 space-x-1 justify-start">
                   <TabsTrigger
                     value="posts"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:border-b-[3px] hover:border-gray-300 dark:hover:border-gray-600"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-md px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700"
                   >
                     Posts
                   </TabsTrigger>
                   <TabsTrigger
                     value="about"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:border-b-[3px] hover:border-gray-300 dark:hover:border-gray-600"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-md px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700"
                   >
                     About
                   </TabsTrigger>
                   <TabsTrigger
                     value="reels"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:border-b-[3px] hover:border-gray-300 dark:hover:border-gray-600"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-md px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700"
                   >
                     Reels
                   </TabsTrigger>
                   <TabsTrigger
                     value="photos"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:border-b-[3px] hover:border-gray-300 dark:hover:border-gray-600"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-md px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700"
                   >
                     Photos
                   </TabsTrigger>
                   <TabsTrigger
                     value="videos"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:border-b-[3px] hover:border-gray-300 dark:hover:border-gray-600"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-md px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700"
                   >
                     Videos
                   </TabsTrigger>
                   <TabsTrigger
                     value="groups"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:border-b-[3px] hover:border-gray-300 dark:hover:border-gray-600 hidden md:flex"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-md px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hidden md:flex"
                   >
                     Groups
                   </TabsTrigger>
 
-                  {/* More Dropdown */}
+                  {/* More Dropdown - Fixed size approximately 90x50px */}
                   <div className="relative">
                     <button
                       onClick={() => setShowMoreDropdown(!showMoreDropdown)}
-                      className={`border-0 rounded-md px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center space-x-1 transition-colors ${
+                      className={`w-[90px] h-[50px] rounded-md px-3 py-1.5 text-sm font-medium flex items-center justify-center space-x-1 transition-colors ${
                         showMoreDropdown
                           ? "bg-gray-600 text-white"
-                          : "bg-transparent hover:bg-gray-600 hover:text-white"
+                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
                       }`}
                     >
                       <span>More</span>
