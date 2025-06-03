@@ -12,8 +12,6 @@ export default function AuthButton() {
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [buttonText, setButtonText] = useState("")
-  const [fadeState, setFadeState] = useState("fade-in")
 
   // Force a more reliable check for authentication status
   useEffect(() => {
@@ -24,14 +22,6 @@ export default function AuthButton() {
           console.error("No Supabase client available")
           setLoading(false)
           return
-        }
-
-        // Check if user has logged in before
-        const hasLoggedInBefore = localStorage.getItem("hasLoggedInBefore") === "true"
-        if (hasLoggedInBefore) {
-          setButtonText("Login")
-        } else {
-          setButtonText("Join")
         }
 
         // Force a fresh check of the session
@@ -105,30 +95,6 @@ export default function AuthButton() {
     }
   }, [])
 
-  // Alternate button text between Join and Login if not logged in and never logged in before
-  useEffect(() => {
-    if (user) return // Don't alternate if logged in
-
-    const hasLoggedInBefore = localStorage.getItem("hasLoggedInBefore") === "true"
-    if (hasLoggedInBefore) {
-      setButtonText("Login")
-      return // Don't alternate if they've logged in before
-    }
-
-    const interval = setInterval(() => {
-      // Start fade out
-      setFadeState("fade-out")
-
-      // After fade out completes, change text and fade in
-      setTimeout(() => {
-        setButtonText((prev) => (prev === "Join" ? "Login" : "Join"))
-        setFadeState("fade-in")
-      }, 300) // Match this with the CSS transition duration
-    }, 3000)
-
-    return () => clearInterval(interval)
-  }, [user])
-
   const handleSignOut = async () => {
     const supabase = supabaseClient()
     if (!supabase) return
@@ -138,7 +104,7 @@ export default function AuthButton() {
   }
 
   if (loading) {
-    return <div className="w-[90px] h-[40px] bg-gray-300 dark:bg-gray-700 rounded-full animate-pulse"></div>
+    return <div className="w-[140px] h-[36px] bg-gray-300 dark:bg-gray-700 rounded-md animate-pulse"></div>
   }
 
   if (user) {
@@ -151,7 +117,7 @@ export default function AuthButton() {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger className="focus:outline-none">
-          <div className="flex items-center gap-1 hover:opacity-80 transition-opacity">
+          <div className="relative hover:opacity-80 transition-opacity">
             <Avatar className="h-10 w-10 border-2 border-white dark:border-gray-800">
               {avatarUrl ? (
                 <AvatarImage
@@ -168,7 +134,10 @@ export default function AuthButton() {
                 {user.email ? initials : <UserCircle className="h-5 w-5" />}
               </AvatarFallback>
             </Avatar>
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            {/* Chevron overlay positioned on bottom right, overlapping halfway */}
+            <div className="absolute -bottom-1 -right-1 bg-white dark:bg-gray-800 rounded-full p-0.5 border border-gray-200 dark:border-gray-600">
+              <ChevronDown className="h-3 w-3 text-gray-600 dark:text-gray-300" />
+            </div>
           </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent
@@ -283,15 +252,19 @@ export default function AuthButton() {
   }
 
   return (
-    <Link
-      href={buttonText === "Join" ? "/auth/sign-up" : "/auth/sign-in"}
-      className="inline-flex items-center justify-center min-w-[90px] text-center bg-[#1877F2] hover:bg-[#166FE5] text-white px-6 py-2 rounded-md font-medium transition-all duration-200 hover:shadow-lg border border-transparent"
-    >
-      <span
-        className={`inline-block transition-opacity duration-300 ${fadeState === "fade-in" ? "opacity-100" : "opacity-0"}`}
+    <div className="flex items-center gap-2">
+      <Link
+        href="/auth/sign-in"
+        className="inline-flex items-center justify-center px-4 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
       >
-        {buttonText}
-      </span>
-    </Link>
+        Login
+      </Link>
+      <Link
+        href="/auth/sign-up"
+        className="inline-flex items-center justify-center px-4 py-1.5 text-sm font-medium text-white bg-gray-900 dark:bg-gray-100 dark:text-gray-900 border border-gray-900 dark:border-gray-100 rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors duration-200"
+      >
+        Join
+      </Link>
+    </div>
   )
 }
