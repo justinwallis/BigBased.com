@@ -6,13 +6,14 @@ import { UserCircle, Settings, HelpCircle, Moon, MessageSquare, LogOut, ChevronR
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { supabaseClient } from "@/lib/supabase/client"
+import { getCurrentUserProfile } from "@/app/actions/profile-actions"
 
 export default function AuthButton() {
   const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [buttonText, setButtonText] = useState("")
   const [fadeState, setFadeState] = useState("fade-in")
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
 
   // Force a more reliable check for authentication status
   useEffect(() => {
@@ -47,35 +48,20 @@ export default function AuthButton() {
         if (data.session?.user) {
           setUser(data.session.user)
 
-          // Extract avatar URL from user metadata
-          const metadata = data.session.user.user_metadata
-          console.log("User metadata:", metadata)
-
-          // Try to find avatar URL from various possible sources
-          const possibleAvatarSources = [
-            metadata?.avatar_url,
-            metadata?.picture,
-            metadata?.profile_picture,
-            metadata?.profile_image,
-            metadata?.photo_url,
-          ]
-
-          console.log("Possible avatar sources:", possibleAvatarSources)
-
-          // Find first non-empty avatar URL
-          const foundAvatar = possibleAvatarSources.find((url) => url && typeof url === "string")
-          if (foundAvatar) {
-            console.log("Found avatar URL:", foundAvatar)
-            setAvatarUrl(foundAvatar)
-          } else {
-            console.log("No avatar URL found in user metadata")
+          // Get the user's profile from Supabase profiles table
+          try {
+            const profileData = await getCurrentUserProfile()
+            console.log("Profile data from Supabase:", profileData)
+            setProfile(profileData)
+          } catch (profileError) {
+            console.error("Error fetching profile:", profileError)
           }
 
           // If user logs in, remember this for future visits
           localStorage.setItem("hasLoggedInBefore", "true")
         } else {
           setUser(null)
-          setAvatarUrl(null)
+          setProfile(null)
         }
 
         setLoading(false)
@@ -91,33 +77,26 @@ export default function AuthButton() {
     const supabase = supabaseClient()
     if (!supabase) return
 
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
       console.log("Auth state changed:", _event, session?.user?.email)
 
       if (session?.user) {
         setUser(session.user)
 
-        // Extract avatar URL from user metadata on auth state change
-        const metadata = session.user.user_metadata
-        const possibleAvatarSources = [
-          metadata?.avatar_url,
-          metadata?.picture,
-          metadata?.profile_picture,
-          metadata?.profile_image,
-          metadata?.photo_url,
-        ]
-
-        // Find first non-empty avatar URL
-        const foundAvatar = possibleAvatarSources.find((url) => url && typeof url === "string")
-        if (foundAvatar) {
-          setAvatarUrl(foundAvatar)
+        // Get the user's profile from Supabase profiles table
+        try {
+          const profileData = await getCurrentUserProfile()
+          console.log("Profile data from auth change:", profileData)
+          setProfile(profileData)
+        } catch (profileError) {
+          console.error("Error fetching profile on auth change:", profileError)
         }
 
         // If user logs in, remember this for future visits
         localStorage.setItem("hasLoggedInBefore", "true")
       } else {
         setUser(null)
-        setAvatarUrl(null)
+        setProfile(null)
       }
     })
 
@@ -163,13 +142,16 @@ export default function AuthButton() {
   }
 
   if (user) {
-    const displayName = user.user_metadata?.full_name || user.email?.split("@")[0] || "User"
+    const displayName = profile?.full_name || profile?.username || user.email?.split("@")[0] || "User"
     const initials = displayName.substring(0, 2).toUpperCase()
+    const avatarUrl = profile?.avatar_url
+
+    console.log("Avatar URL from profile:", avatarUrl)
 
     return (
       <DropdownMenu>
         <DropdownMenuTrigger className="focus:outline-none">
-          <Avatar className="h-11 w-11 border-2 border-white dark:border-gray-800">
+          <Avatar className="h-10 w-10 border-2 border-white dark:border-gray-800">
             {avatarUrl ? (
               <AvatarImage
                 src={avatarUrl || "/placeholder.svg"}
@@ -181,8 +163,8 @@ export default function AuthButton() {
                 }}
               />
             ) : null}
-            <AvatarFallback className="bg-blue-500 text-white text-lg">
-              {user.email ? initials : <UserCircle className="h-6 w-6" />}
+            <AvatarFallback className="bg-blue-500 text-white">
+              {user.email ? initials : <UserCircle className="h-5 w-5" />}
             </AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>
