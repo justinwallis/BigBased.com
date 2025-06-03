@@ -563,53 +563,53 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
           <div className="h-px bg-gray-300 dark:bg-gray-700 w-full"></div>
 
           {/* Navigation Tabs */}
-          <div className="bg-white dark:bg-gray-800 sticky top-0 z-10">
+          <div className="sticky top-0 z-10">
             <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
-              <TabsList className="h-12 bg-transparent border-0 p-0 space-x-1 w-full justify-start">
-                <TabsTrigger
-                  value="posts"
-                  className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
-                >
-                  Posts
-                </TabsTrigger>
-                <TabsTrigger
-                  value="about"
-                  className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
-                >
-                  About
-                </TabsTrigger>
-                <TabsTrigger
-                  value="reels"
-                  className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
-                >
-                  Reels
-                </TabsTrigger>
-                <TabsTrigger
-                  value="photos"
-                  className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
-                >
-                  Photos
-                </TabsTrigger>
-                <TabsTrigger
-                  value="videos"
-                  className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
-                >
-                  Videos
-                </TabsTrigger>
-                <TabsTrigger
-                  value="groups"
-                  className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hidden md:flex"
-                >
-                  Groups
-                </TabsTrigger>
-                <TabsTrigger
-                  value="more"
-                  className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hidden lg:flex"
-                >
-                  More
-                </TabsTrigger>
-              </TabsList>
-              <div className="flex justify-end px-4">
+              <div className="flex items-center justify-between">
+                <TabsList className="h-12 bg-transparent border-0 p-0 space-x-1 justify-start">
+                  <TabsTrigger
+                    value="posts"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+                  >
+                    Posts
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="about"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+                  >
+                    About
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="reels"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+                  >
+                    Reels
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="photos"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+                  >
+                    Photos
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="videos"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+                  >
+                    Videos
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="groups"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hidden md:flex"
+                  >
+                    Groups
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="more"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hidden lg:flex"
+                  >
+                    More
+                  </TabsTrigger>
+                </TabsList>
                 <button className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -622,9 +622,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
-                    <circle cx="12" cy="12" r="1" />
-                    <circle cx="19" cy="12" r="1" />
-                    <circle cx="5" cy="12" r="1" />
+                    <path d="m6 9 6 6 6-6" />
                   </svg>
                 </button>
               </div>
