@@ -243,7 +243,11 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
     const maxScroll = container.scrollWidth - container.clientWidth
 
     setShowLeftArrow(scrollLeft > 0)
-    setShowRightArrow(scrollLeft < maxScroll - 1) // -1 for rounding issues
+    setShowRightArrow(scrollRightArrow(container, maxScroll, scrollLeft)) // -1 for rounding issues
+  }
+
+  const scrollRightArrow = (container: HTMLElement, maxScroll: number, scrollLeft: number) => {
+    return scrollLeft < maxScroll - 1
   }
 
   const scrollFriendsLeft = () => {
@@ -1018,59 +1022,59 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
           <div className="h-px bg-gray-300 dark:bg-gray-700 w-full"></div>
 
           {/* Navigation Tabs */}
-          <div className="sticky top-0 z-10 bg-white dark:bg-gray-900">
+          <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 pt-[5px]">
             <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
               <div className="flex items-center justify-between">
                 <TabsList className="h-12 bg-transparent border-0 p-0 space-x-1 justify-start">
                   <TabsTrigger
                     value="posts"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-md px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700"
                   >
                     Posts
                   </TabsTrigger>
                   <TabsTrigger
                     value="about"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-md px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700"
                   >
                     About
                   </TabsTrigger>
                   <TabsTrigger
                     value="reels"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-md px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700"
                   >
                     Reels
                   </TabsTrigger>
                   <TabsTrigger
                     value="photos"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-md px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700"
                   >
                     Photos
                   </TabsTrigger>
                   <TabsTrigger
                     value="videos"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-md px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hidden sm:flex"
                   >
                     Videos
                   </TabsTrigger>
                   <TabsTrigger
                     value="groups"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-md px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hidden md:flex"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hidden md:flex"
                   >
                     Groups
                   </TabsTrigger>
 
-                  {/* More Dropdown - Fixed size approximately 90x50px */}
+                  {/* More Dropdown - Always visible */}
                   <div className="relative">
                     <button
                       onClick={() => setShowMoreDropdown(!showMoreDropdown)}
-                      className={`w-[90px] h-[50px] rounded-md px-3 py-1.5 text-sm font-medium flex items-center justify-center space-x-1 transition-colors ${
+                      className={`h-[50px] rounded-none px-4 py-3 text-sm font-medium flex items-center justify-center space-x-1 transition-colors border-b-[3px] border-transparent ${
                         showMoreDropdown
-                          ? "bg-gray-600 text-white"
+                          ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
                           : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
                       }`}
                     >
                       <span>More</span>
-                      <svg className="w-3 h-3" viewBox="0 0 12 12" fill="currentColor">
+                      <svg className="w-3 h-3 ml-1" viewBox="0 0 12 12" fill="currentColor">
                         <path d="M2 4l4 4 4-4H2z" />
                       </svg>
                     </button>
@@ -1159,12 +1163,32 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                           >
                             Manage sections
                           </button>
+                          {/* Show Videos in dropdown on smallest screens */}
+                          <button
+                            onClick={() => {
+                              setShowMoreDropdown(false)
+                              setActiveTab("videos")
+                            }}
+                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 dark:hover:bg-gray-800 sm:hidden"
+                          >
+                            Videos
+                          </button>
+                          {/* Show Groups in dropdown on small and medium screens */}
+                          <button
+                            onClick={() => {
+                              setShowMoreDropdown(false)
+                              setActiveTab("groups")
+                            }}
+                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 dark:hover:bg-gray-800 md:hidden"
+                          >
+                            Groups
+                          </button>
                         </div>
                       </div>
                     )}
                   </div>
                 </TabsList>
-                <button className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
+                <button className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full border border-gray-300 dark:border-gray-600">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="20"
