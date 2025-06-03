@@ -192,9 +192,11 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
   const handleAvatarUpload = async (file: File) => {
     try {
       const result = await uploadImageClient(file, "avatar")
-      if (result.success && result.url) {
-        // Update the avatar URL in the UI
-        // In a real app, you would update the profile state
+      if (result.success) {
+        // Close the dialog first
+        setIsAvatarDialogOpen(false)
+        // Show success message or update UI
+        // For now, reload to see the changes
         window.location.reload()
       } else {
         setUploadError(result.error || "Failed to upload avatar")
@@ -208,9 +210,11 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
   const handleCoverUpload = async (file: File) => {
     try {
       const result = await uploadImageClient(file, "banner")
-      if (result.success && result.url) {
-        // Update the cover URL in the UI
-        // In a real app, you would update the profile state
+      if (result.success) {
+        // Close the dialog first
+        setIsCoverDialogOpen(false)
+        // Show success message or update UI
+        // For now, reload to see the changes
         window.location.reload()
       } else {
         setUploadError(result.error || "Failed to upload cover photo")
