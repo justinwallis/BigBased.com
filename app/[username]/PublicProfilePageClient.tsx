@@ -180,7 +180,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
       <div className="w-full flex justify-center">
         <div className="max-w-[1150px] w-full">
           {/* Cover Photo */}
-          <div className="relative bg-purple-200 border-2 border-purple-500">
+          <div className="relative">
             <div
               className="h-[446px] w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative rounded-b-lg"
               style={{
@@ -210,13 +210,13 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
             </div>
 
             {/* Profile Info - Responsive Layout */}
-            <div className="relative bg-orange-200 border-2 border-orange-500" style={{ zIndex: 10 }}>
-              {/* Extra Large screens: Horizontal layout with 20% overlap - New max viewport at 1150px+ */}
-              <div className="hidden min-[1150px]:block border-4 border-red-500">
+            <div className="relative">
+              {/* Extra Large screens: Horizontal layout with 20% overlap - 1150px+ */}
+              <div className="hidden min-[1150px]:block">
                 <div className="pt-4 pb-3 px-8 flex items-end justify-between">
                   <div className="flex items-end space-x-6">
                     {/* Profile Picture - 20% overlap on extra large screens */}
-                    <div className="relative -mt-96 bg-yellow-300">
+                    <div className="relative -mt-96">
                       <div className="relative">
                         <Avatar className="h-40 w-40 border-4 border-white dark:border-gray-900 shadow-lg">
                           <AvatarImage
@@ -328,11 +328,11 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               </div>
 
               {/* Large screens: Horizontal layout with 15% overlap - 1024px to 1150px */}
-              <div className="hidden lg:block min-[1150px]:hidden border-4 border-blue-500">
+              <div className="hidden lg:block min-[1150px]:hidden">
                 <div className="pt-4 pb-3 px-8 flex items-end justify-between">
                   <div className="flex items-end space-x-6">
                     {/* Profile Picture - 15% overlap on large screens */}
-                    <div className="relative -mt-80 bg-yellow-300">
+                    <div className="relative -mt-80">
                       <div className="relative">
                         <Avatar className="h-40 w-40 border-4 border-white dark:border-gray-900 shadow-lg">
                           <AvatarImage
@@ -444,7 +444,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               </div>
 
               {/* Medium screens: Horizontal layout with 0% overlap - 768px to 1024px */}
-              <div className="hidden md:block lg:hidden border-4 border-green-500">
+              <div className="hidden md:block lg:hidden">
                 <div className="pt-4 pb-4 px-6 flex items-start justify-between">
                   <div className="flex items-start space-x-4">
                     {/* Profile Picture - 0% overlap on medium screens */}
