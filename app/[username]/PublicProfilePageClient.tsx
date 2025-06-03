@@ -211,8 +211,8 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
             {/* Profile Info - Responsive Layout */}
             <div className="relative">
-              {/* Extra Large screens: Horizontal layout with 20% overlap - New max viewport */}
-              <div className="hidden xl:block">
+              {/* Extra Large screens: Horizontal layout with 20% overlap - New max viewport at 1150px+ */}
+              <div className="hidden min-[1150px]:block">
                 <div className="pt-4 pb-3 px-8 flex items-end justify-between">
                   <div className="flex items-end space-x-6">
                     {/* Profile Picture - 20% overlap on extra large screens */}
@@ -327,8 +327,8 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                 </div>
               </div>
 
-              {/* Large screens: Horizontal layout with 15% overlap - Previous max viewport */}
-              <div className="hidden lg:block xl:hidden">
+              {/* Large screens: Horizontal layout with 15% overlap - 1024px to 1150px */}
+              <div className="hidden lg:block min-[1150px]:hidden">
                 <div className="pt-4 pb-3 px-8 flex items-end justify-between">
                   <div className="flex items-end space-x-6">
                     {/* Profile Picture - 15% overlap on large screens */}
@@ -443,7 +443,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                 </div>
               </div>
 
-              {/* Medium screens: Horizontal layout with 0% overlap */}
+              {/* Medium screens: Horizontal layout with 0% overlap - 768px to 1024px */}
               <div className="hidden md:block lg:hidden">
                 <div className="pt-4 pb-4 px-6 flex items-start justify-between">
                   <div className="flex items-start space-x-4">
@@ -559,7 +559,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                 </div>
               </div>
 
-              {/* Small screens: Centered vertical layout with 50% overlap */}
+              {/* Small screens: Centered vertical layout with 50% overlap - up to 768px */}
               <div className="block md:hidden">
                 <div className="pt-4 pb-4 px-4">
                   {/* Profile Picture - 50% overlap on small screens, centered */}
