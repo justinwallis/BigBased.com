@@ -12,6 +12,7 @@ export default function AuthButton() {
   const [loading, setLoading] = useState(true)
   const [buttonText, setButtonText] = useState("")
   const [fadeState, setFadeState] = useState("fade-in")
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
 
   // Force a more reliable check for authentication status
   useEffect(() => {
@@ -42,11 +43,39 @@ export default function AuthButton() {
         }
 
         console.log("Auth session data:", data)
-        setUser(data.session?.user || null)
 
-        // If user logs in, remember this for future visits
         if (data.session?.user) {
+          setUser(data.session.user)
+
+          // Extract avatar URL from user metadata
+          const metadata = data.session.user.user_metadata
+          console.log("User metadata:", metadata)
+
+          // Try to find avatar URL from various possible sources
+          const possibleAvatarSources = [
+            metadata?.avatar_url,
+            metadata?.picture,
+            metadata?.profile_picture,
+            metadata?.profile_image,
+            metadata?.photo_url,
+          ]
+
+          console.log("Possible avatar sources:", possibleAvatarSources)
+
+          // Find first non-empty avatar URL
+          const foundAvatar = possibleAvatarSources.find((url) => url && typeof url === "string")
+          if (foundAvatar) {
+            console.log("Found avatar URL:", foundAvatar)
+            setAvatarUrl(foundAvatar)
+          } else {
+            console.log("No avatar URL found in user metadata")
+          }
+
+          // If user logs in, remember this for future visits
           localStorage.setItem("hasLoggedInBefore", "true")
+        } else {
+          setUser(null)
+          setAvatarUrl(null)
         }
 
         setLoading(false)
@@ -64,11 +93,31 @@ export default function AuthButton() {
 
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log("Auth state changed:", _event, session?.user?.email)
-      setUser(session?.user || null)
 
-      // If user logs in, remember this for future visits
       if (session?.user) {
+        setUser(session.user)
+
+        // Extract avatar URL from user metadata on auth state change
+        const metadata = session.user.user_metadata
+        const possibleAvatarSources = [
+          metadata?.avatar_url,
+          metadata?.picture,
+          metadata?.profile_picture,
+          metadata?.profile_image,
+          metadata?.photo_url,
+        ]
+
+        // Find first non-empty avatar URL
+        const foundAvatar = possibleAvatarSources.find((url) => url && typeof url === "string")
+        if (foundAvatar) {
+          setAvatarUrl(foundAvatar)
+        }
+
+        // If user logs in, remember this for future visits
         localStorage.setItem("hasLoggedInBefore", "true")
+      } else {
+        setUser(null)
+        setAvatarUrl(null)
       }
     })
 
@@ -109,42 +158,31 @@ export default function AuthButton() {
     window.location.href = "/"
   }
 
-  useEffect(() => {
-    if (user) {
-      console.log("User metadata:", user.user_metadata)
-      console.log("Avatar URL sources:", {
-        avatar_url: user.user_metadata?.avatar_url,
-        picture: user.user_metadata?.picture,
-      })
-    }
-  }, [user])
-
   if (loading) {
     return <div className="w-[90px] h-[40px] bg-gray-300 dark:bg-gray-700 rounded-full animate-pulse"></div>
   }
 
   if (user) {
+    const displayName = user.user_metadata?.full_name || user.email?.split("@")[0] || "User"
+    const initials = displayName.substring(0, 2).toUpperCase()
+
     return (
       <DropdownMenu>
         <DropdownMenuTrigger className="focus:outline-none">
-          <Avatar className="h-9 w-9 border-2 border-white dark:border-gray-800">
-            <AvatarImage
-              src={user.user_metadata?.avatar_url || user.user_metadata?.picture || ""}
-              alt={user.email}
-              onLoad={() => console.log("Avatar loaded successfully")}
-              onError={(e) => {
-                console.log("Avatar failed to load:", e, "User metadata:", user.user_metadata)
-                ;(e.target as HTMLImageElement).style.display = "none"
-              }}
-            />
-            <AvatarFallback className="bg-blue-500 text-white">
-              {user.user_metadata?.full_name ? (
-                user.user_metadata.full_name.substring(0, 2).toUpperCase()
-              ) : user.email ? (
-                user.email.substring(0, 2).toUpperCase()
-              ) : (
-                <UserCircle className="h-5 w-5" />
-              )}
+          <Avatar className="h-11 w-11 border-2 border-white dark:border-gray-800">
+            {avatarUrl ? (
+              <AvatarImage
+                src={avatarUrl || "/placeholder.svg"}
+                alt={displayName}
+                onLoad={() => console.log("Header avatar loaded successfully")}
+                onError={(e) => {
+                  console.error("Header avatar failed to load:", e.target)
+                  console.log("Avatar URL that failed:", avatarUrl)
+                }}
+              />
+            ) : null}
+            <AvatarFallback className="bg-blue-500 text-white text-lg">
+              {user.email ? initials : <UserCircle className="h-6 w-6" />}
             </AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>
@@ -155,29 +193,24 @@ export default function AuthButton() {
           {/* User Info Header - Make it clickable and link to profile */}
           <Link href="/profile" className="block">
             <div className="flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">
-              <Avatar className="h-12 w-12 mr-3">
-                <AvatarImage
-                  src={user.user_metadata?.avatar_url || user.user_metadata?.picture || ""}
-                  alt={user.user_metadata?.full_name || user.email}
-                  onError={(e) => {
-                    console.log("Avatar image failed to load:", e)
-                    ;(e.target as HTMLImageElement).style.display = "none"
-                  }}
-                />
-                <AvatarFallback className="bg-blue-500 text-white text-lg">
-                  {user.user_metadata?.full_name ? (
-                    user.user_metadata.full_name.substring(0, 2).toUpperCase()
-                  ) : user.email ? (
-                    user.email.substring(0, 2).toUpperCase()
-                  ) : (
-                    <UserCircle className="h-6 w-6" />
-                  )}
+              <Avatar className="h-8 w-8 mr-3">
+                {avatarUrl ? (
+                  <AvatarImage
+                    src={avatarUrl || "/placeholder.svg"}
+                    alt={displayName}
+                    onLoad={() => console.log("Menu avatar loaded successfully")}
+                    onError={(e) => {
+                      console.error("Menu avatar failed to load:", e.target)
+                      console.log("Avatar URL that failed:", avatarUrl)
+                    }}
+                  />
+                ) : null}
+                <AvatarFallback className="bg-blue-500 text-white">
+                  {user.email ? initials : <UserCircle className="h-4 w-4" />}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <div className="font-medium text-gray-900 dark:text-white">
-                  {user.user_metadata?.full_name || user.email?.split("@")[0] || "User"}
-                </div>
+                <div className="font-medium text-gray-900 dark:text-white">{displayName}</div>
               </div>
             </div>
           </Link>
