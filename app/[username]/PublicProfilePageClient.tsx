@@ -211,8 +211,124 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
             {/* Profile Info - Responsive Layout */}
             <div className="relative">
-              {/* Large screens: Horizontal layout with 15% overlap - Facebook style */}
-              <div className="hidden lg:block">
+              {/* Extra Large screens: Horizontal layout with 20% overlap - New max viewport */}
+              <div className="hidden xl:block">
+                <div className="pt-4 pb-3 px-8 flex items-end justify-between">
+                  <div className="flex items-end space-x-6">
+                    {/* Profile Picture - 20% overlap on extra large screens */}
+                    <div className="relative -mt-36">
+                      <div className="relative">
+                        <Avatar className="h-40 w-40 border-4 border-white dark:border-gray-900 shadow-lg">
+                          <AvatarImage
+                            src={profile?.avatar_url || "/placeholder.svg"}
+                            alt={profile?.full_name || profile?.username}
+                          />
+                          <AvatarFallback className="text-4xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                            {getInitials(profile?.full_name || profile?.username || "U")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <button className="absolute bottom-3 right-3 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16m-2-2l1.586-1.586a2 2 0 0 1 2.828 0L20 14" />
+                            <circle cx="8" cy="9" r="2" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Name and Info - positioned to the right of profile picture */}
+                    <div className="pb-2">
+                      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                        {profile?.full_name || profile?.username}
+                        {profile?.personal_info?.nickname && (
+                          <span className="text-2xl text-gray-600 dark:text-gray-400 ml-2">
+                            ({profile.personal_info.nickname})
+                          </span>
+                        )}
+                      </h1>
+                      <div className="flex items-center mb-2">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">@{profile?.username}</p>
+                        <span className="mx-2 text-gray-400">•</span>
+                        <Badge className="bg-green-500/80 text-white border-0">Active Member</Badge>
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-3">
+                        <span className="mr-4 font-medium">0 followers</span>
+                        <span className="font-medium">0 following</span>
+                      </div>
+
+                      {/* Friend avatars */}
+                      <div className="flex items-center">
+                        <div className="flex -space-x-2">
+                          {[1, 2, 3, 4, 5].map((i) => (
+                            <div
+                              key={i}
+                              className="w-8 h-8 rounded-full border-2 border-white dark:border-gray-900 bg-gray-200 dark:bg-gray-700 overflow-hidden"
+                            >
+                              <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-500"></div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons - Right aligned and vertically centered */}
+                  <div className="flex items-center justify-end self-center">
+                    <div className="flex items-center space-x-2">
+                      <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-1.5 rounded-md font-medium flex items-center gap-1.5">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                          <path d="m15 5 4 4" />
+                        </svg>
+                        Edit
+                      </button>
+                      <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-1.5 rounded-md font-medium flex items-center gap-1.5">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M12 5v14" />
+                          <path d="M5 12h14" />
+                        </svg>
+                        Add to story
+                      </button>
+                      <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md">
+                        <MoreHorizontal className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Large screens: Horizontal layout with 15% overlap - Previous max viewport */}
+              <div className="hidden lg:block xl:hidden">
                 <div className="pt-4 pb-3 px-8 flex items-end justify-between">
                   <div className="flex items-end space-x-6">
                     {/* Profile Picture - 15% overlap on large screens */}
