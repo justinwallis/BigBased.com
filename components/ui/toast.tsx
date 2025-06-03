@@ -1,3 +1,5 @@
+"use client"
+
 import * as React from "react"
 import * as ToastPrimitives from "@radix-ui/react-toast"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -28,7 +30,7 @@ const toastVariants = cva(
     variants: {
       variant: {
         default: "border bg-background text-foreground",
-        destructive: "destructive group border-destructive bg-destructive text-destructive-foreground",
+        destructive: "destructive border-destructive bg-destructive text-destructive-foreground",
       },
     },
     defaultVariants: {
@@ -70,7 +72,6 @@ const ToastClose = React.forwardRef<
       "absolute right-2 top-2 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600",
       className,
     )}
-    toast-close=""
     {...props}
   >
     <X className="h-4 w-4" />
@@ -98,10 +99,45 @@ type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
 
 type ToastActionElement = React.ReactElement<typeof ToastAction>
 
-// Add the Toaster component
-export function Toaster() {
+interface ToastData {
+  id: string
+  title?: string
+  description?: string
+  action?: ToastActionElement
+  variant?: "default" | "destructive"
+}
+
+function useToast() {
+  const [toasts, setToasts] = React.useState<ToastData[]>([])
+
+  const toast = React.useCallback((props: Omit<ToastData, "id">) => {
+    const id = Math.random().toString(36).substr(2, 9)
+    setToasts((prev) => [...prev, { ...props, id }])
+
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((toast) => toast.id !== id))
+    }, 5000)
+  }, [])
+
+  return { toasts, toast }
+}
+
+function Toaster() {
+  const { toasts } = useToast()
+
   return (
     <ToastProvider>
+      {toasts.map(({ id, title, description, action, ...props }) => (
+        <Toast key={id} {...props}>
+          <div className="grid gap-1">
+            {title && <ToastTitle>{title}</ToastTitle>}
+            {description && <ToastDescription>{description}</ToastDescription>}
+          </div>
+          {action}
+          <ToastClose />
+        </Toast>
+      ))}
       <ToastViewport />
     </ToastProvider>
   )
@@ -117,4 +153,6 @@ export {
   ToastDescription,
   ToastClose,
   ToastAction,
+  Toaster,
+  useToast,
 }
