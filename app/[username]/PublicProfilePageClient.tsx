@@ -180,9 +180,9 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
       <div className="w-full flex justify-center">
         <div className="max-w-[1150px] w-full">
           {/* Cover Photo */}
-          <div className="relative">
+          <div className="relative bg-purple-200 border-2 border-purple-500">
             <div
-              className="h-[446px] w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative rounded-b-lg overflow-hidden"
+              className="h-[446px] w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative rounded-b-lg"
               style={{
                 backgroundImage: profile?.banner_url ? `url(${profile.banner_url})` : undefined,
                 backgroundSize: "cover",
@@ -210,7 +210,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
             </div>
 
             {/* Profile Info - Responsive Layout */}
-            <div className="relative">
+            <div className="relative bg-orange-200 border-2 border-orange-500" style={{ zIndex: 10 }}>
               {/* Extra Large screens: Horizontal layout with 20% overlap - New max viewport at 1150px+ */}
               <div className="hidden min-[1150px]:block border-4 border-red-500">
                 <div className="pt-4 pb-3 px-8 flex items-end justify-between">
