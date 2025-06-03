@@ -212,11 +212,11 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
             {/* Profile Info - Responsive Layout */}
             <div className="relative">
               {/* Extra Large screens: Horizontal layout with 20% overlap - New max viewport at 1150px+ */}
-              <div className="hidden min-[1150px]:block">
+              <div className="hidden min-[1149px]:block">
                 <div className="pt-4 pb-3 px-8 flex items-end justify-between">
                   <div className="flex items-end space-x-6">
                     {/* Profile Picture - 20% overlap on extra large screens */}
-                    <div className="relative -mt-36">
+                    <div className="relative -mt-48">
                       <div className="relative">
                         <Avatar className="h-40 w-40 border-4 border-white dark:border-gray-900 shadow-lg">
                           <AvatarImage
@@ -328,11 +328,11 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               </div>
 
               {/* Large screens: Horizontal layout with 15% overlap - 1024px to 1150px */}
-              <div className="hidden lg:block min-[1150px]:hidden">
+              <div className="hidden lg:block min-[1149px]:hidden">
                 <div className="pt-4 pb-3 px-8 flex items-end justify-between">
                   <div className="flex items-end space-x-6">
                     {/* Profile Picture - 15% overlap on large screens */}
-                    <div className="relative -mt-32">
+                    <div className="relative -mt-40">
                       <div className="relative">
                         <Avatar className="h-40 w-40 border-4 border-white dark:border-gray-900 shadow-lg">
                           <AvatarImage
