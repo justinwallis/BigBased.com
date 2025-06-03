@@ -29,6 +29,7 @@ import {
   Instagram,
   Youtube,
   Key,
+  ChevronDown,
 } from "lucide-react"
 import { AvatarUpload } from "@/components/avatar-upload"
 import { InteractiveBannerUpload } from "@/components/interactive-banner-upload"
@@ -569,23 +570,99 @@ export default function ProfileClientPage() {
 
         {/* Profile Tabs */}
         <Tabs defaultValue={initialTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="general" className="flex items-center space-x-2">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger
+              value="general"
+              className="flex items-center space-x-2 hover:border-b-2 hover:border-gray-300 data-[state=active]:border-b-2 data-[state=active]:border-primary"
+            >
               <User className="h-4 w-4" />
               <span>General</span>
             </TabsTrigger>
-            <TabsTrigger value="security" className="flex items-center space-x-2">
+            <TabsTrigger
+              value="security"
+              className="flex items-center space-x-2 hover:border-b-2 hover:border-gray-300 data-[state=active]:border-b-2 data-[state=active]:border-primary"
+            >
               <Shield className="h-4 w-4" />
               <span>Security</span>
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex items-center space-x-2">
+            <TabsTrigger
+              value="notifications"
+              className="flex items-center space-x-2 hover:border-b-2 hover:border-gray-300 data-[state=active]:border-b-2 data-[state=active]:border-primary"
+            >
               <Bell className="h-4 w-4" />
               <span>Notifications</span>
             </TabsTrigger>
-            <TabsTrigger value="billing" className="flex items-center space-x-2">
+            <TabsTrigger
+              value="billing"
+              className="flex items-center space-x-2 hover:border-b-2 hover:border-gray-300 data-[state=active]:border-b-2 data-[state=active]:border-primary"
+            >
               <CreditCard className="h-4 w-4" />
               <span>Billing</span>
             </TabsTrigger>
+            <div className="relative group">
+              <button className="flex items-center space-x-2 px-3 py-1.5 w-full justify-center hover:border-b-2 hover:border-gray-300">
+                <span>More</span>
+                <ChevronDown className="h-4 w-4" />
+              </button>
+              <div className="absolute left-0 mt-2 w-48 bg-gray-800 dark:bg-gray-900 shadow-lg rounded-md overflow-hidden z-50 transform opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 origin-top-left">
+                <div className="py-1">
+                  <button
+                    onClick={() => router.push("/profile/events")}
+                    className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700"
+                  >
+                    Events
+                  </button>
+                  <button
+                    onClick={() => router.push("/profile/friends")}
+                    className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700"
+                  >
+                    Friends
+                  </button>
+                  <button
+                    onClick={() => router.push("/profile/music")}
+                    className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700"
+                  >
+                    Music
+                  </button>
+                  <button
+                    onClick={() => router.push("/profile/check-ins")}
+                    className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700"
+                  >
+                    Check-ins
+                  </button>
+                  <button
+                    onClick={() => router.push("/profile/sports")}
+                    className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700"
+                  >
+                    Sports
+                  </button>
+                  <button
+                    onClick={() => router.push("/profile/apps")}
+                    className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700"
+                  >
+                    Apps and games
+                  </button>
+                  <button
+                    onClick={() => router.push("/profile/likes")}
+                    className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700"
+                  >
+                    Likes
+                  </button>
+                  <button
+                    onClick={() => router.push("/profile/reviews")}
+                    className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700"
+                  >
+                    Reviews given
+                  </button>
+                  <button
+                    onClick={() => router.push("/profile/manage-sections")}
+                    className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700"
+                  >
+                    Manage sections
+                  </button>
+                </div>
+              </div>
+            </div>
           </TabsList>
 
           {/* General Tab */}
