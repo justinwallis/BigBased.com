@@ -191,7 +191,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
   const scrollFriendsLeft = () => {
     const container = document.querySelector(".friends-scroll-container") as HTMLElement
     if (container) {
-      const cardWidth = 180 + 8 // card width + gap
+      const cardWidth = 175 + 8 // card width + gap
       const visibleCards = Math.floor(container.clientWidth / cardWidth)
       const scrollAmount = visibleCards * cardWidth
       container.scrollBy({ left: -scrollAmount, behavior: "smooth" })
@@ -201,7 +201,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
   const scrollFriendsRight = () => {
     const container = document.querySelector(".friends-scroll-container") as HTMLElement
     if (container) {
-      const cardWidth = 180 + 8 // card width + gap
+      const cardWidth = 175 + 8 // card width + gap
       const visibleCards = Math.floor(container.clientWidth / cardWidth)
       const scrollAmount = visibleCards * cardWidth
       container.scrollBy({ left: scrollAmount, behavior: "smooth" })
@@ -658,9 +658,9 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
           {/* People You May Know Section */}
           {showFriendsSection && (
-            <div className="py-4 px-4 md:px-8">
-              <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-4">
+            <div className="pb-4 px-4 md:px-8">
+              <div className="border border-gray-200/50 dark:border-gray-700/50 rounded-lg px-4 py-2">
+                <div className="flex items-center justify-between mb-2">
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white">People You May Know</h2>
                   <button className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline">
                     See all
@@ -757,7 +757,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     ].map((friend, index) => (
                       <div
                         key={index}
-                        className="flex-shrink-0 w-[180px] relative rounded-lg overflow-hidden border border-gray-300 dark:border-gray-700"
+                        className="flex-shrink-0 w-[175px] relative rounded-lg overflow-hidden border border-gray-300 dark:border-gray-700"
                       >
                         <button className="absolute top-2 right-2 w-8 h-8 bg-gray-800/60 hover:bg-gray-800/80 rounded-full flex items-center justify-center text-gray-200 z-10">
                           <svg
