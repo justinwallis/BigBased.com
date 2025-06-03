@@ -6,17 +6,22 @@ export async function POST(request: Request) {
     const { imageUrl } = await request.json()
 
     if (!imageUrl) {
-      return NextResponse.json({ success: false, error: "No image URL provided" }, { status: 400 })
+      return NextResponse.json({ success: false, error: "Image URL is required" }, { status: 400 })
     }
 
     // Determine if it's an avatar or banner based on the URL
-    const isBanner = imageUrl.includes("banner-")
+    const isBanner = imageUrl.includes("/banner-")
 
-    const result = isBanner ? await deleteBanner(imageUrl) : await deleteAvatar(imageUrl)
+    let result
+    if (isBanner) {
+      result = await deleteBanner(imageUrl)
+    } else {
+      result = await deleteAvatar(imageUrl)
+    }
 
     return NextResponse.json(result)
   } catch (error) {
-    console.error("Error in delete image API:", error)
+    console.error("Error in image delete API:", error)
     return NextResponse.json(
       {
         success: false,

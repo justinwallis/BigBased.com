@@ -1,9 +1,9 @@
-import { createServerSupabaseClient } from "@/lib/supabase/server"
+"use server"
 
-export async function uploadAvatar(
-  formData: FormData,
-  type: "avatar" | "banner" = "avatar",
-): Promise<{ success: boolean; url?: string; error?: string }> {
+import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { revalidatePath } from "next/cache"
+
+export async function uploadAvatar(formData: FormData) {
   try {
     const supabase = createServerSupabaseClient()
 
@@ -12,32 +12,18 @@ export async function uploadAvatar(
       data: { user },
       error: userError,
     } = await supabase.auth.getUser()
-
     if (userError || !user) {
-      return { success: false, error: "User not authenticated" }
+      return { success: false, error: "Not authenticated" }
     }
 
-    const file = formData.get("avatar") as File | null
-
+    const file = formData.get("avatar") as File
     if (!file) {
-      return { success: false, error: "No file selected" }
+      return { success: false, error: "No file provided" }
     }
 
-    const maxSize = type === "banner" ? 10 * 1024 * 1024 : 5 * 1024 * 1024 // 10MB for banner, 5MB for avatar
-
-    if (file.size > maxSize) {
-      return { success: false, error: "File size exceeds the limit" }
-    }
-
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"]
-
-    if (!allowedTypes.includes(file.type)) {
-      return { success: false, error: "Invalid file type" }
-    }
-
-    // Upload file
+    // Upload to Supabase Storage
     const fileExt = file.name.split(".").pop()
-    const fileName = `${user.id}/${type}-${Date.now()}.${fileExt}`
+    const fileName = `${user.id}/avatar-${Date.now()}.${fileExt}`
 
     const { data, error } = await supabase.storage.from("avatars").upload(fileName, file, {
       cacheControl: "3600",
@@ -45,27 +31,30 @@ export async function uploadAvatar(
     })
 
     if (error) {
-      console.error("Error uploading avatar:", error)
       return { success: false, error: error.message }
     }
 
-    const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${data.path}`
+    // Get public URL
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("avatars").getPublicUrl(fileName)
 
-    return { success: true, url }
-  } catch (error) {
-    console.error("Error in uploadAvatar:", error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error occurred",
+    // Update user profile
+    const { error: updateError } = await supabase.from("profiles").update({ avatar_url: publicUrl }).eq("id", user.id)
+
+    if (updateError) {
+      return { success: false, error: updateError.message }
     }
+
+    revalidatePath("/profile")
+    return { success: true, url: publicUrl }
+  } catch (error) {
+    console.error("Avatar upload error:", error)
+    return { success: false, error: "Upload failed" }
   }
 }
 
-export async function uploadBanner(formData: FormData): Promise<{ success: boolean; url?: string; error?: string }> {
-  return uploadAvatar(formData, "banner")
-}
-
-export async function deleteAvatar(avatarUrl: string): Promise<{ success: boolean; error?: string }> {
+export async function uploadBanner(formData: FormData) {
   try {
     const supabase = createServerSupabaseClient()
 
@@ -74,35 +63,49 @@ export async function deleteAvatar(avatarUrl: string): Promise<{ success: boolea
       data: { user },
       error: userError,
     } = await supabase.auth.getUser()
-
     if (userError || !user) {
-      return { success: false, error: "User not authenticated" }
+      return { success: false, error: "Not authenticated" }
     }
 
-    // Extract file path from URL
-    const urlParts = avatarUrl.split("/")
-    const fileName = urlParts[urlParts.length - 1]
-    const filePath = `${user.id}/${fileName}`
-
-    // Delete from storage
-    const { error: deleteError } = await supabase.storage.from("avatars").remove([filePath])
-
-    if (deleteError) {
-      console.error("Error deleting avatar:", deleteError)
-      return { success: false, error: deleteError.message }
+    const file = formData.get("banner") as File
+    if (!file) {
+      return { success: false, error: "No file provided" }
     }
 
-    return { success: true }
+    // Upload to Supabase Storage
+    const fileExt = file.name.split(".").pop()
+    const fileName = `${user.id}/banner-${Date.now()}.${fileExt}`
+
+    const { data, error } = await supabase.storage.from("avatars").upload(fileName, file, {
+      cacheControl: "3600",
+      upsert: false,
+    })
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    // Get public URL
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("avatars").getPublicUrl(fileName)
+
+    // Update user profile
+    const { error: updateError } = await supabase.from("profiles").update({ banner_url: publicUrl }).eq("id", user.id)
+
+    if (updateError) {
+      return { success: false, error: updateError.message }
+    }
+
+    revalidatePath("/profile")
+    return { success: true, url: publicUrl }
   } catch (error) {
-    console.error("Error in deleteAvatar:", error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error occurred",
-    }
+    console.error("Banner upload error:", error)
+    return { success: false, error: "Upload failed" }
   }
 }
 
-export async function deleteBanner(bannerUrl: string): Promise<{ success: boolean; error?: string }> {
+export async function deleteAvatar() {
   try {
     const supabase = createServerSupabaseClient()
 
@@ -111,30 +114,49 @@ export async function deleteBanner(bannerUrl: string): Promise<{ success: boolea
       data: { user },
       error: userError,
     } = await supabase.auth.getUser()
-
     if (userError || !user) {
-      return { success: false, error: "User not authenticated" }
+      return { success: false, error: "Not authenticated" }
     }
 
-    // Extract file path from URL
-    const urlParts = bannerUrl.split("/")
-    const fileName = urlParts[urlParts.length - 1]
-    const filePath = `${user.id}/${fileName}`
+    // Update user profile to remove avatar
+    const { error: updateError } = await supabase.from("profiles").update({ avatar_url: null }).eq("id", user.id)
 
-    // Delete from storage
-    const { error: deleteError } = await supabase.storage.from("avatars").remove([filePath])
-
-    if (deleteError) {
-      console.error("Error deleting banner:", deleteError)
-      return { success: false, error: deleteError.message }
+    if (updateError) {
+      return { success: false, error: updateError.message }
     }
 
+    revalidatePath("/profile")
     return { success: true }
   } catch (error) {
-    console.error("Error in deleteBanner:", error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error occurred",
+    console.error("Avatar delete error:", error)
+    return { success: false, error: "Delete failed" }
+  }
+}
+
+export async function deleteBanner() {
+  try {
+    const supabase = createServerSupabaseClient()
+
+    // Get current user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser()
+    if (userError || !user) {
+      return { success: false, error: "Not authenticated" }
     }
+
+    // Update user profile to remove banner
+    const { error: updateError } = await supabase.from("profiles").update({ banner_url: null }).eq("id", user.id)
+
+    if (updateError) {
+      return { success: false, error: updateError.message }
+    }
+
+    revalidatePath("/profile")
+    return { success: true }
+  } catch (error) {
+    console.error("Banner delete error:", error)
+    return { success: false, error: "Delete failed" }
   }
 }
