@@ -406,6 +406,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                             <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
                             <circle cx="12" cy="13" r="3" />
                           </svg>
+                          Edit
                         </button>
                       </div>
                     </div>
@@ -1019,10 +1020,16 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
           {/* Navigation Tabs */}
           <div className="sticky top-0 z-10 bg-white dark:bg-gray-900">
             <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
-              <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
                 <TabsList className="h-12 bg-transparent border-0 p-0 space-x-1 justify-start">
                   <TabsTrigger
                     value="posts"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:border-b-[3px] hover:border-gray-300 dark:hover:border-gray-600"
+                  >
+                    Posts
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="about"
                     className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:border-b-[3px] hover:border-gray-300 dark:hover:border-gray-600"
                   >
                     About
@@ -1056,10 +1063,10 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   <div className="relative">
                     <button
                       onClick={() => setShowMoreDropdown(!showMoreDropdown)}
-                      className={`bg-transparent border-0 border-b-[3px] border-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 flex items-center space-x-1 transition-colors ${
+                      className={`border-0 rounded-md px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center space-x-1 transition-colors ${
                         showMoreDropdown
                           ? "bg-gray-600 text-white"
-                          : "hover:bg-gray-600 hover:text-white hover:border-b-[3px] hover:border-gray-300 dark:hover:border-gray-600"
+                          : "bg-transparent hover:bg-gray-600 hover:text-white"
                       }`}
                     >
                       <span>More</span>
@@ -1484,6 +1491,190 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
                         <p>No posts to display yet.</p>
                         <p className="text-sm mt-2">Check back later for updates!</p>
                       </div>
+                    </div>
+                  </TabsContent>
+
+                  {/* About Tab */}
+                  <TabsContent value="about" className="mt-0">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">About</h3>
+                        {profile?.personal_details?.about_me ? (
+                          <p className="text-gray-700 dark:text-gray-300">{profile?.personal_details.about_me}</p>
+                        ) : (
+                          <p className="text-gray-500 dark:text-gray-400">No additional information provided.</p>
+                        )}
+                      </div>
+
+                      {/* Personal Information */}
+                      {(profile?.personal_info?.nickname ||
+                        profile?.personal_info?.birthday ||
+                        profile?.personal_info?.gender ||
+                        (profile?.personal_info?.languages && profile?.personal_info.languages.length > 0)) && (
+                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                            Personal Information
+                          </h3>
+                          <div className="space-y-3">
+                            {profile?.personal_info?.nickname && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Nickname:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {profile?.personal_info.nickname}
+                                </span>
+                              </div>
+                            )}
+                            {profile?.personal_info?.birthday && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Birthday:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {new Date(profile?.personal_info.birthday).toLocaleDateString("en-US", {
+                                    month: "long",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </span>
+                              </div>
+                            )}
+                            {profile?.personal_info?.gender && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Gender:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white capitalize">
+                                  {profile?.personal_info.gender}
+                                </span>
+                              </div>
+                            )}
+                            {profile?.personal_info?.languages && profile?.personal_info.languages.length > 0 && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Languages:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {Array.isArray(profile?.personal_info.languages)
+                                    ? profile?.personal_info.languages.join(", ")
+                                    : profile?.personal_info.languages}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Location Information */}
+                      {(profile?.location_info?.current_city ||
+                        profile?.location_info?.current_state ||
+                        profile?.location_info?.current_country ||
+                        profile?.location_info?.hometown) && (
+                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Location</h3>
+                          <div className="space-y-3">
+                            {(profile?.location_info?.current_city ||
+                              profile?.location_info?.current_state ||
+                              profile?.location_info?.current_country) && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Current:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {[
+                                    profile?.location_info.current_city,
+                                    profile?.location_info.current_state,
+                                    profile?.location_info.current_country,
+                                  ]
+                                    .filter(Boolean)
+                                    .join(", ")}
+                                </span>
+                              </div>
+                            )}
+                            {profile?.location_info?.hometown && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Hometown:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {profile?.location_info.hometown}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Contact Information */}
+                      {(profile?.contact_info?.phone || profile?.contact_info?.alt_email) && (
+                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Contact</h3>
+                          <div className="space-y-3">
+                            {profile?.contact_info?.phone && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Phone:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {profile?.contact_info.phone}
+                                </span>
+                              </div>
+                            )}
+                            {profile?.contact_info?.alt_email && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Alt Email:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {profile?.contact_info.alt_email}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Personal Details */}
+                      {(profile?.personal_details?.relationship_status ||
+                        profile?.personal_details?.political_views ||
+                        profile?.personal_details?.religious_views) && (
+                        <div className="p-6">
+                          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Personal Details</h3>
+                          <div className="space-y-3">
+                            {profile?.personal_details?.relationship_status && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Relationship:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white capitalize">
+                                  {profile?.personal_details.relationship_status.replace(/_/g, " ")}
+                                </span>
+                              </div>
+                            )}
+                            {profile?.personal_details?.political_views && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Political Views:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white capitalize">
+                                  {profile?.personal_details.political_views}
+                                </span>
+                              </div>
+                            )}
+                            {profile?.personal_details?.religious_views && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Religious Views:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white capitalize">
+                                  {profile?.personal_details.religious_views}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </TabsContent>
 
