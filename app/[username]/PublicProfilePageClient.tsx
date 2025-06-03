@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import React from "react"
 import { notFound } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -26,6 +27,8 @@ interface PublicProfilePageClientProps {
 export function PublicProfilePageClient({ profile }: PublicProfilePageClientProps) {
   const [activeTab, setActiveTab] = useState("posts")
   const [showFriendsSection, setShowFriendsSection] = useState(false)
+  const [showLeftArrow, setShowLeftArrow] = useState(false)
+  const [showRightArrow, setShowRightArrow] = useState(true)
 
   if (!profile) {
     notFound()
@@ -175,14 +178,51 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
     return parts.join(" · ")
   }
 
-  // Add this function inside the component, before the return statement
-  const scrollFriendsRight = () => {
-    const container = document.querySelector(".friends-scroll-container")
+  // Add these functions inside the component, before the return statement
+  const handleScroll = (e: Event) => {
+    const container = e.target as HTMLElement
+    const scrollLeft = container.scrollLeft
+    const maxScroll = container.scrollWidth - container.clientWidth
+
+    setShowLeftArrow(scrollLeft > 0)
+    setShowRightArrow(scrollLeft < maxScroll - 1) // -1 for rounding issues
+  }
+
+  const scrollFriendsLeft = () => {
+    const container = document.querySelector(".friends-scroll-container") as HTMLElement
     if (container) {
-      const scrollAmount = container.clientWidth * 0.8 // Scroll 80% of the visible width
+      const cardWidth = 180 + 8 // card width + gap
+      const visibleCards = Math.floor(container.clientWidth / cardWidth)
+      const scrollAmount = visibleCards * cardWidth
+      container.scrollBy({ left: -scrollAmount, behavior: "smooth" })
+    }
+  }
+
+  const scrollFriendsRight = () => {
+    const container = document.querySelector(".friends-scroll-container") as HTMLElement
+    if (container) {
+      const cardWidth = 180 + 8 // card width + gap
+      const visibleCards = Math.floor(container.clientWidth / cardWidth)
+      const scrollAmount = visibleCards * cardWidth
       container.scrollBy({ left: scrollAmount, behavior: "smooth" })
     }
   }
+
+  // Add useEffect to set up scroll listener
+  React.useEffect(() => {
+    if (showFriendsSection) {
+      const container = document.querySelector(".friends-scroll-container")
+      if (container) {
+        container.addEventListener("scroll", handleScroll)
+        // Initial check
+        handleScroll({ target: container } as Event)
+
+        return () => {
+          container.removeEventListener("scroll", handleScroll)
+        }
+      }
+    }
+  }, [showFriendsSection])
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -619,140 +659,227 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
           {/* People You May Know Section */}
           {showFriendsSection && (
             <div className="py-4 px-4 md:px-8">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">People You May Know</h2>
-                <button className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline">
-                  See all
-                </button>
-              </div>
+              <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">People You May Know</h2>
+                  <button className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline">
+                    See all
+                  </button>
+                </div>
 
-              <div className="relative">
-                <div className="flex space-x-2 overflow-x-auto scrollbar-hide pb-2 friends-scroll-container">
-                  {/* Friend suggestion cards */}
-                  {[
-                    { name: "Dean White", mutualFriends: 4, avatar: "/placeholder.svg?height=300&width=300&text=DW" },
-                    {
-                      name: "Louis Prevost",
-                      mutualFriends: 2,
-                      followedBy: "2.1K",
-                      avatar: "/placeholder.svg?height=300&width=300&text=LP",
-                    },
-                    {
-                      name: "Jay Weinstein",
-                      mutualFriends: 6,
-                      avatar: "/placeholder.svg?height=300&width=300&text=JW",
-                    },
-                    {
-                      name: "Nicholas Holidazed",
-                      mutualFriends: 2,
-                      avatar: "/placeholder.svg?height=300&width=300&text=NH",
-                    },
-                    {
-                      name: "Kristina McCloy",
-                      mutualFriends: 2,
-                      avatar: "/placeholder.svg?height=300&width=300&text=KM",
-                    },
-                    { name: "Jess Griffin", mutualFriends: 2, avatar: "/placeholder.svg?height=300&width=300&text=JG" },
-                    { name: "Ross Carter", mutualFriends: 7, avatar: "/placeholder.svg?height=300&width=300&text=RC" },
-                  ].map((friend, index) => (
-                    <div
-                      key={index}
-                      className="flex-shrink-0 w-[180px] relative rounded-lg overflow-hidden border border-gray-300 dark:border-gray-700"
-                    >
-                      <button className="absolute top-2 right-2 w-8 h-8 bg-gray-800/60 hover:bg-gray-800/80 rounded-full flex items-center justify-center text-gray-200 z-10">
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <path d="M18 6L6 18M6 6l12 12" />
-                        </svg>
-                      </button>
-
-                      {/* Full-sized image */}
-                      <div className="w-full h-[180px] bg-gray-200 dark:bg-gray-700 overflow-hidden">
-                        <img
-                          src={friend.avatar || "/placeholder.svg"}
-                          alt={friend.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-
-                      {/* Info section */}
-                      <div className="p-3 bg-transparent">
-                        <h3 className="font-semibold text-sm text-gray-900 dark:text-white mb-1 truncate">
-                          {friend.name}
-                        </h3>
-
-                        {/* Mutual friends with icons */}
-                        <div className="flex items-center mb-3">
-                          {friend.followedBy ? (
-                            <p className="text-xs text-gray-600 dark:text-gray-400">Followed by {friend.followedBy}</p>
-                          ) : (
-                            <>
-                              <div className="flex -space-x-1 mr-1">
-                                {[...Array(Math.min(2, friend.mutualFriends))].map((_, i) => (
-                                  <div
-                                    key={i}
-                                    className="w-4 h-4 rounded-full border border-gray-800 dark:border-gray-900 bg-gray-300 dark:bg-gray-600 overflow-hidden"
-                                  ></div>
-                                ))}
-                              </div>
-                              <p className="text-xs text-gray-600 dark:text-gray-400">
-                                {friend.mutualFriends} mutual friends
-                              </p>
-                            </>
-                          )}
-                        </div>
-
-                        {/* Add friend button */}
-                        <button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-1.5 px-3 rounded-md transition-colors flex items-center justify-center">
+                <div className="relative">
+                  <div className="flex space-x-2 overflow-x-auto scrollbar-hide pb-2 friends-scroll-container">
+                    {/* Friend suggestion cards */}
+                    {[
+                      { name: "Dean White", mutualFriends: 4, avatar: "/placeholder.svg?height=300&width=300&text=DW" },
+                      {
+                        name: "Louis Prevost",
+                        mutualFriends: 2,
+                        followedBy: "2.1K",
+                        avatar: "/placeholder.svg?height=300&width=300&text=LP",
+                      },
+                      {
+                        name: "Jay Weinstein",
+                        mutualFriends: 6,
+                        avatar: "/placeholder.svg?height=300&width=300&text=JW",
+                      },
+                      {
+                        name: "Nicholas Holidazed",
+                        mutualFriends: 2,
+                        avatar: "/placeholder.svg?height=300&width=300&text=NH",
+                      },
+                      {
+                        name: "Kristina McCloy",
+                        mutualFriends: 2,
+                        avatar: "/placeholder.svg?height=300&width=300&text=KM",
+                      },
+                      {
+                        name: "Jess Griffin",
+                        mutualFriends: 2,
+                        avatar: "/placeholder.svg?height=300&width=300&text=JG",
+                      },
+                      {
+                        name: "Ross Carter",
+                        mutualFriends: 7,
+                        avatar: "/placeholder.svg?height=300&width=300&text=RC",
+                      },
+                      {
+                        name: "Sarah Johnson",
+                        mutualFriends: 3,
+                        avatar: "/placeholder.svg?height=300&width=300&text=SJ",
+                      },
+                      {
+                        name: "Mike Thompson",
+                        mutualFriends: 5,
+                        avatar: "/placeholder.svg?height=300&width=300&text=MT",
+                      },
+                      {
+                        name: "Emily Davis",
+                        mutualFriends: 1,
+                        avatar: "/placeholder.svg?height=300&width=300&text=ED",
+                      },
+                      {
+                        name: "Alex Rodriguez",
+                        mutualFriends: 8,
+                        avatar: "/placeholder.svg?height=300&width=300&text=AR",
+                      },
+                      { name: "Lisa Chen", mutualFriends: 4, avatar: "/placeholder.svg?height=300&width=300&text=LC" },
+                      {
+                        name: "David Wilson",
+                        mutualFriends: 3,
+                        avatar: "/placeholder.svg?height=300&width=300&text=DW2",
+                      },
+                      {
+                        name: "Rachel Green",
+                        mutualFriends: 6,
+                        avatar: "/placeholder.svg?height=300&width=300&text=RG",
+                      },
+                      {
+                        name: "Tom Anderson",
+                        mutualFriends: 2,
+                        avatar: "/placeholder.svg?height=300&width=300&text=TA",
+                      },
+                      {
+                        name: "Jessica Brown",
+                        mutualFriends: 9,
+                        avatar: "/placeholder.svg?height=300&width=300&text=JB",
+                      },
+                      {
+                        name: "Chris Martinez",
+                        mutualFriends: 1,
+                        avatar: "/placeholder.svg?height=300&width=300&text=CM",
+                      },
+                      {
+                        name: "Amanda Taylor",
+                        mutualFriends: 5,
+                        avatar: "/placeholder.svg?height=300&width=300&text=AT",
+                      },
+                    ].map((friend, index) => (
+                      <div
+                        key={index}
+                        className="flex-shrink-0 w-[180px] relative rounded-lg overflow-hidden border border-gray-300 dark:border-gray-700"
+                      >
+                        <button className="absolute top-2 right-2 w-8 h-8 bg-gray-800/60 hover:bg-gray-800/80 rounded-full flex items-center justify-center text-gray-200 z-10">
                           <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
+                            width="14"
+                            height="14"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="mr-1.5"
                           >
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                            <circle cx="9" cy="7" r="4" />
-                            <line x1="19" y1="8" x2="19" y2="14" />
-                            <line x1="16" y1="11" x2="22" y2="11" />
+                            <path d="M18 6L6 18M6 6l12 12" />
                           </svg>
-                          Add friend
                         </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
 
-                {/* Right navigation arrow with click handler */}
-                <button
-                  onClick={scrollFriendsRight}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-gray-800/60 hover:bg-gray-800/80 rounded-full flex items-center justify-center text-gray-200 z-10"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="m9 18 6-6-6-6" />
-                  </svg>
-                </button>
+                        {/* Full-sized image */}
+                        <div className="w-full h-[180px] bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                          <img
+                            src={friend.avatar || "/placeholder.svg"}
+                            alt={friend.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+
+                        {/* Info section */}
+                        <div className="p-3 bg-transparent">
+                          <h3 className="font-semibold text-sm text-gray-900 dark:text-white mb-1 truncate">
+                            {friend.name}
+                          </h3>
+
+                          {/* Mutual friends with icons */}
+                          <div className="flex items-center mb-3">
+                            {friend.followedBy ? (
+                              <p className="text-xs text-gray-600 dark:text-gray-400">
+                                Followed by {friend.followedBy}
+                              </p>
+                            ) : (
+                              <>
+                                <div className="flex -space-x-1 mr-1">
+                                  {[...Array(Math.min(2, friend.mutualFriends))].map((_, i) => (
+                                    <div
+                                      key={i}
+                                      className="w-4 h-4 rounded-full border border-gray-800 dark:border-gray-900 bg-gray-300 dark:bg-gray-600 overflow-hidden"
+                                    ></div>
+                                  ))}
+                                </div>
+                                <p className="text-xs text-gray-600 dark:text-gray-400">
+                                  {friend.mutualFriends} mutual friends
+                                </p>
+                              </>
+                            )}
+                          </div>
+
+                          {/* Add friend button */}
+                          <button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-1.5 px-3 rounded-md transition-colors flex items-center justify-center">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="mr-1.5"
+                            >
+                              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                              <circle cx="9" cy="7" r="4" />
+                              <line x1="19" y1="8" x2="19" y2="14" />
+                              <line x1="16" y1="11" x2="22" y2="11" />
+                            </svg>
+                            Add friend
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Left navigation arrow */}
+                  {showLeftArrow && (
+                    <button
+                      onClick={scrollFriendsLeft}
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-gray-800/60 hover:bg-gray-800/80 rounded-full flex items-center justify-center text-gray-200 z-10"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="m15 18-6-6 6-6" />
+                      </svg>
+                    </button>
+                  )}
+
+                  {/* Right navigation arrow */}
+                  {showRightArrow && (
+                    <button
+                      onClick={scrollFriendsRight}
+                      className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-gray-800/60 hover:bg-gray-800/80 rounded-full flex items-center justify-center text-gray-200 z-10"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="m9 18 6-6-6-6" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           )}
