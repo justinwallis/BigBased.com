@@ -16,8 +16,7 @@ import {
   MapPin,
   Briefcase,
   GraduationCap,
-  Volume2,
-  Info,
+  MoreHorizontal,
 } from "lucide-react"
 import type { Profile } from "@/app/actions/profile-actions"
 
@@ -178,555 +177,775 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
-      {/* Cover Photo and Profile Info */}
-      <div className="relative">
-        {/* Cover Photo */}
-        <div className="w-full flex justify-center">
-          <div className="relative max-w-[1250px] w-full">
+      <div className="w-full flex justify-center">
+        <div className="max-w-[940px] w-full">
+          {/* Cover Photo */}
+          <div className="relative">
             <div
-              className="h-80 w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative rounded-b-lg overflow-hidden"
+              className="h-96 w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative rounded-b-lg overflow-hidden"
               style={{
                 backgroundImage: profile?.banner_url ? `url(${profile.banner_url})` : undefined,
                 backgroundSize: "cover",
                 backgroundPosition: profile?.banner_position || "center",
               }}
             >
-              {/* Gradient overlay for better text readability */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+              {/* Edit cover photo button */}
+              <button className="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5 hover:bg-white dark:hover:bg-gray-800 transition-colors">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16m-2-2l1.586-1.586a2 2 0 0 1 2.828 0L20 14" />
+                  <circle cx="8" cy="9" r="2" />
+                </svg>
+                Edit cover photo
+              </button>
             </div>
 
-            {/* Profile Info Overlay */}
-            <div className="relative -mt-8 sm:-mt-16 md:-mt-24 lg:-mt-32 flex flex-col md:flex-row items-start md:items-end pb-6 px-4 md:px-8">
-              {/* Profile Picture */}
-              <div className="z-10 mb-4 md:mb-6">
-                <div className="relative">
-                  <Avatar className="h-32 w-32 md:h-40 md:w-40 border-4 border-white dark:border-gray-900 shadow-lg">
-                    <AvatarImage
-                      src={profile?.avatar_url || "/placeholder.svg"}
-                      alt={profile?.full_name || profile?.username}
-                    />
-                    <AvatarFallback className="text-3xl md:text-4xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                      {getInitials(profile?.full_name || profile?.username || "U")}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
+            {/* Profile Picture - positioned to overlap the cover photo */}
+            <div className="absolute bottom-0 left-8 transform translate-y-1/3">
+              <div className="relative">
+                <Avatar className="h-40 w-40 border-4 border-white dark:border-gray-900 shadow-lg">
+                  <AvatarImage
+                    src={profile?.avatar_url || "/placeholder.svg"}
+                    alt={profile?.full_name || profile?.username}
+                  />
+                  <AvatarFallback className="text-4xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                    {getInitials(profile?.full_name || profile?.username || "U")}
+                  </AvatarFallback>
+                </Avatar>
+                <button className="absolute bottom-3 right-3 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16m-2-2l1.586-1.586a2 2 0 0 1 2.828 0L20 14" />
+                    <circle cx="8" cy="9" r="2" />
+                  </svg>
+                </button>
               </div>
-
-              {/* Name and Stats */}
-              <div className="flex-1 ml-4 md:ml-6 mb-4 md:mb-6 text-white drop-shadow-md">
-                <h1 className="text-2xl md:text-4xl font-bold">{profile?.full_name || profile?.username}</h1>
-                <div className="flex items-center mt-1 space-x-2">
-                  <p className="text-sm md:text-base opacity-90">@{profile?.username}</p>
-                  <Badge className="bg-green-500/80 text-white border-0">Active Member</Badge>
-                </div>
-                <div className="flex items-center mt-2 text-sm md:text-base">
-                  <span className="mr-4">0 followers</span>
-                  <span>0 following</span>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Navigation Tabs */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
-        <div className="w-full flex justify-center">
-          <div className="max-w-[1250px] w-full px-4 md:px-8">
+          {/* Profile Info - positioned below the cover photo */}
+          <div className="pt-16 pb-4 px-8 flex flex-col md:flex-row justify-between items-start md:items-end">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                {profile?.full_name || profile?.username}
+                {profile?.personal_info?.nickname && (
+                  <span className="text-xl text-gray-600 dark:text-gray-400 ml-2">
+                    ({profile.personal_info.nickname})
+                  </span>
+                )}
+              </h1>
+              <div className="flex items-center mt-1">
+                <p className="text-sm text-gray-600 dark:text-gray-400">@{profile?.username}</p>
+                <span className="mx-2 text-gray-400">•</span>
+                <Badge className="bg-green-500/80 text-white border-0">Active Member</Badge>
+              </div>
+              <div className="flex items-center mt-2 text-sm text-gray-600 dark:text-gray-400">
+                <span className="mr-4 font-medium">0 followers</span>
+                <span className="font-medium">0 following</span>
+              </div>
+
+              {/* Friend avatars */}
+              <div className="flex items-center mt-3">
+                <div className="flex -space-x-2 mr-2">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div
+                      key={i}
+                      className="w-8 h-8 rounded-full border-2 border-white dark:border-gray-900 bg-gray-200 dark:bg-gray-700 overflow-hidden"
+                    >
+                      <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-500"></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center space-x-2 mt-4 md:mt-0">
+              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md font-medium flex items-center gap-1.5">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect width="20" height="14" x="2" y="5" rx="2" />
+                  <line x1="2" x2="22" y1="10" y2="10" />
+                </svg>
+                Professional dashboard
+              </button>
+              <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-1.5 rounded-md font-medium flex items-center gap-1.5">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                  <path d="m15 5 4 4" />
+                </svg>
+                Edit
+              </button>
+              <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-1.5 rounded-md font-medium flex items-center gap-1.5">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 5v14" />
+                  <path d="M5 12h14" />
+                </svg>
+                Add to story
+              </button>
+              <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md">
+                <MoreHorizontal className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="h-px bg-gray-300 dark:bg-gray-700 w-full"></div>
+
+          {/* Navigation Tabs */}
+          <div className="bg-white dark:bg-gray-800 sticky top-0 z-10">
             <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
-              <TabsList className="h-10 bg-transparent border-0 p-0 space-x-0">
+              <TabsList className="h-12 bg-transparent border-0 p-0 space-x-1 w-full justify-start">
                 <TabsTrigger
                   value="posts"
-                  className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+                  className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
                 >
                   Posts
                 </TabsTrigger>
                 <TabsTrigger
                   value="about"
-                  className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+                  className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
                 >
                   About
                 </TabsTrigger>
                 <TabsTrigger
+                  value="reels"
+                  className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+                >
+                  Reels
+                </TabsTrigger>
+                <TabsTrigger
                   value="photos"
-                  className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+                  className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
                 >
                   Photos
                 </TabsTrigger>
                 <TabsTrigger
                   value="videos"
-                  className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+                  className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
                 >
                   Videos
                 </TabsTrigger>
                 <TabsTrigger
                   value="groups"
-                  className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hidden md:flex"
+                  className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hidden md:flex"
                 >
                   Groups
                 </TabsTrigger>
                 <TabsTrigger
                   value="more"
-                  className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hidden lg:flex"
+                  className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hidden lg:flex"
                 >
                   More
                 </TabsTrigger>
               </TabsList>
+              <div className="flex justify-end px-4">
+                <button className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="1" />
+                    <circle cx="19" cy="12" r="1" />
+                    <circle cx="5" cy="12" r="1" />
+                  </svg>
+                </button>
+              </div>
             </Tabs>
           </div>
-        </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="w-full flex justify-center">
-        <div className="max-w-[1250px] w-full px-4 md:px-8 py-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Sidebar - Intro */}
-            <div className="space-y-6">
-              {/* Intro Card */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Intro</h2>
+          {/* Main Content */}
+          <div className="py-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {/* Left Sidebar - Intro */}
+              <div className="space-y-4">
+                {/* Intro Card */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                  <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Intro</h2>
 
-                {/* Bio */}
-                {profile?.bio && <p className="text-gray-700 dark:text-gray-300 mb-4">{profile.bio}</p>}
+                  {/* Bio */}
+                  {profile?.bio && <p className="text-gray-700 dark:text-gray-300 mb-4">{profile.bio}</p>}
 
-                {/* Short Bio Tags */}
-                {generateShortBio() && <p className="text-gray-700 dark:text-gray-300 mb-4">{generateShortBio()}</p>}
+                  {/* Short Bio Tags */}
+                  {generateShortBio() && <p className="text-gray-700 dark:text-gray-300 mb-4">{generateShortBio()}</p>}
 
-                {/* Website Link */}
-                {socialLinks.website && (
-                  <a
-                    href={getSocialUrl("website", socialLinks.website)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center text-blue-600 dark:text-blue-400 hover:underline mb-4"
-                  >
-                    <Globe className="h-4 w-4 mr-2" />
-                    {socialLinks.website.replace(/^https?:\/\//, "")}
-                  </a>
-                )}
-
-                {/* Profile Info List */}
-                <div className="space-y-3">
-                  {/* Work */}
-                  {profile?.work_info?.company && (
-                    <div className="flex items-center">
-                      <Briefcase className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
-                      <div>
-                        <p className="text-sm text-gray-700 dark:text-gray-300">
-                          {profile?.work_info?.position ? `${profile?.work_info.position} at ` : "Works at "}
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            {profile?.work_info.company}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
+                  {/* Website Link */}
+                  {socialLinks.website && (
+                    <a
+                      href={getSocialUrl("website", socialLinks.website)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center text-blue-600 dark:text-blue-400 hover:underline mb-4"
+                    >
+                      <Globe className="h-4 w-4 mr-2" />
+                      {socialLinks.website.replace(/^https?:\/\//, "")}
+                    </a>
                   )}
 
-                  {/* Education */}
-                  {profile?.education_info?.school && (
+                  {/* Profile Info List */}
+                  <div className="space-y-3">
+                    {/* Work */}
+                    {profile?.work_info?.company && (
+                      <div className="flex items-center">
+                        <Briefcase className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                        <div>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">
+                            {profile?.work_info?.position ? `${profile?.work_info.position} at ` : "Works at "}
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {profile?.work_info.company}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Education */}
+                    {profile?.education_info?.school && (
+                      <div className="flex items-center">
+                        <GraduationCap className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                        <div>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">
+                            Studied {profile?.education_info?.degree || "at"}
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {" "}
+                              {profile?.education_info.school}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Location */}
+                    {getCurrentLocation() && (
+                      <div className="flex items-center">
+                        <MapPin className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                        <div>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">
+                            Lives in{" "}
+                            <span className="font-medium text-gray-900 dark:text-white">{getCurrentLocation()}</span>
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Hometown */}
+                    {profile?.location_info?.hometown && (
+                      <div className="flex items-center">
+                        <Home className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                        <div>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">
+                            From{" "}
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {profile?.location_info.hometown}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Joined Date */}
                     <div className="flex items-center">
-                      <GraduationCap className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                      <CalendarDays className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
                       <div>
                         <p className="text-sm text-gray-700 dark:text-gray-300">
-                          Studied {profile?.education_info?.degree || "at"}
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            {" "}
-                            {profile?.education_info.school}
-                          </span>
+                          Joined{" "}
+                          {new Date(profile?.created_at || Date.now()).toLocaleDateString("en-US", {
+                            month: "long",
+                            year: "numeric",
+                          })}
                         </p>
                       </div>
-                    </div>
-                  )}
-
-                  {/* Location */}
-                  {getCurrentLocation() && (
-                    <div className="flex items-center">
-                      <MapPin className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
-                      <div>
-                        <p className="text-sm text-gray-700 dark:text-gray-300">
-                          Lives in{" "}
-                          <span className="font-medium text-gray-900 dark:text-white">{getCurrentLocation()}</span>
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Hometown */}
-                  {profile?.location_info?.hometown && (
-                    <div className="flex items-center">
-                      <Home className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
-                      <div>
-                        <p className="text-sm text-gray-700 dark:text-gray-300">
-                          From{" "}
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            {profile?.location_info.hometown}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Joined Date */}
-                  <div className="flex items-center">
-                    <CalendarDays className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
-                    <div>
-                      <p className="text-sm text-gray-700 dark:text-gray-300">
-                        Joined{" "}
-                        {new Date(profile?.created_at || Date.now()).toLocaleDateString("en-US", {
-                          month: "long",
-                          year: "numeric",
-                        })}
-                      </p>
                     </div>
                   </div>
 
-                  {/* Nickname */}
-                  {profile?.personal_info?.nickname && (
-                    <div className="flex items-center">
-                      <Info className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
-                      <div>
-                        <p className="text-sm text-gray-700 dark:text-gray-300">
-                          Nickname:{" "}
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            {profile?.personal_info.nickname}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                  )}
+                  {/* Edit Bio Button */}
+                  <button className="w-full mt-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md font-medium">
+                    Edit bio
+                  </button>
 
-                  {/* Pronunciation */}
-                  {profile?.personal_info?.name_pronunciation && (
-                    <div className="flex items-center">
-                      <Volume2 className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
-                      <div>
-                        <p className="text-sm text-gray-700 dark:text-gray-300">
-                          Pronounces name:{" "}
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            {profile?.personal_info.name_pronunciation}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  {/* Social Media Links */}
+                  {(socialPlatforms.some((platform) => socialLinks[platform.key]) ||
+                    specialPlatforms.some((platform) => socialLinks[platform.key])) && (
+                    <div className="flex flex-wrap items-center gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                      {/* Regular social platforms with links */}
+                      {socialPlatforms.map(({ key, icon: Icon, label }) => {
+                        const url = getSocialUrl(key, socialLinks[key])
+                        if (!url || key === "website") return null // Website already shown above
 
-                {/* Social Media Links */}
-                {(socialPlatforms.some((platform) => socialLinks[platform.key]) ||
-                  specialPlatforms.some((platform) => socialLinks[platform.key])) && (
-                  <div className="flex flex-wrap items-center gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    {/* Regular social platforms with links */}
-                    {socialPlatforms.map(({ key, icon: Icon, label }) => {
-                      const url = getSocialUrl(key, socialLinks[key])
-                      if (!url || key === "website") return null // Website already shown above
+                        return (
+                          <a
+                            key={key}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
+                            title={label}
+                          >
+                            <Icon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                          </a>
+                        )
+                      })}
 
-                      return (
-                        <a
-                          key={key}
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
-                          title={label}
-                        >
-                          <Icon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-                        </a>
-                      )
-                    })}
+                      {/* Special platforms without links */}
+                      {specialPlatforms.map(({ key, icon: Icon, label }) => {
+                        if (!socialLinks[key]) return null
 
-                    {/* Special platforms without links */}
-                    {specialPlatforms.map(({ key, icon: Icon, label }) => {
-                      if (!socialLinks[key]) return null
-
-                      const handleSpecialClick = () => {
-                        if (key === "discord") {
-                          alert(`Discord: ${socialLinks[key]}`)
-                        } else if (key === "therealworld") {
-                          alert(
-                            `The Real World member: ${socialLinks[key]}
+                        const handleSpecialClick = () => {
+                          if (key === "discord") {
+                            alert(`Discord: ${socialLinks[key]}`)
+                          } else if (key === "therealworld") {
+                            alert(
+                              `The Real World member: ${socialLinks[key]}
 
 The Real World is Andrew Tate's exclusive community platform for entrepreneurs and high-achievers.`,
-                          )
+                            )
+                          }
                         }
-                      }
 
-                      return (
-                        <button
-                          key={key}
-                          onClick={handleSpecialClick}
-                          className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
-                          title={`${label}: ${socialLinks[key]}`}
-                        >
-                          <Icon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
+                        return (
+                          <button
+                            key={key}
+                            onClick={handleSpecialClick}
+                            className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
+                            title={`${label}: ${socialLinks[key]}`}
+                          >
+                            <Icon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
 
-              {/* Stats Card */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Profile Stats</h2>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">Member Since</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {new Date(profile?.created_at || Date.now()).getFullYear()}
-                    </span>
+                {/* Profile Info Card */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Profile</h2>
+                    <span className="text-sm text-blue-600 dark:text-blue-400">Digital creator</span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">Profile Views</span>
-                    <span className="font-medium text-gray-900 dark:text-white">Coming Soon</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">Contributions</span>
-                    <span className="font-medium text-gray-900 dark:text-white">Coming Soon</span>
+                </div>
+
+                {/* Stats Card */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                  <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Profile Stats</h2>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 dark:text-gray-400">Member Since</span>
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {new Date(profile?.created_at || Date.now()).getFullYear()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 dark:text-gray-400">Profile Views</span>
+                      <span className="font-medium text-gray-900 dark:text-white">Coming Soon</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 dark:text-gray-400">Contributions</span>
+                      <span className="font-medium text-gray-900 dark:text-white">Coming Soon</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Main Content Area */}
-            <div className="lg:col-span-2">
-              <Tabs defaultValue="posts" value={activeTab} className="w-full">
-                {/* Posts Tab */}
-                <TabsContent value="posts" className="mt-0">
-                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                      <p>No posts to display yet.</p>
-                      <p className="text-sm mt-2">Check back later for updates!</p>
+              {/* Main Content Area */}
+              <div className="lg:col-span-2">
+                {/* Create Post Card */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-4">
+                  <div className="p-4">
+                    <div className="flex items-center space-x-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage
+                          src={profile?.avatar_url || "/placeholder.svg"}
+                          alt={profile?.full_name || profile?.username}
+                        />
+                        <AvatarFallback className="text-lg font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                          {getInitials(profile?.full_name || profile?.username || "U")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          placeholder="What's on your mind?"
+                          className="w-full bg-gray-100 dark:bg-gray-700 rounded-full px-4 py-2 text-gray-700 dark:text-gray-200 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                    <div className="border-t border-gray-200 dark:border-gray-700 mt-4 pt-3">
+                      <div className="flex justify-between">
+                        <button className="flex items-center justify-center flex-1 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 py-1.5 rounded-md">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="mr-2 text-red-500"
+                          >
+                            <path d="M2 12a5 5 0 0 0 5 5 8 8 0 0 1 5 2 8 8 0 0 1 5-2 5 5 0 0 0 5-5V7H2Z" />
+                            <path d="M6 11V8" />
+                            <path d="M10 11V7" />
+                            <path d="M14 11v-1" />
+                            <path d="M18 11V9" />
+                          </svg>
+                          Live video
+                        </button>
+                        <button className="flex items-center justify-center flex-1 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 py-1.5 rounded-md">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="mr-2 text-green-500"
+                          >
+                            <rect width="18" height="18" x="3" y="3" rx="2" />
+                            <circle cx="9" cy="9" r="2" />
+                            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                          </svg>
+                          Photo/video
+                        </button>
+                        <button className="flex items-center justify-center flex-1 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 py-1.5 rounded-md">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="mr-2 text-purple-500"
+                          >
+                            <rect width="14" height="14" x="8" y="8" rx="2" />
+                            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                          </svg>
+                          Reel
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </TabsContent>
+                </div>
 
-                {/* About Tab */}
-                <TabsContent value="about" className="mt-0">
-                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-                    <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                      <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">About</h3>
-                      {profile?.personal_details?.about_me ? (
-                        <p className="text-gray-700 dark:text-gray-300">{profile?.personal_details.about_me}</p>
-                      ) : (
-                        <p className="text-gray-500 dark:text-gray-400">No additional information provided.</p>
+                <Tabs defaultValue="posts" value={activeTab} className="w-full">
+                  {/* Posts Tab */}
+                  <TabsContent value="posts" className="mt-0">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Posts</h3>
+                        <div className="flex items-center">
+                          <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-1 rounded-md text-sm font-medium mr-2">
+                            Filters
+                          </button>
+                          <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-1 rounded-md text-sm font-medium">
+                            Manage posts
+                          </button>
+                        </div>
+                      </div>
+                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <p>No posts to display yet.</p>
+                        <p className="text-sm mt-2">Check back later for updates!</p>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  {/* About Tab */}
+                  <TabsContent value="about" className="mt-0">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">About</h3>
+                        {profile?.personal_details?.about_me ? (
+                          <p className="text-gray-700 dark:text-gray-300">{profile?.personal_details.about_me}</p>
+                        ) : (
+                          <p className="text-gray-500 dark:text-gray-400">No additional information provided.</p>
+                        )}
+                      </div>
+
+                      {/* Personal Information */}
+                      {(profile?.personal_info?.nickname ||
+                        profile?.personal_info?.birthday ||
+                        profile?.personal_info?.gender ||
+                        (profile?.personal_info?.languages && profile?.personal_info.languages.length > 0)) && (
+                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                            Personal Information
+                          </h3>
+                          <div className="space-y-3">
+                            {profile?.personal_info?.nickname && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Nickname:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {profile?.personal_info.nickname}
+                                </span>
+                              </div>
+                            )}
+                            {profile?.personal_info?.birthday && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Birthday:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {new Date(profile?.personal_info.birthday).toLocaleDateString("en-US", {
+                                    month: "long",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </span>
+                              </div>
+                            )}
+                            {profile?.personal_info?.gender && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Gender:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white capitalize">
+                                  {profile?.personal_info.gender}
+                                </span>
+                              </div>
+                            )}
+                            {profile?.personal_info?.languages && profile?.personal_info.languages.length > 0 && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Languages:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {Array.isArray(profile?.personal_info.languages)
+                                    ? profile?.personal_info.languages.join(", ")
+                                    : profile?.personal_info.languages}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Location Information */}
+                      {(profile?.location_info?.current_city ||
+                        profile?.location_info?.current_state ||
+                        profile?.location_info?.current_country ||
+                        profile?.location_info?.hometown) && (
+                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Location</h3>
+                          <div className="space-y-3">
+                            {(profile?.location_info?.current_city ||
+                              profile?.location_info?.current_state ||
+                              profile?.location_info?.current_country) && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Current:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {[
+                                    profile?.location_info.current_city,
+                                    profile?.location_info.current_state,
+                                    profile?.location_info.current_country,
+                                  ]
+                                    .filter(Boolean)
+                                    .join(", ")}
+                                </span>
+                              </div>
+                            )}
+                            {profile?.location_info?.hometown && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Hometown:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {profile?.location_info.hometown}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Contact Information */}
+                      {(profile?.contact_info?.phone || profile?.contact_info?.alt_email) && (
+                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Contact</h3>
+                          <div className="space-y-3">
+                            {profile?.contact_info?.phone && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Phone:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {profile?.contact_info.phone}
+                                </span>
+                              </div>
+                            )}
+                            {profile?.contact_info?.alt_email && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Alt Email:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {profile?.contact_info.alt_email}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Personal Details */}
+                      {(profile?.personal_details?.relationship_status ||
+                        profile?.personal_details?.political_views ||
+                        profile?.personal_details?.religious_views) && (
+                        <div className="p-6">
+                          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Personal Details</h3>
+                          <div className="space-y-3">
+                            {profile?.personal_details?.relationship_status && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Relationship:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white capitalize">
+                                  {profile?.personal_details.relationship_status.replace(/_/g, " ")}
+                                </span>
+                              </div>
+                            )}
+                            {profile?.personal_details?.political_views && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Political Views:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white capitalize">
+                                  {profile?.personal_details.political_views}
+                                </span>
+                              </div>
+                            )}
+                            {profile?.personal_details?.religious_views && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Religious Views:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white capitalize">
+                                  {profile?.personal_details.religious_views}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       )}
                     </div>
+                  </TabsContent>
 
-                    {/* Personal Information */}
-                    {(profile?.personal_info?.nickname ||
-                      profile?.personal_info?.birthday ||
-                      profile?.personal_info?.gender ||
-                      (profile?.personal_info?.languages && profile?.personal_info.languages.length > 0)) && (
-                      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-                          Personal Information
-                        </h3>
-                        <div className="space-y-3">
-                          {profile?.personal_info?.nickname && (
-                            <div className="flex items-start">
-                              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                Nickname:
-                              </span>
-                              <span className="text-sm text-gray-900 dark:text-white">
-                                {profile?.personal_info.nickname}
-                              </span>
-                            </div>
-                          )}
-                          {profile?.personal_info?.birthday && (
-                            <div className="flex items-start">
-                              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                Birthday:
-                              </span>
-                              <span className="text-sm text-gray-900 dark:text-white">
-                                {new Date(profile?.personal_info.birthday).toLocaleDateString("en-US", {
-                                  month: "long",
-                                  day: "numeric",
-                                  year: "numeric",
-                                })}
-                              </span>
-                            </div>
-                          )}
-                          {profile?.personal_info?.gender && (
-                            <div className="flex items-start">
-                              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                Gender:
-                              </span>
-                              <span className="text-sm text-gray-900 dark:text-white capitalize">
-                                {profile?.personal_info.gender}
-                              </span>
-                            </div>
-                          )}
-                          {profile?.personal_info?.languages && profile?.personal_info.languages.length > 0 && (
-                            <div className="flex items-start">
-                              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                Languages:
-                              </span>
-                              <span className="text-sm text-gray-900 dark:text-white">
-                                {Array.isArray(profile?.personal_info.languages)
-                                  ? profile?.personal_info.languages.join(", ")
-                                  : profile?.personal_info.languages}
-                              </span>
-                            </div>
-                          )}
-                        </div>
+                  {/* Reels Tab */}
+                  <TabsContent value="reels" className="mt-0">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <p>No reels to display yet.</p>
+                        <p className="text-sm mt-2">Reels will appear here when shared.</p>
                       </div>
-                    )}
+                    </div>
+                  </TabsContent>
 
-                    {/* Location Information */}
-                    {(profile?.location_info?.current_city ||
-                      profile?.location_info?.current_state ||
-                      profile?.location_info?.current_country ||
-                      profile?.location_info?.hometown) && (
-                      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Location</h3>
-                        <div className="space-y-3">
-                          {(profile?.location_info?.current_city ||
-                            profile?.location_info?.current_state ||
-                            profile?.location_info?.current_country) && (
-                            <div className="flex items-start">
-                              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                Current:
-                              </span>
-                              <span className="text-sm text-gray-900 dark:text-white">
-                                {[
-                                  profile?.location_info.current_city,
-                                  profile?.location_info.current_state,
-                                  profile?.location_info.current_country,
-                                ]
-                                  .filter(Boolean)
-                                  .join(", ")}
-                              </span>
-                            </div>
-                          )}
-                          {profile?.location_info?.hometown && (
-                            <div className="flex items-start">
-                              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                Hometown:
-                              </span>
-                              <span className="text-sm text-gray-900 dark:text-white">
-                                {profile?.location_info.hometown}
-                              </span>
-                            </div>
-                          )}
-                        </div>
+                  {/* Photos Tab */}
+                  <TabsContent value="photos" className="mt-0">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <p>No photos to display yet.</p>
+                        <p className="text-sm mt-2">Photos will appear here when shared.</p>
                       </div>
-                    )}
+                    </div>
+                  </TabsContent>
 
-                    {/* Contact Information */}
-                    {(profile?.contact_info?.phone || profile?.contact_info?.alt_email) && (
-                      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Contact</h3>
-                        <div className="space-y-3">
-                          {profile?.contact_info?.phone && (
-                            <div className="flex items-start">
-                              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                Phone:
-                              </span>
-                              <span className="text-sm text-gray-900 dark:text-white">
-                                {profile?.contact_info.phone}
-                              </span>
-                            </div>
-                          )}
-                          {profile?.contact_info?.alt_email && (
-                            <div className="flex items-start">
-                              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                Alt Email:
-                              </span>
-                              <span className="text-sm text-gray-900 dark:text-white">
-                                {profile?.contact_info.alt_email}
-                              </span>
-                            </div>
-                          )}
-                        </div>
+                  {/* Videos Tab */}
+                  <TabsContent value="videos" className="mt-0">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <p>No videos to display yet.</p>
+                        <p className="text-sm mt-2">Videos will appear here when shared.</p>
                       </div>
-                    )}
+                    </div>
+                  </TabsContent>
 
-                    {/* Personal Details */}
-                    {(profile?.personal_details?.relationship_status ||
-                      profile?.personal_details?.political_views ||
-                      profile?.personal_details?.religious_views) && (
-                      <div className="p-6">
-                        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Personal Details</h3>
-                        <div className="space-y-3">
-                          {profile?.personal_details?.relationship_status && (
-                            <div className="flex items-start">
-                              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                Relationship:
-                              </span>
-                              <span className="text-sm text-gray-900 dark:text-white capitalize">
-                                {profile?.personal_details.relationship_status.replace(/_/g, " ")}
-                              </span>
-                            </div>
-                          )}
-                          {profile?.personal_details?.political_views && (
-                            <div className="flex items-start">
-                              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                Political Views:
-                              </span>
-                              <span className="text-sm text-gray-900 dark:text-white capitalize">
-                                {profile?.personal_details.political_views}
-                              </span>
-                            </div>
-                          )}
-                          {profile?.personal_details?.religious_views && (
-                            <div className="flex items-start">
-                              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                Religious Views:
-                              </span>
-                              <span className="text-sm text-gray-900 dark:text-white capitalize">
-                                {profile?.personal_details.religious_views}
-                              </span>
-                            </div>
-                          )}
-                        </div>
+                  {/* Groups Tab */}
+                  <TabsContent value="groups" className="mt-0">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <p>No groups to display yet.</p>
+                        <p className="text-sm mt-2">Groups will appear here when joined.</p>
                       </div>
-                    )}
-                  </div>
-                </TabsContent>
-
-                {/* Photos Tab */}
-                <TabsContent value="photos" className="mt-0">
-                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                      <p>No photos to display yet.</p>
-                      <p className="text-sm mt-2">Photos will appear here when shared.</p>
                     </div>
-                  </div>
-                </TabsContent>
+                  </TabsContent>
 
-                {/* Videos Tab */}
-                <TabsContent value="videos" className="mt-0">
-                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                      <p>No videos to display yet.</p>
-                      <p className="text-sm mt-2">Videos will appear here when shared.</p>
+                  {/* More Tab */}
+                  <TabsContent value="more" className="mt-0">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <p>Additional content coming soon.</p>
+                        <p className="text-sm mt-2">Stay tuned for more features!</p>
+                      </div>
                     </div>
-                  </div>
-                </TabsContent>
-
-                {/* Groups Tab */}
-                <TabsContent value="groups" className="mt-0">
-                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                      <p>No groups to display yet.</p>
-                      <p className="text-sm mt-2">Groups will appear here when joined.</p>
-                    </div>
-                  </div>
-                </TabsContent>
-
-                {/* More Tab */}
-                <TabsContent value="more" className="mt-0">
-                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                      <p>Additional content coming soon.</p>
-                      <p className="text-sm mt-2">Stay tuned for more features!</p>
-                    </div>
-                  </div>
-                </TabsContent>
-              </Tabs>
+                  </TabsContent>
+                </Tabs>
+              </div>
             </div>
           </div>
         </div>
