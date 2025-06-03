@@ -135,8 +135,8 @@ export default function AuthButton() {
               </AvatarFallback>
             </Avatar>
             {/* Chevron overlay positioned on bottom right, overlapping halfway */}
-            <div className="absolute -bottom-1 -right-1 bg-white dark:bg-gray-800 rounded-full p-0.5 border border-gray-200 dark:border-gray-600">
-              <ChevronDown className="h-3 w-3 text-gray-600 dark:text-gray-300" />
+            <div className="absolute -bottom-0.5 -right-0.5 bg-white dark:bg-gray-800 rounded-full p-0.5 border border-gray-200 dark:border-gray-600 scale-50">
+              <ChevronDown className="h-2 w-2 text-gray-600 dark:text-gray-300" />
             </div>
           </div>
         </DropdownMenuTrigger>

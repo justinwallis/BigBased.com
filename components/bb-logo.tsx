@@ -12,11 +12,9 @@ interface BBLogoProps {
 }
 
 export default function BBLogo({ size = "md", className, inverted = false }: BBLogoProps) {
-  // Add mounted state to prevent hydration mismatch
   const [mounted, setMounted] = useState(false)
-  const { theme } = useTheme()
+  const { theme, systemTheme } = useTheme()
 
-  // Set mounted to true on client
   useEffect(() => {
     setMounted(true)
   }, [])
@@ -28,18 +26,17 @@ export default function BBLogo({ size = "md", className, inverted = false }: BBL
     xl: "w-24 h-24",
   }
 
-  // Only check theme after component is mounted to avoid hydration mismatch
-  const isDarkMode = mounted && theme === "dark"
+  // Determine the effective theme (handle system theme detection)
+  const effectiveTheme = theme === "system" ? systemTheme : theme
 
   // Use the inverted logo in dark mode, unless explicitly overridden by the inverted prop
-  const logoSrc = mounted ? (inverted || theme === "dark" ? "/BigBasedIconInvert.png" : "/bb-logo.png") : "/bb-logo.png"
-
-  // Log the logo source for debugging
-  // useEffect(() => {
-  //   if (mounted) {
-  //     console.log("Logo source:", logoSrc, "isDarkMode:", isDarkMode)
-  //   }
-  // }, [logoSrc, isDarkMode, mounted])
+  const logoSrc = mounted
+    ? inverted || effectiveTheme === "dark"
+      ? "/BigBasedIconInvert.png"
+      : "/bb-logo.png"
+    : typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "/BigBasedIconInvert.png"
+      : "/bb-logo.png"
 
   return (
     <div className={cn(sizeClasses[size], "relative", className)}>

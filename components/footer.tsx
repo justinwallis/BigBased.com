@@ -5,12 +5,24 @@ import { Facebook, Twitter, Youtube, Instagram, MessageSquare, Send, Map } from 
 import { toggleSitemapEvent } from "./sitemap-container"
 import Image from "next/image"
 import { useTheme } from "@/components/theme-provider"
+import { useEffect, useState } from "react"
 
 export default function Footer() {
   const { theme } = useTheme()
+  const [mounted, setMounted] = useState(false)
 
-  // Use a more reliable approach with direct inline conditional
-  const logoSrc = theme === "dark" ? "/BigBasedIconInvert.png" : "/bb-logo.png"
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Replace the logoSrc line with this improved version:
+  const logoSrc = mounted
+    ? theme === "dark"
+      ? "/BigBasedIconInvert.png"
+      : "/bb-logo.png"
+    : typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "/BigBasedIconInvert.png"
+      : "/bb-logo.png"
 
   const handleSitemapToggle = () => {
     // Dispatch the custom event to toggle the sitemap
