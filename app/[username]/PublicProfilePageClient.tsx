@@ -224,6 +224,55 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
     }
   }, [showFriendsSection])
 
+  const formatBioWithLinks = (text: string) => {
+    if (!text) return ""
+
+    // Regular expression to find URLs without http/https prefix
+    const urlRegex =
+      /(^|\s)((?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi
+
+    // Split by URL matches and create an array of text and link elements
+    const parts = []
+    let lastIndex = 0
+    let match
+
+    // Create a new regex object each time to reset lastIndex
+    const regex = new RegExp(urlRegex)
+
+    while ((match = regex.exec(text)) !== null) {
+      // Add text before the match
+      if (match.index > lastIndex) {
+        parts.push(text.substring(lastIndex, match.index))
+      }
+
+      // Get the URL and ensure it has a protocol
+      const url = match[2]
+      const href = url.startsWith("http") ? url : `https://${url}`
+
+      // Add the link element
+      parts.push(
+        <a
+          key={match.index}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 dark:text-blue-400 hover:underline"
+        >
+          {url}
+        </a>,
+      )
+
+      lastIndex = match.index + match[0].length
+    }
+
+    // Add any remaining text
+    if (lastIndex < text.length) {
+      parts.push(text.substring(lastIndex))
+    }
+
+    return parts
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       <div className="w-full flex justify-center">
@@ -962,69 +1011,38 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               {/* Left Sidebar - Intro */}
               <div className="space-y-4">
                 {/* Intro Card */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-3">
-                  <h2 className="text-base font-semibold mb-3 text-gray-900 dark:text-white">Intro</h2>
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                  <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Intro</h2>
 
                   {/* Bio */}
-                  {profile?.bio && (
-                    <div className="text-center mb-3">
-                      <p className="text-xs text-gray-700 dark:text-gray-300">
-                        {profile.bio.split(" ").map((word, index) => {
-                          // Check if word contains allmylinks.com or similar patterns
-                          if (
-                            word.includes("allmylinks.com") ||
-                            word.includes(".com/") ||
-                            word.includes(".net/") ||
-                            word.includes(".org/")
-                          ) {
-                            const cleanWord = word.replace(/[^\w./]/g, "") // Remove punctuation for URL
-                            return (
-                              <span key={index}>
-                                <a
-                                  href={`https://${cleanWord}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 dark:text-blue-400 hover:underline"
-                                >
-                                  {word}
-                                </a>{" "}
-                              </span>
-                            )
-                          }
-                          return word + " "
-                        })}
-                      </p>
-                    </div>
-                  )}
+                  <p className="text-gray-700 dark:text-gray-300 mb-2 text-center text-[0.95rem]">
+                    {formatBioWithLinks(profile?.bio || "")}
+                  </p>
 
                   {/* Short Bio Tags */}
                   {generateShortBio() && (
-                    <div className="mb-3">
-                      <p className="text-sm text-gray-700 dark:text-gray-300">{generateShortBio()}</p>
-                    </div>
+                    <p className="text-gray-700 dark:text-gray-300 mb-2 text-center">{generateShortBio()}</p>
                   )}
 
                   {/* Website Link */}
                   {socialLinks.website && (
-                    <div className="mb-3">
-                      <a
-                        href={getSocialUrl("website", socialLinks.website)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center text-blue-600 dark:text-blue-400 hover:underline text-sm"
-                      >
-                        <Globe className="h-3 w-3 mr-1" />
-                        {socialLinks.website.replace(/^https?:\/\//, "")}
-                      </a>
-                    </div>
+                    <a
+                      href={getSocialUrl("website", socialLinks.website)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center text-blue-600 dark:text-blue-400 hover:underline mb-4"
+                    >
+                      <Globe className="h-4 w-4 mr-2" />
+                      {socialLinks.website.replace(/^https?:\/\//, "")}
+                    </a>
                   )}
 
                   {/* Profile Info List */}
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {/* Work */}
                     {profile?.work_info?.company && (
                       <div className="flex items-center">
-                        <Briefcase className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
+                        <Briefcase className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
                         <div>
                           <p className="text-sm text-gray-700 dark:text-gray-300">
                             {profile?.work_info?.position ? `${profile?.work_info.position} at ` : "Works at "}
@@ -1039,7 +1057,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     {/* Education */}
                     {profile?.education_info?.school && (
                       <div className="flex items-center">
-                        <GraduationCap className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
+                        <GraduationCap className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
                         <div>
                           <p className="text-sm text-gray-700 dark:text-gray-300">
                             Studied {profile?.education_info?.degree || "at"}
@@ -1055,7 +1073,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     {/* Location */}
                     {getCurrentLocation() && (
                       <div className="flex items-center">
-                        <MapPin className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
+                        <MapPin className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
                         <div>
                           <p className="text-sm text-gray-700 dark:text-gray-300">
                             Lives in{" "}
@@ -1068,7 +1086,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     {/* Hometown */}
                     {profile?.location_info?.hometown && (
                       <div className="flex items-center">
-                        <Home className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
+                        <Home className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
                         <div>
                           <p className="text-sm text-gray-700 dark:text-gray-300">
                             From{" "}
@@ -1082,7 +1100,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
                     {/* Joined Date */}
                     <div className="flex items-center">
-                      <CalendarDays className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
+                      <CalendarDays className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
                       <div>
                         <p className="text-sm text-gray-700 dark:text-gray-300">
                           Joined{" "}
