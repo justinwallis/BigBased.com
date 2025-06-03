@@ -1,294 +1,96 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
-import { UserCircle, Settings, HelpCircle, Moon, MessageSquare, LogOut, ChevronRight } from "lucide-react"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { supabaseClient } from "@/lib/supabase/client"
-import { getCurrentUserProfile } from "@/app/actions/profile-actions"
+import { useRouter } from "next/navigation"
+import { signOut } from "next-auth/react"
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useAuth } from "@/contexts/auth-context"
+import { ChevronDown } from "lucide-react"
 
 export default function AuthButton() {
-  const [user, setUser] = useState<any>(null)
-  const [profile, setProfile] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [buttonText, setButtonText] = useState("")
-  const [fadeState, setFadeState] = useState("fade-in")
-
-  // Force a more reliable check for authentication status
-  useEffect(() => {
-    const checkUser = async () => {
-      try {
-        const supabase = supabaseClient()
-        if (!supabase) {
-          console.error("No Supabase client available")
-          setLoading(false)
-          return
-        }
-
-        // Check if user has logged in before
-        const hasLoggedInBefore = localStorage.getItem("hasLoggedInBefore") === "true"
-        if (hasLoggedInBefore) {
-          setButtonText("Login")
-        } else {
-          setButtonText("Join")
-        }
-
-        // Force a fresh check of the session
-        const { data, error } = await supabase.auth.getSession()
-
-        if (error) {
-          console.error("Error checking auth status:", error)
-          setLoading(false)
-          return
-        }
-
-        console.log("Auth session data:", data)
-
-        if (data.session?.user) {
-          setUser(data.session.user)
-
-          // Get the user's profile from Supabase profiles table
-          try {
-            const profileData = await getCurrentUserProfile()
-            console.log("Profile data from Supabase:", profileData)
-            setProfile(profileData)
-          } catch (profileError) {
-            console.error("Error fetching profile:", profileError)
-          }
-
-          // If user logs in, remember this for future visits
-          localStorage.setItem("hasLoggedInBefore", "true")
-        } else {
-          setUser(null)
-          setProfile(null)
-        }
-
-        setLoading(false)
-      } catch (error) {
-        console.error("Error checking auth status:", error)
-        setLoading(false)
-      }
-    }
-
-    checkUser()
-
-    // Set up auth state change listener
-    const supabase = supabaseClient()
-    if (!supabase) return
-
-    const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log("Auth state changed:", _event, session?.user?.email)
-
-      if (session?.user) {
-        setUser(session.user)
-
-        // Get the user's profile from Supabase profiles table
-        try {
-          const profileData = await getCurrentUserProfile()
-          console.log("Profile data from auth change:", profileData)
-          setProfile(profileData)
-        } catch (profileError) {
-          console.error("Error fetching profile on auth change:", profileError)
-        }
-
-        // If user logs in, remember this for future visits
-        localStorage.setItem("hasLoggedInBefore", "true")
-      } else {
-        setUser(null)
-        setProfile(null)
-      }
-    })
-
-    return () => {
-      data.subscription.unsubscribe()
-    }
-  }, [])
-
-  // Alternate button text between Join and Login if not logged in and never logged in before
-  useEffect(() => {
-    if (user) return // Don't alternate if logged in
-
-    const hasLoggedInBefore = localStorage.getItem("hasLoggedInBefore") === "true"
-    if (hasLoggedInBefore) {
-      setButtonText("Login")
-      return // Don't alternate if they've logged in before
-    }
-
-    const interval = setInterval(() => {
-      // Start fade out
-      setFadeState("fade-out")
-
-      // After fade out completes, change text and fade in
-      setTimeout(() => {
-        setButtonText((prev) => (prev === "Join" ? "Login" : "Join"))
-        setFadeState("fade-in")
-      }, 300) // Match this with the CSS transition duration
-    }, 3000)
-
-    return () => clearInterval(interval)
-  }, [user])
+  const router = useRouter()
+  const { user, loading } = useAuth()
+  const [isSigningOut, setIsSigningOut] = useState(false)
 
   const handleSignOut = async () => {
-    const supabase = supabaseClient()
-    if (!supabase) return
-
-    await supabase.auth.signOut()
-    window.location.href = "/"
+    try {
+      setIsSigningOut(true)
+      await signOut({ redirect: false })
+      router.push("/")
+      router.refresh()
+    } catch (error) {
+      console.error("Error signing out:", error)
+    } finally {
+      setIsSigningOut(false)
+    }
   }
 
   if (loading) {
-    return <div className="w-[90px] h-[40px] bg-gray-300 dark:bg-gray-700 rounded-full animate-pulse"></div>
+    return (
+      <Button variant="ghost" size="sm" disabled>
+        Loading...
+      </Button>
+    )
   }
 
   if (user) {
-    const displayName = profile?.full_name || profile?.username || user.email?.split("@")[0] || "User"
-    const initials = displayName.substring(0, 2).toUpperCase()
-    const avatarUrl = profile?.avatar_url
-
-    console.log("Avatar URL from profile:", avatarUrl)
-
     return (
       <DropdownMenu>
-        <DropdownMenuTrigger className="focus:outline-none">
-          <Avatar className="h-10 w-10 border-2 border-white dark:border-gray-800">
-            {avatarUrl ? (
-              <AvatarImage
-                src={avatarUrl || "/placeholder.svg"}
-                alt={displayName}
-                onLoad={() => console.log("Header avatar loaded successfully")}
-                onError={(e) => {
-                  console.error("Header avatar failed to load:", e.target)
-                  console.log("Avatar URL that failed:", avatarUrl)
-                }}
-              />
-            ) : null}
-            <AvatarFallback className="bg-blue-500 text-white">
-              {user.email ? initials : <UserCircle className="h-5 w-5" />}
-            </AvatarFallback>
-          </Avatar>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="end"
-          className="w-72 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white"
-        >
-          {/* User Info Header - Make it clickable and link to profile */}
-          <Link href="/profile" className="block">
-            <div className="flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">
-              <Avatar className="h-8 w-8 mr-3">
-                {avatarUrl ? (
-                  <AvatarImage
-                    src={avatarUrl || "/placeholder.svg"}
-                    alt={displayName}
-                    onLoad={() => console.log("Menu avatar loaded successfully")}
-                    onError={(e) => {
-                      console.error("Menu avatar failed to load:", e.target)
-                      console.log("Avatar URL that failed:", avatarUrl)
-                    }}
-                  />
-                ) : null}
-                <AvatarFallback className="bg-blue-500 text-white">
-                  {user.email ? initials : <UserCircle className="h-4 w-4" />}
-                </AvatarFallback>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+            <div className="flex items-center">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={user.image || ""} alt={user.name || "User"} />
+                <AvatarFallback>{user.name?.[0] || "U"}</AvatarFallback>
               </Avatar>
-              <div>
-                <div className="font-medium text-gray-900 dark:text-white">{displayName}</div>
-              </div>
+              <ChevronDown className="h-4 w-4 ml-1 text-muted-foreground" />
             </div>
-          </Link>
-
-          {/* Menu Items - Update for light/dark theme */}
-          <div className="py-2">
-            <DropdownMenuItem
-              asChild
-              className="px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 focus:bg-gray-100 dark:focus:bg-gray-800 text-gray-900 dark:text-white"
-            >
-              <Link href="/profile/security" className="flex items-center justify-between w-full cursor-pointer">
-                <div className="flex items-center">
-                  <Settings className="h-5 w-5 mr-3 text-gray-500 dark:text-gray-400" />
-                  <span>Settings & privacy</span>
-                </div>
-                <ChevronRight className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-              </Link>
-            </DropdownMenuItem>
-
-            <DropdownMenuItem
-              asChild
-              className="px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 focus:bg-gray-100 dark:focus:bg-gray-800 text-gray-900 dark:text-white"
-            >
-              <Link href="/contact" className="flex items-center justify-between w-full cursor-pointer">
-                <div className="flex items-center">
-                  <HelpCircle className="h-5 w-5 mr-3 text-gray-500 dark:text-gray-400" />
-                  <span>Help & support</span>
-                </div>
-                <ChevronRight className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-              </Link>
-            </DropdownMenuItem>
-
-            <DropdownMenuItem
-              asChild
-              className="px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 focus:bg-gray-100 dark:focus:bg-gray-800 text-gray-900 dark:text-white"
-            >
-              <Link href="/profile" className="flex items-center justify-between w-full cursor-pointer">
-                <div className="flex items-center">
-                  <Moon className="h-5 w-5 mr-3 text-gray-500 dark:text-gray-400" />
-                  <span>Display & accessibility</span>
-                </div>
-                <ChevronRight className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-              </Link>
-            </DropdownMenuItem>
-
-            <DropdownMenuItem className="px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 focus:bg-gray-100 dark:focus:bg-gray-800 text-gray-900 dark:text-white cursor-pointer">
-              <div className="flex items-center">
-                <MessageSquare className="h-5 w-5 mr-3 text-gray-500 dark:text-gray-400" />
-                <span>Give feedback</span>
-                <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">⌘ B</span>
-              </div>
-            </DropdownMenuItem>
-
-            <DropdownMenuItem
-              onClick={handleSignOut}
-              className="px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 focus:bg-gray-100 dark:focus:bg-gray-800 text-gray-900 dark:text-white cursor-pointer"
-            >
-              <div className="flex items-center">
-                <LogOut className="h-5 w-5 mr-3 text-gray-500 dark:text-gray-400" />
-                <span>Log Out</span>
-              </div>
-            </DropdownMenuItem>
-          </div>
-
-          {/* Footer - Update for light/dark theme */}
-          <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
-            <div className="flex flex-wrap gap-2 mb-1">
-              <Link href="/privacy" className="hover:text-gray-700 dark:hover:text-gray-300">
-                Privacy
-              </Link>
-              <span>·</span>
-              <Link href="/terms" className="hover:text-gray-700 dark:hover:text-gray-300">
-                Terms
-              </Link>
-              <span>·</span>
-              <Link href="/contact" className="hover:text-gray-700 dark:hover:text-gray-300">
-                More
-              </Link>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56" align="end" forceMount>
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium leading-none">{user.name}</p>
+              <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
             </div>
-            <div>© 2025</div>
-          </div>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link href="/profile">Profile</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/profile/billing">Billing</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/profile/security">Security</Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem className="cursor-pointer" disabled={isSigningOut} onClick={handleSignOut}>
+            {isSigningOut ? "Signing out..." : "Sign out"}
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     )
   }
 
   return (
-    <Link
-      href={buttonText === "Join" ? "/auth/sign-up" : "/auth/sign-in"}
-      className="inline-block min-w-[90px] text-center bg-black dark:bg-white text-white dark:text-black px-6 py-2 rounded-full font-medium transition-all duration-300 hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 hover:shadow-md"
-    >
-      <span
-        className={`inline-block transition-opacity duration-300 ${fadeState === "fade-in" ? "opacity-100" : "opacity-0"}`}
-      >
-        {buttonText}
-      </span>
-    </Link>
+    <div className="flex items-center gap-2">
+      <Button variant="outline" size="sm" asChild>
+        <Link href="/auth/sign-in">Sign in</Link>
+      </Button>
+      <Button size="sm" asChild>
+        <Link href="/auth/sign-up">Sign up</Link>
+      </Button>
+    </div>
   )
 }
