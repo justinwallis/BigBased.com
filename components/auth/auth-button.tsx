@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { UserCircle, Settings, HelpCircle, Moon, MessageSquare, LogOut, ChevronRight } from "lucide-react"
+import { UserCircle, Settings, HelpCircle, Moon, MessageSquare, LogOut, ChevronRight, ChevronDown } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { supabaseClient } from "@/lib/supabase/client"
@@ -151,22 +151,25 @@ export default function AuthButton() {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger className="focus:outline-none">
-          <Avatar className="h-10 w-10 border-2 border-white dark:border-gray-800">
-            {avatarUrl ? (
-              <AvatarImage
-                src={avatarUrl || "/placeholder.svg"}
-                alt={displayName}
-                onLoad={() => console.log("Header avatar loaded successfully")}
-                onError={(e) => {
-                  console.error("Header avatar failed to load:", e.target)
-                  console.log("Avatar URL that failed:", avatarUrl)
-                }}
-              />
-            ) : null}
-            <AvatarFallback className="bg-blue-500 text-white">
-              {user.email ? initials : <UserCircle className="h-5 w-5" />}
-            </AvatarFallback>
-          </Avatar>
+          <div className="flex items-center gap-1 hover:opacity-80 transition-opacity">
+            <Avatar className="h-10 w-10 border-2 border-white dark:border-gray-800">
+              {avatarUrl ? (
+                <AvatarImage
+                  src={avatarUrl || "/placeholder.svg"}
+                  alt={displayName}
+                  onLoad={() => console.log("Header avatar loaded successfully")}
+                  onError={(e) => {
+                    console.error("Header avatar failed to load:", e.target)
+                    console.log("Avatar URL that failed:", avatarUrl)
+                  }}
+                />
+              ) : null}
+              <AvatarFallback className="bg-blue-500 text-white">
+                {user.email ? initials : <UserCircle className="h-5 w-5" />}
+              </AvatarFallback>
+            </Avatar>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
@@ -282,7 +285,7 @@ export default function AuthButton() {
   return (
     <Link
       href={buttonText === "Join" ? "/auth/sign-up" : "/auth/sign-in"}
-      className="inline-block min-w-[90px] text-center bg-black dark:bg-white text-white dark:text-black px-6 py-2 rounded-full font-medium transition-all duration-300 hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 hover:shadow-md"
+      className="inline-flex items-center justify-center min-w-[90px] text-center bg-[#1877F2] hover:bg-[#166FE5] text-white px-6 py-2 rounded-md font-medium transition-all duration-200 hover:shadow-lg border border-transparent"
     >
       <span
         className={`inline-block transition-opacity duration-300 ${fadeState === "fade-in" ? "opacity-100" : "opacity-0"}`}
