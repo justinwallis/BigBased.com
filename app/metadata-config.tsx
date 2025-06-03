@@ -5,6 +5,8 @@ export const viewportConfig: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
   themeColor: "#ffffff",
   colorScheme: "light dark",
 }
