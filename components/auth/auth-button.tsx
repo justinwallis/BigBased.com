@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuth } from "@/contexts/auth-context"
-import { ChevronDown } from "lucide-react"
+import { UserCircle, ChevronDown } from "lucide-react"
 
 export default function AuthButton() {
   const router = useRouter()
@@ -44,18 +44,31 @@ export default function AuthButton() {
   }
 
   if (user) {
+    const avatarUrl = user.image
+    const displayName = user.name || user.email || "User"
+    const initials = user.email ? user.email[0].toUpperCase() : "U"
     return (
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-            <div className="flex items-center">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={user.image || ""} alt={user.name || "User"} />
-                <AvatarFallback>{user.name?.[0] || "U"}</AvatarFallback>
-              </Avatar>
-              <ChevronDown className="h-4 w-4 ml-1 text-muted-foreground" />
-            </div>
-          </Button>
+        <DropdownMenuTrigger className="focus:outline-none">
+          <div className="relative">
+            <Avatar className="h-10 w-10 border-2 border-white dark:border-gray-800">
+              {avatarUrl ? (
+                <AvatarImage
+                  src={avatarUrl || "/placeholder.svg"}
+                  alt={displayName}
+                  onLoad={() => console.log("Header avatar loaded successfully")}
+                  onError={(e) => {
+                    console.error("Header avatar failed to load:", e.target)
+                    console.log("Avatar URL that failed:", avatarUrl)
+                  }}
+                />
+              ) : null}
+              <AvatarFallback className="bg-blue-500 text-white">
+                {user.email ? initials : <UserCircle className="h-5 w-5" />}
+              </AvatarFallback>
+            </Avatar>
+            <ChevronDown className="absolute -bottom-1 -right-1 h-4 w-4 bg-white dark:bg-gray-900 rounded-full p-0.5 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400" />
+          </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
