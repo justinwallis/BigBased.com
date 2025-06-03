@@ -21,6 +21,10 @@ import {
 import type { Profile } from "@/app/actions/profile-actions"
 import Link from "next/link"
 
+// Add these imports at the top of the file
+import { ImageUploadDialog } from "@/components/image-upload-dialog"
+import { uploadImageClient } from "@/lib/upload-client"
+
 interface PublicProfilePageClientProps {
   profile: Profile | null
 }
@@ -30,6 +34,11 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
   const [showFriendsSection, setShowFriendsSection] = useState(false)
   const [showLeftArrow, setShowLeftArrow] = useState(false)
   const [showRightArrow, setShowRightArrow] = useState(true)
+
+  // Add these state variables inside the component, after the existing useState declarations
+  const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false)
+  const [isCoverDialogOpen, setIsCoverDialogOpen] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
 
   if (!profile) {
     notFound()
@@ -180,6 +189,39 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
   }
 
   // Add these functions inside the component, before the return statement
+  const handleAvatarUpload = async (file: File) => {
+    try {
+      const result = await uploadImageClient(file, "avatar")
+      if (result.success && result.url) {
+        // Update the avatar URL in the UI
+        // In a real app, you would update the profile state
+        window.location.reload()
+      } else {
+        setUploadError(result.error || "Failed to upload avatar")
+      }
+    } catch (error) {
+      setUploadError("An unexpected error occurred")
+      console.error("Avatar upload error:", error)
+    }
+  }
+
+  const handleCoverUpload = async (file: File) => {
+    try {
+      const result = await uploadImageClient(file, "banner")
+      if (result.success && result.url) {
+        // Update the cover URL in the UI
+        // In a real app, you would update the profile state
+        window.location.reload()
+      } else {
+        setUploadError(result.error || "Failed to upload cover photo")
+      }
+    } catch (error) {
+      setUploadError("An unexpected error occurred")
+      console.error("Cover upload error:", error)
+    }
+  }
+
+  // Add these functions inside the component, before the return statement
   const handleScroll = (e: Event) => {
     const container = e.target as HTMLElement
     const scrollLeft = container.scrollLeft
@@ -289,7 +331,10 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               }}
             >
               {/* Edit cover photo button */}
-              <button className="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5 hover:bg-white dark:hover:bg-gray-800 transition-colors">
+              <button
+                onClick={() => setIsCoverDialogOpen(true)}
+                className="absolute bottom-4 right-4 bg-gray-800/90 dark:bg-white/90 text-white dark:text-gray-800 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5 hover:bg-gray-900 dark:hover:bg-white transition-colors"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -326,7 +371,10 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                             {getInitials(profile?.full_name || profile?.username || "U")}
                           </AvatarFallback>
                         </Avatar>
-                        <button className="absolute bottom-3 right-3 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                        <button
+                          onClick={() => setIsAvatarDialogOpen(true)}
+                          className="absolute bottom-3 right-3 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                        >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="16"
@@ -460,7 +508,10 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                             {getInitials(profile?.full_name || profile?.username || "U")}
                           </AvatarFallback>
                         </Avatar>
-                        <button className="absolute bottom-2 right-2 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                        <button
+                          onClick={() => setIsAvatarDialogOpen(true)}
+                          className="absolute bottom-2 right-2 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                        >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="14"
@@ -593,7 +644,10 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                           {getInitials(profile?.full_name || profile?.username || "U")}
                         </AvatarFallback>
                       </Avatar>
-                      <button className="absolute bottom-2 right-2 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                      <button
+                        onClick={() => setIsAvatarDialogOpen(true)}
+                        className="absolute bottom-2 right-2 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                      >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           width="14"
@@ -1560,6 +1614,27 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
           </div>
         </div>
       </div>
+
+      {/* Upload Dialogs */}
+      <ImageUploadDialog
+        isOpen={isAvatarDialogOpen}
+        onClose={() => setIsAvatarDialogOpen(false)}
+        onUpload={handleAvatarUpload}
+        title="Upload Profile Picture"
+        description="Choose a new profile picture to represent you across Big Based."
+        imageType="avatar"
+        maxSizeMB={5}
+      />
+
+      <ImageUploadDialog
+        isOpen={isCoverDialogOpen}
+        onClose={() => setIsCoverDialogOpen(false)}
+        onUpload={handleCoverUpload}
+        title="Upload Cover Photo"
+        description="Choose a new cover photo for your profile. Recommended size: 1200x400px."
+        imageType="banner"
+        maxSizeMB={10}
+      />
     </div>
   )
 }

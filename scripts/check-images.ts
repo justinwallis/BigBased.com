@@ -2,9 +2,9 @@
  * Script to check and fix image paths before build
  */
 
-import { checkComponentImages, createPlaceholderImages, getAllPublicImages } from "../utils/fix-image-paths"
+import { checkComponentImages, createPlaceholderImages, getAllPublicImages } from "../utils/fix-image-paths.js"
 import path from "path"
-import glob from "glob"
+import { glob } from "glob"
 
 async function main() {
   console.log("Checking image paths...")
@@ -15,7 +15,7 @@ async function main() {
   const allFiles = [...componentFiles, ...pageFiles]
 
   // Check each file for missing images
-  let allMissingImages: string[] = []
+  let allMissingImages = []
 
   allFiles.forEach((file) => {
     const filePath = path.join(process.cwd(), file)
