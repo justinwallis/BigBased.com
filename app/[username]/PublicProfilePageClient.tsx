@@ -16,7 +16,6 @@ import {
   MapPin,
   Briefcase,
   GraduationCap,
-  MoreHorizontal,
 } from "lucide-react"
 import type { Profile } from "@/app/actions/profile-actions"
 
@@ -26,6 +25,7 @@ interface PublicProfilePageClientProps {
 
 export function PublicProfilePageClient({ profile }: PublicProfilePageClientProps) {
   const [activeTab, setActiveTab] = useState("posts")
+  const [showFriendsDropdown, setShowFriendsDropdown] = useState(false)
 
   if (!profile) {
     notFound()
@@ -319,8 +319,94 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                         </svg>
                         Add to story
                       </button>
-                      <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md">
-                        <MoreHorizontal className="h-5 w-5" />
+                      <button
+                        onClick={() => setShowFriendsDropdown(!showFriendsDropdown)}
+                        className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md relative"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className={`transition-transform ${showFriendsDropdown ? "rotate-180" : ""}`}
+                        >
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+
+                        {/* Friends Dropdown */}
+                        {showFriendsDropdown && (
+                          <div className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+                            <div className="p-4">
+                              <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                  People You May Know
+                                </h3>
+                                <button
+                                  onClick={() => setShowFriendsDropdown(false)}
+                                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                >
+                                  <svg
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                  >
+                                    <path d="M18 6L6 18M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </div>
+
+                              <div className="space-y-3 max-h-96 overflow-y-auto">
+                                {/* Friend suggestions */}
+                                {[
+                                  { name: "Sarah Johnson", mutualFriends: 3, avatar: "/placeholder.svg" },
+                                  { name: "Mike Chen", mutualFriends: 7, avatar: "/placeholder.svg" },
+                                  { name: "Emily Davis", mutualFriends: 2, avatar: "/placeholder.svg" },
+                                  { name: "Alex Rodriguez", mutualFriends: 5, avatar: "/placeholder.svg" },
+                                  { name: "Jessica Wilson", mutualFriends: 1, avatar: "/placeholder.svg" },
+                                ].map((friend, index) => (
+                                  <div
+                                    key={index}
+                                    className="flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md"
+                                  >
+                                    <div className="flex items-center space-x-3">
+                                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                                        {friend.name
+                                          .split(" ")
+                                          .map((n) => n[0])
+                                          .join("")}
+                                      </div>
+                                      <div>
+                                        <p className="font-medium text-gray-900 dark:text-white text-sm">
+                                          {friend.name}
+                                        </p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                          {friend.mutualFriends} mutual friends
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm font-medium">
+                                      Add friend
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+
+                              <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                <button className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline">
+                                  See all friend suggestions
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -435,8 +521,94 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                         </svg>
                         Add to story
                       </button>
-                      <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md">
-                        <MoreHorizontal className="h-4 w-4" />
+                      <button
+                        onClick={() => setShowFriendsDropdown(!showFriendsDropdown)}
+                        className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md relative"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className={`transition-transform ${showFriendsDropdown ? "rotate-180" : ""}`}
+                        >
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+
+                        {/* Friends Dropdown */}
+                        {showFriendsDropdown && (
+                          <div className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+                            <div className="p-4">
+                              <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                  People You May Know
+                                </h3>
+                                <button
+                                  onClick={() => setShowFriendsDropdown(false)}
+                                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                >
+                                  <svg
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                  >
+                                    <path d="M18 6L6 18M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </div>
+
+                              <div className="space-y-3 max-h-96 overflow-y-auto">
+                                {/* Friend suggestions */}
+                                {[
+                                  { name: "Sarah Johnson", mutualFriends: 3, avatar: "/placeholder.svg" },
+                                  { name: "Mike Chen", mutualFriends: 7, avatar: "/placeholder.svg" },
+                                  { name: "Emily Davis", mutualFriends: 2, avatar: "/placeholder.svg" },
+                                  { name: "Alex Rodriguez", mutualFriends: 5, avatar: "/placeholder.svg" },
+                                  { name: "Jessica Wilson", mutualFriends: 1, avatar: "/placeholder.svg" },
+                                ].map((friend, index) => (
+                                  <div
+                                    key={index}
+                                    className="flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md"
+                                  >
+                                    <div className="flex items-center space-x-3">
+                                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                                        {friend.name
+                                          .split(" ")
+                                          .map((n) => n[0])
+                                          .join("")}
+                                      </div>
+                                      <div>
+                                        <p className="font-medium text-gray-900 dark:text-white text-sm">
+                                          {friend.name}
+                                        </p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                          {friend.mutualFriends} mutual friends
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm font-medium">
+                                      Add friend
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+
+                              <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                <button className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline">
+                                  See all friend suggestions
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -548,8 +720,94 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                           </svg>
                           Add to story
                         </button>
-                        <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md">
-                          <MoreHorizontal className="h-4 w-4" />
+                        <button
+                          onClick={() => setShowFriendsDropdown(!showFriendsDropdown)}
+                          className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md relative"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className={`transition-transform ${showFriendsDropdown ? "rotate-180" : ""}`}
+                          >
+                            <path d="m6 9 6 6 6-6" />
+                          </svg>
+
+                          {/* Friends Dropdown */}
+                          {showFriendsDropdown && (
+                            <div className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+                              <div className="p-4">
+                                <div className="flex items-center justify-between mb-4">
+                                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    People You May Know
+                                  </h3>
+                                  <button
+                                    onClick={() => setShowFriendsDropdown(false)}
+                                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                  >
+                                    <svg
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                    >
+                                      <path d="M18 6L6 18M6 6l12 12" />
+                                    </svg>
+                                  </button>
+                                </div>
+
+                                <div className="space-y-3 max-h-96 overflow-y-auto">
+                                  {/* Friend suggestions */}
+                                  {[
+                                    { name: "Sarah Johnson", mutualFriends: 3, avatar: "/placeholder.svg" },
+                                    { name: "Mike Chen", mutualFriends: 7, avatar: "/placeholder.svg" },
+                                    { name: "Emily Davis", mutualFriends: 2, avatar: "/placeholder.svg" },
+                                    { name: "Alex Rodriguez", mutualFriends: 5, avatar: "/placeholder.svg" },
+                                    { name: "Jessica Wilson", mutualFriends: 1, avatar: "/placeholder.svg" },
+                                  ].map((friend, index) => (
+                                    <div
+                                      key={index}
+                                      className="flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md"
+                                    >
+                                      <div className="flex items-center space-x-3">
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                                          {friend.name
+                                            .split(" ")
+                                            .map((n) => n[0])
+                                            .join("")}
+                                        </div>
+                                        <div>
+                                          <p className="font-medium text-gray-900 dark:text-white text-sm">
+                                            {friend.name}
+                                          </p>
+                                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                                            {friend.mutualFriends} mutual friends
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm font-medium">
+                                        Add friend
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+
+                                <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                  <button className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline">
+                                    See all friend suggestions
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </button>
                       </div>
                     </div>
@@ -622,7 +880,9 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
-                    <path d="m6 9 6 6 6-6" />
+                    <circle cx="12" cy="12" r="1" />
+                    <circle cx="19" cy="12" r="1" />
+                    <circle cx="5" cy="12" r="1" />
                   </svg>
                 </button>
               </div>
