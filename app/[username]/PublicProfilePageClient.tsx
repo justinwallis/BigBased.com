@@ -4,7 +4,7 @@ import { useState } from "react"
 import { notFound } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   CalendarDays,
   Linkedin,
@@ -16,6 +16,11 @@ import {
   MapPin,
   Briefcase,
   GraduationCap,
+  MoreHorizontal,
+  ChevronDown,
+  ChevronUp,
+  ChevronRight,
+  X,
 } from "lucide-react"
 import type { Profile } from "@/app/actions/profile-actions"
 
@@ -23,9 +28,68 @@ interface PublicProfilePageClientProps {
   profile: Profile | null
 }
 
+// Mock data for friend suggestions
+const friendSuggestions = [
+  {
+    id: 1,
+    name: "Dean White",
+    avatar: "/placeholder.svg?height=100&width=100",
+    mutualFriends: 4,
+  },
+  {
+    id: 2,
+    name: "Louis Prevost",
+    avatar: "/placeholder.svg?height=100&width=100",
+    mutualFriends: 2,
+    followedBy: "2.1K",
+  },
+  {
+    id: 3,
+    name: "Jay Weinstein",
+    avatar: "/placeholder.svg?height=100&width=100",
+    mutualFriends: 6,
+  },
+  {
+    id: 4,
+    name: "Nicholas Holidazed",
+    avatar: "/placeholder.svg?height=100&width=100",
+    mutualFriends: 2,
+  },
+  {
+    id: 5,
+    name: "Kristina McCloy",
+    avatar: "/placeholder.svg?height=100&width=100",
+    mutualFriends: 2,
+  },
+  {
+    id: 6,
+    name: "Jess Griffin",
+    avatar: "/placeholder.svg?height=100&width=100",
+    mutualFriends: 2,
+  },
+  {
+    id: 7,
+    name: "Ross Campbell",
+    avatar: "/placeholder.svg?height=100&width=100",
+    mutualFriends: 7,
+  },
+  {
+    id: 8,
+    name: "Sarah Johnson",
+    avatar: "/placeholder.svg?height=100&width=100",
+    mutualFriends: 3,
+  },
+  {
+    id: 9,
+    name: "Michael Chen",
+    avatar: "/placeholder.svg?height=100&width=100",
+    mutualFriends: 5,
+  },
+]
+
 export function PublicProfilePageClient({ profile }: PublicProfilePageClientProps) {
   const [activeTab, setActiveTab] = useState("posts")
-  const [showFriendsDropdown, setShowFriendsDropdown] = useState(false)
+  const [showFriendSuggestions, setShowFriendSuggestions] = useState(false)
 
   if (!profile) {
     notFound()
@@ -175,6 +239,15 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
     return parts.join(" · ")
   }
 
+  // Function to scroll the friend suggestions container
+  const scrollFriendSuggestions = () => {
+    const container = document.getElementById("friend-suggestions-container")
+    if (container) {
+      const scrollAmount = container.clientWidth * 0.8 // Scroll 80% of the visible width
+      container.scrollBy({ left: scrollAmount, behavior: "smooth" })
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       <div className="w-full flex justify-center">
@@ -319,94 +392,8 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                         </svg>
                         Add to story
                       </button>
-                      <button
-                        onClick={() => setShowFriendsDropdown(!showFriendsDropdown)}
-                        className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md relative"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className={`transition-transform ${showFriendsDropdown ? "rotate-180" : ""}`}
-                        >
-                          <path d="m6 9 6 6 6-6" />
-                        </svg>
-
-                        {/* Friends Dropdown */}
-                        {showFriendsDropdown && (
-                          <div className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
-                            <div className="p-4">
-                              <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                  People You May Know
-                                </h3>
-                                <button
-                                  onClick={() => setShowFriendsDropdown(false)}
-                                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                                >
-                                  <svg
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                  >
-                                    <path d="M18 6L6 18M6 6l12 12" />
-                                  </svg>
-                                </button>
-                              </div>
-
-                              <div className="space-y-3 max-h-96 overflow-y-auto">
-                                {/* Friend suggestions */}
-                                {[
-                                  { name: "Sarah Johnson", mutualFriends: 3, avatar: "/placeholder.svg" },
-                                  { name: "Mike Chen", mutualFriends: 7, avatar: "/placeholder.svg" },
-                                  { name: "Emily Davis", mutualFriends: 2, avatar: "/placeholder.svg" },
-                                  { name: "Alex Rodriguez", mutualFriends: 5, avatar: "/placeholder.svg" },
-                                  { name: "Jessica Wilson", mutualFriends: 1, avatar: "/placeholder.svg" },
-                                ].map((friend, index) => (
-                                  <div
-                                    key={index}
-                                    className="flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md"
-                                  >
-                                    <div className="flex items-center space-x-3">
-                                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
-                                        {friend.name
-                                          .split(" ")
-                                          .map((n) => n[0])
-                                          .join("")}
-                                      </div>
-                                      <div>
-                                        <p className="font-medium text-gray-900 dark:text-white text-sm">
-                                          {friend.name}
-                                        </p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                                          {friend.mutualFriends} mutual friends
-                                        </p>
-                                      </div>
-                                    </div>
-                                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm font-medium">
-                                      Add friend
-                                    </button>
-                                  </div>
-                                ))}
-                              </div>
-
-                              <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
-                                <button className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline">
-                                  See all friend suggestions
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
+                      <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md">
+                        <MoreHorizontal className="h-5 w-5" />
                       </button>
                     </div>
                   </div>
@@ -521,94 +508,8 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                         </svg>
                         Add to story
                       </button>
-                      <button
-                        onClick={() => setShowFriendsDropdown(!showFriendsDropdown)}
-                        className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md relative"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className={`transition-transform ${showFriendsDropdown ? "rotate-180" : ""}`}
-                        >
-                          <path d="m6 9 6 6 6-6" />
-                        </svg>
-
-                        {/* Friends Dropdown */}
-                        {showFriendsDropdown && (
-                          <div className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
-                            <div className="p-4">
-                              <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                  People You May Know
-                                </h3>
-                                <button
-                                  onClick={() => setShowFriendsDropdown(false)}
-                                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                                >
-                                  <svg
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                  >
-                                    <path d="M18 6L6 18M6 6l12 12" />
-                                  </svg>
-                                </button>
-                              </div>
-
-                              <div className="space-y-3 max-h-96 overflow-y-auto">
-                                {/* Friend suggestions */}
-                                {[
-                                  { name: "Sarah Johnson", mutualFriends: 3, avatar: "/placeholder.svg" },
-                                  { name: "Mike Chen", mutualFriends: 7, avatar: "/placeholder.svg" },
-                                  { name: "Emily Davis", mutualFriends: 2, avatar: "/placeholder.svg" },
-                                  { name: "Alex Rodriguez", mutualFriends: 5, avatar: "/placeholder.svg" },
-                                  { name: "Jessica Wilson", mutualFriends: 1, avatar: "/placeholder.svg" },
-                                ].map((friend, index) => (
-                                  <div
-                                    key={index}
-                                    className="flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md"
-                                  >
-                                    <div className="flex items-center space-x-3">
-                                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
-                                        {friend.name
-                                          .split(" ")
-                                          .map((n) => n[0])
-                                          .join("")}
-                                      </div>
-                                      <div>
-                                        <p className="font-medium text-gray-900 dark:text-white text-sm">
-                                          {friend.name}
-                                        </p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                                          {friend.mutualFriends} mutual friends
-                                        </p>
-                                      </div>
-                                    </div>
-                                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm font-medium">
-                                      Add friend
-                                    </button>
-                                  </div>
-                                ))}
-                              </div>
-
-                              <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
-                                <button className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline">
-                                  See all friend suggestions
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
+                      <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md">
+                        <MoreHorizontal className="h-4 w-4" />
                       </button>
                     </div>
                   </div>
@@ -720,94 +621,8 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                           </svg>
                           Add to story
                         </button>
-                        <button
-                          onClick={() => setShowFriendsDropdown(!showFriendsDropdown)}
-                          className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md relative"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className={`transition-transform ${showFriendsDropdown ? "rotate-180" : ""}`}
-                          >
-                            <path d="m6 9 6 6 6-6" />
-                          </svg>
-
-                          {/* Friends Dropdown */}
-                          {showFriendsDropdown && (
-                            <div className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
-                              <div className="p-4">
-                                <div className="flex items-center justify-between mb-4">
-                                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                    People You May Know
-                                  </h3>
-                                  <button
-                                    onClick={() => setShowFriendsDropdown(false)}
-                                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                                  >
-                                    <svg
-                                      width="16"
-                                      height="16"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="2"
-                                    >
-                                      <path d="M18 6L6 18M6 6l12 12" />
-                                    </svg>
-                                  </button>
-                                </div>
-
-                                <div className="space-y-3 max-h-96 overflow-y-auto">
-                                  {/* Friend suggestions */}
-                                  {[
-                                    { name: "Sarah Johnson", mutualFriends: 3, avatar: "/placeholder.svg" },
-                                    { name: "Mike Chen", mutualFriends: 7, avatar: "/placeholder.svg" },
-                                    { name: "Emily Davis", mutualFriends: 2, avatar: "/placeholder.svg" },
-                                    { name: "Alex Rodriguez", mutualFriends: 5, avatar: "/placeholder.svg" },
-                                    { name: "Jessica Wilson", mutualFriends: 1, avatar: "/placeholder.svg" },
-                                  ].map((friend, index) => (
-                                    <div
-                                      key={index}
-                                      className="flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md"
-                                    >
-                                      <div className="flex items-center space-x-3">
-                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
-                                          {friend.name
-                                            .split(" ")
-                                            .map((n) => n[0])
-                                            .join("")}
-                                        </div>
-                                        <div>
-                                          <p className="font-medium text-gray-900 dark:text-white text-sm">
-                                            {friend.name}
-                                          </p>
-                                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                                            {friend.mutualFriends} mutual friends
-                                          </p>
-                                        </div>
-                                      </div>
-                                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm font-medium">
-                                        Add friend
-                                      </button>
-                                    </div>
-                                  ))}
-                                </div>
-
-                                <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
-                                  <button className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline">
-                                    See all friend suggestions
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          )}
+                        <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md">
+                          <MoreHorizontal className="h-4 w-4" />
                         </button>
                       </div>
                     </div>
@@ -819,6 +634,81 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
           {/* Divider */}
           <div className="h-px bg-gray-300 dark:bg-gray-700 w-full"></div>
+
+          {/* Friend Suggestions Section - Expandable */}
+          {showFriendSuggestions && (
+            <div className="w-full bg-white dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700 py-4 transition-all duration-300">
+              <div className="px-4 md:px-6 lg:px-8">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">People You May Know</h2>
+                  <a href="#" className="text-blue-600 dark:text-blue-400 text-sm hover:underline">
+                    See all
+                  </a>
+                </div>
+
+                <div className="relative">
+                  <div
+                    id="friend-suggestions-container"
+                    className="flex overflow-x-auto pb-4 space-x-3 scrollbar-hide"
+                    style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                  >
+                    {friendSuggestions.map((friend) => (
+                      <div
+                        key={friend.id}
+                        className="flex-shrink-0 w-[180px] bg-gray-50 dark:bg-gray-900 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 relative"
+                      >
+                        <button className="absolute top-2 right-2 p-1 bg-gray-200/80 dark:bg-gray-700/80 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 z-10">
+                          <X className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                        </button>
+                        <div className="h-[180px] w-full bg-gray-200 dark:bg-gray-700 relative">
+                          <img
+                            src={friend.avatar || "/placeholder.svg"}
+                            alt={friend.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="p-3">
+                          <h3 className="font-medium text-gray-900 dark:text-white truncate">{friend.name}</h3>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center">
+                            {friend.followedBy ? (
+                              <>Followed by {friend.followedBy}</>
+                            ) : (
+                              <>{friend.mutualFriends} mutual friends</>
+                            )}
+                          </p>
+                          <button className="w-full mt-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium flex items-center justify-center">
+                            <svg
+                              className="w-4 h-4 mr-1.5"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                              <circle cx="9" cy="7" r="4" />
+                              <line x1="19" y1="8" x2="19" y2="14" />
+                              <line x1="16" y1="11" x2="22" y2="11" />
+                            </svg>
+                            Add friend
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Right scroll button */}
+                  <button
+                    onClick={scrollFriendSuggestions}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 rounded-full p-2 shadow-md hover:bg-white dark:hover:bg-gray-800 z-10"
+                  >
+                    <ChevronRight className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Navigation Tabs */}
           <div className="sticky top-0 z-10">
@@ -868,22 +758,12 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     More
                   </TabsTrigger>
                 </TabsList>
-                <button className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="12" cy="12" r="1" />
-                    <circle cx="19" cy="12" r="1" />
-                    <circle cx="5" cy="12" r="1" />
-                  </svg>
+                <button
+                  onClick={() => setShowFriendSuggestions(!showFriendSuggestions)}
+                  className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                  aria-label={showFriendSuggestions ? "Hide friend suggestions" : "Show friend suggestions"}
+                >
+                  {showFriendSuggestions ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                 </button>
               </div>
             </Tabs>
@@ -1141,7 +1021,7 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
                             strokeLinejoin="round"
                             className="mr-2 text-green-500"
                           >
-                            <rect width="18" height="18" x="3" y="3" rx="2" />
+                            <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
                             <circle cx="9" cy="9" r="2" />
                             <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
                           </svg>
@@ -1158,274 +1038,50 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            className="mr-2 text-purple-500"
+                            className="mr-2 text-yellow-500"
                           >
-                            <rect width="14" height="14" x="8" y="8" rx="2" />
-                            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                            <line x1="9" x2="9.01" y1="9" y2="9" />
+                            <line x1="15" x2="15.01" y1="9" y2="9" />
                           </svg>
-                          Reel
+                          Feeling/activity
                         </button>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <Tabs defaultValue="posts" value={activeTab} className="w-full">
-                  {/* Posts Tab */}
-                  <TabsContent value="posts" className="mt-0">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                      <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Posts</h3>
-                        <div className="flex items-center">
-                          <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-1 rounded-md text-sm font-medium mr-2">
-                            Filters
-                          </button>
-                          <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-1 rounded-md text-sm font-medium">
-                            Manage posts
-                          </button>
-                        </div>
-                      </div>
-                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                        <p>No posts to display yet.</p>
-                        <p className="text-sm mt-2">Check back later for updates!</p>
-                      </div>
+                {/* Posts */}
+                <div className="space-y-4">
+                  {/* No posts message */}
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+                    <div className="text-gray-400 dark:text-gray-500 mb-4">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="48"
+                        height="48"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="mx-auto"
+                      >
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14,2 14,8 20,8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <polyline points="10,9 9,9 8,9" />
+                      </svg>
                     </div>
-                  </TabsContent>
-
-                  {/* About Tab */}
-                  <TabsContent value="about" className="mt-0">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-                      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                        <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">About</h3>
-                        {profile?.personal_details?.about_me ? (
-                          <p className="text-gray-700 dark:text-gray-300">{profile?.personal_details.about_me}</p>
-                        ) : (
-                          <p className="text-gray-500 dark:text-gray-400">No additional information provided.</p>
-                        )}
-                      </div>
-
-                      {/* Personal Information */}
-                      {(profile?.personal_info?.nickname ||
-                        profile?.personal_info?.birthday ||
-                        profile?.personal_info?.gender ||
-                        (profile?.personal_info?.languages && profile?.personal_info.languages.length > 0)) && (
-                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-                            Personal Information
-                          </h3>
-                          <div className="space-y-3">
-                            {profile?.personal_info?.nickname && (
-                              <div className="flex items-start">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                  Nickname:
-                                </span>
-                                <span className="text-sm text-gray-900 dark:text-white">
-                                  {profile?.personal_info.nickname}
-                                </span>
-                              </div>
-                            )}
-                            {profile?.personal_info?.birthday && (
-                              <div className="flex items-start">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                  Birthday:
-                                </span>
-                                <span className="text-sm text-gray-900 dark:text-white">
-                                  {new Date(profile?.personal_info.birthday).toLocaleDateString("en-US", {
-                                    month: "long",
-                                    day: "numeric",
-                                    year: "numeric",
-                                  })}
-                                </span>
-                              </div>
-                            )}
-                            {profile?.personal_info?.gender && (
-                              <div className="flex items-start">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                  Gender:
-                                </span>
-                                <span className="text-sm text-gray-900 dark:text-white capitalize">
-                                  {profile?.personal_info.gender}
-                                </span>
-                              </div>
-                            )}
-                            {profile?.personal_info?.languages && profile?.personal_info.languages.length > 0 && (
-                              <div className="flex items-start">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                  Languages:
-                                </span>
-                                <span className="text-sm text-gray-900 dark:text-white">
-                                  {Array.isArray(profile?.personal_info.languages)
-                                    ? profile?.personal_info.languages.join(", ")
-                                    : profile?.personal_info.languages}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Location Information */}
-                      {(profile?.location_info?.current_city ||
-                        profile?.location_info?.current_state ||
-                        profile?.location_info?.current_country ||
-                        profile?.location_info?.hometown) && (
-                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Location</h3>
-                          <div className="space-y-3">
-                            {(profile?.location_info?.current_city ||
-                              profile?.location_info?.current_state ||
-                              profile?.location_info?.current_country) && (
-                              <div className="flex items-start">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                  Current:
-                                </span>
-                                <span className="text-sm text-gray-900 dark:text-white">
-                                  {[
-                                    profile?.location_info.current_city,
-                                    profile?.location_info.current_state,
-                                    profile?.location_info.current_country,
-                                  ]
-                                    .filter(Boolean)
-                                    .join(", ")}
-                                </span>
-                              </div>
-                            )}
-                            {profile?.location_info?.hometown && (
-                              <div className="flex items-start">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                  Hometown:
-                                </span>
-                                <span className="text-sm text-gray-900 dark:text-white">
-                                  {profile?.location_info.hometown}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Contact Information */}
-                      {(profile?.contact_info?.phone || profile?.contact_info?.alt_email) && (
-                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Contact</h3>
-                          <div className="space-y-3">
-                            {profile?.contact_info?.phone && (
-                              <div className="flex items-start">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                  Phone:
-                                </span>
-                                <span className="text-sm text-gray-900 dark:text-white">
-                                  {profile?.contact_info.phone}
-                                </span>
-                              </div>
-                            )}
-                            {profile?.contact_info?.alt_email && (
-                              <div className="flex items-start">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                  Alt Email:
-                                </span>
-                                <span className="text-sm text-gray-900 dark:text-white">
-                                  {profile?.contact_info.alt_email}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Personal Details */}
-                      {(profile?.personal_details?.relationship_status ||
-                        profile?.personal_details?.political_views ||
-                        profile?.personal_details?.religious_views) && (
-                        <div className="p-6">
-                          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Personal Details</h3>
-                          <div className="space-y-3">
-                            {profile?.personal_details?.relationship_status && (
-                              <div className="flex items-start">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                  Relationship:
-                                </span>
-                                <span className="text-sm text-gray-900 dark:text-white capitalize">
-                                  {profile?.personal_details.relationship_status.replace(/_/g, " ")}
-                                </span>
-                              </div>
-                            )}
-                            {profile?.personal_details?.political_views && (
-                              <div className="flex items-start">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                  Political Views:
-                                </span>
-                                <span className="text-sm text-gray-900 dark:text-white capitalize">
-                                  {profile?.personal_details.political_views}
-                                </span>
-                              </div>
-                            )}
-                            {profile?.personal_details?.religious_views && (
-                              <div className="flex items-start">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                  Religious Views:
-                                </span>
-                                <span className="text-sm text-gray-900 dark:text-white capitalize">
-                                  {profile?.personal_details.religious_views}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </TabsContent>
-
-                  {/* Reels Tab */}
-                  <TabsContent value="reels" className="mt-0">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                        <p>No reels to display yet.</p>
-                        <p className="text-sm mt-2">Reels will appear here when shared.</p>
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  {/* Photos Tab */}
-                  <TabsContent value="photos" className="mt-0">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                        <p>No photos to display yet.</p>
-                        <p className="text-sm mt-2">Photos will appear here when shared.</p>
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  {/* Videos Tab */}
-                  <TabsContent value="videos" className="mt-0">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                        <p>No videos to display yet.</p>
-                        <p className="text-sm mt-2">Videos will appear here when shared.</p>
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  {/* Groups Tab */}
-                  <TabsContent value="groups" className="mt-0">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                        <p>No groups to display yet.</p>
-                        <p className="text-sm mt-2">Groups will appear here when joined.</p>
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  {/* More Tab */}
-                  <TabsContent value="more" className="mt-0">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                        <p>Additional content coming soon.</p>
-                        <p className="text-sm mt-2">Stay tuned for more features!</p>
-                      </div>
-                    </div>
-                  </TabsContent>
-                </Tabs>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No posts yet</h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      When {profile?.full_name || profile?.username} posts, you'll see their posts here.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
