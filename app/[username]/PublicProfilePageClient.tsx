@@ -35,6 +35,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
   const [showFriendsSection, setShowFriendsSection] = useState(false)
   const [showLeftArrow, setShowLeftArrow] = useState(false)
   const [showRightArrow, setShowRightArrow] = useState(true)
+  const [showMoreDropdown, setShowMoreDropdown] = useState(false)
 
   // Add these state variables inside the component, after the existing useState declarations
   const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false)
@@ -1016,52 +1017,149 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
           <div className="h-px bg-gray-300 dark:bg-gray-700 w-full"></div>
 
           {/* Navigation Tabs */}
-          <div className="sticky top-0 z-10">
+          <div className="sticky top-0 z-10 bg-white dark:bg-gray-900">
             <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
                 <TabsList className="h-12 bg-transparent border-0 p-0 space-x-1 justify-start">
                   <TabsTrigger
                     value="posts"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
-                  >
-                    Posts
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="about"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:border-b-[3px] hover:border-gray-300 dark:hover:border-gray-600"
                   >
                     About
                   </TabsTrigger>
                   <TabsTrigger
                     value="reels"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:border-b-[3px] hover:border-gray-300 dark:hover:border-gray-600"
                   >
                     Reels
                   </TabsTrigger>
                   <TabsTrigger
                     value="photos"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:border-b-[3px] hover:border-gray-300 dark:hover:border-gray-600"
                   >
                     Photos
                   </TabsTrigger>
                   <TabsTrigger
                     value="videos"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:border-b-[3px] hover:border-gray-300 dark:hover:border-gray-600"
                   >
                     Videos
                   </TabsTrigger>
                   <TabsTrigger
                     value="groups"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hidden md:flex"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:border-b-[3px] hover:border-gray-300 dark:hover:border-gray-600 hidden md:flex"
                   >
                     Groups
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="more"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hidden lg:flex"
-                  >
-                    More
-                  </TabsTrigger>
+
+                  {/* More Dropdown */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowMoreDropdown(!showMoreDropdown)}
+                      className="bg-transparent border-0 border-b-[3px] border-transparent hover:border-gray-300 dark:hover:border-gray-600 rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 flex items-center space-x-1"
+                    >
+                      <span>More</span>
+                      <svg
+                        className="w-4 h-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M6 9l6 6 6-6" />
+                      </svg>
+                    </button>
+
+                    {showMoreDropdown && (
+                      <div className="absolute left-0 mt-1 w-48 bg-gray-800 dark:bg-gray-900 shadow-lg rounded-md overflow-hidden z-50">
+                        <div className="py-1">
+                          <button
+                            onClick={() => {
+                              setShowMoreDropdown(false)
+                              router.push(`/${profile?.username}/events`)
+                            }}
+                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 dark:hover:bg-gray-800"
+                          >
+                            Events
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowMoreDropdown(false)
+                              router.push(`/${profile?.username}/friends`)
+                            }}
+                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 dark:hover:bg-gray-800"
+                          >
+                            Friends
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowMoreDropdown(false)
+                              router.push(`/${profile?.username}/music`)
+                            }}
+                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 dark:hover:bg-gray-800"
+                          >
+                            Music
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowMoreDropdown(false)
+                              router.push(`/${profile?.username}/check-ins`)
+                            }}
+                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 dark:hover:bg-gray-800"
+                          >
+                            Check-ins
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowMoreDropdown(false)
+                              router.push(`/${profile?.username}/sports`)
+                            }}
+                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 dark:hover:bg-gray-800"
+                          >
+                            Sports
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowMoreDropdown(false)
+                              router.push(`/${profile?.username}/apps`)
+                            }}
+                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 dark:hover:bg-gray-800"
+                          >
+                            Apps and games
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowMoreDropdown(false)
+                              router.push(`/${profile?.username}/likes`)
+                            }}
+                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 dark:hover:bg-gray-800"
+                          >
+                            Likes
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowMoreDropdown(false)
+                              router.push(`/${profile?.username}/reviews`)
+                            }}
+                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 dark:hover:bg-gray-800"
+                          >
+                            Reviews given
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowMoreDropdown(false)
+                              router.push(`/${profile?.username}/manage-sections`)
+                            }}
+                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 dark:hover:bg-gray-800"
+                          >
+                            Manage sections
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </TabsList>
                 <button className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
                   <svg
@@ -1393,190 +1491,6 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
                     </div>
                   </TabsContent>
 
-                  {/* About Tab */}
-                  <TabsContent value="about" className="mt-0">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-                      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                        <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">About</h3>
-                        {profile?.personal_details?.about_me ? (
-                          <p className="text-gray-700 dark:text-gray-300">{profile?.personal_details.about_me}</p>
-                        ) : (
-                          <p className="text-gray-500 dark:text-gray-400">No additional information provided.</p>
-                        )}
-                      </div>
-
-                      {/* Personal Information */}
-                      {(profile?.personal_info?.nickname ||
-                        profile?.personal_info?.birthday ||
-                        profile?.personal_info?.gender ||
-                        (profile?.personal_info?.languages && profile?.personal_info.languages.length > 0)) && (
-                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-                            Personal Information
-                          </h3>
-                          <div className="space-y-3">
-                            {profile?.personal_info?.nickname && (
-                              <div className="flex items-start">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                  Nickname:
-                                </span>
-                                <span className="text-sm text-gray-900 dark:text-white">
-                                  {profile?.personal_info.nickname}
-                                </span>
-                              </div>
-                            )}
-                            {profile?.personal_info?.birthday && (
-                              <div className="flex items-start">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                  Birthday:
-                                </span>
-                                <span className="text-sm text-gray-900 dark:text-white">
-                                  {new Date(profile?.personal_info.birthday).toLocaleDateString("en-US", {
-                                    month: "long",
-                                    day: "numeric",
-                                    year: "numeric",
-                                  })}
-                                </span>
-                              </div>
-                            )}
-                            {profile?.personal_info?.gender && (
-                              <div className="flex items-start">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                  Gender:
-                                </span>
-                                <span className="text-sm text-gray-900 dark:text-white capitalize">
-                                  {profile?.personal_info.gender}
-                                </span>
-                              </div>
-                            )}
-                            {profile?.personal_info?.languages && profile?.personal_info.languages.length > 0 && (
-                              <div className="flex items-start">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                  Languages:
-                                </span>
-                                <span className="text-sm text-gray-900 dark:text-white">
-                                  {Array.isArray(profile?.personal_info.languages)
-                                    ? profile?.personal_info.languages.join(", ")
-                                    : profile?.personal_info.languages}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Location Information */}
-                      {(profile?.location_info?.current_city ||
-                        profile?.location_info?.current_state ||
-                        profile?.location_info?.current_country ||
-                        profile?.location_info?.hometown) && (
-                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Location</h3>
-                          <div className="space-y-3">
-                            {(profile?.location_info?.current_city ||
-                              profile?.location_info?.current_state ||
-                              profile?.location_info?.current_country) && (
-                              <div className="flex items-start">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                  Current:
-                                </span>
-                                <span className="text-sm text-gray-900 dark:text-white">
-                                  {[
-                                    profile?.location_info.current_city,
-                                    profile?.location_info.current_state,
-                                    profile?.location_info.current_country,
-                                  ]
-                                    .filter(Boolean)
-                                    .join(", ")}
-                                </span>
-                              </div>
-                            )}
-                            {profile?.location_info?.hometown && (
-                              <div className="flex items-start">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                  Hometown:
-                                </span>
-                                <span className="text-sm text-gray-900 dark:text-white">
-                                  {profile?.location_info.hometown}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Contact Information */}
-                      {(profile?.contact_info?.phone || profile?.contact_info?.alt_email) && (
-                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Contact</h3>
-                          <div className="space-y-3">
-                            {profile?.contact_info?.phone && (
-                              <div className="flex items-start">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                  Phone:
-                                </span>
-                                <span className="text-sm text-gray-900 dark:text-white">
-                                  {profile?.contact_info.phone}
-                                </span>
-                              </div>
-                            )}
-                            {profile?.contact_info?.alt_email && (
-                              <div className="flex items-start">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                  Alt Email:
-                                </span>
-                                <span className="text-sm text-gray-900 dark:text-white">
-                                  {profile?.contact_info.alt_email}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Personal Details */}
-                      {(profile?.personal_details?.relationship_status ||
-                        profile?.personal_details?.political_views ||
-                        profile?.personal_details?.religious_views) && (
-                        <div className="p-6">
-                          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Personal Details</h3>
-                          <div className="space-y-3">
-                            {profile?.personal_details?.relationship_status && (
-                              <div className="flex items-start">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                  Relationship:
-                                </span>
-                                <span className="text-sm text-gray-900 dark:text-white capitalize">
-                                  {profile?.personal_details.relationship_status.replace(/_/g, " ")}
-                                </span>
-                              </div>
-                            )}
-                            {profile?.personal_details?.political_views && (
-                              <div className="flex items-start">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                  Political Views:
-                                </span>
-                                <span className="text-sm text-gray-900 dark:text-white capitalize">
-                                  {profile?.personal_details.political_views}
-                                </span>
-                              </div>
-                            )}
-                            {profile?.personal_details?.religious_views && (
-                              <div className="flex items-start">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                                  Religious Views:
-                                </span>
-                                <span className="text-sm text-gray-900 dark:text-white capitalize">
-                                  {profile?.personal_details.religious_views}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </TabsContent>
-
                   {/* Reels Tab */}
                   <TabsContent value="reels" className="mt-0">
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
@@ -1613,16 +1527,6 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
                       <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                         <p>No groups to display yet.</p>
                         <p className="text-sm mt-2">Groups will appear here when joined.</p>
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  {/* More Tab */}
-                  <TabsContent value="more" className="mt-0">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                        <p>Additional content coming soon.</p>
-                        <p className="text-sm mt-2">Stay tuned for more features!</p>
                       </div>
                     </div>
                   </TabsContent>
@@ -1663,6 +1567,9 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
           </button>
         </div>
       )}
+
+      {/* Click outside to close dropdown */}
+      {showMoreDropdown && <div className="fixed inset-0 z-40" onClick={() => setShowMoreDropdown(false)} />}
     </div>
   )
 }
