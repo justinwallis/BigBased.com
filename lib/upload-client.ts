@@ -1,4 +1,9 @@
-import { uploadAvatar as uploadAvatarAction, deleteAvatar as deleteAvatarAction } from "@/app/actions/avatar-actions"
+import {
+  uploadAvatar as uploadAvatarAction,
+  uploadBanner as uploadBannerAction,
+  deleteAvatar as deleteAvatarAction,
+  deleteBanner as deleteBannerAction,
+} from "@/app/actions/avatar-actions"
 
 export async function uploadAvatar(file: File) {
   try {
@@ -13,6 +18,19 @@ export async function uploadAvatar(file: File) {
   }
 }
 
+export async function uploadBanner(file: File) {
+  try {
+    const formData = new FormData()
+    formData.append("banner", file)
+
+    const result = await uploadBannerAction(formData)
+    return result
+  } catch (error) {
+    console.error("Banner upload error:", error)
+    return { success: false, error: "Upload failed" }
+  }
+}
+
 export async function deleteAvatar() {
   try {
     const result = await deleteAvatarAction()
@@ -23,17 +41,13 @@ export async function deleteAvatar() {
   }
 }
 
-export async function uploadBanner(file: File) {
+export async function deleteBanner() {
   try {
-    const formData = new FormData()
-    formData.append("banner", file)
-
-    // For now, return a placeholder response
-    // You can implement banner upload similar to avatar
-    return { success: true, url: "/placeholder.svg?height=200&width=800" }
+    const result = await deleteBannerAction()
+    return result
   } catch (error) {
-    console.error("Banner upload error:", error)
-    return { success: false, error: "Upload failed" }
+    console.error("Delete error:", error)
+    return { success: false, error: "Delete failed" }
   }
 }
 

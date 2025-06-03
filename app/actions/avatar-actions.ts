@@ -67,9 +67,22 @@ export async function uploadBanner(formData: FormData) {
       return { success: false, error: "Not authenticated" }
     }
 
-    const file = formData.get("banner") as File
+    // Try both possible field names for the banner file
+    const file = (formData.get("banner") || formData.get("avatar")) as File
     if (!file) {
       return { success: false, error: "No file provided" }
+    }
+
+    // Validate file size (10MB for banners)
+    const maxSize = 10 * 1024 * 1024 // 10MB
+    if (file.size > maxSize) {
+      return { success: false, error: "File size exceeds 10MB limit" }
+    }
+
+    // Validate file type
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+    if (!allowedTypes.includes(file.type)) {
+      return { success: false, error: "Invalid file type. Please use JPEG, PNG, GIF, or WebP" }
     }
 
     // Upload to Supabase Storage
@@ -82,6 +95,7 @@ export async function uploadBanner(formData: FormData) {
     })
 
     if (error) {
+      console.error("Supabase upload error:", error)
       return { success: false, error: error.message }
     }
 
@@ -94,10 +108,12 @@ export async function uploadBanner(formData: FormData) {
     const { error: updateError } = await supabase.from("profiles").update({ banner_url: publicUrl }).eq("id", user.id)
 
     if (updateError) {
+      console.error("Profile update error:", updateError)
       return { success: false, error: updateError.message }
     }
 
     revalidatePath("/profile")
+    revalidatePath("/[username]", "page")
     return { success: true, url: publicUrl }
   } catch (error) {
     console.error("Banner upload error:", error)
@@ -154,6 +170,7 @@ export async function deleteBanner() {
     }
 
     revalidatePath("/profile")
+    revalidatePath("/[username]", "page")
     return { success: true }
   } catch (error) {
     console.error("Banner delete error:", error)
