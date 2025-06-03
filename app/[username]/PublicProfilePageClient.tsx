@@ -1015,7 +1015,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Intro</h2>
 
                   {/* Bio */}
-                  <p className="text-gray-700 dark:text-gray-300 mb-2 text-center text-[0.95rem]">
+                  <p className="text-gray-700 dark:text-gray-300 mb-2 text-center text-[0.875rem]">
                     {formatBioWithLinks(profile?.bio || "")}
                   </p>
 
