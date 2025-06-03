@@ -19,6 +19,7 @@ import {
   GraduationCap,
 } from "lucide-react"
 import type { Profile } from "@/app/actions/profile-actions"
+import Link from "next/link"
 
 interface PublicProfilePageClientProps {
   profile: Profile | null
@@ -334,23 +335,25 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   {/* Action Buttons - Right aligned and vertically centered */}
                   <div className="flex items-center justify-end self-center">
                     <div className="flex items-center space-x-2">
-                      <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-1.5 rounded-md font-medium flex items-center gap-1.5">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                          <path d="m15 5 4 4" />
-                        </svg>
-                        Edit
-                      </button>
+                      <Link href="/profile">
+                        <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-1.5 rounded-md font-medium flex items-center gap-1.5">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                            <path d="m15 5 4 4" />
+                          </svg>
+                          Edit
+                        </button>
+                      </Link>
                       <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-1.5 rounded-md font-medium flex items-center gap-1.5">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -466,23 +469,25 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   {/* Action Buttons - Right aligned */}
                   <div className="flex items-center justify-end self-center">
                     <div className="flex items-center space-x-2">
-                      <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-md font-medium flex items-center gap-1.5 text-sm">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                          <path d="m15 5 4 4" />
-                        </svg>
-                        Edit
-                      </button>
+                      <Link href="/profile">
+                        <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-md font-medium flex items-center gap-1.5 text-sm">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                            <path d="m15 5 4 4" />
+                          </svg>
+                          Edit
+                        </button>
+                      </Link>
                       <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-md font-medium flex items-center gap-1.5 text-sm">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -595,23 +600,25 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     {/* Action Buttons - Centered and stacked */}
                     <div className="flex flex-col space-y-2 mt-4">
                       <div className="flex space-x-2">
-                        <button className="flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-2 rounded-md font-medium flex items-center justify-center gap-1.5 text-sm">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                            <path d="m15 5 4 4" />
-                          </svg>
-                          Edit
-                        </button>
+                        <Link href="/profile">
+                          <button className="flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-2 rounded-md font-medium flex items-center justify-center gap-1.5 text-sm">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                              <path d="m15 5 4 4" />
+                            </svg>
+                            Edit
+                          </button>
+                        </Link>
                         <button className="flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-2 rounded-md font-medium flex items-center justify-center gap-1.5 text-sm">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -963,13 +970,15 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               <div className="space-y-4">
                 {/* Intro Card */}
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                  <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Intro</h2>
+                  <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Intro</h2>
 
                   {/* Bio */}
-                  {profile?.bio && <p className="text-gray-700 dark:text-gray-300 mb-4">{profile.bio}</p>}
+                  {profile?.bio && <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">{profile.bio}</p>}
 
                   {/* Short Bio Tags */}
-                  {generateShortBio() && <p className="text-gray-700 dark:text-gray-300 mb-4">{generateShortBio()}</p>}
+                  {generateShortBio() && (
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">{generateShortBio()}</p>
+                  )}
 
                   {/* Website Link */}
                   {socialLinks.website && (
@@ -977,7 +986,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                       href={getSocialUrl("website", socialLinks.website)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center text-blue-600 dark:text-blue-400 hover:underline mb-4"
+                      className="flex items-center text-blue-600 dark:text-blue-400 hover:underline mb-4 text-sm"
                     >
                       <Globe className="h-4 w-4 mr-2" />
                       {socialLinks.website.replace(/^https?:\/\//, "")}
@@ -989,7 +998,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     {/* Work */}
                     {profile?.work_info?.company && (
                       <div className="flex items-center">
-                        <Briefcase className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                        <Briefcase className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
                         <div>
                           <p className="text-sm text-gray-700 dark:text-gray-300">
                             {profile?.work_info?.position ? `${profile?.work_info.position} at ` : "Works at "}
@@ -1004,7 +1013,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     {/* Education */}
                     {profile?.education_info?.school && (
                       <div className="flex items-center">
-                        <GraduationCap className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                        <GraduationCap className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
                         <div>
                           <p className="text-sm text-gray-700 dark:text-gray-300">
                             Studied {profile?.education_info?.degree || "at"}
@@ -1020,7 +1029,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     {/* Location */}
                     {getCurrentLocation() && (
                       <div className="flex items-center">
-                        <MapPin className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                        <MapPin className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
                         <div>
                           <p className="text-sm text-gray-700 dark:text-gray-300">
                             Lives in{" "}
@@ -1033,7 +1042,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     {/* Hometown */}
                     {profile?.location_info?.hometown && (
                       <div className="flex items-center">
-                        <Home className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                        <Home className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
                         <div>
                           <p className="text-sm text-gray-700 dark:text-gray-300">
                             From{" "}
@@ -1047,7 +1056,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
                     {/* Joined Date */}
                     <div className="flex items-center">
-                      <CalendarDays className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                      <CalendarDays className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
                       <div>
                         <p className="text-sm text-gray-700 dark:text-gray-300">
                           Joined{" "}
@@ -1061,62 +1070,9 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   </div>
 
                   {/* Edit Bio Button */}
-                  <button className="w-full mt-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md font-medium">
+                  <button className="w-full mt-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md font-medium text-sm">
                     Edit bio
                   </button>
-
-                  {/* Social Media Links */}
-                  {(socialPlatforms.some((platform) => socialLinks[platform.key]) ||
-                    specialPlatforms.some((platform) => socialLinks[platform.key])) && (
-                    <div className="flex flex-wrap items-center gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                      {/* Regular social platforms with links */}
-                      {socialPlatforms.map(({ key, icon: Icon, label }) => {
-                        const url = getSocialUrl(key, socialLinks[key])
-                        if (!url || key === "website") return null // Website already shown above
-
-                        return (
-                          <a
-                            key={key}
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
-                            title={label}
-                          >
-                            <Icon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-                          </a>
-                        )
-                      })}
-
-                      {/* Special platforms without links */}
-                      {specialPlatforms.map(({ key, icon: Icon, label }) => {
-                        if (!socialLinks[key]) return null
-
-                        const handleSpecialClick = () => {
-                          if (key === "discord") {
-                            alert(`Discord: ${socialLinks[key]}`)
-                          } else if (key === "therealworld") {
-                            alert(
-                              `The Real World member: ${socialLinks[key]}
-
-The Real World is Andrew Tate's exclusive community platform for entrepreneurs and high-achievers.`,
-                            )
-                          }
-                        }
-
-                        return (
-                          <button
-                            key={key}
-                            onClick={handleSpecialClick}
-                            className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
-                            title={`${label}: ${socialLinks[key]}`}
-                          >
-                            <Icon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-                          </button>
-                        )
-                      })}
-                    </div>
-                  )}
                 </div>
 
                 {/* Profile Info Card */}
