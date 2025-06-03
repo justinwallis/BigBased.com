@@ -181,540 +181,553 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
       {/* Cover Photo and Profile Info */}
       <div className="relative">
         {/* Cover Photo */}
-        <div
-          className="h-80 w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative"
-          style={{
-            backgroundImage: profile?.banner_url ? `url(${profile.banner_url})` : undefined,
-            backgroundSize: "cover",
-            backgroundPosition: profile?.banner_position || "center",
-          }}
-        >
-          <div className="absolute inset-0 bg-black/20"></div>
-        </div>
-
-        {/* Profile Info Overlay */}
-        <div className="container mx-auto px-4">
-          <div className="relative -mt-8 sm:-mt-16 md:-mt-24 lg:-mt-32 flex flex-col md:flex-row items-start md:items-end pb-4">
-            {/* Profile Picture */}
-            <div className="z-10 ml-4 md:ml-8 mb-4 md:mb-6">
-              <div className="relative">
-                <Avatar className="h-32 w-32 md:h-40 md:w-40 border-4 border-white dark:border-gray-900 shadow-lg">
-                  <AvatarImage
-                    src={profile?.avatar_url || "/placeholder.svg"}
-                    alt={profile?.full_name || profile?.username}
-                  />
-                  <AvatarFallback className="text-3xl md:text-4xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                    {getInitials(profile?.full_name || profile?.username || "U")}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
+        <div className="w-full flex justify-center">
+          <div className="relative max-w-[1250px] w-full">
+            <div
+              className="h-80 w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative rounded-b-lg overflow-hidden"
+              style={{
+                backgroundImage: profile?.banner_url ? `url(${profile.banner_url})` : undefined,
+                backgroundSize: "cover",
+                backgroundPosition: profile?.banner_position || "center",
+              }}
+            >
+              {/* Gradient overlay for better text readability */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
             </div>
 
-            {/* Name and Stats */}
-            <div className="flex-1 ml-4 md:ml-6 mb-4 md:mb-6 text-white drop-shadow-md">
-              <h1 className="text-2xl md:text-4xl font-bold">{profile?.full_name || profile?.username}</h1>
-              <div className="flex items-center mt-1 space-x-2">
-                <p className="text-sm md:text-base opacity-90">@{profile?.username}</p>
-                <Badge className="bg-green-500/80 text-white border-0">Active Member</Badge>
+            {/* Profile Info Overlay */}
+            <div className="relative -mt-8 sm:-mt-16 md:-mt-24 lg:-mt-32 flex flex-col md:flex-row items-start md:items-end pb-6 px-4 md:px-8">
+              {/* Profile Picture */}
+              <div className="z-10 mb-4 md:mb-6">
+                <div className="relative">
+                  <Avatar className="h-32 w-32 md:h-40 md:w-40 border-4 border-white dark:border-gray-900 shadow-lg">
+                    <AvatarImage
+                      src={profile?.avatar_url || "/placeholder.svg"}
+                      alt={profile?.full_name || profile?.username}
+                    />
+                    <AvatarFallback className="text-3xl md:text-4xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                      {getInitials(profile?.full_name || profile?.username || "U")}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
               </div>
-              <div className="flex items-center mt-2 text-sm md:text-base">
-                <span className="mr-4">0 followers</span>
-                <span>0 following</span>
-              </div>
-            </div>
 
-            {/* Action Buttons */}
+              {/* Name and Stats */}
+              <div className="flex-1 ml-4 md:ml-6 mb-4 md:mb-6 text-white drop-shadow-md">
+                <h1 className="text-2xl md:text-4xl font-bold">{profile?.full_name || profile?.username}</h1>
+                <div className="flex items-center mt-1 space-x-2">
+                  <p className="text-sm md:text-base opacity-90">@{profile?.username}</p>
+                  <Badge className="bg-green-500/80 text-white border-0">Active Member</Badge>
+                </div>
+                <div className="flex items-center mt-2 text-sm md:text-base">
+                  <span className="mr-4">0 followers</span>
+                  <span>0 following</span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Navigation Tabs */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
-        <div className="container mx-auto px-4">
-          <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
-            <TabsList className="h-10 bg-transparent border-0 p-0 space-x-0">
-              <TabsTrigger
-                value="posts"
-                className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
-              >
-                Posts
-              </TabsTrigger>
-              <TabsTrigger
-                value="about"
-                className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
-              >
-                About
-              </TabsTrigger>
-              <TabsTrigger
-                value="photos"
-                className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
-              >
-                Photos
-              </TabsTrigger>
-              <TabsTrigger
-                value="videos"
-                className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
-              >
-                Videos
-              </TabsTrigger>
-              <TabsTrigger
-                value="groups"
-                className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hidden md:flex"
-              >
-                Groups
-              </TabsTrigger>
-              <TabsTrigger
-                value="more"
-                className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hidden lg:flex"
-              >
-                More
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+        <div className="w-full flex justify-center">
+          <div className="max-w-[1250px] w-full px-4 md:px-8">
+            <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
+              <TabsList className="h-10 bg-transparent border-0 p-0 space-x-0">
+                <TabsTrigger
+                  value="posts"
+                  className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+                >
+                  Posts
+                </TabsTrigger>
+                <TabsTrigger
+                  value="about"
+                  className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+                >
+                  About
+                </TabsTrigger>
+                <TabsTrigger
+                  value="photos"
+                  className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+                >
+                  Photos
+                </TabsTrigger>
+                <TabsTrigger
+                  value="videos"
+                  className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+                >
+                  Videos
+                </TabsTrigger>
+                <TabsTrigger
+                  value="groups"
+                  className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hidden md:flex"
+                >
+                  Groups
+                </TabsTrigger>
+                <TabsTrigger
+                  value="more"
+                  className="bg-transparent border-0 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-2 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hidden lg:flex"
+                >
+                  More
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Sidebar - Intro */}
-          <div className="space-y-6">
-            {/* Intro Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Intro</h2>
+      <div className="w-full flex justify-center">
+        <div className="max-w-[1250px] w-full px-4 md:px-8 py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Sidebar - Intro */}
+            <div className="space-y-6">
+              {/* Intro Card */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Intro</h2>
 
-              {/* Bio */}
-              {profile?.bio && <p className="text-gray-700 dark:text-gray-300 mb-4">{profile.bio}</p>}
+                {/* Bio */}
+                {profile?.bio && <p className="text-gray-700 dark:text-gray-300 mb-4">{profile.bio}</p>}
 
-              {/* Short Bio Tags */}
-              {generateShortBio() && <p className="text-gray-700 dark:text-gray-300 mb-4">{generateShortBio()}</p>}
+                {/* Short Bio Tags */}
+                {generateShortBio() && <p className="text-gray-700 dark:text-gray-300 mb-4">{generateShortBio()}</p>}
 
-              {/* Website Link */}
-              {socialLinks.website && (
-                <a
-                  href={getSocialUrl("website", socialLinks.website)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center text-blue-600 dark:text-blue-400 hover:underline mb-4"
-                >
-                  <Globe className="h-4 w-4 mr-2" />
-                  {socialLinks.website.replace(/^https?:\/\//, "")}
-                </a>
-              )}
+                {/* Website Link */}
+                {socialLinks.website && (
+                  <a
+                    href={getSocialUrl("website", socialLinks.website)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center text-blue-600 dark:text-blue-400 hover:underline mb-4"
+                  >
+                    <Globe className="h-4 w-4 mr-2" />
+                    {socialLinks.website.replace(/^https?:\/\//, "")}
+                  </a>
+                )}
 
-              {/* Profile Info List */}
-              <div className="space-y-3">
-                {/* Work */}
-                {profile?.work_info?.company && (
+                {/* Profile Info List */}
+                <div className="space-y-3">
+                  {/* Work */}
+                  {profile?.work_info?.company && (
+                    <div className="flex items-center">
+                      <Briefcase className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                      <div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          {profile?.work_info?.position ? `${profile?.work_info.position} at ` : "Works at "}
+                          <span className="font-medium text-gray-900 dark:text-white">
+                            {profile?.work_info.company}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Education */}
+                  {profile?.education_info?.school && (
+                    <div className="flex items-center">
+                      <GraduationCap className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                      <div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          Studied {profile?.education_info?.degree || "at"}
+                          <span className="font-medium text-gray-900 dark:text-white">
+                            {" "}
+                            {profile?.education_info.school}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Location */}
+                  {getCurrentLocation() && (
+                    <div className="flex items-center">
+                      <MapPin className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                      <div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          Lives in{" "}
+                          <span className="font-medium text-gray-900 dark:text-white">{getCurrentLocation()}</span>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Hometown */}
+                  {profile?.location_info?.hometown && (
+                    <div className="flex items-center">
+                      <Home className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                      <div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          From{" "}
+                          <span className="font-medium text-gray-900 dark:text-white">
+                            {profile?.location_info.hometown}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Joined Date */}
                   <div className="flex items-center">
-                    <Briefcase className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                    <CalendarDays className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
                     <div>
                       <p className="text-sm text-gray-700 dark:text-gray-300">
-                        {profile?.work_info?.position ? `${profile?.work_info.position} at ` : "Works at "}
-                        <span className="font-medium text-gray-900 dark:text-white">{profile?.work_info.company}</span>
+                        Joined{" "}
+                        {new Date(profile?.created_at || Date.now()).toLocaleDateString("en-US", {
+                          month: "long",
+                          year: "numeric",
+                        })}
                       </p>
                     </div>
                   </div>
-                )}
 
-                {/* Education */}
-                {profile?.education_info?.school && (
-                  <div className="flex items-center">
-                    <GraduationCap className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
-                    <div>
-                      <p className="text-sm text-gray-700 dark:text-gray-300">
-                        Studied {profile?.education_info?.degree || "at"}
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          {" "}
-                          {profile?.education_info.school}
-                        </span>
-                      </p>
+                  {/* Nickname */}
+                  {profile?.personal_info?.nickname && (
+                    <div className="flex items-center">
+                      <Info className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                      <div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          Nickname:{" "}
+                          <span className="font-medium text-gray-900 dark:text-white">
+                            {profile?.personal_info.nickname}
+                          </span>
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Location */}
-                {getCurrentLocation() && (
-                  <div className="flex items-center">
-                    <MapPin className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
-                    <div>
-                      <p className="text-sm text-gray-700 dark:text-gray-300">
-                        Lives in{" "}
-                        <span className="font-medium text-gray-900 dark:text-white">{getCurrentLocation()}</span>
-                      </p>
+                  {/* Pronunciation */}
+                  {profile?.personal_info?.name_pronunciation && (
+                    <div className="flex items-center">
+                      <Volume2 className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                      <div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          Pronounces name:{" "}
+                          <span className="font-medium text-gray-900 dark:text-white">
+                            {profile?.personal_info.name_pronunciation}
+                          </span>
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                )}
-
-                {/* Hometown */}
-                {profile?.location_info?.hometown && (
-                  <div className="flex items-center">
-                    <Home className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
-                    <div>
-                      <p className="text-sm text-gray-700 dark:text-gray-300">
-                        From{" "}
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          {profile?.location_info.hometown}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Joined Date */}
-                <div className="flex items-center">
-                  <CalendarDays className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
-                  <div>
-                    <p className="text-sm text-gray-700 dark:text-gray-300">
-                      Joined{" "}
-                      {new Date(profile?.created_at || Date.now()).toLocaleDateString("en-US", {
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </p>
-                  </div>
+                  )}
                 </div>
 
-                {/* Nickname */}
-                {profile?.personal_info?.nickname && (
-                  <div className="flex items-center">
-                    <Info className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
-                    <div>
-                      <p className="text-sm text-gray-700 dark:text-gray-300">
-                        Nickname:{" "}
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          {profile?.personal_info.nickname}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-                )}
+                {/* Social Media Links */}
+                {(socialPlatforms.some((platform) => socialLinks[platform.key]) ||
+                  specialPlatforms.some((platform) => socialLinks[platform.key])) && (
+                  <div className="flex flex-wrap items-center gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    {/* Regular social platforms with links */}
+                    {socialPlatforms.map(({ key, icon: Icon, label }) => {
+                      const url = getSocialUrl(key, socialLinks[key])
+                      if (!url || key === "website") return null // Website already shown above
 
-                {/* Pronunciation */}
-                {profile?.personal_info?.name_pronunciation && (
-                  <div className="flex items-center">
-                    <Volume2 className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
-                    <div>
-                      <p className="text-sm text-gray-700 dark:text-gray-300">
-                        Pronounces name:{" "}
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          {profile?.personal_info.name_pronunciation}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
+                      return (
+                        <a
+                          key={key}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
+                          title={label}
+                        >
+                          <Icon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                        </a>
+                      )
+                    })}
 
-              {/* Social Media Links */}
-              {(socialPlatforms.some((platform) => socialLinks[platform.key]) ||
-                specialPlatforms.some((platform) => socialLinks[platform.key])) && (
-                <div className="flex flex-wrap items-center gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  {/* Regular social platforms with links */}
-                  {socialPlatforms.map(({ key, icon: Icon, label }) => {
-                    const url = getSocialUrl(key, socialLinks[key])
-                    if (!url || key === "website") return null // Website already shown above
+                    {/* Special platforms without links */}
+                    {specialPlatforms.map(({ key, icon: Icon, label }) => {
+                      if (!socialLinks[key]) return null
 
-                    return (
-                      <a
-                        key={key}
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
-                        title={label}
-                      >
-                        <Icon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-                      </a>
-                    )
-                  })}
-
-                  {/* Special platforms without links */}
-                  {specialPlatforms.map(({ key, icon: Icon, label }) => {
-                    if (!socialLinks[key]) return null
-
-                    const handleSpecialClick = () => {
-                      if (key === "discord") {
-                        alert(`Discord: ${socialLinks[key]}`)
-                      } else if (key === "therealworld") {
-                        alert(
-                          `The Real World member: ${socialLinks[key]}
+                      const handleSpecialClick = () => {
+                        if (key === "discord") {
+                          alert(`Discord: ${socialLinks[key]}`)
+                        } else if (key === "therealworld") {
+                          alert(
+                            `The Real World member: ${socialLinks[key]}
 
 The Real World is Andrew Tate's exclusive community platform for entrepreneurs and high-achievers.`,
-                        )
+                          )
+                        }
                       }
-                    }
 
-                    return (
-                      <button
-                        key={key}
-                        onClick={handleSpecialClick}
-                        className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
-                        title={`${label}: ${socialLinks[key]}`}
-                      >
-                        <Icon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-                      </button>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
+                      return (
+                        <button
+                          key={key}
+                          onClick={handleSpecialClick}
+                          className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
+                          title={`${label}: ${socialLinks[key]}`}
+                        >
+                          <Icon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
 
-            {/* Stats Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Profile Stats</h2>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">Member Since</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {new Date(profile?.created_at || Date.now()).getFullYear()}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">Profile Views</span>
-                  <span className="font-medium text-gray-900 dark:text-white">Coming Soon</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">Contributions</span>
-                  <span className="font-medium text-gray-900 dark:text-white">Coming Soon</span>
+              {/* Stats Card */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Profile Stats</h2>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600 dark:text-gray-400">Member Since</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {new Date(profile?.created_at || Date.now()).getFullYear()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600 dark:text-gray-400">Profile Views</span>
+                    <span className="font-medium text-gray-900 dark:text-white">Coming Soon</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600 dark:text-gray-400">Contributions</span>
+                    <span className="font-medium text-gray-900 dark:text-white">Coming Soon</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Main Content Area */}
-          <div className="lg:col-span-2">
-            <Tabs defaultValue="posts" value={activeTab} className="w-full">
-              {/* Posts Tab */}
-              <TabsContent value="posts" className="mt-0">
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                    <p>No posts to display yet.</p>
-                    <p className="text-sm mt-2">Check back later for updates!</p>
+            {/* Main Content Area */}
+            <div className="lg:col-span-2">
+              <Tabs defaultValue="posts" value={activeTab} className="w-full">
+                {/* Posts Tab */}
+                <TabsContent value="posts" className="mt-0">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <p>No posts to display yet.</p>
+                      <p className="text-sm mt-2">Check back later for updates!</p>
+                    </div>
                   </div>
-                </div>
-              </TabsContent>
+                </TabsContent>
 
-              {/* About Tab */}
-              <TabsContent value="about" className="mt-0">
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">About</h3>
-                    {profile?.personal_details?.about_me ? (
-                      <p className="text-gray-700 dark:text-gray-300">{profile?.personal_details.about_me}</p>
-                    ) : (
-                      <p className="text-gray-500 dark:text-gray-400">No additional information provided.</p>
+                {/* About Tab */}
+                <TabsContent value="about" className="mt-0">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                    <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                      <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">About</h3>
+                      {profile?.personal_details?.about_me ? (
+                        <p className="text-gray-700 dark:text-gray-300">{profile?.personal_details.about_me}</p>
+                      ) : (
+                        <p className="text-gray-500 dark:text-gray-400">No additional information provided.</p>
+                      )}
+                    </div>
+
+                    {/* Personal Information */}
+                    {(profile?.personal_info?.nickname ||
+                      profile?.personal_info?.birthday ||
+                      profile?.personal_info?.gender ||
+                      (profile?.personal_info?.languages && profile?.personal_info.languages.length > 0)) && (
+                      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                          Personal Information
+                        </h3>
+                        <div className="space-y-3">
+                          {profile?.personal_info?.nickname && (
+                            <div className="flex items-start">
+                              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                Nickname:
+                              </span>
+                              <span className="text-sm text-gray-900 dark:text-white">
+                                {profile?.personal_info.nickname}
+                              </span>
+                            </div>
+                          )}
+                          {profile?.personal_info?.birthday && (
+                            <div className="flex items-start">
+                              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                Birthday:
+                              </span>
+                              <span className="text-sm text-gray-900 dark:text-white">
+                                {new Date(profile?.personal_info.birthday).toLocaleDateString("en-US", {
+                                  month: "long",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })}
+                              </span>
+                            </div>
+                          )}
+                          {profile?.personal_info?.gender && (
+                            <div className="flex items-start">
+                              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                Gender:
+                              </span>
+                              <span className="text-sm text-gray-900 dark:text-white capitalize">
+                                {profile?.personal_info.gender}
+                              </span>
+                            </div>
+                          )}
+                          {profile?.personal_info?.languages && profile?.personal_info.languages.length > 0 && (
+                            <div className="flex items-start">
+                              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                Languages:
+                              </span>
+                              <span className="text-sm text-gray-900 dark:text-white">
+                                {Array.isArray(profile?.personal_info.languages)
+                                  ? profile?.personal_info.languages.join(", ")
+                                  : profile?.personal_info.languages}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Location Information */}
+                    {(profile?.location_info?.current_city ||
+                      profile?.location_info?.current_state ||
+                      profile?.location_info?.current_country ||
+                      profile?.location_info?.hometown) && (
+                      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Location</h3>
+                        <div className="space-y-3">
+                          {(profile?.location_info?.current_city ||
+                            profile?.location_info?.current_state ||
+                            profile?.location_info?.current_country) && (
+                            <div className="flex items-start">
+                              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                Current:
+                              </span>
+                              <span className="text-sm text-gray-900 dark:text-white">
+                                {[
+                                  profile?.location_info.current_city,
+                                  profile?.location_info.current_state,
+                                  profile?.location_info.current_country,
+                                ]
+                                  .filter(Boolean)
+                                  .join(", ")}
+                              </span>
+                            </div>
+                          )}
+                          {profile?.location_info?.hometown && (
+                            <div className="flex items-start">
+                              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                Hometown:
+                              </span>
+                              <span className="text-sm text-gray-900 dark:text-white">
+                                {profile?.location_info.hometown}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Contact Information */}
+                    {(profile?.contact_info?.phone || profile?.contact_info?.alt_email) && (
+                      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Contact</h3>
+                        <div className="space-y-3">
+                          {profile?.contact_info?.phone && (
+                            <div className="flex items-start">
+                              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                Phone:
+                              </span>
+                              <span className="text-sm text-gray-900 dark:text-white">
+                                {profile?.contact_info.phone}
+                              </span>
+                            </div>
+                          )}
+                          {profile?.contact_info?.alt_email && (
+                            <div className="flex items-start">
+                              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                Alt Email:
+                              </span>
+                              <span className="text-sm text-gray-900 dark:text-white">
+                                {profile?.contact_info.alt_email}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Personal Details */}
+                    {(profile?.personal_details?.relationship_status ||
+                      profile?.personal_details?.political_views ||
+                      profile?.personal_details?.religious_views) && (
+                      <div className="p-6">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Personal Details</h3>
+                        <div className="space-y-3">
+                          {profile?.personal_details?.relationship_status && (
+                            <div className="flex items-start">
+                              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                Relationship:
+                              </span>
+                              <span className="text-sm text-gray-900 dark:text-white capitalize">
+                                {profile?.personal_details.relationship_status.replace(/_/g, " ")}
+                              </span>
+                            </div>
+                          )}
+                          {profile?.personal_details?.political_views && (
+                            <div className="flex items-start">
+                              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                Political Views:
+                              </span>
+                              <span className="text-sm text-gray-900 dark:text-white capitalize">
+                                {profile?.personal_details.political_views}
+                              </span>
+                            </div>
+                          )}
+                          {profile?.personal_details?.religious_views && (
+                            <div className="flex items-start">
+                              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                Religious Views:
+                              </span>
+                              <span className="text-sm text-gray-900 dark:text-white capitalize">
+                                {profile?.personal_details.religious_views}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     )}
                   </div>
+                </TabsContent>
 
-                  {/* Personal Information */}
-                  {(profile?.personal_info?.nickname ||
-                    profile?.personal_info?.birthday ||
-                    profile?.personal_info?.gender ||
-                    (profile?.personal_info?.languages && profile?.personal_info.languages.length > 0)) && (
-                    <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                      <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Personal Information</h3>
-                      <div className="space-y-3">
-                        {profile?.personal_info?.nickname && (
-                          <div className="flex items-start">
-                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                              Nickname:
-                            </span>
-                            <span className="text-sm text-gray-900 dark:text-white">
-                              {profile?.personal_info.nickname}
-                            </span>
-                          </div>
-                        )}
-                        {profile?.personal_info?.birthday && (
-                          <div className="flex items-start">
-                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                              Birthday:
-                            </span>
-                            <span className="text-sm text-gray-900 dark:text-white">
-                              {new Date(profile?.personal_info.birthday).toLocaleDateString("en-US", {
-                                month: "long",
-                                day: "numeric",
-                                year: "numeric",
-                              })}
-                            </span>
-                          </div>
-                        )}
-                        {profile?.personal_info?.gender && (
-                          <div className="flex items-start">
-                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                              Gender:
-                            </span>
-                            <span className="text-sm text-gray-900 dark:text-white capitalize">
-                              {profile?.personal_info.gender}
-                            </span>
-                          </div>
-                        )}
-                        {profile?.personal_info?.languages && profile?.personal_info.languages.length > 0 && (
-                          <div className="flex items-start">
-                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                              Languages:
-                            </span>
-                            <span className="text-sm text-gray-900 dark:text-white">
-                              {Array.isArray(profile?.personal_info.languages)
-                                ? profile?.personal_info.languages.join(", ")
-                                : profile?.personal_info.languages}
-                            </span>
-                          </div>
-                        )}
-                      </div>
+                {/* Photos Tab */}
+                <TabsContent value="photos" className="mt-0">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <p>No photos to display yet.</p>
+                      <p className="text-sm mt-2">Photos will appear here when shared.</p>
                     </div>
-                  )}
+                  </div>
+                </TabsContent>
 
-                  {/* Location Information */}
-                  {(profile?.location_info?.current_city ||
-                    profile?.location_info?.current_state ||
-                    profile?.location_info?.current_country ||
-                    profile?.location_info?.hometown) && (
-                    <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                      <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Location</h3>
-                      <div className="space-y-3">
-                        {(profile?.location_info?.current_city ||
-                          profile?.location_info?.current_state ||
-                          profile?.location_info?.current_country) && (
-                          <div className="flex items-start">
-                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                              Current:
-                            </span>
-                            <span className="text-sm text-gray-900 dark:text-white">
-                              {[
-                                profile?.location_info.current_city,
-                                profile?.location_info.current_state,
-                                profile?.location_info.current_country,
-                              ]
-                                .filter(Boolean)
-                                .join(", ")}
-                            </span>
-                          </div>
-                        )}
-                        {profile?.location_info?.hometown && (
-                          <div className="flex items-start">
-                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                              Hometown:
-                            </span>
-                            <span className="text-sm text-gray-900 dark:text-white">
-                              {profile?.location_info.hometown}
-                            </span>
-                          </div>
-                        )}
-                      </div>
+                {/* Videos Tab */}
+                <TabsContent value="videos" className="mt-0">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <p>No videos to display yet.</p>
+                      <p className="text-sm mt-2">Videos will appear here when shared.</p>
                     </div>
-                  )}
+                  </div>
+                </TabsContent>
 
-                  {/* Contact Information */}
-                  {(profile?.contact_info?.phone || profile?.contact_info?.alt_email) && (
-                    <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                      <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Contact</h3>
-                      <div className="space-y-3">
-                        {profile?.contact_info?.phone && (
-                          <div className="flex items-start">
-                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                              Phone:
-                            </span>
-                            <span className="text-sm text-gray-900 dark:text-white">{profile?.contact_info.phone}</span>
-                          </div>
-                        )}
-                        {profile?.contact_info?.alt_email && (
-                          <div className="flex items-start">
-                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                              Alt Email:
-                            </span>
-                            <span className="text-sm text-gray-900 dark:text-white">
-                              {profile?.contact_info.alt_email}
-                            </span>
-                          </div>
-                        )}
-                      </div>
+                {/* Groups Tab */}
+                <TabsContent value="groups" className="mt-0">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <p>No groups to display yet.</p>
+                      <p className="text-sm mt-2">Groups will appear here when joined.</p>
                     </div>
-                  )}
+                  </div>
+                </TabsContent>
 
-                  {/* Personal Details */}
-                  {(profile?.personal_details?.relationship_status ||
-                    profile?.personal_details?.political_views ||
-                    profile?.personal_details?.religious_views) && (
-                    <div className="p-6">
-                      <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Personal Details</h3>
-                      <div className="space-y-3">
-                        {profile?.personal_details?.relationship_status && (
-                          <div className="flex items-start">
-                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                              Relationship:
-                            </span>
-                            <span className="text-sm text-gray-900 dark:text-white capitalize">
-                              {profile?.personal_details.relationship_status.replace(/_/g, " ")}
-                            </span>
-                          </div>
-                        )}
-                        {profile?.personal_details?.political_views && (
-                          <div className="flex items-start">
-                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                              Political Views:
-                            </span>
-                            <span className="text-sm text-gray-900 dark:text-white capitalize">
-                              {profile?.personal_details.political_views}
-                            </span>
-                          </div>
-                        )}
-                        {profile?.personal_details?.religious_views && (
-                          <div className="flex items-start">
-                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                              Religious Views:
-                            </span>
-                            <span className="text-sm text-gray-900 dark:text-white capitalize">
-                              {profile?.personal_details.religious_views}
-                            </span>
-                          </div>
-                        )}
-                      </div>
+                {/* More Tab */}
+                <TabsContent value="more" className="mt-0">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <p>Additional content coming soon.</p>
+                      <p className="text-sm mt-2">Stay tuned for more features!</p>
                     </div>
-                  )}
-                </div>
-              </TabsContent>
-
-              {/* Photos Tab */}
-              <TabsContent value="photos" className="mt-0">
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                    <p>No photos to display yet.</p>
-                    <p className="text-sm mt-2">Photos will appear here when shared.</p>
                   </div>
-                </div>
-              </TabsContent>
-
-              {/* Videos Tab */}
-              <TabsContent value="videos" className="mt-0">
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                    <p>No videos to display yet.</p>
-                    <p className="text-sm mt-2">Videos will appear here when shared.</p>
-                  </div>
-                </div>
-              </TabsContent>
-
-              {/* Groups Tab */}
-              <TabsContent value="groups" className="mt-0">
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                    <p>No groups to display yet.</p>
-                    <p className="text-sm mt-2">Groups will appear here when joined.</p>
-                  </div>
-                </div>
-              </TabsContent>
-
-              {/* More Tab */}
-              <TabsContent value="more" className="mt-0">
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                    <p>Additional content coming soon.</p>
-                    <p className="text-sm mt-2">Stay tuned for more features!</p>
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
+                </TabsContent>
+              </Tabs>
+            </div>
           </div>
         </div>
       </div>
