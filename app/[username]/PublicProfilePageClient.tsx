@@ -1056,19 +1056,15 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   <div className="relative">
                     <button
                       onClick={() => setShowMoreDropdown(!showMoreDropdown)}
-                      className="bg-transparent border-0 border-b-[3px] border-transparent hover:border-gray-300 dark:hover:border-gray-600 rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 flex items-center space-x-1"
+                      className={`bg-transparent border-0 border-b-[3px] border-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 flex items-center space-x-1 transition-colors ${
+                        showMoreDropdown
+                          ? "bg-gray-600 text-white"
+                          : "hover:bg-gray-600 hover:text-white hover:border-b-[3px] hover:border-gray-300 dark:hover:border-gray-600"
+                      }`}
                     >
                       <span>More</span>
-                      <svg
-                        className="w-4 h-4"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M6 9l6 6 6-6" />
+                      <svg className="w-3 h-3" viewBox="0 0 12 12" fill="currentColor">
+                        <path d="M2 4l4 4 4-4H2z" />
                       </svg>
                     </button>
 
