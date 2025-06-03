@@ -178,11 +178,11 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       <div className="w-full flex justify-center">
-        <div className="max-w-[1100px] w-full">
+        <div className="max-w-[1150px] w-full">
           {/* Cover Photo */}
           <div className="relative">
             <div
-              className="h-96 w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative rounded-b-lg overflow-hidden"
+              className="h-[446px] w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative rounded-b-lg overflow-hidden"
               style={{
                 backgroundImage: profile?.banner_url ? `url(${profile.banner_url})` : undefined,
                 backgroundSize: "cover",
@@ -213,7 +213,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
             <div className="relative">
               {/* Large screens: Horizontal layout with 15% overlap */}
               <div className="hidden lg:block">
-                <div className="pt-8 pb-4 px-8 flex items-start justify-between">
+                <div className="pt-4 pb-4 px-8 flex items-start justify-between">
                   <div className="flex items-start space-x-6">
                     {/* Profile Picture - 15% overlap on large screens */}
                     <div className="relative -mt-24">
@@ -247,7 +247,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     </div>
 
                     {/* Name and Info - positioned to the right of profile picture */}
-                    <div className="pt-8">
+                    <div className="pt-4">
                       <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                         {profile?.full_name || profile?.username}
                         {profile?.personal_info?.nickname && (
@@ -279,65 +279,71 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                           ))}
                         </div>
                       </div>
-                    </div>
-                  </div>
 
-                  {/* Action Buttons */}
-                  <div className="flex items-center space-x-2 mt-4">
-                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md font-medium flex items-center gap-1.5">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <rect width="20" height="14" x="2" y="5" rx="2" />
-                        <line x1="2" x2="22" y1="10" y2="10" />
-                      </svg>
-                      Professional dashboard
-                    </button>
-                    <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-1.5 rounded-md font-medium flex items-center gap-1.5">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                        <path d="m15 5 4 4" />
-                      </svg>
-                      Edit
-                    </button>
-                    <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-1.5 rounded-md font-medium flex items-center gap-1.5">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M12 5v14" />
-                        <path d="M5 12h14" />
-                      </svg>
-                      Add to story
-                    </button>
-                    <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md">
-                      <MoreHorizontal className="h-5 w-5" />
-                    </button>
+                      {/* Action Buttons - Two rows like Facebook */}
+                      <div className="mt-4 space-y-2">
+                        {/* First row - Primary button */}
+                        <div>
+                          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md font-medium flex items-center gap-1.5">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <rect width="20" height="14" x="2" y="5" rx="2" />
+                              <line x1="2" x2="22" y1="10" y2="10" />
+                            </svg>
+                            Professional dashboard
+                          </button>
+                        </div>
+                        {/* Second row - Secondary buttons */}
+                        <div className="flex items-center space-x-2">
+                          <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-1.5 rounded-md font-medium flex items-center gap-1.5">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                              <path d="m15 5 4 4" />
+                            </svg>
+                            Edit
+                          </button>
+                          <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-1.5 rounded-md font-medium flex items-center gap-1.5">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M12 5v14" />
+                              <path d="M5 12h14" />
+                            </svg>
+                            Add to story
+                          </button>
+                          <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md">
+                            <MoreHorizontal className="h-5 w-5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
