@@ -216,7 +216,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                 <div className="pt-4 pb-3 px-8 flex items-end justify-between">
                   <div className="flex items-end space-x-6">
                     {/* Profile Picture - 20% overlap on extra large screens */}
-                    <div className="relative -mt-72">
+                    <div className="relative -mt-96 bg-yellow-300">
                       <div className="relative">
                         <Avatar className="h-40 w-40 border-4 border-white dark:border-gray-900 shadow-lg">
                           <AvatarImage
@@ -332,7 +332,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                 <div className="pt-4 pb-3 px-8 flex items-end justify-between">
                   <div className="flex items-end space-x-6">
                     {/* Profile Picture - 15% overlap on large screens */}
-                    <div className="relative -mt-60">
+                    <div className="relative -mt-80 bg-yellow-300">
                       <div className="relative">
                         <Avatar className="h-40 w-40 border-4 border-white dark:border-gray-900 shadow-lg">
                           <AvatarImage
