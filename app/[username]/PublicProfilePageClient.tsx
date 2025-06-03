@@ -216,7 +216,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                 <div className="pt-4 pb-3 px-8 flex items-end justify-between">
                   <div className="flex items-end space-x-6">
                     {/* Profile Picture - 15% overlap on large screens */}
-                    <div className="relative -mt-28">
+                    <div className="relative -mt-32">
                       <div className="relative">
                         <Avatar className="h-40 w-40 border-4 border-white dark:border-gray-900 shadow-lg">
                           <AvatarImage
@@ -283,7 +283,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   </div>
 
                   {/* Action Buttons - Right aligned and vertically centered */}
-                  <div className="flex items-center justify-end pb-2">
+                  <div className="flex items-center justify-end self-center">
                     <div className="flex items-center space-x-2">
                       <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-1.5 rounded-md font-medium flex items-center gap-1.5">
                         <svg
@@ -399,7 +399,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   </div>
 
                   {/* Action Buttons - Right aligned */}
-                  <div className="flex items-center justify-end mt-2">
+                  <div className="flex items-center justify-end self-center">
                     <div className="flex items-center space-x-2">
                       <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-md font-medium flex items-center gap-1.5 text-sm">
                         <svg
@@ -513,23 +513,6 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
                     {/* Action Buttons - Centered and stacked */}
                     <div className="flex flex-col space-y-2 mt-4">
-                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium flex items-center justify-center gap-1.5 text-sm">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <rect width="20" height="14" x="2" y="5" rx="2" />
-                          <line x1="2" x2="22" y1="10" y2="10" />
-                        </svg>
-                        Professional dashboard
-                      </button>
                       <div className="flex space-x-2">
                         <button className="flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-2 rounded-md font-medium flex items-center justify-center gap-1.5 text-sm">
                           <svg
