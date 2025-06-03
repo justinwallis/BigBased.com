@@ -999,19 +999,19 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
                   {/* Short Bio Tags */}
                   {generateShortBio() && (
-                    <div className="text-center mb-3">
-                      <p className="text-xs text-gray-700 dark:text-gray-300">{generateShortBio()}</p>
+                    <div className="mb-3">
+                      <p className="text-sm text-gray-700 dark:text-gray-300">{generateShortBio()}</p>
                     </div>
                   )}
 
                   {/* Website Link */}
                   {socialLinks.website && (
-                    <div className="text-center mb-3">
+                    <div className="mb-3">
                       <a
                         href={getSocialUrl("website", socialLinks.website)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-center text-blue-600 dark:text-blue-400 hover:underline text-xs"
+                        className="flex items-center text-blue-600 dark:text-blue-400 hover:underline text-sm"
                       >
                         <Globe className="h-3 w-3 mr-1" />
                         {socialLinks.website.replace(/^https?:\/\//, "")}
