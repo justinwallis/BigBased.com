@@ -239,8 +239,8 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                             strokeLinecap="round"
                             strokeLinejoin="round"
                           >
-                            <path d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16m-2-2l1.586-1.586a2 2 0 0 1 2.828 0L20 14" />
-                            <circle cx="8" cy="9" r="2" />
+                            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                            <circle cx="12" cy="13" r="3" />
                           </svg>
                         </button>
                       </div>
@@ -355,8 +355,8 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                             strokeLinecap="round"
                             strokeLinejoin="round"
                           >
-                            <path d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16m-2-2l1.586-1.586a2 2 0 0 1 2.828 0L20 14" />
-                            <circle cx="8" cy="9" r="2" />
+                            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                            <circle cx="12" cy="13" r="3" />
                           </svg>
                         </button>
                       </div>
@@ -470,8 +470,8 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         >
-                          <path d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16m-2-2l1.586-1.586a2 2 0 0 1 2.828 0L20 14" />
-                          <circle cx="8" cy="9" r="2" />
+                          <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                          <circle cx="12" cy="13" r="3" />
                         </svg>
                       </button>
                     </div>
