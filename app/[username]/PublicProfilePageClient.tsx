@@ -211,12 +211,12 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
             {/* Profile Info - Responsive Layout */}
             <div className="relative">
-              {/* Large screens: Horizontal layout with 15% overlap */}
+              {/* Large screens: Horizontal layout with 15% overlap - Facebook style */}
               <div className="hidden lg:block">
-                <div className="pt-4 pb-4 px-8 flex items-start justify-between">
-                  <div className="flex items-start space-x-6">
+                <div className="pt-4 pb-3 px-8 flex items-end justify-between">
+                  <div className="flex items-end space-x-6">
                     {/* Profile Picture - 15% overlap on large screens */}
-                    <div className="relative -mt-24">
+                    <div className="relative -mt-20">
                       <div className="relative">
                         <Avatar className="h-40 w-40 border-4 border-white dark:border-gray-900 shadow-lg">
                           <AvatarImage
@@ -247,8 +247,8 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     </div>
 
                     {/* Name and Info - positioned to the right of profile picture */}
-                    <div className="pt-4">
-                      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                    <div className="pb-2">
+                      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
                         {profile?.full_name || profile?.username}
                         {profile?.personal_info?.nickname && (
                           <span className="text-xl text-gray-600 dark:text-gray-400 ml-2">
@@ -256,19 +256,19 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                           </span>
                         )}
                       </h1>
-                      <div className="flex items-center mt-1">
+                      <div className="flex items-center mb-2">
                         <p className="text-sm text-gray-600 dark:text-gray-400">@{profile?.username}</p>
                         <span className="mx-2 text-gray-400">•</span>
                         <Badge className="bg-green-500/80 text-white border-0">Active Member</Badge>
                       </div>
-                      <div className="flex items-center mt-2 text-sm text-gray-600 dark:text-gray-400">
+                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-3">
                         <span className="mr-4 font-medium">0 followers</span>
                         <span className="font-medium">0 following</span>
                       </div>
 
                       {/* Friend avatars */}
-                      <div className="flex items-center mt-3">
-                        <div className="flex -space-x-2 mr-2">
+                      <div className="flex items-center">
+                        <div className="flex -space-x-2">
                           {[1, 2, 3, 4, 5].map((i) => (
                             <div
                               key={i}
@@ -279,70 +279,68 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                           ))}
                         </div>
                       </div>
+                    </div>
+                  </div>
 
-                      {/* Action Buttons - Two rows like Facebook */}
-                      <div className="mt-4 space-y-2">
-                        {/* First row - Primary button */}
-                        <div>
-                          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md font-medium flex items-center gap-1.5">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <rect width="20" height="14" x="2" y="5" rx="2" />
-                              <line x1="2" x2="22" y1="10" y2="10" />
-                            </svg>
-                            Professional dashboard
-                          </button>
-                        </div>
-                        {/* Second row - Secondary buttons */}
-                        <div className="flex items-center space-x-2">
-                          <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-1.5 rounded-md font-medium flex items-center gap-1.5">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                              <path d="m15 5 4 4" />
-                            </svg>
-                            Edit
-                          </button>
-                          <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-1.5 rounded-md font-medium flex items-center gap-1.5">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <path d="M12 5v14" />
-                              <path d="M5 12h14" />
-                            </svg>
-                            Add to story
-                          </button>
-                          <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md">
-                            <MoreHorizontal className="h-5 w-5" />
-                          </button>
-                        </div>
-                      </div>
+                  {/* Action Buttons - Two rows, center-aligned with text content */}
+                  <div className="pb-2">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md font-medium flex items-center gap-1.5">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <rect width="20" height="14" x="2" y="5" rx="2" />
+                          <line x1="2" x2="22" y1="10" y2="10" />
+                        </svg>
+                        Professional dashboard
+                      </button>
+                      <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-1.5 rounded-md font-medium flex items-center gap-1.5">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                          <path d="m15 5 4 4" />
+                        </svg>
+                        Edit
+                      </button>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-1.5 rounded-md font-medium flex items-center gap-1.5">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M12 5v14" />
+                          <path d="M5 12h14" />
+                        </svg>
+                        Add to story
+                      </button>
+                      <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md">
+                        <MoreHorizontal className="h-5 w-5" />
+                      </button>
                     </div>
                   </div>
                 </div>
