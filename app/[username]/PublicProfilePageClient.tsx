@@ -289,9 +289,8 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
   const formatBioWithLinks = (text: string) => {
     if (!text) return ""
 
-    // Regular expression to find URLs without http/https prefix
-    const urlRegex =
-      /(^|\s)((?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi
+    // Regular expression to find URLs
+    const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.[a-zA-Z]{2,}[^\s]*)/gi
 
     // Split by URL matches and create an array of text and link elements
     const parts = []
@@ -308,7 +307,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
       }
 
       // Get the URL and ensure it has a protocol
-      const url = match[2]
+      const url = match[0]
       const href = url.startsWith("http") ? url : `https://${url}`
 
       // Add the link element
@@ -342,7 +341,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
           {/* Cover Photo */}
           <div className="relative">
             <div
-              className="h-[446px] w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative rounded-b-lg overflow-hidden"
+              className="h-[200px] md:h-[446px] w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative md:rounded-b-lg overflow-hidden"
               style={{
                 backgroundImage: profile?.banner_url ? `url(${profile.banner_url})` : undefined,
                 backgroundSize: "cover",
@@ -369,7 +368,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   <path d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16m-2-2l1.586-1.586a2 2 0 0 1 2.828 0L20 14" />
                   <circle cx="8" cy="9" r="2" />
                 </svg>
-                Edit cover photo
+                <span className="hidden md:inline">Edit cover photo</span>
               </button>
             </div>
 
@@ -382,12 +381,12 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     {/* Profile Picture - 15% overlap on large screens */}
                     <div className="relative -mt-44">
                       <div className="relative">
-                        <Avatar className="h-40 w-40 border-4 border-white dark:border-gray-900 shadow-lg">
+                        <Avatar className="h-48 w-48 border-4 border-white dark:border-gray-900 shadow-lg">
                           <AvatarImage
                             src={profile?.avatar_url || "/placeholder.svg"}
                             alt={profile?.full_name || profile?.username}
                           />
-                          <AvatarFallback className="text-4xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                          <AvatarFallback className="text-5xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
                             {getInitials(profile?.full_name || profile?.username || "U")}
                           </AvatarFallback>
                         </Avatar>
@@ -655,15 +654,15 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               {/* Small screens: Centered vertical layout with 50% overlap */}
               <div className="block md:hidden">
                 <div className="pt-4 pb-4 px-4">
-                  {/* Profile Picture - 50% overlap on small screens, centered */}
-                  <div className="flex justify-center -mt-20 mb-4">
+                  {/* Profile Picture - 50% overlap on small screens, centered, larger size */}
+                  <div className="flex justify-center -mt-24 mb-4">
                     <div className="relative">
-                      <Avatar className="h-32 w-32 border-4 border-white dark:border-gray-900 shadow-lg">
+                      <Avatar className="h-40 w-40 border-4 border-white dark:border-gray-900 shadow-lg">
                         <AvatarImage
                           src={profile?.avatar_url || "/placeholder.svg"}
                           alt={profile?.full_name || profile?.username}
                         />
-                        <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                        <AvatarFallback className="text-4xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
                           {getInitials(profile?.full_name || profile?.username || "U")}
                         </AvatarFallback>
                       </Avatar>
@@ -695,12 +694,12 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                       {profile?.full_name || profile?.username}
                       {profile?.personal_info?.nickname && (
-                        <span className="block text-lg text-gray-600 dark:text-gray-400 mt-1">
+                        <span className="text-2xl text-gray-500 dark:text-gray-500 font-normal ml-2">
                           ({profile.personal_info.nickname})
                         </span>
                       )}
                     </h1>
-                    <div className="flex items-center justify-center mt-2">
+                    <div className="flex items-center justify-center mt-1">
                       <p className="text-sm text-gray-600 dark:text-gray-400">@{profile?.username}</p>
                       <span className="mx-2 text-gray-400">•</span>
                       <Badge className="bg-green-500/80 text-white border-0">Active Member</Badge>
@@ -792,7 +791,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
           {/* People You May Know Section */}
           {showFriendsSection && (
-            <div className="pb-4 px-4 md:px-8">
+            <div className="pb-4 px-4">
               <div className="border border-gray-200/50 dark:border-gray-700/50 rounded-lg px-4 py-2">
                 <div className="flex items-center justify-between mb-2">
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white">People You May Know</h2>
@@ -1210,7 +1209,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
           </div>
 
           {/* Main Content */}
-          <div className="py-4">
+          <div className="py-4 px-4">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {/* Left Sidebar - Intro */}
               <div className="space-y-4">
