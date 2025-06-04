@@ -1174,7 +1174,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
           <div className="py-4 px-4">
             <div className="grid grid-cols-1 min-[900px]:grid-cols-[1fr_580px] gap-4 justify-items-center">
               {/* Left Sidebar - Intro */}
-              <div className="space-y-4 w-full min-[900px]:w-auto">
+              <div className="space-y-4 w-full max-w-[580px] mx-auto min-[900px]:max-w-none min-[900px]:mx-0 min-[900px]:w-auto">
                 {/* Intro Card */}
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
                   <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Intro</h2>
