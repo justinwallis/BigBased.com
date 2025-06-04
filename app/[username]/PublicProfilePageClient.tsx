@@ -362,7 +362,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
       </div>
 
       {/* Main Content Container - Constrained to 1150px */}
-      <div className="w-full flex justify-center">
+      <div className="w-full flex justify-center mt-[70px]">
         <div className="max-w-[1150px] w-full">
           {/* Profile Info - Responsive Layout */}
           <div className="relative">
