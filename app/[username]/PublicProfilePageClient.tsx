@@ -364,7 +364,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
             <div className="relative">
               {/* Large screens: Horizontal layout with 15% overlap - Facebook style */}
               <div className="hidden lg:block">
-                <div className="pt-4 pb-3 px-4 flex items-end justify-between">
+                <div className="pt-4 pb-3 px-4">
                   <div className="flex items-end space-x-6">
                     {/* Profile Picture - 15% overlap on large screens */}
                     <div className="relative -mt-44">
@@ -489,7 +489,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
               {/* Medium screens: Horizontal layout with 0% overlap */}
               <div className="hidden md:block lg:hidden">
-                <div className="pt-4 pb-4 px-4 flex items-start justify-between">
+                <div className="pt-4 pb-4 px-4">
                   {/* Profile Picture - 0% overlap on medium screens */}
                   <div className="relative">
                     <div className="relative">
