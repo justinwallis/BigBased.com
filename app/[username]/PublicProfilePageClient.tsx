@@ -996,7 +996,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     </TabsTrigger>
                     <TabsTrigger
                       value="photos"
-                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden min-[450px]:flex"
                     >
                       Photos
                     </TabsTrigger>
@@ -1133,6 +1133,16 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                             >
                               Groups
                             </button>
+                            {/* Show Photos in dropdown on smallest screens */}
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                setActiveTab("photos")
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 max-[450px]:flex hidden"
+                            >
+                              Photos
+                            </button>
                           </div>
                         </div>
                       )}
@@ -1162,9 +1172,9 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
           {/* Main Content */}
           <div className="py-4 px-4">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 min-[900px]:grid-cols-3 gap-4">
               {/* Left Sidebar - Intro */}
-              <div className="space-y-4">
+              <div className="space-y-4 max-w-[660px]">
                 {/* Intro Card */}
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
                   <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Intro</h2>
@@ -1360,7 +1370,7 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
               </div>
 
               {/* Main Content Area */}
-              <div className="lg:col-span-2">
+              <div className="min-[900px]:col-span-2 max-w-[660px]">
                 {/* Create Post Card */}
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-4">
                   <div className="p-4">
