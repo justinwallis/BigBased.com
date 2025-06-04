@@ -361,12 +361,12 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="2"
+                  strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <path d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16m-2-2l1.586-1.586a2 2 0 0 1 2.828 0L20 14" />
-                  <circle cx="8" cy="9" r="2" />
+                  <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                  <circle cx="12" cy="13" r="3" />
                 </svg>
                 <span className="hidden md:inline">Edit cover photo</span>
               </button>
@@ -409,7 +409,6 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                             <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
                             <circle cx="12" cy="13" r="3" />
                           </svg>
-                          Edit
                         </button>
                       </div>
                     </div>
@@ -429,7 +428,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                         <span className="mx-2 text-gray-400">•</span>
                         <Badge className="bg-green-500/80 text-white border-0">Active Member</Badge>
                       </div>
-                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-3">
+                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-2">
                         <span className="mr-4 font-medium">0 followers</span>
                         <span className="font-medium">0 following</span>
                       </div>
@@ -520,7 +519,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     {/* Profile Picture - 0% overlap on medium screens */}
                     <div className="relative">
                       <div className="relative">
-                        <Avatar className="h-32 w-32 border-4 border-white dark:border-gray-900 shadow-lg">
+                        <Avatar className="h-48 w-48 border-4 border-white dark:border-gray-900 shadow-lg">
                           <AvatarImage
                             src={profile?.avatar_url || "/placeholder.svg"}
                             alt={profile?.full_name || profile?.username}
@@ -1022,190 +1021,192 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
           {/* Navigation Tabs */}
           <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 pt-[4px]">
-            <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
-              <div className="flex items-center justify-between">
-                <TabsList className="h-12 bg-transparent border-0 p-0 space-x-1 justify-start">
-                  <TabsTrigger
-                    value="posts"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
-                  >
-                    Posts
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="about"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
-                  >
-                    About
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="reels"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
-                  >
-                    Reels
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="photos"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
-                  >
-                    Photos
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="videos"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden sm:flex"
-                  >
-                    Videos
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="groups"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden md:flex"
-                  >
-                    Groups
-                  </TabsTrigger>
-
-                  {/* More Dropdown - Always visible */}
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowMoreDropdown(!showMoreDropdown)}
-                      className={`bg-transparent border-0 border-b-[3px] border-transparent rounded-none px-4 py-3 text-sm font-medium flex items-center justify-center space-x-1 transition-all duration-200 ${
-                        showMoreDropdown
-                          ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-md"
-                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md"
-                      }`}
+            <div className="px-4 lg:px-8">
+              <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
+                <div className="flex items-center justify-between">
+                  <TabsList className="h-12 bg-transparent border-0 p-0 space-x-1 justify-start">
+                    <TabsTrigger
+                      value="posts"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
                     >
-                      <span>More</span>
-                      <svg className="w-3 h-3 ml-1" viewBox="0 0 12 12" fill="currentColor">
-                        <path d="M2 4l4 4 4-4H2z" />
-                      </svg>
-                    </button>
+                      Posts
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="about"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
+                    >
+                      About
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="reels"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
+                    >
+                      Reels
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="photos"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
+                    >
+                      Photos
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="videos"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden sm:flex"
+                    >
+                      Videos
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="groups"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden md:flex"
+                    >
+                      Groups
+                    </TabsTrigger>
 
-                    {showMoreDropdown && (
-                      <div className="absolute left-0 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg rounded-md overflow-hidden z-50">
-                        <div className="py-1">
-                          <button
-                            onClick={() => {
-                              setShowMoreDropdown(false)
-                              router.push(`/${profile?.username}/events`)
-                            }}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          >
-                            Events
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowMoreDropdown(false)
-                              router.push(`/${profile?.username}/friends`)
-                            }}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          >
-                            Friends
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowMoreDropdown(false)
-                              router.push(`/${profile?.username}/music`)
-                            }}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          >
-                            Music
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowMoreDropdown(false)
-                              router.push(`/${profile?.username}/check-ins`)
-                            }}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          >
-                            Check-ins
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowMoreDropdown(false)
-                              router.push(`/${profile?.username}/sports`)
-                            }}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          >
-                            Sports
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowMoreDropdown(false)
-                              router.push(`/${profile?.username}/apps`)
-                            }}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          >
-                            Apps and games
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowMoreDropdown(false)
-                              router.push(`/${profile?.username}/likes`)
-                            }}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          >
-                            Likes
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowMoreDropdown(false)
-                              router.push(`/${profile?.username}/reviews`)
-                            }}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          >
-                            Reviews given
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowMoreDropdown(false)
-                              router.push(`/${profile?.username}/manage-sections`)
-                            }}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          >
-                            Manage sections
-                          </button>
-                          {/* Show Videos in dropdown on smallest screens */}
-                          <button
-                            onClick={() => {
-                              setShowMoreDropdown(false)
-                              setActiveTab("videos")
-                            }}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 sm:hidden"
-                          >
-                            Videos
-                          </button>
-                          {/* Show Groups in dropdown on small and medium screens */}
-                          <button
-                            onClick={() => {
-                              setShowMoreDropdown(false)
-                              setActiveTab("groups")
-                            }}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 md:hidden"
-                          >
-                            Groups
-                          </button>
+                    {/* More Dropdown - Always visible */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowMoreDropdown(!showMoreDropdown)}
+                        className={`bg-transparent border-0 border-b-[3px] border-transparent rounded-none px-4 py-3 text-sm font-medium flex items-center justify-center space-x-1 transition-all duration-200 ${
+                          showMoreDropdown
+                            ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-md"
+                            : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md"
+                        }`}
+                      >
+                        <span>More</span>
+                        <svg className="w-3 h-3 ml-1" viewBox="0 0 12 12" fill="currentColor">
+                          <path d="M2 4l4 4 4-4H2z" />
+                        </svg>
+                      </button>
+
+                      {showMoreDropdown && (
+                        <div className="absolute left-0 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg rounded-md overflow-hidden z-50">
+                          <div className="py-1">
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                router.push(`/${profile?.username}/events`)
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Events
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                router.push(`/${profile?.username}/friends`)
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Friends
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                router.push(`/${profile?.username}/music`)
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Music
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                router.push(`/${profile?.username}/check-ins`)
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Check-ins
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                router.push(`/${profile?.username}/sports`)
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Sports
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                router.push(`/${profile?.username}/apps`)
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Apps and games
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                router.push(`/${profile?.username}/likes`)
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Likes
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                router.push(`/${profile?.username}/reviews`)
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Reviews given
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                router.push(`/${profile?.username}/manage-sections`)
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Manage sections
+                            </button>
+                            {/* Show Videos in dropdown on smallest screens */}
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                setActiveTab("videos")
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 sm:hidden"
+                            >
+                              Videos
+                            </button>
+                            {/* Show Groups in dropdown on small and medium screens */}
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                setActiveTab("groups")
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 md:hidden"
+                            >
+                              Groups
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                </TabsList>
-                <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-md font-medium flex items-center justify-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="12" cy="12" r="1" />
-                    <circle cx="19" cy="12" r="1" />
-                    <circle cx="5" cy="12" r="1" />
-                  </svg>
-                </button>
-              </div>
-            </Tabs>
+                      )}
+                    </div>
+                  </TabsList>
+                  <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-md font-medium flex items-center justify-center">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="1" />
+                      <circle cx="19" cy="12" r="1" />
+                      <circle cx="5" cy="12" r="1" />
+                    </svg>
+                  </button>
+                </div>
+              </Tabs>
+            </div>
           </div>
 
           {/* Main Content */}
