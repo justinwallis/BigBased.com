@@ -213,7 +213,7 @@ export function SiteHeader() {
           visible ? "translate-y-0" : "-translate-y-full",
         )}
       >
-        <div className="container flex h-16 items-center justify-between px-4">
+        <div className="flex h-16 items-center justify-between px-4 w-full max-w-[1150px] mx-auto">
           <div className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2">
               <div className="relative w-8 h-8">

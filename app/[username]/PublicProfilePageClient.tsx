@@ -393,7 +393,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                       <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                         {profile?.full_name || profile?.username}
                         {profile?.personal_info?.nickname && (
-                          <span className="text-2xl text-gray-600 dark:text-gray-400 ml-2">
+                          <span className="text-2xl text-gray-600 dark:text-gray-400 ml-2 font-normal">
                             ({profile.personal_info.nickname})
                           </span>
                         )}
@@ -1002,13 +1002,13 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     </TabsTrigger>
                     <TabsTrigger
                       value="videos"
-                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden sm:flex"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden min-[625px]:flex"
                     >
                       Videos
                     </TabsTrigger>
                     <TabsTrigger
                       value="groups"
-                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden md:flex"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden min-[575px]:flex"
                     >
                       Groups
                     </TabsTrigger>
@@ -1119,17 +1119,17 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                                 setShowMoreDropdown(false)
                                 setActiveTab("videos")
                               }}
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 sm:hidden"
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 max-[625px]:flex hidden"
                             >
                               Videos
                             </button>
-                            {/* Show Groups in dropdown on small and medium screens */}
+                            {/* Show Groups in dropdown on small screens */}
                             <button
                               onClick={() => {
                                 setShowMoreDropdown(false)
                                 setActiveTab("groups")
                               }}
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 md:hidden"
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 max-[575px]:flex hidden"
                             >
                               Groups
                             </button>
