@@ -344,7 +344,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
             <div
               className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative md:rounded-b-lg overflow-hidden"
               style={{
-                height: "clamp(200px, 25vw + 150px, 455px)",
+                height: "clamp(200px, 25vw + 75px, 455px)",
                 backgroundImage: profile?.banner_url ? `url(${profile.banner_url})` : undefined,
                 backgroundSize: "cover",
                 backgroundPosition: profile?.banner_position || "center",
@@ -370,7 +370,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     {/* Profile Picture - 15% overlap on large screens */}
                     <div className="relative -mt-44">
                       <div className="relative">
-                        <Avatar className="h-48 w-48 border-4 border-white dark:border-gray-900 shadow-lg">
+                        <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
                           <AvatarImage
                             src={profile?.avatar_url || "/placeholder.svg"}
                             alt={profile?.full_name || profile?.username}
@@ -495,7 +495,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     {/* Profile Picture - 0% overlap on medium screens */}
                     <div className="relative">
                       <div className="relative">
-                        <Avatar className="h-48 w-48 border-4 border-white dark:border-gray-900 shadow-lg">
+                        <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
                           <AvatarImage
                             src={profile?.avatar_url || "/placeholder.svg"}
                             alt={profile?.full_name || profile?.username}
@@ -515,7 +515,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     </div>
 
                     {/* Name and Info */}
-                    <div className="pt-2">
+                    <div className="pt-0">
                       <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                         {profile?.full_name || profile?.username}
                         {profile?.personal_info?.nickname && (
@@ -617,14 +617,14 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               <div className="block md:hidden">
                 <div className="pt-4 pb-4 px-4">
                   {/* Profile Picture - 50% overlap on small screens, centered, larger size */}
-                  <div className="flex justify-center -mt-24 mb-4">
+                  <div className="flex justify-center -mt-20 mb-4">
                     <div className="relative">
-                      <Avatar className="h-40 w-40 border-4 border-white dark:border-gray-900 shadow-lg">
+                      <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
                         <AvatarImage
                           src={profile?.avatar_url || "/placeholder.svg"}
                           alt={profile?.full_name || profile?.username}
                         />
-                        <AvatarFallback className="text-4xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                        <AvatarFallback className="text-5xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
                           {getInitials(profile?.full_name || profile?.username || "U")}
                         </AvatarFallback>
                       </Avatar>
