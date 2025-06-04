@@ -20,6 +20,7 @@ import {
 } from "lucide-react"
 import type { Profile } from "@/app/actions/profile-actions"
 import Link from "next/link"
+import Image from "next/image"
 
 // Add these imports at the top of the file
 import { ImageUploadDialog } from "@/components/image-upload-dialog"
@@ -354,20 +355,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                 disabled={isUploading}
                 className="absolute bottom-4 right-4 bg-gray-800/90 dark:bg-white/90 text-white dark:text-gray-800 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5 hover:bg-gray-900 dark:hover:bg-white transition-colors disabled:opacity-50"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
-                  <circle cx="12" cy="13" r="3" />
-                </svg>
+                <Image src="/camera.png" alt="Camera" width={16} height={16} className="dark:invert" />
                 <span className="hidden md:inline">Edit cover photo</span>
               </button>
             </div>
@@ -395,20 +383,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                           disabled={isUploading}
                           className="absolute bottom-3 right-3 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
-                            <circle cx="12" cy="13" r="3" />
-                          </svg>
+                          <Image src="/camera.png" alt="Camera" width={16} height={16} className="dark:invert" />
                         </button>
                       </div>
                     </div>
@@ -533,20 +508,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                           disabled={isUploading}
                           className="absolute bottom-2 right-2 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
-                            <circle cx="12" cy="13" r="3" />
-                          </svg>
+                          <Image src="/camera.png" alt="Camera" width={14} height={14} className="dark:invert" />
                         </button>
                       </div>
                     </div>
@@ -670,20 +632,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                         disabled={isUploading}
                         className="absolute bottom-2 right-2 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
-                          <circle cx="12" cy="13" r="3" />
-                        </svg>
+                        <Image src="/camera.png" alt="Camera" width={14} height={14} className="dark:invert" />
                       </button>
                     </div>
                   </div>
@@ -1017,7 +966,9 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
           )}
 
           {/* Divider */}
-          <div className="h-px bg-gray-300 dark:bg-gray-700 w-full"></div>
+          <div className="h-px bg-gray-300 dark:bg-gray-700 w-full px-4 lg:px-8">
+            <div className="h-px bg-gray-300 dark:bg-gray-700 w-full"></div>
+          </div>
 
           {/* Navigation Tabs */}
           <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 pt-[4px]">
