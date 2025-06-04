@@ -1022,43 +1022,43 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
           <div className="h-px bg-gray-300 dark:bg-gray-700 w-full"></div>
 
           {/* Navigation Tabs */}
-          <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 pt-[5px]">
+          <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 pt-[4px]">
             <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
               <div className="flex items-center justify-between">
                 <TabsList className="h-12 bg-transparent border-0 p-0 space-x-1 justify-start">
                   <TabsTrigger
                     value="posts"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
                   >
                     Posts
                   </TabsTrigger>
                   <TabsTrigger
                     value="about"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
                   >
                     About
                   </TabsTrigger>
                   <TabsTrigger
                     value="reels"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
                   >
                     Reels
                   </TabsTrigger>
                   <TabsTrigger
                     value="photos"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
                   >
                     Photos
                   </TabsTrigger>
                   <TabsTrigger
                     value="videos"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hidden sm:flex"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden sm:flex"
                   >
                     Videos
                   </TabsTrigger>
                   <TabsTrigger
                     value="groups"
-                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hidden md:flex"
+                    className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden md:flex"
                   >
                     Groups
                   </TabsTrigger>
@@ -1067,10 +1067,10 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   <div className="relative">
                     <button
                       onClick={() => setShowMoreDropdown(!showMoreDropdown)}
-                      className={`h-[50px] rounded-none px-4 py-3 text-sm font-medium flex items-center justify-center space-x-1 transition-colors border-b-[3px] border-transparent ${
+                      className={`h-[50px] rounded-none px-4 py-3 text-sm font-medium flex items-center justify-center space-x-1 transition-colors border-b-[3px] border-transparent hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md ${
                         showMoreDropdown
                           ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
-                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                          : "text-gray-600 dark:text-gray-400"
                       }`}
                     >
                       <span>More</span>
@@ -1080,14 +1080,14 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     </button>
 
                     {showMoreDropdown && (
-                      <div className="absolute left-0 mt-1 w-48 bg-gray-800 dark:bg-gray-900 shadow-lg rounded-md overflow-hidden z-50">
+                      <div className="absolute left-0 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg rounded-md overflow-hidden z-50">
                         <div className="py-1">
                           <button
                             onClick={() => {
                               setShowMoreDropdown(false)
                               router.push(`/${profile?.username}/events`)
                             }}
-                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 dark:hover:bg-gray-800"
+                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                           >
                             Events
                           </button>
@@ -1096,7 +1096,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                               setShowMoreDropdown(false)
                               router.push(`/${profile?.username}/friends`)
                             }}
-                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 dark:hover:bg-gray-800"
+                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                           >
                             Friends
                           </button>
@@ -1105,7 +1105,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                               setShowMoreDropdown(false)
                               router.push(`/${profile?.username}/music`)
                             }}
-                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 dark:hover:bg-gray-800"
+                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                           >
                             Music
                           </button>
@@ -1114,7 +1114,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                               setShowMoreDropdown(false)
                               router.push(`/${profile?.username}/check-ins`)
                             }}
-                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 dark:hover:bg-gray-800"
+                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                           >
                             Check-ins
                           </button>
@@ -1123,7 +1123,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                               setShowMoreDropdown(false)
                               router.push(`/${profile?.username}/sports`)
                             }}
-                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 dark:hover:bg-gray-800"
+                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                           >
                             Sports
                           </button>
@@ -1132,7 +1132,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                               setShowMoreDropdown(false)
                               router.push(`/${profile?.username}/apps`)
                             }}
-                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 dark:hover:bg-gray-800"
+                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                           >
                             Apps and games
                           </button>
@@ -1141,7 +1141,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                               setShowMoreDropdown(false)
                               router.push(`/${profile?.username}/likes`)
                             }}
-                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 dark:hover:bg-gray-800"
+                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                           >
                             Likes
                           </button>
@@ -1150,7 +1150,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                               setShowMoreDropdown(false)
                               router.push(`/${profile?.username}/reviews`)
                             }}
-                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 dark:hover:bg-gray-800"
+                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                           >
                             Reviews given
                           </button>
@@ -1159,7 +1159,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                               setShowMoreDropdown(false)
                               router.push(`/${profile?.username}/manage-sections`)
                             }}
-                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 dark:hover:bg-gray-800"
+                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                           >
                             Manage sections
                           </button>
@@ -1169,7 +1169,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                               setShowMoreDropdown(false)
                               setActiveTab("videos")
                             }}
-                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 dark:hover:bg-gray-800 sm:hidden"
+                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 sm:hidden"
                           >
                             Videos
                           </button>
@@ -1179,7 +1179,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                               setShowMoreDropdown(false)
                               setActiveTab("groups")
                             }}
-                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 dark:hover:bg-gray-800 md:hidden"
+                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 md:hidden"
                           >
                             Groups
                           </button>
@@ -1188,7 +1188,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     )}
                   </div>
                 </TabsList>
-                <button className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full border border-gray-300 dark:border-gray-600">
+                <button className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md border border-gray-300 dark:border-gray-600 transition-colors">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="20"
