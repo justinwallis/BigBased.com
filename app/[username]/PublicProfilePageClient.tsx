@@ -1172,7 +1172,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
           {/* Main Content */}
           <div className="py-4 px-4">
-            <div className="grid grid-cols-1 min-[900px]:grid-cols-[490px_1fr] gap-4 justify-items-center">
+            <div className="grid grid-cols-1 min-[900px]:grid-cols-[minmax(300px,490px)_1fr] gap-4 justify-items-center">
               {/* Left Sidebar - Intro */}
               <div className="space-y-4 max-w-[660px] min-[900px]:max-w-[490px] w-full">
                 {/* Intro Card */}
