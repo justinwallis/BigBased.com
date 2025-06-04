@@ -353,7 +353,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               <button
                 onClick={() => setIsCoverDialogOpen(true)}
                 disabled={isUploading}
-                className="absolute bottom-4 right-4 bg-gray-800/90 dark:bg-white/90 text-white dark:text-gray-800 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5 hover:bg-gray-900 dark:hover:bg-white transition-colors disabled:opacity-50 cursor-pointer"
+                className="absolute bottom-4 right-4 bg-gray-800/90 dark:bg-white/90 text-white dark:text-gray-800 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5 hover:bg-gray-900 dark:hover:bg-white transition-colors disabled:opacity-50"
               >
                 <Image src="/camera.png" alt="Camera" width={16} height={16} className="invert dark:invert-0" />
                 <span className="hidden md:inline">Edit cover photo</span>
@@ -364,7 +364,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
             <div className="relative">
               {/* Large screens: Horizontal layout with 15% overlap - Facebook style */}
               <div className="hidden lg:block">
-                <div className="pt-4 pb-3 px-4">
+                <div className="pt-4 pb-3 px-4 flex items-end justify-between">
                   <div className="flex items-end space-x-6">
                     {/* Profile Picture - 15% overlap on large screens */}
                     <div className="relative -mt-44">
@@ -489,60 +489,62 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
               {/* Medium screens: Horizontal layout with 0% overlap */}
               <div className="hidden md:block lg:hidden">
-                <div className="pt-4 pb-4 px-4">
-                  {/* Profile Picture - 0% overlap on medium screens */}
-                  <div className="relative">
+                <div className="pt-4 pb-4 px-6 flex items-start justify-between">
+                  <div className="flex items-start space-x-4">
+                    {/* Profile Picture - 0% overlap on medium screens */}
                     <div className="relative">
-                      <Avatar className="h-48 w-48 border-4 border-white dark:border-gray-900 shadow-lg">
-                        <AvatarImage
-                          src={profile?.avatar_url || "/placeholder.svg"}
-                          alt={profile?.full_name || profile?.username}
-                        />
-                        <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                          {getInitials(profile?.full_name || profile?.username || "U")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <button
-                        onClick={() => setIsAvatarDialogOpen(true)}
-                        disabled={isUploading}
-                        className="absolute bottom-2 right-2 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
-                      >
-                        <Image src="/camera.png" alt="Camera" width={14} height={14} className="dark:invert" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Name and Info */}
-                  <div className="pt-2">
-                    <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                      {profile?.full_name || profile?.username}
-                      {profile?.personal_info?.nickname && (
-                        <span className="text-xl text-gray-600 dark:text-gray-400 ml-2 font-normal">
-                          ({profile.personal_info.nickname})
-                        </span>
-                      )}
-                    </h1>
-                    <div className="flex items-center mt-1">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">@{profile?.username}</p>
-                      <span className="mx-2 text-gray-400">•</span>
-                      <Badge className="bg-green-500/80 text-white border-0">Active Member</Badge>
-                    </div>
-                    <div className="flex items-center mt-2 text-sm text-gray-600 dark:text-gray-400">
-                      <span className="mr-4 font-medium">0 followers</span>
-                      <span className="font-medium">0 following</span>
+                      <div className="relative">
+                        <Avatar className="h-48 w-48 border-4 border-white dark:border-gray-900 shadow-lg">
+                          <AvatarImage
+                            src={profile?.avatar_url || "/placeholder.svg"}
+                            alt={profile?.full_name || profile?.username}
+                          />
+                          <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                            {getInitials(profile?.full_name || profile?.username || "U")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <button
+                          onClick={() => setIsAvatarDialogOpen(true)}
+                          disabled={isUploading}
+                          className="absolute bottom-2 right-2 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                        >
+                          <Image src="/camera.png" alt="Camera" width={14} height={14} className="dark:invert" />
+                        </button>
+                      </div>
                     </div>
 
-                    {/* Friend avatars */}
-                    <div className="flex items-center mt-3">
-                      <div className="flex -space-x-2 mr-2">
-                        {[1, 2, 3, 4, 5].map((i) => (
-                          <div
-                            key={i}
-                            className="w-7 h-7 rounded-full border-2 border-white dark:border-gray-900 bg-gray-200 dark:bg-gray-700 overflow-hidden"
-                          >
-                            <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-500"></div>
-                          </div>
-                        ))}
+                    {/* Name and Info */}
+                    <div className="pt-2">
+                      <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                        {profile?.full_name || profile?.username}
+                        {profile?.personal_info?.nickname && (
+                          <span className="text-xl text-gray-600 dark:text-gray-400 ml-2">
+                            ({profile.personal_info.nickname})
+                          </span>
+                        )}
+                      </h1>
+                      <div className="flex items-center mt-1">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">@{profile?.username}</p>
+                        <span className="mx-2 text-gray-400">•</span>
+                        <Badge className="bg-green-500/80 text-white border-0">Active Member</Badge>
+                      </div>
+                      <div className="flex items-center mt-2 text-sm text-gray-600 dark:text-gray-400">
+                        <span className="mr-4 font-medium">0 followers</span>
+                        <span className="font-medium">0 following</span>
+                      </div>
+
+                      {/* Friend avatars */}
+                      <div className="flex items-center mt-3">
+                        <div className="flex -space-x-2 mr-2">
+                          {[1, 2, 3, 4, 5].map((i) => (
+                            <div
+                              key={i}
+                              className="w-7 h-7 rounded-full border-2 border-white dark:border-gray-900 bg-gray-200 dark:bg-gray-700 overflow-hidden"
+                            >
+                              <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-500"></div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -994,19 +996,19 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     </TabsTrigger>
                     <TabsTrigger
                       value="photos"
-                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden min-[450px]:flex"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
                     >
                       Photos
                     </TabsTrigger>
                     <TabsTrigger
                       value="videos"
-                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden min-[560px]:flex"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden min-[625px]:flex"
                     >
                       Videos
                     </TabsTrigger>
                     <TabsTrigger
                       value="groups"
-                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden min-[650px]:flex"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden min-[575px]:flex"
                     >
                       Groups
                     </TabsTrigger>
@@ -1117,7 +1119,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                                 setShowMoreDropdown(false)
                                 setActiveTab("videos")
                               }}
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 max-[560px]:flex hidden"
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 max-[625px]:flex hidden"
                             >
                               Videos
                             </button>
@@ -1127,19 +1129,9 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                                 setShowMoreDropdown(false)
                                 setActiveTab("groups")
                               }}
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 max-[650px]:flex hidden"
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 max-[575px]:flex hidden"
                             >
                               Groups
-                            </button>
-                            {/* Show Photos in dropdown on smallest screens */}
-                            <button
-                              onClick={() => {
-                                setShowMoreDropdown(false)
-                                setActiveTab("photos")
-                              }}
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 max-[450px]:flex hidden"
-                            >
-                              Photos
                             </button>
                           </div>
                         </div>
