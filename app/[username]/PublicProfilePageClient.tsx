@@ -1067,10 +1067,10 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   <div className="relative">
                     <button
                       onClick={() => setShowMoreDropdown(!showMoreDropdown)}
-                      className={`h-[50px] rounded-none px-4 py-3 text-sm font-medium flex items-center justify-center space-x-1 transition-colors border-b-[3px] border-transparent hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md ${
+                      className={`bg-transparent border-0 border-b-[3px] border-transparent rounded-none px-4 py-3 font-medium flex items-center justify-center space-x-1 transition-all duration-200 ${
                         showMoreDropdown
-                          ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
-                          : "text-gray-600 dark:text-gray-400"
+                          ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-md"
+                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md"
                       }`}
                     >
                       <span>More</span>
@@ -1188,7 +1188,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     )}
                   </div>
                 </TabsList>
-                <button className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md border border-gray-300 dark:border-gray-600 transition-colors">
+                <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-2 rounded-md font-medium flex items-center justify-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="20"
