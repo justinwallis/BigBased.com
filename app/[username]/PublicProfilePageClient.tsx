@@ -354,7 +354,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               <button
                 onClick={() => setIsCoverDialogOpen(true)}
                 disabled={isUploading}
-                className="absolute bottom-4 right-4 bg-gray-800/90 dark:bg-white/90 text-white dark:text-gray-800 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5 hover:bg-gray-900 dark:hover:bg-white transition-colors disabled:opacity-50"
+                className="absolute bottom-4 right-4 bg-gray-800/90 dark:bg-white/90 text-white dark:text-gray-800 px-3 h-[35px] rounded-md text-sm font-medium flex items-center gap-1.5 hover:bg-gray-900 dark:hover:bg-white transition-colors disabled:opacity-50"
               >
                 <Image src="/camera.png" alt="Camera" width={16} height={16} className="invert dark:invert-0" />
                 <span className="hidden md:inline">Edit cover photo</span>
@@ -429,7 +429,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   <div className="flex items-center justify-end self-center">
                     <div className="flex items-center space-x-2">
                       <Link href="/profile">
-                        <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5">
+                        <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center gap-1.5">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="14"
@@ -447,7 +447,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                           Edit
                         </button>
                       </Link>
-                      <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5 whitespace-nowrap">
+                      <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center gap-1.5 whitespace-nowrap">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           width="14"
@@ -466,7 +466,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                       </button>
                       <button
                         onClick={() => setShowFriendsSection(!showFriendsSection)}
-                        className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md w-12 flex items-center justify-center"
+                        className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md w-[35px] h-[35px] flex items-center justify-center p-2"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -554,7 +554,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   <div className="flex items-center justify-end self-center">
                     <div className="flex items-center space-x-2">
                       <Link href="/profile">
-                        <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-md font-medium flex items-center gap-1.5 text-sm">
+                        <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center gap-1.5">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="14"
@@ -572,7 +572,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                           Edit
                         </button>
                       </Link>
-                      <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-md font-medium flex items-center gap-1.5 text-sm whitespace-nowrap">
+                      <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center gap-1.5 whitespace-nowrap">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           width="14"
@@ -591,7 +591,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                       </button>
                       <button
                         onClick={() => setShowFriendsSection(!showFriendsSection)}
-                        className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md w-12 flex items-center justify-center"
+                        className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md w-[35px] h-[35px] flex items-center justify-center p-2"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -676,7 +676,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     <div className="flex flex-col space-y-2 mt-4">
                       <div className="flex space-x-2">
                         <Link href="/profile" className="flex-1">
-                          <button className="w-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-2 rounded-md font-medium flex items-center justify-center gap-1.5 text-sm">
+                          <button className="w-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center justify-center gap-1.5">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               width="14"
@@ -694,7 +694,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                             Edit
                           </button>
                         </Link>
-                        <button className="flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-2 rounded-md font-medium flex items-center justify-center gap-1.5 text-sm">
+                        <button className="flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center justify-center gap-1.5">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="14"
@@ -713,7 +713,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                         </button>
                         <button
                           onClick={() => setShowFriendsSection(!showFriendsSection)}
-                          className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md w-12 flex items-center justify-center"
+                          className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md w-[35px] h-[35px] flex items-center justify-center p-2"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -1149,7 +1149,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                       )}
                     </div>
                   </TabsList>
-                  <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-md font-medium flex items-center justify-center">
+                  <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md font-medium flex items-center justify-center">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="20"
@@ -1281,7 +1281,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
                   {/* Edit Bio Button */}
                   <Link href="/profile">
-                    <button className="w-full mt-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md font-medium">
+                    <button className="w-full h-[35px] bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md font-medium">
                       Edit bio
                     </button>
                   </Link>
@@ -1465,10 +1465,10 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
                       <div className="flex justify-between items-center mb-4">
                         <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Posts</h3>
                         <div className="flex items-center">
-                          <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-1 rounded-md text-sm font-medium mr-2">
+                          <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium mr-2">
                             Filters
                           </button>
-                          <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-1 rounded-md text-sm font-medium">
+                          <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium">
                             Manage posts
                           </button>
                         </div>
