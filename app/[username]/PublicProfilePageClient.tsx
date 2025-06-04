@@ -367,8 +367,8 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               <div className="hidden lg:block">
                 <div className="pt-4 pb-3 px-4 flex items-end justify-between">
                   <div className="flex items-end space-x-6">
-                    {/* Profile Picture - 15% overlap on large screens */}
-                    <div className="relative -mt-49">
+                    {/* Profile Picture - 25px overlap on large screens */}
+                    <div className="relative -mt-[25px]">
                       <div className="relative">
                         <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
                           <AvatarImage
@@ -490,10 +490,10 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
               {/* Medium screens: Horizontal layout with 0% overlap */}
               <div className="hidden md:block lg:hidden">
-                <div className="pt-4 pb-4 px-6 flex items-start justify-between">
+                <div className="pt-[5px] pb-4 px-6 flex items-start justify-between">
                   <div className="flex items-start space-x-4">
-                    {/* Profile Picture - 0% overlap on medium screens */}
-                    <div className="relative -mt-5">
+                    {/* Profile Picture - 0% overlap on medium screens, 5px below cover */}
+                    <div className="relative">
                       <div className="relative">
                         <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
                           <AvatarImage
@@ -617,7 +617,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               <div className="block md:hidden">
                 <div className="pt-4 pb-4 px-4">
                   {/* Profile Picture - 50% overlap on small screens, centered, larger size */}
-                  <div className="flex justify-center -mt-25 mb-4">
+                  <div className="flex justify-center -mt-[85px] mb-4">
                     <div className="relative">
                       <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
                         <AvatarImage
