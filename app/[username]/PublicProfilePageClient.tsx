@@ -353,7 +353,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               <button
                 onClick={() => setIsCoverDialogOpen(true)}
                 disabled={isUploading}
-                className="absolute bottom-4 right-8 bg-gray-800/90 dark:bg-white/90 text-white dark:text-gray-800 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5 hover:bg-gray-900 dark:hover:bg-white transition-colors disabled:opacity-50"
+                className="absolute bottom-4 right-4 bg-gray-800/90 dark:bg-white/90 text-white dark:text-gray-800 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5 hover:bg-gray-900 dark:hover:bg-white transition-colors disabled:opacity-50"
               >
                 <Image src="/camera.png" alt="Camera" width={16} height={16} className="invert dark:invert-0" />
                 <span className="hidden md:inline">Edit cover photo</span>
@@ -364,7 +364,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
             <div className="relative">
               {/* Large screens: Horizontal layout with 15% overlap - Facebook style */}
               <div className="hidden lg:block">
-                <div className="pt-4 pb-3 px-8 flex items-end justify-between">
+                <div className="pt-4 pb-3 px-4 flex items-end justify-between">
                   <div className="flex items-end space-x-6">
                     {/* Profile Picture - 15% overlap on large screens */}
                     <div className="relative -mt-44">
@@ -978,13 +978,13 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
           )}
 
           {/* Divider */}
-          <div className="px-4 lg:px-8">
+          <div className="px-4">
             <div className="h-px bg-gray-300 dark:bg-gray-700 w-full"></div>
           </div>
 
           {/* Navigation Tabs */}
           <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 pt-[4px]">
-            <div className="px-4 lg:px-8">
+            <div className="px-4">
               <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
                 <div className="flex items-center justify-between">
                   <TabsList className="h-12 bg-transparent border-0 p-0 space-x-1 justify-start">
