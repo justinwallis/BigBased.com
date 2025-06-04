@@ -353,7 +353,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               <button
                 onClick={() => setIsCoverDialogOpen(true)}
                 disabled={isUploading}
-                className="absolute bottom-4 right-4 bg-gray-800/90 dark:bg-white/90 text-white dark:text-gray-800 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5 hover:bg-gray-900 dark:hover:bg-white transition-colors disabled:opacity-50"
+                className="absolute bottom-4 right-4 bg-gray-800/90 dark:bg-white/90 text-white dark:text-gray-800 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5 hover:bg-gray-900 dark:hover:bg-white transition-colors disabled:opacity-50 z-10"
               >
                 <Image src="/camera.png" alt="Camera" width={16} height={16} className="invert dark:invert-0" />
                 <span className="hidden md:inline">Edit cover photo</span>
@@ -383,13 +383,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                           disabled={isUploading}
                           className="absolute bottom-3 right-3 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
                         >
-                          <Image
-                            src="/camera.png"
-                            alt="Camera"
-                            width={16}
-                            height={16}
-                            className="invert dark:invert-0"
-                          />
+                          <Image src="/camera.png" alt="Camera" width={16} height={16} />
                         </button>
                       </div>
                     </div>
@@ -471,7 +465,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                       </button>
                       <button
                         onClick={() => setShowFriendsSection(!showFriendsSection)}
-                        className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md w-12"
+                        className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md w-12 flex items-center justify-center"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -495,7 +489,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
               {/* Medium screens: Horizontal layout with 0% overlap */}
               <div className="hidden md:block lg:hidden">
-                <div className="pt-4 pb-4 px-6 flex items-start justify-between">
+                <div className="pt-4 pb-4 px-4 flex items-start justify-between">
                   <div className="flex items-start space-x-4">
                     {/* Profile Picture - 0% overlap on medium screens */}
                     <div className="relative">
@@ -514,13 +508,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                           disabled={isUploading}
                           className="absolute bottom-2 right-2 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
                         >
-                          <Image
-                            src="/camera.png"
-                            alt="Camera"
-                            width={14}
-                            height={14}
-                            className="invert dark:invert-0"
-                          />
+                          <Image src="/camera.png" alt="Camera" width={14} height={14} />
                         </button>
                       </div>
                     </div>
@@ -602,7 +590,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                       </button>
                       <button
                         onClick={() => setShowFriendsSection(!showFriendsSection)}
-                        className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md w-12"
+                        className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md w-12 flex items-center justify-center"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -644,7 +632,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                         disabled={isUploading}
                         className="absolute bottom-2 right-2 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
                       >
-                        <Image src="/camera.png" alt="Camera" width={14} height={14} className="invert dark:invert-0" />
+                        <Image src="/camera.png" alt="Camera" width={14} height={14} />
                       </button>
                     </div>
                   </div>
@@ -724,7 +712,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                         </button>
                         <button
                           onClick={() => setShowFriendsSection(!showFriendsSection)}
-                          className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md w-12"
+                          className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-2 rounded-md w-12 flex items-center justify-center"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -987,40 +975,40 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
             <div className="px-4">
               <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
                 <div className="flex items-center justify-between">
-                  <TabsList className="h-12 bg-transparent border-0 p-0 space-x-1 justify-start">
+                  <TabsList className="h-12 bg-transparent border-0 p-0 justify-start">
                     <TabsTrigger
                       value="posts"
-                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-3 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
                     >
                       Posts
                     </TabsTrigger>
                     <TabsTrigger
                       value="about"
-                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-3 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
                     >
                       About
                     </TabsTrigger>
                     <TabsTrigger
                       value="reels"
-                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-3 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
                     >
                       Reels
                     </TabsTrigger>
                     <TabsTrigger
                       value="photos"
-                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-3 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
                     >
                       Photos
                     </TabsTrigger>
                     <TabsTrigger
                       value="videos"
-                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden sm:flex"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-3 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden sm:flex"
                     >
                       Videos
                     </TabsTrigger>
                     <TabsTrigger
                       value="groups"
-                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden md:flex"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-3 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden md:flex"
                     >
                       Groups
                     </TabsTrigger>
@@ -1029,7 +1017,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     <div className="relative">
                       <button
                         onClick={() => setShowMoreDropdown(!showMoreDropdown)}
-                        className={`bg-transparent border-0 border-b-[3px] border-transparent rounded-none px-4 py-3 text-sm font-medium flex items-center justify-center space-x-1 transition-all duration-200 ${
+                        className={`bg-transparent border-0 border-b-[3px] border-transparent rounded-none px-3 py-3 text-sm font-medium flex items-center justify-center space-x-1 transition-all duration-200 ${
                           showMoreDropdown
                             ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-md"
                             : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md"
