@@ -342,9 +342,10 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
           {/* Cover Photo */}
           <div className="relative">
             <div
-              className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative md:rounded-b-lg overflow-hidden"
+              className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative md:rounded-b-lg overflow-hidden mx-auto"
               style={{
                 height: "clamp(200px, 25vw + 75px, 455px)",
+                maxWidth: "1250px",
                 backgroundImage: profile?.banner_url ? `url(${profile.banner_url})` : undefined,
                 backgroundSize: "cover",
                 backgroundPosition: profile?.banner_position || "center",
@@ -367,8 +368,8 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               <div className="hidden lg:block">
                 <div className="pt-4 pb-3 px-4 flex items-end justify-between">
                   <div className="flex items-end space-x-6">
-                    {/* Profile Picture - 25px overlap on large screens */}
-                    <div className="relative -mt-[25px]">
+                    {/* Profile Picture - 15% overlap on large screens */}
+                    <div className="relative -mt-[45px]">
                       <div className="relative">
                         <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
                           <AvatarImage
@@ -490,9 +491,9 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
               {/* Medium screens: Horizontal layout with 0% overlap */}
               <div className="hidden md:block lg:hidden">
-                <div className="pt-[5px] pb-4 px-6 flex items-start justify-between">
+                <div className="pt-[-15px] pb-4 px-6 flex items-start justify-between">
                   <div className="flex items-start space-x-4">
-                    {/* Profile Picture - 0% overlap on medium screens, 5px below cover */}
+                    {/* Profile Picture - 0% overlap on medium screens, 5px under cover */}
                     <div className="relative">
                       <div className="relative">
                         <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
@@ -500,26 +501,26 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                             src={profile?.avatar_url || "/placeholder.svg"}
                             alt={profile?.full_name || profile?.username}
                           />
-                          <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                          <AvatarFallback className="text-5xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
                             {getInitials(profile?.full_name || profile?.username || "U")}
                           </AvatarFallback>
                         </Avatar>
                         <button
                           onClick={() => setIsAvatarDialogOpen(true)}
                           disabled={isUploading}
-                          className="absolute bottom-2 right-2 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                          className="absolute bottom-3 right-3 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
                         >
-                          <Image src="/camera.png" alt="Camera" width={14} height={14} className="dark:invert" />
+                          <Image src="/camera.png" alt="Camera" width={16} height={16} className="dark:invert" />
                         </button>
                       </div>
                     </div>
 
                     {/* Name and Info */}
                     <div className="pt-0">
-                      <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                         {profile?.full_name || profile?.username}
                         {profile?.personal_info?.nickname && (
-                          <span className="text-xl text-gray-600 dark:text-gray-400 ml-2">
+                          <span className="text-2xl text-gray-600 dark:text-gray-400 ml-2 font-normal">
                             ({profile.personal_info.nickname})
                           </span>
                         )}
@@ -617,7 +618,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               <div className="block md:hidden">
                 <div className="pt-4 pb-4 px-4">
                   {/* Profile Picture - 50% overlap on small screens, centered, larger size */}
-                  <div className="flex justify-center -mt-[85px] mb-4">
+                  <div className="flex justify-center -mt-[105px] mb-4">
                     <div className="relative">
                       <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
                         <AvatarImage
@@ -631,19 +632,19 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                       <button
                         onClick={() => setIsAvatarDialogOpen(true)}
                         disabled={isUploading}
-                        className="absolute bottom-2 right-2 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                        className="absolute bottom-3 right-3 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
                       >
-                        <Image src="/camera.png" alt="Camera" width={14} height={14} className="dark:invert" />
+                        <Image src="/camera.png" alt="Camera" width={16} height={16} className="dark:invert" />
                       </button>
                     </div>
                   </div>
 
                   {/* Name and Info - Centered */}
                   <div className="text-center">
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                       {profile?.full_name || profile?.username}
                       {profile?.personal_info?.nickname && (
-                        <span className="text-2xl text-gray-500 dark:text-gray-500 font-normal ml-2">
+                        <span className="text-2xl text-gray-600 dark:text-gray-400 ml-2 font-normal">
                           ({profile.personal_info.nickname})
                         </span>
                       )}
