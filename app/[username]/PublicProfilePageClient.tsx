@@ -342,8 +342,9 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
           {/* Cover Photo */}
           <div className="relative">
             <div
-              className="h-[200px] md:h-[446px] w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative md:rounded-b-lg overflow-hidden"
+              className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative md:rounded-b-lg overflow-hidden"
               style={{
+                height: "clamp(200px, 25vw + 150px, 455px)",
                 backgroundImage: profile?.banner_url ? `url(${profile.banner_url})` : undefined,
                 backgroundSize: "cover",
                 backgroundPosition: profile?.banner_position || "center",
