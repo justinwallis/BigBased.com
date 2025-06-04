@@ -362,7 +362,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
       </div>
 
       {/* Main Content Container - Constrained to 1150px */}
-      <div className="w-full flex justify-center mt-[70px]">
+      <div className="w-full flex justify-center">
         <div className="max-w-[1150px] w-full">
           {/* Profile Info - Responsive Layout */}
           <div className="relative">
@@ -742,7 +742,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
           {/* People You May Know Section */}
           {showFriendsSection && (
-            <div className="pb-4 px-4">
+            <div className="pb-4 px-4 mt-[70px]">
               <div className="border border-gray-200/50 dark:border-gray-700/50 rounded-lg px-4 py-2">
                 <div className="flex items-center justify-between mb-2">
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white">People You May Know</h2>
@@ -969,7 +969,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
           )}
 
           {/* Divider */}
-          <div className="px-4">
+          <div className={`px-4 ${showFriendsSection ? "" : "mt-[70px]"}`}>
             <div className="h-px bg-gray-300 dark:bg-gray-700 w-full"></div>
           </div>
 
