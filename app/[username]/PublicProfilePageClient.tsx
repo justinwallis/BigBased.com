@@ -393,7 +393,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   </div>
 
                   {/* Name and Info - positioned to the right of profile picture */}
-                  <div className="pb-2">
+                  <div className="pb-2 -mt-[10px]">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                       {profile?.full_name || profile?.username}
                       {profile?.personal_info?.nickname && (
@@ -493,7 +493,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
             {/* Medium screens: Horizontal layout with 0% overlap */}
             <div className="hidden md:block lg:hidden">
-              <div className="pt-[5px] pb-4 px-6 flex items-start justify-between">
+              <div className="pt-[5px] pb-[-1px] px-6 flex items-start justify-between">
                 <div className="flex items-start space-x-4">
                   {/* Profile Picture - 0% overlap on medium screens, 5px under cover */}
                   <div className="relative">
@@ -518,7 +518,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   </div>
 
                   {/* Name and Info */}
-                  <div className="pt-0">
+                  <div className="pt-[5px]">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                       {profile?.full_name || profile?.username}
                       {profile?.personal_info?.nickname && (
