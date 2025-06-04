@@ -371,7 +371,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               <div className="pt-4 pb-3 px-4 flex items-end justify-between">
                 <div className="flex items-end space-x-6">
                   {/* Profile Picture - 15% overlap on large screens */}
-                  <div className="relative -mt-[45px]">
+                  <div className="relative -mt-[50px]">
                     <div className="relative">
                       <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
                         <AvatarImage
@@ -493,7 +493,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
             {/* Medium screens: Horizontal layout with 0% overlap */}
             <div className="hidden md:block lg:hidden">
-              <div className="pt-[-15px] pb-4 px-6 flex items-start justify-between">
+              <div className="pt-[5px] pb-4 px-6 flex items-start justify-between">
                 <div className="flex items-start space-x-4">
                   {/* Profile Picture - 0% overlap on medium screens, 5px under cover */}
                   <div className="relative">
