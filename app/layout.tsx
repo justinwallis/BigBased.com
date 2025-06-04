@@ -6,7 +6,6 @@ import { Toaster } from "@/components/ui/toast"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/contexts/auth-context"
 import ClientLayout from "./client-layout"
-import { CombinedHeaderProvider } from "@/contexts/combined-header-context"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -25,12 +24,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <CombinedHeaderProvider>
-            <AuthProvider>
-              <ClientLayout>{children}</ClientLayout>
-              <Toaster />
-            </AuthProvider>
-          </CombinedHeaderProvider>
+          <AuthProvider>
+            <ClientLayout>{children}</ClientLayout>
+            <Toaster />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -213,7 +213,7 @@ export function SiteHeader() {
           visible ? "translate-y-0" : "-translate-y-full",
         )}
       >
-        <div className="container flex h-16 items-center justify-between">
+        <div className="container flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2">
               <div className="relative w-8 h-8">
@@ -285,7 +285,7 @@ export function SiteHeader() {
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="md:hidden p-4 border-t bg-background">
+          <div className="md:hidden px-4 py-4 border-t bg-background">
             <nav className="flex flex-col space-y-4">
               {navItems.map((item) => (
                 <Link
