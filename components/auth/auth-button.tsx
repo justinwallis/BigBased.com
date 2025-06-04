@@ -134,9 +134,9 @@ export default function AuthButton() {
                 {user.email ? initials : <UserCircle className="h-5 w-5" />}
               </AvatarFallback>
             </Avatar>
-            {/* Chevron overlay positioned on bottom right, overlapping halfway - made slightly bigger */}
-            <div className="absolute -bottom-0.5 -right-0.5 bg-white dark:bg-gray-800 rounded-full p-0.5 border border-gray-200 dark:border-gray-600 scale-75">
-              <ChevronDown className="h-3 w-3 text-gray-600 dark:text-gray-300" />
+            {/* Chevron overlay positioned on bottom right, overlapping halfway */}
+            <div className="absolute -bottom-0.5 -right-0.5 bg-white dark:bg-gray-800 rounded-full p-0.5 border border-gray-200 dark:border-gray-600 scale-50">
+              <ChevronDown className="h-2 w-2 text-gray-600 dark:text-gray-300" />
             </div>
           </div>
         </DropdownMenuTrigger>
