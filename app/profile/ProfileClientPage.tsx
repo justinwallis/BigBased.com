@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -19,14 +19,29 @@ import { User, Settings, Shield, CreditCard, Bell, Activity, Edit3, Save, X } fr
 export default function ProfileClientPage() {
   const { user } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const [profileData, setProfileData] = useState({
-    displayName: user?.displayName || "",
-    username: user?.username || "",
-    email: user?.email || "",
-    bio: user?.bio || "",
-    location: user?.location || "",
-    website: user?.website || "",
+    displayName: "",
+    username: "",
+    email: "",
+    bio: "",
+    location: "",
+    website: "",
   })
+
+  useEffect(() => {
+    setMounted(true)
+    if (user) {
+      setProfileData({
+        displayName: user.displayName || "",
+        username: user.username || "",
+        email: user.email || "",
+        bio: user.bio || "",
+        location: user.location || "",
+        website: user.website || "",
+      })
+    }
+  }, [user])
 
   const handleSave = () => {
     // Save profile data logic here
@@ -35,7 +50,62 @@ export default function ProfileClientPage() {
 
   const handleCancel = () => {
     // Reset to original data
+    if (user) {
+      setProfileData({
+        displayName: user.displayName || "",
+        username: user.username || "",
+        email: user.email || "",
+        bio: user.bio || "",
+        location: user.location || "",
+        website: user.website || "",
+      })
+    }
     setIsEditing(false)
+  }
+
+  // Show loading state during hydration
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto py-6 space-y-6">
+          <Card>
+            <CardContent className="p-6">
+              <div className="animate-pulse space-y-4">
+                <div className="h-32 bg-muted rounded-lg"></div>
+                <div className="flex items-center gap-4">
+                  <div className="h-24 w-24 bg-muted rounded-full"></div>
+                  <div className="space-y-2">
+                    <div className="h-6 w-48 bg-muted rounded"></div>
+                    <div className="h-4 w-32 bg-muted rounded"></div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  // Show login prompt if no user
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto py-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Profile Access Required</CardTitle>
+              <CardDescription>You need to be logged in to view your profile.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild>
+                <Link href="/auth/sign-in">Sign In</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -54,9 +124,9 @@ export default function ProfileClientPage() {
               <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-16 relative z-10">
                 <div className="relative">
                   <Avatar className="h-24 w-24 border-4 border-background">
-                    <AvatarImage src={user?.avatar || "/placeholder.svg"} />
+                    <AvatarImage src={user.avatar || "/placeholder.svg"} />
                     <AvatarFallback className="text-lg">
-                      {user?.displayName?.charAt(0) || user?.username?.charAt(0) || "U"}
+                      {user.displayName?.charAt(0) || user.username?.charAt(0) || "U"}
                     </AvatarFallback>
                   </Avatar>
                   <AvatarUpload />
@@ -64,11 +134,11 @@ export default function ProfileClientPage() {
 
                 <div className="flex-1 space-y-2">
                   <div className="flex items-center gap-2">
-                    <h1 className="text-2xl font-bold">{user?.displayName || user?.username}</h1>
-                    <Badge variant="secondary">{user?.subscriptionTier || "Free"}</Badge>
+                    <h1 className="text-2xl font-bold">{user.displayName || user.username}</h1>
+                    <Badge variant="secondary">{user.subscriptionTier || "Free"}</Badge>
                   </div>
-                  <p className="text-muted-foreground">@{user?.username}</p>
-                  {user?.bio && <p className="text-sm">{user.bio}</p>}
+                  <p className="text-muted-foreground">@{user.username}</p>
+                  {user.bio && <p className="text-sm">{user.bio}</p>}
                 </div>
 
                 <Button
