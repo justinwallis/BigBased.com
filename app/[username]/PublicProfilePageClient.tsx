@@ -32,15 +32,17 @@ interface PublicProfileData {
   social_links: any
   location_info: any
   personal_info: any
+  personal_details: any
+  contact_info: any
   created_at: string
   updated_at: string
 }
 
-export function PublicProfilePageClient() {
+export function PublicProfilePageClient({ profile: initialProfile }: { profile?: PublicProfileData }) {
   const params = useParams()
   const username = params.username as string
-  const [profile, setProfile] = useState<PublicProfileData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [profile, setProfile] = useState<PublicProfileData | null>(initialProfile || null)
+  const [isLoading, setIsLoading] = useState(!initialProfile)
   const [error, setError] = useState("")
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("posts")
@@ -48,20 +50,17 @@ export function PublicProfilePageClient() {
   const [showLeftArrow, setShowLeftArrow] = useState(false)
   const [showRightArrow, setShowRightArrow] = useState(true)
   const [showMoreDropdown, setShowMoreDropdown] = useState(false)
-
-  // Add these state variables inside the component, after the existing useState declarations
   const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false)
   const [isCoverDialogOpen, setIsCoverDialogOpen] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const containerRef = useRef<HTMLElement | null>(null)
-  const [container, setContainer] = useState<HTMLElement | null>(null)
 
   useEffect(() => {
-    if (username) {
+    if (!initialProfile && username) {
       loadPublicProfile()
     }
-  }, [username])
+  }, [username, initialProfile])
 
   const loadPublicProfile = async () => {
     try {
@@ -198,43 +197,6 @@ export function PublicProfilePageClient() {
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen profile-page-bg">
-        <div className="container mx-auto py-10">
-          <Card className="profile-card-bg">
-            <CardHeader>
-              <CardTitle>Loading Profile...</CardTitle>
-              <CardDescription>Please wait while we load the profile information.</CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
-      </div>
-    )
-  }
-
-  if (error || !profile) {
-    return (
-      <div className="min-h-screen profile-page-bg">
-        <div className="container mx-auto py-10">
-          <Card className="profile-card-bg">
-            <CardHeader>
-              <CardTitle>Profile Not Found</CardTitle>
-              <CardDescription>{error || "The requested profile could not be found."}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Link href="/">
-                <Button>Return Home</Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    )
-  }
-
-  const socialLinks = profile?.social_links || {}
-
   // Helper function to get the correct URL for social links
   const getSocialUrl = (platform: string, value: string) => {
     if (!value) return null
@@ -274,6 +236,134 @@ export function PublicProfilePageClient() {
     }
   }
 
+  const handleAvatarUpload = async (file: File) => {
+    setIsUploading(true)
+    setUploadError(null)
+
+    try {
+      const result = await uploadImageClient(file, "avatar")
+      if (result.success) {
+        // Close the dialog first
+        setIsAvatarDialogOpen(false)
+        // Refresh the page to show the new avatar
+        router.refresh()
+      } else {
+        setUploadError(result.error || "Failed to upload avatar")
+      }
+    } catch (error) {
+      setUploadError("An unexpected error occurred")
+      console.error("Avatar upload error:", error)
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const handleCoverUpload = async (file: File) => {
+    setIsUploading(true)
+    setUploadError(null)
+
+    try {
+      const result = await uploadImageClient(file, "banner")
+      if (result.success) {
+        // Close the dialog first
+        setIsCoverDialogOpen(false)
+        // Refresh the page to show the new cover
+        router.refresh()
+      } else {
+        setUploadError(result.error || "Failed to upload cover photo")
+      }
+    } catch (error) {
+      setUploadError("An unexpected error occurred")
+      console.error("Cover upload error:", error)
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const formatBioWithLinks = (text: string) => {
+    if (!text) return ""
+
+    // Regular expression to find URLs
+    const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.[a-zA-Z]{2,}[^\s]*)/gi
+
+    // Split by URL matches and create an array of text and link elements
+    const parts = []
+    let lastIndex = 0
+    let match
+
+    // Create a new regex object each time to reset lastIndex
+    const regex = new RegExp(urlRegex)
+
+    while ((match = regex.exec(text)) !== null) {
+      // Add text before the match
+      if (match.index > lastIndex) {
+        parts.push(text.substring(lastIndex, match.index))
+      }
+
+      // Get the URL and ensure it has a protocol
+      const url = match[0]
+      const href = url.startsWith("http") ? url : `https://${url}`
+
+      // Add the link element
+      parts.push(
+        <a
+          key={match.index}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 dark:text-blue-400 hover:underline"
+        >
+          {url}
+        </a>,
+      )
+
+      lastIndex = match.index + match[0].length
+    }
+
+    // Add any remaining text
+    if (lastIndex < text.length) {
+      parts.push(text.substring(lastIndex))
+    }
+
+    return parts
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen profile-page-bg">
+        <div className="container mx-auto py-10">
+          <Card className="profile-card-bg">
+            <CardHeader>
+              <CardTitle>Loading Profile...</CardTitle>
+              <CardDescription>Please wait while we load the profile information.</CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !profile) {
+    return (
+      <div className="min-h-screen profile-page-bg">
+        <div className="container mx-auto py-10">
+          <Card className="profile-card-bg">
+            <CardHeader>
+              <CardTitle>Profile Not Found</CardTitle>
+              <CardDescription>{error || "The requested profile could not be found."}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link href="/">
+                <Button>Return Home</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  const socialLinks = profile?.social_links || {}
   const socialPlatforms = [
     { key: "x", icon: XIcon, label: "X (Twitter)" },
     { key: "instagram", icon: Instagram, label: "Instagram" },
@@ -323,156 +413,6 @@ export function PublicProfilePageClient() {
     }
 
     return parts.join(" · ")
-  }
-
-  // Add these functions inside the component, before the return statement
-  const handleAvatarUpload = async (file: File) => {
-    setIsUploading(true)
-    setUploadError(null)
-
-    try {
-      const result = await uploadImageClient(file, "avatar")
-      if (result.success) {
-        // Close the dialog first
-        setIsAvatarDialogOpen(false)
-        // Refresh the page to show the new avatar
-        router.refresh()
-      } else {
-        setUploadError(result.error || "Failed to upload avatar")
-      }
-    } catch (error) {
-      setUploadError("An unexpected error occurred")
-      console.error("Avatar upload error:", error)
-    } finally {
-      setIsUploading(false)
-    }
-  }
-
-  const handleCoverUpload = async (file: File) => {
-    setIsUploading(true)
-    setUploadError(null)
-
-    try {
-      const result = await uploadImageClient(file, "banner")
-      if (result.success) {
-        // Close the dialog first
-        setIsCoverDialogOpen(false)
-        // Refresh the page to show the new cover
-        router.refresh()
-      } else {
-        setUploadError(result.error || "Failed to upload cover photo")
-      }
-    } catch (error) {
-      setUploadError("An unexpected error occurred")
-      console.error("Cover upload error:", error)
-    } finally {
-      setIsUploading(false)
-    }
-  }
-
-  // Add these functions inside the component, before the return statement
-  const handleScroll = (e: Event) => {
-    const container = e.target as HTMLElement
-    const scrollLeft = container.scrollLeft
-    const maxScroll = container.scrollWidth - container.clientWidth
-
-    setShowLeftArrow(scrollLeft > 0)
-    setShowRightArrow(scrollRightArrow(container, maxScroll, scrollLeft)) // -1 for rounding issues
-  }
-
-  const scrollRightArrow = (container: HTMLElement, maxScroll: number, scrollLeft: number) => {
-    return scrollLeft < maxScroll - 1
-  }
-
-  const scrollFriendsLeft = () => {
-    if (containerRef.current) {
-      const cardWidth = 175 + 8 // card width + gap
-      const visibleCards = Math.floor(containerRef.current.clientWidth / cardWidth)
-      const scrollAmount = visibleCards * cardWidth
-      containerRef.current.scrollBy({ left: -scrollAmount, behavior: "smooth" })
-    }
-  }
-
-  const scrollFriendsRight = () => {
-    if (containerRef.current) {
-      const cardWidth = 175 + 8 // card width + gap
-      const visibleCards = Math.floor(containerRef.current.clientWidth / cardWidth)
-      const scrollAmount = visibleCards * cardWidth
-      containerRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" })
-    }
-  }
-
-  // Add useEffect to set up scroll listener
-  useEffect(() => {
-    const friendsContainer = document.querySelector(".friends-scroll-container") as HTMLElement
-    setContainer(friendsContainer)
-  }, [])
-
-  useEffect(() => {
-    if (container) {
-      const handleScroll = () => {
-        const scrollLeft = container.scrollLeft
-        const maxScroll = container.scrollWidth - container.clientWidth
-
-        setShowLeftArrow(scrollLeft > 0)
-        setShowRightArrow(scrollRightArrow(container, maxScroll, scrollLeft))
-      }
-
-      container.addEventListener("scroll", handleScroll)
-      handleScroll()
-
-      return () => {
-        container.removeEventListener("scroll", handleScroll)
-      }
-    }
-  }, [container])
-
-  const formatBioWithLinks = (text: string) => {
-    if (!text) return ""
-
-    // Regular expression to find URLs
-    const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.[a-zA-Z]{2,}[^\s]*)/gi
-
-    // Split by URL matches and create an array of text and link elements
-    const parts = []
-    let lastIndex = 0
-    let match
-
-    // Create a new regex object each time to reset lastIndex
-    const regex = new RegExp(urlRegex)
-
-    while ((match = regex.exec(text)) !== null) {
-      // Add text before the match
-      if (match.index > lastIndex) {
-        parts.push(text.substring(lastIndex, match.index))
-      }
-
-      // Get the URL and ensure it has a protocol
-      const url = match[0]
-      const href = url.startsWith("http") ? url : `https://${url}`
-
-      // Add the link element
-      parts.push(
-        <a
-          key={match.index}
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 dark:text-blue-400 hover:underline"
-        >
-          {url}
-        </a>,
-      )
-
-      lastIndex = match.index + match[0].length
-    }
-
-    // Add any remaining text
-    if (lastIndex < text.length) {
-      parts.push(text.substring(lastIndex))
-    }
-
-    return parts
   }
 
   return (

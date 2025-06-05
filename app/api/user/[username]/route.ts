@@ -9,11 +9,17 @@ export async function GET(request: NextRequest, { params }: { params: { username
       return NextResponse.json({ success: false, error: "Username is required" }, { status: 400 })
     }
 
+    console.log(`API: Fetching profile for username: ${username}`)
     const supabase = createServerSupabaseClient(true)
     const { data: profile, error } = await supabase.from("profiles").select("*").eq("username", username).single()
 
     if (error) {
-      console.error("Error fetching profile by username:", error)
+      console.error("API: Error fetching profile by username:", error)
+      return NextResponse.json({ success: false, error: "Profile not found" }, { status: 404 })
+    }
+
+    if (!profile) {
+      console.error("API: Profile not found for username:", username)
       return NextResponse.json({ success: false, error: "Profile not found" }, { status: 404 })
     }
 
@@ -36,9 +42,10 @@ export async function GET(request: NextRequest, { params }: { params: { username
       profile.personal_details = {}
     }
 
+    console.log("API: Successfully fetched profile for:", username)
     return NextResponse.json({ success: true, profile })
   } catch (error) {
-    console.error("Error in user API route:", error)
+    console.error("API: Error in user API route:", error)
     return NextResponse.json({ success: false, error: "An error occurred while fetching the profile" }, { status: 500 })
   }
 }

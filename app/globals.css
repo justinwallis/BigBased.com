@@ -13,7 +13,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -30,7 +30,7 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 221.2 83.2% 53.3%;
 
     --radius: 0.5rem;
   }
@@ -45,7 +45,7 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -62,7 +62,7 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 224.3 76.3% 48%;
   }
 }
 
@@ -75,48 +75,13 @@
   }
 }
 
-/* Custom dark theme for profile pages */
+/* Custom styles for profile page */
 .profile-page-bg {
-  background-color: #111111;
-  color: #ffffff;
+  @apply bg-gray-50 dark:bg-[#111111];
 }
 
 .profile-card-bg {
-  background-color: #1a1a1b;
-  color: #ffffff;
-  border-color: #2d2d2e;
+  @apply bg-white dark:bg-[#1a1a1b];
 }
 
-/* Fix input and button styles for dark theme */
-.profile-page-bg input,
-.profile-page-bg textarea {
-  background-color: #2d2d2e;
-  color: #ffffff;
-  border-color: #444444;
-}
-
-.profile-page-bg button {
-  border-color: #444444;
-}
-
-.profile-page-bg .dark\:bg-gray-700 {
-  background-color: #2d2d2e;
-}
-
-.profile-page-bg .dark\:bg-gray-800 {
-  background-color: #1a1a1b;
-}
-
-.profile-page-bg .dark\:hover\:bg-gray-700:hover {
-  background-color: #3d3d3e;
-}
-
-.profile-page-bg .dark\:hover\:bg-gray-800:hover {
-  background-color: #2a2a2b;
-}
-
-/* Fix tabs styling */
-.profile-page-bg [data-state="active"] {
-  color: #ffffff;
-  border-color: #ffffff;
-}
+/* Add any other custom styles here */
