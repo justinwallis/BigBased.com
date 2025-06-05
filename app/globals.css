@@ -146,20 +146,61 @@ html {
   background-color: #080808 !important;
 }
 
-/* SPECIFIC BUTTON TARGETING - Only target the buttons mentioned in the request */
+/* SPECIFIC BUTTON TARGETING */
 
-/* Profile header buttons: Edit and Add to story */
+/* Cover photo button - Keep it white */
+.dark .absolute.bottom-4.right-4 {
+  background-color: rgba(255, 255, 255, 0.9) !important; /* White background */
+  color: #000000 !important; /* Black text */
+}
+
+.dark .absolute.bottom-4.right-4:hover {
+  background-color: rgba(255, 255, 255, 1) !important; /* Solid white on hover */
+}
+
+/* Profile header buttons: Edit and Add to story - Set to #131313 */
 .dark .flex.items-center.space-x-2 button.bg-gray-200,
 .dark .flex.items-center.space-x-2 a button.bg-gray-200 {
-  background-color: #0a0a0a !important;
+  background-color: #131313 !important;
 }
 
 .dark .flex.items-center.space-x-2 button.bg-gray-200:hover,
 .dark .flex.items-center.space-x-2 a button.bg-gray-200:hover {
-  background-color: #141414 !important;
+  background-color: #1f1f1f !important;
 }
 
-/* Add friend buttons in People You May Know section */
+/* Three dot hamburger menu button - Set to #131313 */
+.dark
+  button.bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\].dark\:hover\:bg-gray-600.text-gray-700.dark\:text-gray-200.rounded-md.w-\[45px\].h-\[35px\] {
+  background-color: #131313 !important;
+}
+
+.dark
+  button.bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\].dark\:hover\:bg-gray-600.text-gray-700.dark\:text-gray-200.rounded-md.w-\[45px\].h-\[35px\]:hover {
+  background-color: #1f1f1f !important;
+}
+
+/* Alternative selector for three dot button */
+.dark .flex.items-center.justify-center.p-2 {
+  background-color: #131313 !important;
+}
+
+.dark .flex.items-center.justify-center.p-2:hover {
+  background-color: #1f1f1f !important;
+}
+
+/* Edit bio button in sidebar - Set to #131313 */
+.dark
+  .w-full.h-\[35px\].bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\].dark\:hover\:bg-gray-600.text-gray-700.dark\:text-gray-200.rounded-md.font-medium {
+  background-color: #131313 !important;
+}
+
+.dark
+  .w-full.h-\[35px\].bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\].dark\:hover\:bg-gray-600.text-gray-700.dark\:text-gray-200.rounded-md.font-medium:hover {
+  background-color: #1f1f1f !important;
+}
+
+/* Add friend buttons - Keep them dark as they were */
 .dark .w-full.bg-blue-600.hover\:bg-blue-700 {
   background-color: #0a0a0a !important;
 }
@@ -168,46 +209,16 @@ html {
   background-color: #141414 !important;
 }
 
-/* Filters and Manage posts buttons */
-.dark .flex.items-center button.bg-gray-200.hover\:bg-gray-300 {
-  background-color: #0a0a0a !important;
-}
-
-.dark .flex.items-center button.bg-gray-200.hover\:bg-gray-300:hover {
-  background-color: #141414 !important;
-}
+/* DON'T target Filters and Manage posts buttons - they're perfect as is */
+/* Leaving them with their current background color that matches the background */
 
 /* Keep the original styling for cover photo button */
-.dark .absolute.bottom-4.right-4 {
-  background-color: rgba(31, 41, 55, 0.9) !important; /* Keep original dark gray */
-}
-
-.dark .absolute.bottom-4.right-4:hover {
-  background-color: rgba(17, 24, 39, 1) !important; /* Keep original hover */
-}
 
 /* Keep hamburger menu button original */
-.dark .px-3.h-\[35px\].rounded-md.font-medium.flex.items-center.justify-center:not(.space-x-2 *) {
-  background-color: #374151 !important; /* Keep original gray */
-}
-
-.dark .px-3.h-\[35px\].rounded-md.font-medium.flex.items-center.justify-center:not(.space-x-2 *):hover {
-  background-color: #4b5563 !important; /* Keep original hover */
-}
 
 /* Preserve sidebar card backgrounds */
-.dark .bg-white.dark\:bg-\[\#0d0d0d\].rounded-lg.shadow {
-  background-color: #0d0d0d !important; /* Keep cards visible */
-}
 
 /* Preserve Edit bio button in sidebar */
-.dark .w-full.h-\[35px\].bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\] {
-  background-color: #374151 !important; /* Keep visible but not too bright */
-}
-
-.dark .w-full.h-\[35px\].bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\]:hover {
-  background-color: #4b5563 !important;
-}
 
 /* Fix any remaining blue/light backgrounds around profile area */
 .dark .bg-gray-50,
