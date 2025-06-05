@@ -88,56 +88,73 @@ body {
   * {
     @apply border-border;
   }
+
+  /* GLOBAL BACKGROUND RESET - FORCE DARK MODE CONSISTENCY */
+  html,
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background;
+    background-color: #0d0d0d !important;
   }
-}
 
-/* CLEAN DARK MODE - ONE BACKGROUND ONLY */
-.dark body {
-  background-color: #0d0d0d !important;
-}
+  /* Force all containers to be transparent or match the body */
+  .dark .min-h-screen,
+  .dark div[class*="bg-"],
+  .dark main,
+  .dark section,
+  .dark nav,
+  .dark header,
+  .dark footer {
+    background-color: transparent !important;
+  }
 
-.dark html {
-  background-color: #0d0d0d !important;
-}
+  /* Only allow backgrounds on specific UI components */
+  .dark .bg-white,
+  .dark .dark\:bg-gray-800,
+  .dark .dark\:bg-gray-900,
+  .dark .bg-bb-lighter,
+  .dark .dark\:bg-bb-lighter,
+  .dark .card,
+  .dark .dropdown-content,
+  .dark .modal-content,
+  .dark .popover-content {
+    background-color: #1a1a1b !important;
+  }
 
-/* Content cards only */
-.dark .bg-white {
-  background-color: #1a1a1b !important;
-}
+  /* Button backgrounds */
+  .dark .bg-gray-200,
+  .dark .dark\:bg-gray-700,
+  .dark button[class*="bg-gray-"] {
+    background-color: #111111 !important;
+  }
 
-.dark .dark\:bg-gray-800 {
-  background-color: #1a1a1b !important;
-}
+  /* Form inputs */
+  .dark input,
+  .dark textarea,
+  .dark select,
+  .dark .bg-background {
+    background-color: #111111 !important;
+  }
 
-/* Button backgrounds */
-.dark .bg-gray-200 {
-  background-color: #111111 !important;
-}
+  /* Sticky header - special case */
+  .dark .sticky.top-0.z-10 {
+    background-color: rgba(13, 13, 13, 0.95) !important;
+    backdrop-filter: blur(8px) !important;
+  }
 
-.dark .dark\:bg-gray-700 {
-  background-color: #111111 !important;
-}
+  /* Text colors */
+  .dark .text-gray-900 {
+    color: #ffffff !important;
+  }
 
-/* Form inputs */
-.dark .bg-background {
-  background-color: #111111 !important;
-}
+  .dark .text-gray-700 {
+    color: #e5e7eb !important;
+  }
 
-/* Text colors */
-.dark .text-gray-900 {
-  color: #ffffff !important;
-}
+  .dark .text-gray-600 {
+    color: #d1d5db !important;
+  }
 
-.dark .text-gray-700 {
-  color: #e5e7eb !important;
-}
-
-.dark .text-gray-600 {
-  color: #d1d5db !important;
-}
-
-.dark .text-gray-500 {
-  color: #9ca3af !important;
+  .dark .text-gray-500 {
+    color: #9ca3af !important;
+  }
 }
