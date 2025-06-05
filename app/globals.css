@@ -102,29 +102,32 @@ body {
   border-bottom: 2px solid #0284c7;
 }
 
-/* Dark mode profile page background overrides */
+/* Dark mode color scheme overrides */
 .dark .min-h-screen.bg-gray-100 {
-  background-color: #111111 !important;
-}
-
-.dark .bg-white {
-  background-color: #1a1a1b !important;
+  background-color: #0d0d0d !important; /* Darkest background */
 }
 
 .dark .bg-gray-100 {
-  background-color: #1a1a1b !important;
+  background-color: #111111 !important; /* Light box color */
 }
 
-/* Keep tabs area and its container dark like main background */
+.dark .bg-white {
+  background-color: #1a1a1b !important; /* Lighter box color */
+}
+
+/* Tabs area and menubar should be darkest background */
 .dark .sticky.top-0.z-10.bg-white {
-  background-color: #111111 !important;
+  background-color: #0d0d0d !important; /* Same as background for nested visual elements */
 }
 
 .dark .bg-white.dark\:bg-gray-900 {
-  background-color: #111111 !important;
+  background-color: #0d0d0d !important; /* Same as background for nested visual elements */
 }
 
-/* Remove header overrides - let it use original blur behavior */
+/* Header/menubar should be darkest background */
+.dark header {
+  background-color: #0d0d0d !important;
+}
 
 /* Ensure text remains visible in dark mode */
 .dark .bg-white .text-gray-900,
@@ -145,4 +148,17 @@ body {
 .dark .bg-white .text-gray-500,
 .dark .bg-gray-100 .text-gray-500 {
   color: #9ca3af !important;
+}
+
+/* Special cases for nested elements that should match background */
+.dark .border.border-gray-200\/50 {
+  background-color: #0d0d0d !important; /* Nested visual elements */
+}
+
+.dark .bg-gray-200 {
+  background-color: #111111 !important; /* Button backgrounds */
+}
+
+.dark .hover\:bg-gray-300:hover {
+  background-color: #1a1a1b !important; /* Button hover states */
 }
