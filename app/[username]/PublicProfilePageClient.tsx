@@ -620,7 +620,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
             <div className="block md:hidden">
               <div className="pt-4 pb-4 px-4">
                 {/* Profile Picture - 50% overlap on small screens, centered, larger size */}
-                <div className="flex justify-center -mt-[105px] mb-[-9px]">
+                <div className="flex justify-center -mt-[105px] mb-[-3px]">
                   <div className="relative">
                     <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
                       <AvatarImage
