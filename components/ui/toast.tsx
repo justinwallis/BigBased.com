@@ -1,5 +1,3 @@
-"use client"
-
 import * as React from "react"
 import * as ToastPrimitives from "@radix-ui/react-toast"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -30,7 +28,7 @@ const toastVariants = cva(
     variants: {
       variant: {
         default: "border bg-background text-foreground",
-        destructive: "destructive border-destructive bg-destructive text-destructive-foreground",
+        destructive: "destructive group border-destructive bg-destructive text-destructive-foreground",
       },
     },
     defaultVariants: {
@@ -100,47 +98,13 @@ type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
 
 type ToastActionElement = React.ReactElement<typeof ToastAction>
 
-function Toaster() {
-  const { toasts } = useToast()
-
+// Add the Toaster component
+export function Toaster() {
   return (
     <ToastProvider>
-      {toasts.map(({ id, title, description, action, ...props }) => (
-        <Toast key={id} {...props}>
-          <div className="grid gap-1">
-            {title && <ToastTitle>{title}</ToastTitle>}
-            {description && <ToastDescription>{description}</ToastDescription>}
-          </div>
-          {action}
-          <ToastClose />
-        </Toast>
-      ))}
       <ToastViewport />
     </ToastProvider>
   )
-}
-
-// Hook for using toasts
-function useToast() {
-  const [toasts, setToasts] = React.useState<(ToastProps & { id: string })[]>([])
-
-  const toast = React.useCallback((props: ToastProps) => {
-    const id = Math.random().toString(36).substr(2, 9)
-    setToasts((prev) => [...prev, { ...props, id }])
-
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((toast) => toast.id !== id))
-    }, 5000)
-  }, [])
-
-  return {
-    toasts,
-    toast,
-    dismiss: (toastId?: string) => {
-      setToasts((prev) => (toastId ? prev.filter((toast) => toast.id !== toastId) : []))
-    },
-  }
 }
 
 export {
@@ -153,6 +117,4 @@ export {
   ToastDescription,
   ToastClose,
   ToastAction,
-  Toaster,
-  useToast,
 }
