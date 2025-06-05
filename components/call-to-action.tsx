@@ -56,9 +56,10 @@ export default function CallToAction() {
           <br />
           and Responsibility.
         </h2>
-        <p className="text-lg mb-12 max-w-3xl mx-auto dark:text-gray-200 text-shadow-sm">
-          If Toasty can go from soy-fueled excuses to Big Based greatness, what's stopping you? The tools the truth, and
-          the blueprint are all here. The only question is: Are you ready to join us?
+        <p className="text-lg mb-12 max-w-3xl mx-auto text-black dark:text-gray-200 text-shadow-sm">
+          From complacency to conviction, from mediocrity to excellence—the transformation is possible for anyone
+          willing to take the step. The tools, the truth, and the blueprint are all here. The only question is: Are you
+          ready to join us?
         </p>
         <Link
           href="/join"
