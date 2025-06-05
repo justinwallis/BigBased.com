@@ -336,28 +336,31 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="min-h-screen">
       {/* Cover Photo - Full width, breaks out of container */}
       <div className="relative w-full flex justify-center">
-        <div
-          className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative md:rounded-b-lg overflow-hidden mx-auto"
-          style={{
-            height: "clamp(200px, 25vw + 75px, 455px)",
-            maxWidth: "1250px",
-            backgroundImage: profile?.banner_url ? `url(${profile.banner_url})` : undefined,
-            backgroundSize: "cover",
-            backgroundPosition: profile?.banner_position || "center",
-          }}
-        >
-          {/* Edit cover photo button */}
-          <button
-            onClick={() => setIsCoverDialogOpen(true)}
-            disabled={isUploading}
-            className="absolute bottom-4 right-4 bg-gray-800/90 dark:bg-white/90 text-white dark:text-gray-800 px-3 h-[35px] rounded-md text-sm font-medium flex items-center gap-1.5 hover:bg-gray-900 dark:hover:bg-white transition-colors disabled:opacity-50 z-40"
-          >
-            <Image src="/camera.png" alt="Camera" width={16} height={16} className="invert dark:invert-0" />
-            <span className="hidden md:inline">Edit cover photo</span>
-          </button>
+        <div className="w-full flex justify-center">
+          <div className="max-w-[1250px] w-full">
+            <div
+              className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative md:rounded-b-lg overflow-hidden mx-auto"
+              style={{
+                height: "clamp(200px, 25vw + 75px, 455px)",
+                backgroundImage: profile?.banner_url ? `url(${profile.banner_url})` : undefined,
+                backgroundSize: "cover",
+                backgroundPosition: profile?.banner_position || "center",
+              }}
+            >
+              {/* Edit cover photo button */}
+              <button
+                onClick={() => setIsCoverDialogOpen(true)}
+                disabled={isUploading}
+                className="absolute bottom-4 right-4 bg-gray-800/90 dark:bg-white/90 text-white dark:text-gray-800 px-3 h-[35px] rounded-md text-sm font-medium flex items-center gap-1.5 hover:bg-gray-900 dark:hover:bg-white transition-colors disabled:opacity-50 z-40"
+              >
+                <Image src="/camera.png" alt="Camera" width={16} height={16} className="invert dark:invert-0" />
+                <span className="hidden md:inline">Edit cover photo</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

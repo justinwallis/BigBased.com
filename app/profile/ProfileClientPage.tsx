@@ -494,7 +494,7 @@ export default function ProfileClientPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bb-darkest dark:bg-bb-darkest">
+    <div className="min-h-screen">
       <div className="container mx-auto py-4 space-y-8">
         {/* Debug Info */}
         {process.env.NODE_ENV === "development" && (
@@ -569,7 +569,7 @@ export default function ProfileClientPage() {
         </Card>
 
         {/* Profile Tabs */}
-        <Tabs defaultValue={initialTab} className="space-y-6 bg-bb-darkest dark:bg-bb-darkest">
+        <Tabs defaultValue={initialTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger
               value="general"
@@ -666,7 +666,7 @@ export default function ProfileClientPage() {
           </TabsList>
 
           {/* General Tab */}
-          <TabsContent value="general" className="bg-bb-darkest dark:bg-bb-darkest">
+          <TabsContent value="general">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Main Profile Form */}
               <div className="lg:col-span-2">
@@ -1330,7 +1330,7 @@ export default function ProfileClientPage() {
           </TabsContent>
 
           {/* Security Tab */}
-          <TabsContent value="security" className="bg-bb-darkest dark:bg-bb-darkest">
+          <TabsContent value="security">
             <Card className="bg-bb-lighter dark:bg-bb-lighter">
               <CardHeader>
                 <CardTitle>Security Settings</CardTitle>
@@ -1385,7 +1385,7 @@ export default function ProfileClientPage() {
           </TabsContent>
 
           {/* Notifications Tab */}
-          <TabsContent value="notifications" className="bg-bb-darkest dark:bg-bb-darkest">
+          <TabsContent value="notifications">
             <Card className="bg-bb-lighter dark:bg-bb-lighter">
               <CardHeader>
                 <CardTitle>Notification Preferences</CardTitle>
@@ -1420,7 +1420,7 @@ export default function ProfileClientPage() {
           </TabsContent>
 
           {/* Billing Tab */}
-          <TabsContent value="billing" className="bg-bb-darkest dark:bg-bb-darkest">
+          <TabsContent value="billing">
             <Card className="bg-bb-lighter dark:bg-bb-lighter">
               <CardHeader>
                 <CardTitle>Billing & Subscription</CardTitle>

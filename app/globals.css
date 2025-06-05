@@ -93,51 +93,25 @@ body {
   }
 }
 
-/* Add these styles at the end of the file */
-.tabs-list-hover-effect [data-state="inactive"]:hover {
-  border-bottom: 2px solid #e5e7eb;
-}
-
-.tabs-list-hover-effect [data-state="active"] {
-  border-bottom: 2px solid #0284c7;
-}
-
-/* Dark mode color scheme overrides - Target /justin page specifically */
+/* CLEAN DARK MODE - ONE BACKGROUND ONLY */
 .dark body {
   background-color: #0d0d0d !important;
 }
 
-/* Main page container - /justin page uses this exact class */
-.dark .min-h-screen.bg-gray-100.dark\:bg-gray-900 {
+.dark html {
   background-color: #0d0d0d !important;
 }
 
-.dark .min-h-screen.bg-gray-100 {
-  background-color: #0d0d0d !important;
-}
-
-/* Cards and white backgrounds - /justin page uses these */
-.dark .bg-white.dark\:bg-gray-800.rounded-lg.shadow {
-  background-color: #1a1a1b !important;
-}
-
-.dark .bg-white.dark\:bg-gray-800 {
-  background-color: #1a1a1b !important;
-}
-
-.dark .bg-white.shadow {
-  background-color: #1a1a1b !important;
-}
-
+/* Content cards only */
 .dark .bg-white {
   background-color: #1a1a1b !important;
 }
 
-/* Button backgrounds */
-.dark .bg-gray-200.hover\:bg-gray-300.dark\:bg-gray-700.dark\:hover\:bg-gray-600 {
-  background-color: #111111 !important;
+.dark .dark\:bg-gray-800 {
+  background-color: #1a1a1b !important;
 }
 
+/* Button backgrounds */
 .dark .bg-gray-200 {
   background-color: #111111 !important;
 }
@@ -146,31 +120,12 @@ body {
   background-color: #111111 !important;
 }
 
-.dark .hover\:bg-gray-300:hover {
-  background-color: #1a1a1b !important;
-}
-
-.dark .dark\:hover\:bg-gray-600:hover {
-  background-color: #1a1a1b !important;
-}
-
-/* Sticky header - keep the blur effect but fix background */
-.dark .sticky.top-0.z-10.bg-white.dark\:bg-gray-900 {
-  background-color: rgba(13, 13, 13, 0.95) !important;
-  backdrop-filter: blur(8px) !important;
-}
-
-/* Form inputs and backgrounds */
-.dark .bg-gray-100.dark\:bg-gray-700 {
+/* Form inputs */
+.dark .bg-background {
   background-color: #111111 !important;
 }
 
-/* Border containers */
-.dark .border.border-gray-200\/50.dark\:border-gray-700\/50 {
-  background-color: #1a1a1b !important;
-}
-
-/* Ensure text visibility */
+/* Text colors */
 .dark .text-gray-900 {
   color: #ffffff !important;
 }
