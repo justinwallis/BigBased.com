@@ -115,27 +115,16 @@ body {
   background-color: #1a1a1b !important;
 }
 
-/* Keep tabs area dark like main background */
-.dark [role="tablist"] {
+/* Keep tabs area and its container dark like main background */
+.dark .sticky.top-0.z-10.bg-white {
   background-color: #111111 !important;
 }
 
-.dark .bg-white[role="tablist"] {
+.dark .bg-white.dark\:bg-gray-900 {
   background-color: #111111 !important;
 }
 
-/* Header/menu should be #111111 in dark mode */
-.dark nav {
-  background-color: #111111 !important;
-}
-
-.dark .bg-white\/5 {
-  background-color: #111111 !important;
-}
-
-.dark .backdrop-blur-sm {
-  background-color: #111111 !important;
-}
+/* Remove header overrides - let it use original blur behavior */
 
 /* Ensure text remains visible in dark mode */
 .dark .bg-white .text-gray-900,
