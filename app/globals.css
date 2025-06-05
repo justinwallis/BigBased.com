@@ -146,126 +146,79 @@ html {
   background-color: #080808 !important;
 }
 
-/* RESET ALL PREVIOUS OVERRIDES - Start fresh with specific targeting */
+/* LIGHT MODE SPECIFIC FIXES */
 
-/* LIGHT MODE FIXES */
-
-/* 1. Header navigation text - force black in light mode */
-:not(.dark) header nav a,
-:not(.dark) header .text-sm.font-medium {
+/* 1. Header navigation text - black in light mode */
+:not(.dark) .text-sm.font-medium.transition-colors.hover\:text-primary {
   color: #000000 !important;
 }
 
-/* 2. Remove search icon background highlight in light mode */
-:not(.dark) header button:hover {
-  background-color: transparent !important;
+/* 2. Left sidebar menu text - black in light mode */
+:not(.dark) .text-gray-600.dark\:text-gray-300 {
+  color: #000000 !important;
 }
 
-/* 3. Edit Cover Photo button - white in light mode */
-:not(.dark) .absolute.bottom-4.right-4 {
+/* 3. Camera icon - black in light mode, white in dark mode */
+:not(.dark) .camera-icon,
+:not(.dark) img[src*="camera"] {
+  filter: invert(0) !important; /* Black in light mode */
+}
+
+.dark .camera-icon,
+.dark img[src*="camera"] {
+  filter: invert(1) !important; /* White in dark mode */
+}
+
+/* DARK MODE BACKGROUND FIX */
+.dark .bg-gray-50,
+.dark .bg-gray-100 {
+  background-color: #080808 !important;
+}
+
+/* SPECIFIC BUTTON STYLING - All buttons that should be #131313 in dark mode */
+
+/* Profile section buttons: Edit, Add to story, 3-dot button */
+.dark .flex.items-center.space-x-2 button.bg-gray-200.hover\:bg-gray-300,
+.dark .flex.items-center.justify-end button.bg-gray-200.hover\:bg-gray-300 {
+  background-color: #131313 !important;
+}
+
+.dark .flex.items-center.space-x-2 button.bg-gray-200.hover\:bg-gray-300:hover,
+.dark .flex.items-center.justify-end button.bg-gray-200.hover\:bg-gray-300:hover {
+  background-color: #1f1f1f !important;
+}
+
+/* Edit bio button */
+.dark .w-full.h-\[35px\].bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\].dark\:hover\:bg-gray-600 {
+  background-color: #131313 !important;
+}
+
+.dark .w-full.h-\[35px\].bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\].dark\:hover\:bg-gray-600:hover {
+  background-color: #1f1f1f !important;
+}
+
+/* Filters and Manage posts buttons - same styling as profile buttons */
+.dark .flex.justify-between.items-center .flex.items-center button.bg-gray-200.hover\:bg-gray-300,
+.dark .bg-white.dark\:bg-\[\#0d0d0d\].rounded-lg.shadow .flex.justify-between.items-center button {
+  background-color: #131313 !important;
+}
+
+.dark .flex.justify-between.items-center .flex.items-center button.bg-gray-200.hover\:bg-gray-300:hover,
+.dark .bg-white.dark\:bg-\[\#0d0d0d\].rounded-lg.shadow .flex.justify-between.items-center button:hover {
+  background-color: #1f1f1f !important;
+}
+
+/* Cover photo button - white in both modes */
+.absolute.bottom-4.right-4 {
   background-color: rgba(255, 255, 255, 0.9) !important;
   color: #000000 !important;
 }
 
-/* 4. Add Friend button text - white in light mode */
-:not(.dark) .w-full.bg-gray-800 {
-  color: #ffffff !important;
-}
-
-/* DARK MODE FIXES */
-
-/* 1. Remove left menu icon background highlights */
-.dark .sidebar button:hover,
-.dark .left-menu button:hover {
-  background-color: transparent !important;
-}
-
-/* 2. Remove menu background highlights */
-.dark nav a:hover,
-.dark .menu-item:hover {
-  background-color: transparent !important;
-}
-
-/* 3. Search icon - white in dark mode */
-.dark header button svg,
-.dark header .search-icon {
-  color: #ffffff !important;
-}
-
-/* 4. Social icons - white in dark mode */
-.dark .social-icons svg,
-.dark .w-10.h-10 svg {
-  color: #ffffff !important;
-}
-
-/* 5. Remove "More" tab background highlight */ \
-.dark button:contains("More") {
-  background-color: transparent !important;
-}
-
-/* 6. Remove "Reel" background highlight */
-.dark button:contains("Reel") {
-  background-color: transparent !important;
-}
-
-/* 7. Tab navigation - only highlight on hover */
-.dark .tab-navigation button {
-  background-color: transparent !important;
-}
-
-.dark .tab-navigation button:hover {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-}
-
-/* SPECIFIC BUTTON TARGETING - Only the ones we want to be #131313 */
-
-/* Cover photo button - Keep it white in dark mode */
-.dark .absolute.bottom-4.right-4 {
-  background-color: rgba(255, 255, 255, 0.9) !important;
-  color: #000000 !important;
-}
-
-.dark .absolute.bottom-4.right-4:hover {
+.absolute.bottom-4.right-4:hover {
   background-color: rgba(255, 255, 255, 1) !important;
 }
 
-/* Profile header buttons: Edit and Add to story - Set to #131313 */
-.dark .flex.items-center.space-x-2 button.bg-gray-200 {
-  background-color: #131313 !important;
-}
-
-.dark .flex.items-center.space-x-2 button.bg-gray-200:hover {
-  background-color: #1f1f1f !important;
-}
-
-/* Three dot button - Set to #131313 */
-.dark .flex.items-center.justify-end button:last-child {
-  background-color: #131313 !important;
-}
-
-.dark .flex.items-center.justify-end button:last-child:hover {
-  background-color: #1f1f1f !important;
-}
-
-/* Edit bio button - Set to #131313 */
-.dark .sidebar button.w-full.h-\[35px\] {
-  background-color: #131313 !important;
-}
-
-.dark .sidebar button.w-full.h-\[35px\]:hover {
-  background-color: #1f1f1f !important;
-}
-
-/* Filters and Manage posts buttons - Set to #131313 */
-.dark .Posts-section button.bg-gray-200 {
-  background-color: #131313 !important;
-}
-
-.dark .Posts-section button.bg-gray-200:hover {
-  background-color: #1f1f1f !important;
-}
-
-/* Add friend buttons in People You May Know - white */
+/* Add friend buttons in People You May Know - white background, black text in dark mode */
 .dark .w-full.bg-gray-800.hover\:bg-gray-700.text-white {
   background-color: #ffffff !important;
   color: #000000 !important;
@@ -276,28 +229,16 @@ html {
   color: #000000 !important;
 }
 
-/* Social media icon circles - match background */
-.dark .w-10.h-10.rounded-full.bg-gray-100 {
+/* Social media icon circles - match background in dark mode */
+.dark .w-10.h-10.rounded-full.bg-gray-100.hover\:bg-gray-200 {
   background-color: #080808 !important;
 }
 
-.dark .w-10.h-10.rounded-full.bg-gray-100:hover {
+.dark .w-10.h-10.rounded-full.bg-gray-100.hover\:bg-gray-200:hover {
   background-color: #131313 !important;
 }
 
-/* Fix any remaining blue/light backgrounds around profile area */
-.dark .bg-gray-50,
-.dark .bg-gray-100 {
-  background-color: #080808 !important;
-}
-
-/* Ensure all containers match background */
-.dark .relative,
-.dark .flex.justify-center {
-  background-color: transparent !important;
-}
-
-/* FRIEND AVATARS - Make them visible again */
+/* FRIEND AVATARS - Make them visible */
 .dark .bg-gray-200.dark\:bg-\[\#0d0d0d\] {
   background-color: #374151 !important;
 }
@@ -307,7 +248,7 @@ html {
   background-color: #374151 !important;
 }
 
-/* Ensure text remains visible */
+/* Text color fixes */
 .dark .text-gray-900 {
   color: #ffffff !important;
 }
