@@ -88,73 +88,50 @@ body {
   * {
     @apply border-border;
   }
-
-  /* GLOBAL BACKGROUND RESET - FORCE DARK MODE CONSISTENCY */
-  html,
   body {
-    @apply bg-background;
-    background-color: #0d0d0d !important;
+    @apply bg-background text-foreground;
   }
+}
 
-  /* Force all containers to be transparent or match the body */
-  .dark .min-h-screen,
-  .dark div[class*="bg-"],
-  .dark main,
-  .dark section,
-  .dark nav,
-  .dark header,
-  .dark footer {
-    background-color: transparent !important;
-  }
+/* Add these styles at the end of the file */
+.tabs-list-hover-effect [data-state="inactive"]:hover {
+  border-bottom: 2px solid #e5e7eb;
+}
 
-  /* Only allow backgrounds on specific UI components */
-  .dark .bg-white,
-  .dark .dark\:bg-gray-800,
-  .dark .dark\:bg-gray-900,
-  .dark .bg-bb-lighter,
-  .dark .dark\:bg-bb-lighter,
-  .dark .card,
-  .dark .dropdown-content,
-  .dark .modal-content,
-  .dark .popover-content {
-    background-color: #1a1a1b !important;
-  }
+.tabs-list-hover-effect [data-state="active"] {
+  border-bottom: 2px solid #0284c7;
+}
 
-  /* Button backgrounds */
-  .dark .bg-gray-200,
-  .dark .dark\:bg-gray-700,
-  .dark button[class*="bg-gray-"] {
-    background-color: #111111 !important;
-  }
+/* Dark mode profile page background overrides */
+.dark .min-h-screen.bg-gray-100 {
+  background-color: #0d0d0d !important;
+}
 
-  /* Form inputs */
-  .dark input,
-  .dark textarea,
-  .dark select,
-  .dark .bg-background {
-    background-color: #111111 !important;
-  }
+.dark .bg-white {
+  background-color: #111111 !important;
+}
 
-  /* Sticky header - special case */
-  .dark .sticky.top-0.z-10 {
-    background-color: rgba(13, 13, 13, 0.95) !important;
-    backdrop-filter: blur(8px) !important;
-  }
+.dark .bg-gray-100 {
+  background-color: #111111 !important;
+}
 
-  /* Text colors */
-  .dark .text-gray-900 {
-    color: #ffffff !important;
-  }
+/* Ensure text remains visible in dark mode */
+.dark .bg-white .text-gray-900,
+.dark .bg-gray-100 .text-gray-900 {
+  color: #ffffff !important;
+}
 
-  .dark .text-gray-700 {
-    color: #e5e7eb !important;
-  }
+.dark .bg-white .text-gray-700,
+.dark .bg-gray-100 .text-gray-700 {
+  color: #e5e7eb !important;
+}
 
-  .dark .text-gray-600 {
-    color: #d1d5db !important;
-  }
+.dark .bg-white .text-gray-600,
+.dark .bg-gray-100 .text-gray-600 {
+  color: #d1d5db !important;
+}
 
-  .dark .text-gray-500 {
-    color: #9ca3af !important;
-  }
+.dark .bg-white .text-gray-500,
+.dark .bg-gray-100 .text-gray-500 {
+  color: #9ca3af !important;
 }

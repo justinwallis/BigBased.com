@@ -494,11 +494,11 @@ export default function ProfileClientPage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
       <div className="container mx-auto py-4 space-y-8">
         {/* Debug Info */}
         {process.env.NODE_ENV === "development" && (
-          <Card className="border-yellow-200 bg-bb-light dark:bg-bb-light">
+          <Card className="border-yellow-200 bg-yellow-50">
             <CardHeader>
               <CardTitle className="text-sm">Debug Info</CardTitle>
             </CardHeader>
@@ -517,7 +517,7 @@ export default function ProfileClientPage() {
         )}
 
         {/* Profile Header with Banner Preview */}
-        <Card className="overflow-hidden bg-bb-lighter dark:bg-bb-lighter">
+        <Card className="overflow-hidden">
           <div className="relative">
             {/* Banner */}
             <InteractiveBannerUpload
@@ -670,7 +670,7 @@ export default function ProfileClientPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Main Profile Form */}
               <div className="lg:col-span-2">
-                <Card className="bg-bb-lighter dark:bg-bb-lighter">
+                <Card>
                   <CardHeader>
                     <CardTitle>Profile Information</CardTitle>
                     <CardDescription>Update your profile information and personal details.</CardDescription>
@@ -1279,7 +1279,7 @@ export default function ProfileClientPage() {
                 {profile && <ProfileInsights profileData={profile} />}
 
                 {/* Recent Activity */}
-                <Card className="bg-bb-lighter dark:bg-bb-lighter">
+                <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">Recent Activity</CardTitle>
                   </CardHeader>
@@ -1301,7 +1301,7 @@ export default function ProfileClientPage() {
                 </Card>
 
                 {/* Quick Stats */}
-                <Card className="bg-bb-lighter dark:bg-bb-lighter">
+                <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">Profile Stats</CardTitle>
                   </CardHeader>
@@ -1331,7 +1331,7 @@ export default function ProfileClientPage() {
 
           {/* Security Tab */}
           <TabsContent value="security">
-            <Card className="bg-bb-lighter dark:bg-bb-lighter">
+            <Card>
               <CardHeader>
                 <CardTitle>Security Settings</CardTitle>
                 <CardDescription>Manage your account security and authentication methods.</CardDescription>
@@ -1386,7 +1386,7 @@ export default function ProfileClientPage() {
 
           {/* Notifications Tab */}
           <TabsContent value="notifications">
-            <Card className="bg-bb-lighter dark:bg-bb-lighter">
+            <Card>
               <CardHeader>
                 <CardTitle>Notification Preferences</CardTitle>
                 <CardDescription>Choose how you want to be notified about activity.</CardDescription>
@@ -1421,7 +1421,7 @@ export default function ProfileClientPage() {
 
           {/* Billing Tab */}
           <TabsContent value="billing">
-            <Card className="bg-bb-lighter dark:bg-bb-lighter">
+            <Card>
               <CardHeader>
                 <CardTitle>Billing & Subscription</CardTitle>
                 <CardDescription>Manage your subscription and billing information.</CardDescription>
