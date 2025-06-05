@@ -899,7 +899,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                           </div>
 
                           {/* Add friend button */}
-                          <button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-1.5 px-3 rounded-md transition-colors flex items-center justify-center">
+                          <button className="w-full bg-gray-800 hover:bg-gray-700 text-white text-sm font-medium py-1.5 px-3 rounded-md transition-colors flex items-center justify-center">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               width="16"

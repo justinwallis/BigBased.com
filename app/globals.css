@@ -146,24 +146,71 @@ html {
   background-color: #080808 !important;
 }
 
-/* TONED DOWN BUTTONS - Much darker */
+/* MUCH DARKER BUTTONS - Target all button types */
 .dark button.bg-gray-200,
-.dark .bg-gray-200 {
-  background-color: #111111 !important; /* Much darker */
+.dark .bg-gray-200,
+.dark button.dark\:bg-\[\#0d0d0d\],
+.dark .dark\:bg-\[\#0d0d0d\] {
+  background-color: #0a0a0a !important; /* Almost black */
 }
 
 .dark button:hover.bg-gray-300,
-.dark .hover\:bg-gray-300:hover {
-  background-color: #1a1a1a !important; /* Slightly lighter on hover */
+.dark .hover\:bg-gray-300:hover,
+.dark button:hover.dark\:hover\:bg-gray-600,
+.dark .dark\:hover\:bg-gray-600:hover {
+  background-color: #141414 !important; /* Slightly lighter on hover */
 }
 
-/* Keep blue buttons but make them much darker */
-.dark .bg-blue-600 {
-  background-color: #0f172a !important; /* Very dark blue */
+/* Target specific buttons seen in the screenshot */
+.dark button[class*="bg-gray-200"],
+.dark a[class*="bg-gray-200"],
+.dark button[class*="dark:bg-[#0d0d0d]"],
+.dark a[class*="dark:bg-[#0d0d0d]"] {
+  background-color: #0a0a0a !important;
 }
 
-.dark .hover\:bg-blue-700:hover {
-  background-color: #1e293b !important;
+/* Target the Edit, Add to story buttons */
+.dark button,
+.dark a[role="button"] {
+  background-color: #0a0a0a !important;
+}
+
+.dark button:hover,
+.dark a[role="button"]:hover {
+  background-color: #141414 !important;
+}
+
+/* Make all blue buttons much darker */
+.dark .bg-blue-600,
+.dark button.bg-blue-600 {
+  background-color: #0a0a0a !important; /* Almost black */
+}
+
+.dark .hover\:bg-blue-700:hover,
+.dark button:hover.bg-blue-700 {
+  background-color: #141414 !important;
+}
+
+/* Target the Add friend buttons specifically */
+.dark button.bg-blue-600.hover\:bg-blue-700,
+.dark .bg-blue-600.hover\:bg-blue-700 {
+  background-color: #0a0a0a !important;
+}
+
+.dark button.bg-blue-600.hover\:bg-blue-700:hover,
+.dark .bg-blue-600.hover\:bg-blue-700:hover {
+  background-color: #141414 !important;
+}
+
+/* Target the Filters and Manage posts buttons */
+.dark button.bg-gray-200.hover\:bg-gray-300,
+.dark .bg-gray-200.hover\:bg-gray-300 {
+  background-color: #0a0a0a !important;
+}
+
+.dark button.bg-gray-200.hover\:bg-gray-300:hover,
+.dark .bg-gray-200.hover\:bg-gray-300:hover {
+  background-color: #141414 !important;
 }
 
 /* Fix any remaining blue/light backgrounds around profile area */
@@ -235,4 +282,15 @@ html {
 /* Specific fixes for profile elements */
 .dark .bg-gradient-to-r.from-blue-600.via-purple-600.to-indigo-600 {
   /* Don't override cover photo gradients */
+}
+
+/* Fix avatar border color */
+.dark .border-white.dark\:border-gray-900 {
+  border-color: #080808 !important;
+}
+
+/* Fix any remaining avatar padding issues */
+.dark .avatar-container,
+.dark .relative .avatar-container {
+  background-color: #080808 !important;
 }
