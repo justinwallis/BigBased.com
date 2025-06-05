@@ -469,7 +469,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                     </button>
                     <button
                       onClick={() => setShowFriendsSection(!showFriendsSection)}
-                      className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md w-[35px] h-[35px] flex items-center justify-center p-2"
+                      className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md w-[45px] h-[35px] flex items-center justify-center p-2"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -593,7 +593,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                       </button>
                       <button
                         onClick={() => setShowFriendsSection(!showFriendsSection)}
-                        className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md w-[35px] h-[35px] flex items-center justify-center p-2"
+                        className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md w-[45px] h-[35px] flex items-center justify-center p-2"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -716,7 +716,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                       </button>
                       <button
                         onClick={() => setShowFriendsSection(!showFriendsSection)}
-                        className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md w-[35px] h-[35px] flex items-center justify-center p-2"
+                        className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md w-[45px] h-[35px] flex items-center justify-center p-2"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -970,7 +970,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
           {/* Divider */}
           <div className="px-4">
-            <div className="h-px bg-gray-300 dark:bg-gray-700 w-full"></div>
+            <div className="h-px bg-gray-400 dark:bg-gray-600 w-full"></div>
           </div>
 
           {/* Navigation Tabs */}
@@ -1283,7 +1283,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
                   {/* Edit Bio Button */}
                   <Link href="/profile">
-                    <button className="w-full h-[35px] bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md font-medium">
+                    <button className="w-full h-[35px] bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md font-medium mt-4">
                       Edit bio
                     </button>
                   </Link>
