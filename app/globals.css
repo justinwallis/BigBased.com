@@ -341,3 +341,48 @@ html {
 .dark .relative .avatar-container {
   background-color: #080808 !important;
 }
+
+/* Three dot button - More specific targeting for dark mode */
+.dark button[class*="w-[45px]"][class*="h-[35px]"] {
+  background-color: #131313 !important;
+}
+
+.dark button[class*="w-[45px]"][class*="h-[35px]"]:hover {
+  background-color: #1f1f1f !important;
+}
+
+/* Light mode header navigation fixes */
+.text-muted-foreground {
+  color: #6b7280 !important; /* Gray for light mode */
+}
+
+.dark .text-muted-foreground {
+  color: #9ca3af !important; /* Keep gray for dark mode */
+}
+
+/* Header navigation text in light mode */
+.text-sm.font-medium.transition-colors.hover\:text-primary.text-muted-foreground {
+  color: #374151 !important; /* Dark gray for light mode */
+}
+
+.dark .text-sm.font-medium.transition-colors.hover\:text-primary.text-muted-foreground {
+  color: #9ca3af !important; /* Light gray for dark mode */
+}
+
+/* Search icon in light mode */
+.text-muted-foreground.hover\:text-foreground {
+  color: #374151 !important; /* Dark for light mode */
+}
+
+.dark .text-muted-foreground.hover\:text-foreground {
+  color: #9ca3af !important; /* Light for dark mode */
+}
+
+/* Left sidebar menu text fixes for light mode */
+.block.font-medium.hover\:text-gray-600.dark\:text-white.dark\:hover\:text-gray-300 {
+  color: #374151 !important; /* Dark text for light mode */
+}
+
+.dark .block.font-medium.hover\:text-gray-600.dark\:text-white.dark\:hover\:text-gray-300 {
+  color: #ffffff !important; /* White text for dark mode */
+}
