@@ -146,94 +146,170 @@ html {
   background-color: #080808 !important;
 }
 
-/* LIGHT MODE SPECIFIC FIXES */
+/* VERY SPECIFIC TARGETING - ONLY PROFILE PAGE ELEMENTS */
 
-/* 1. Header navigation text - black in light mode */
-:not(.dark) header nav a,
-:not(.dark) header .text-sm.font-medium {
+/* 1. HEADER NAVIGATION - Only on profile pages */
+/* Light mode: Header nav text black */
+:not(.dark) .site-header nav a,
+:not(.dark) .site-header .text-sm.font-medium.transition-colors {
   color: #000000 !important;
 }
 
-/* 2. Search icon - black in light mode */
-:not(.dark) header button svg,
-:not(.dark) .text-muted-foreground {
+/* Light mode: Search icon black */
+:not(.dark) .site-header button[aria-label*="search"] svg,
+:not(.dark) .site-header .search-button svg {
   color: #000000 !important;
 }
 
-/* 3. Camera icon - black in light mode (no invert) */
-:not(.dark) img[src*="camera"] {
+/* Dark mode: Header nav text white */
+.dark .site-header nav a,
+.dark .site-header .text-sm.font-medium.transition-colors {
+  color: #ffffff !important;
+}
+
+/* Dark mode: Search icon white */
+.dark .site-header button[aria-label*="search"] svg,
+.dark .site-header .search-button svg {
+  color: #ffffff !important;
+}
+
+/* 2. LEFT SIDEBAR - Only sidebar elements */
+/* Light mode: Sidebar text black */
+:not(.dark) .side-menu nav a,
+:not(.dark) .sidebar-nav a,
+:not(.dark) [data-sidebar] a {
+  color: #000000 !important;
+}
+
+/* Dark mode: Sidebar text white */
+.dark .side-menu nav a,
+.dark .sidebar-nav a,
+.dark [data-sidebar] a {
+  color: #ffffff !important;
+}
+
+/* 3. EDIT COVER PHOTO BUTTON - Always white in both modes */
+.absolute.bottom-4.right-4.bg-gray-800 {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  color: #000000 !important;
+}
+
+.absolute.bottom-4.right-4.bg-gray-800:hover {
+  background-color: rgba(255, 255, 255, 1) !important;
+}
+
+/* Edit cover photo icon - always black */
+.absolute.bottom-4.right-4 img[src*="camera"] {
   filter: none !important;
 }
 
-/* DARK MODE SPECIFIC FIXES */
-
-/* 1. Header navigation text - white in dark mode */
-.dark header nav a,
-.dark header .text-sm.font-medium {
-  color: #ffffff !important;
-}
-
-/* 2. Search icon - white in dark mode */
-.dark header button svg {
-  color: #ffffff !important;
-}
-
-/* 3. Sidebar text - white in dark mode */
-.dark .block.font-medium.hover\:text-gray-600,
-.dark nav ul li a {
-  color: #ffffff !important;
-}
-
-/* 4. Sidebar handle - #131313 in dark mode */
-.dark .absolute.right-0.top-1\/2.-translate-y-1\/2.w-6.h-24.bg-gray-200 {
-  background-color: #131313 !important;
-}
-
-.dark .absolute.right-0.top-1\/2.-translate-y-1\/2.w-6.h-24.bg-gray-200:hover {
-  background-color: #1f1f1f !important;
-}
-
-/* 5. 3-dot button - #131313 in dark mode */
-.dark .flex.items-center.justify-end button:last-child,
-.dark
-  .bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\].dark\:hover\:bg-gray-600.text-gray-700.dark\:text-gray-200.rounded-md.w-\[45px\].h-\[35px\] {
-  background-color: #131313 !important;
-}
-
-.dark .flex.items-center.justify-end button:last-child:hover,
-.dark
-  .bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\].dark\:hover\:bg-gray-600.text-gray-700.dark\:text-gray-200.rounded-md.w-\[45px\].h-\[35px\]:hover {
-  background-color: #1f1f1f !important;
-}
-
-/* 6. Camera icon - stay black in dark mode (no invert) */
-.dark img[src*="camera"] {
+/* 4. PROFILE PICTURE CAMERA ICON - Black in light, white in dark */
+/* Light mode: Camera icon black */
+:not(.dark) .avatar .absolute.bottom-3.right-3 img[src*="camera"] {
   filter: none !important;
 }
 
-/* 7. Profile section buttons: Edit, Add to story */
-.dark .flex.items-center.space-x-2 button.bg-gray-200.hover\:bg-gray-300 {
+/* Dark mode: Camera icon white (inverted) */
+.dark .avatar .absolute.bottom-3.right-3 img[src*="camera"],
+.dark .relative .absolute.bottom-3.right-3 img[src*="camera"] {
+  filter: invert(1) !important;
+}
+
+/* 5. PROFILE PAGE BUTTONS - #131313 in dark mode */
+/* Profile section buttons: Edit, Add to story */
+.dark .flex.items-center.space-x-2 button.bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\] {
   background-color: #131313 !important;
 }
 
-.dark .flex.items-center.space-x-2 button.bg-gray-200.hover\:bg-gray-300:hover {
+.dark .flex.items-center.space-x-2 button.bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\]:hover {
   background-color: #1f1f1f !important;
 }
 
-/* 8. Edit bio button */
-.dark .w-full.h-\[35px\].bg-gray-200.hover\:bg-gray-300 {
+/* 3-dot button */
+.dark .flex.items-center.justify-end button.bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\] {
   background-color: #131313 !important;
 }
 
-.dark .w-full.h-\[35px\].bg-gray-200.hover\:bg-gray-300:hover {
+.dark .flex.items-center.justify-end button.bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\]:hover {
   background-color: #1f1f1f !important;
 }
 
-/* 9. Filters and Manage posts buttons */
-.dark .flex.justify-between.items-center button.bg-gray-200.hover\:bg-gray-300 {
+/* Edit bio button */
+.dark .w-full.h-\[35px\].bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\] {
   background-color: #131313 !important;
 }
 
-.dark .flex.justify-between.items-center button.bg-gray-200.hover\:bg-gray-300:hover {
+.dark .w-full.h-\[35px\].bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\]:hover {
   background-color: #1f1f1f !important;
+}
+
+/* Filters and Manage posts buttons */
+.dark .flex.justify-between.items-center button.bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\] {
+  background-color: #131313 !important;
+}
+
+.dark .flex.justify-between.items-center button.bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\]:hover {
+  background-color: #1f1f1f !important;
+}
+
+/* 6. SIDEBAR HANDLE - #131313 in dark mode */
+.dark .absolute.right-0.top-1\/2.-translate-y-1\/2.w-6.h-24.bg-gray-200.dark\:bg-gray-700 {
+  background-color: #131313 !important;
+}
+
+.dark .absolute.right-0.top-1\/2.-translate-y-1\/2.w-6.h-24.bg-gray-200.dark\:bg-gray-700:hover {
+  background-color: #1f1f1f !important;
+}
+
+/* FRIEND AVATARS - Make them visible */
+.dark .bg-gray-200.dark\:bg-\[\#0d0d0d\] {
+  background-color: #374151 !important;
+}
+
+.dark .w-8.h-8.rounded-full,
+.dark .w-7.h-7.rounded-full {
+  background-color: #374151 !important;
+}
+
+/* Social media icon circles - match background in dark mode */
+.dark .w-10.h-10.rounded-full.bg-gray-100.hover\:bg-gray-200.dark\:bg-gray-700 {
+  background-color: #080808 !important;
+}
+
+.dark .w-10.h-10.rounded-full.bg-gray-100.hover\:bg-gray-200.dark\:bg-gray-700:hover {
+  background-color: #131313 !important;
+}
+
+/* Add friend buttons in People You May Know - white background, black text in dark mode */
+.dark .w-full.bg-gray-800.hover\:bg-gray-700.text-white {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+.dark .w-full.bg-gray-800.hover\:bg-gray-700.text-white:hover {
+  background-color: #f3f4f6 !important;
+  color: #000000 !important;
+}
+
+/* Fix avatar border color */
+.dark .border-white.dark\:border-gray-900 {
+  border-color: #080808 !important;
+}
+
+/* PRESERVE EXISTING STYLES - Don't affect call-to-action or other sections */
+/* These selectors ensure we don't break existing working sections */
+.dark .text-gray-900.dark\:text-white {
+  color: #ffffff !important;
+}
+
+.dark .text-gray-700.dark\:text-gray-300 {
+  color: #e5e7eb !important;
+}
+
+.dark .text-gray-600.dark\:text-gray-400 {
+  color: #d1d5db !important;
+}
+
+.dark .text-gray-500.dark\:text-gray-400 {
+  color: #9ca3af !important;
 }
