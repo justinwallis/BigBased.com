@@ -146,71 +146,67 @@ html {
   background-color: #080808 !important;
 }
 
-/* MUCH DARKER BUTTONS - Target all button types */
-.dark button.bg-gray-200,
-.dark .bg-gray-200,
-.dark button.dark\:bg-\[\#0d0d0d\],
-.dark .dark\:bg-\[\#0d0d0d\] {
-  background-color: #0a0a0a !important; /* Almost black */
-}
+/* SPECIFIC BUTTON TARGETING - Only target the buttons mentioned in the request */
 
-.dark button:hover.bg-gray-300,
-.dark .hover\:bg-gray-300:hover,
-.dark button:hover.dark\:hover\:bg-gray-600,
-.dark .dark\:hover\:bg-gray-600:hover {
-  background-color: #141414 !important; /* Slightly lighter on hover */
-}
-
-/* Target specific buttons seen in the screenshot */
-.dark button[class*="bg-gray-200"],
-.dark a[class*="bg-gray-200"],
-.dark button[class*="dark:bg-[#0d0d0d]"],
-.dark a[class*="dark:bg-[#0d0d0d]"] {
+/* Profile header buttons: Edit and Add to story */
+.dark .flex.items-center.space-x-2 button.bg-gray-200,
+.dark .flex.items-center.space-x-2 a button.bg-gray-200 {
   background-color: #0a0a0a !important;
 }
 
-/* Target the Edit, Add to story buttons */
-.dark button,
-.dark a[role="button"] {
+.dark .flex.items-center.space-x-2 button.bg-gray-200:hover,
+.dark .flex.items-center.space-x-2 a button.bg-gray-200:hover {
+  background-color: #141414 !important;
+}
+
+/* Add friend buttons in People You May Know section */
+.dark .w-full.bg-blue-600.hover\:bg-blue-700 {
   background-color: #0a0a0a !important;
 }
 
-.dark button:hover,
-.dark a[role="button"]:hover {
+.dark .w-full.bg-blue-600.hover\:bg-blue-700:hover {
   background-color: #141414 !important;
 }
 
-/* Make all blue buttons much darker */
-.dark .bg-blue-600,
-.dark button.bg-blue-600 {
-  background-color: #0a0a0a !important; /* Almost black */
-}
-
-.dark .hover\:bg-blue-700:hover,
-.dark button:hover.bg-blue-700 {
-  background-color: #141414 !important;
-}
-
-/* Target the Add friend buttons specifically */
-.dark button.bg-blue-600.hover\:bg-blue-700,
-.dark .bg-blue-600.hover\:bg-blue-700 {
+/* Filters and Manage posts buttons */
+.dark .flex.items-center button.bg-gray-200.hover\:bg-gray-300 {
   background-color: #0a0a0a !important;
 }
 
-.dark button.bg-blue-600.hover\:bg-blue-700:hover,
-.dark .bg-blue-600.hover\:bg-blue-700:hover {
+.dark .flex.items-center button.bg-gray-200.hover\:bg-gray-300:hover {
   background-color: #141414 !important;
 }
 
-/* Target the Filters and Manage posts buttons */
-.dark button.bg-gray-200.hover\:bg-gray-300,
-.dark .bg-gray-200.hover\:bg-gray-300 {
-  background-color: #0a0a0a !important;
+/* Keep the original styling for cover photo button */
+.dark .absolute.bottom-4.right-4 {
+  background-color: rgba(31, 41, 55, 0.9) !important; /* Keep original dark gray */
 }
 
-.dark button.bg-gray-200.hover\:bg-gray-300:hover,
-.dark .bg-gray-200.hover\:bg-gray-300:hover {
-  background-color: #141414 !important;
+.dark .absolute.bottom-4.right-4:hover {
+  background-color: rgba(17, 24, 39, 1) !important; /* Keep original hover */
+}
+
+/* Keep hamburger menu button original */
+.dark .px-3.h-\[35px\].rounded-md.font-medium.flex.items-center.justify-center:not(.space-x-2 *) {
+  background-color: #374151 !important; /* Keep original gray */
+}
+
+.dark .px-3.h-\[35px\].rounded-md.font-medium.flex.items-center.justify-center:not(.space-x-2 *):hover {
+  background-color: #4b5563 !important; /* Keep original hover */
+}
+
+/* Preserve sidebar card backgrounds */
+.dark .bg-white.dark\:bg-\[\#0d0d0d\].rounded-lg.shadow {
+  background-color: #0d0d0d !important; /* Keep cards visible */
+}
+
+/* Preserve Edit bio button in sidebar */
+.dark .w-full.h-\[35px\].bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\] {
+  background-color: #374151 !important; /* Keep visible but not too bright */
+}
+
+.dark .w-full.h-\[35px\].bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\]:hover {
+  background-color: #4b5563 !important;
 }
 
 /* Fix any remaining blue/light backgrounds around profile area */
