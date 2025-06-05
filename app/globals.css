@@ -102,75 +102,36 @@ body {
   border-bottom: 2px solid #0284c7;
 }
 
-/* Custom profile page styles */
-.profile-page-bg {
+/* Dark mode profile page background overrides */
+.dark .min-h-screen.bg-gray-100 {
   background-color: #111111 !important;
 }
 
-.profile-card-bg {
-  background-color: #1a1a1b !important;
-  border-color: #333333 !important;
-}
-
-.profile-card-bg .card-header,
-.profile-card-bg .card-content {
+.dark .bg-white {
   background-color: #1a1a1b !important;
 }
 
-/* Ensure text remains visible */
-.profile-page-bg .text-gray-900 {
-  color: #ffffff !important;
-}
-
-.profile-page-bg .text-gray-600 {
-  color: #cccccc !important;
-}
-
-.profile-page-bg .text-gray-500 {
-  color: #999999 !important;
-}
-
-.profile-page-bg .text-muted-foreground {
-  color: #cccccc !important;
-}
-
-/* Fix input backgrounds */
-.profile-card-bg input,
-.profile-card-bg textarea,
-.profile-card-bg select {
-  background-color: #2a2a2b !important;
-  border-color: #444444 !important;
-  color: #ffffff !important;
-}
-
-.profile-card-bg input::placeholder,
-.profile-card-bg textarea::placeholder {
-  color: #999999 !important;
-}
-
-/* Fix button styles */
-.profile-card-bg button {
-  background-color: #333333 !important;
-  border-color: #444444 !important;
-  color: #ffffff !important;
-}
-
-.profile-card-bg button:hover {
-  background-color: #444444 !important;
-}
-
-/* Fix tabs */
-.profile-page-bg .tabs-list {
+.dark .bg-gray-100 {
   background-color: #1a1a1b !important;
-  border-color: #333333 !important;
 }
 
-.profile-page-bg .tabs-trigger {
-  background-color: transparent !important;
-  color: #cccccc !important;
-}
-
-.profile-page-bg .tabs-trigger[data-state="active"] {
-  background-color: #333333 !important;
+/* Ensure text remains visible in dark mode */
+.dark .bg-white .text-gray-900,
+.dark .bg-gray-100 .text-gray-900 {
   color: #ffffff !important;
+}
+
+.dark .bg-white .text-gray-700,
+.dark .bg-gray-100 .text-gray-700 {
+  color: #e5e7eb !important;
+}
+
+.dark .bg-white .text-gray-600,
+.dark .bg-gray-100 .text-gray-600 {
+  color: #d1d5db !important;
+}
+
+.dark .bg-white .text-gray-500,
+.dark .bg-gray-100 .text-gray-500 {
+  color: #9ca3af !important;
 }
