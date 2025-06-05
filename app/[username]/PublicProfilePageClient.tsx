@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -54,6 +54,7 @@ export function PublicProfilePageClient() {
   const [isCoverDialogOpen, setIsCoverDialogOpen] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
+  const containerRef = useRef<HTMLElement | null>(null)
   const [container, setContainer] = useState<HTMLElement | null>(null)
 
   useEffect(() => {
@@ -67,13 +68,16 @@ export function PublicProfilePageClient() {
       setIsLoading(true)
       setError("")
 
+      console.log(`Fetching profile for username: ${username}`)
       const response = await fetch(`/api/user/${username}`)
       const data = await response.json()
+      console.log("API response:", data)
 
       if (response.ok && data.success) {
         setProfile(data.profile)
       } else {
         setError(data.error || "Profile not found")
+        console.error("Error from API:", data.error)
       }
     } catch (error) {
       console.error("Error loading public profile:", error)
@@ -381,20 +385,20 @@ export function PublicProfilePageClient() {
   }
 
   const scrollFriendsLeft = () => {
-    if (container) {
+    if (containerRef.current) {
       const cardWidth = 175 + 8 // card width + gap
-      const visibleCards = Math.floor(container.clientWidth / cardWidth)
+      const visibleCards = Math.floor(containerRef.current.clientWidth / cardWidth)
       const scrollAmount = visibleCards * cardWidth
-      container.scrollBy({ left: -scrollAmount, behavior: "smooth" })
+      containerRef.current.scrollBy({ left: -scrollAmount, behavior: "smooth" })
     }
   }
 
   const scrollFriendsRight = () => {
-    if (container) {
+    if (containerRef.current) {
       const cardWidth = 175 + 8 // card width + gap
-      const visibleCards = Math.floor(container.clientWidth / cardWidth)
+      const visibleCards = Math.floor(containerRef.current.clientWidth / cardWidth)
       const scrollAmount = visibleCards * cardWidth
-      container.scrollBy({ left: scrollAmount, behavior: "smooth" })
+      containerRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" })
     }
   }
 
