@@ -25,15 +25,15 @@ import { uploadImageClient } from "@/lib/upload-client"
 interface PublicProfileData {
   id: string
   username: string
-  full_name: string
-  bio: string
-  avatar_url: string
-  banner_url: string
-  social_links: any
-  location_info: any
-  personal_info: any
-  personal_details: any
-  contact_info: any
+  full_name: string | null
+  bio: string | null
+  avatar_url: string | null
+  banner_url: string | null
+  social_links: Record<string, any> | null
+  location_info: Record<string, any> | null
+  personal_info: Record<string, any> | null
+  personal_details: Record<string, any> | null
+  contact_info: Record<string, any> | null
   created_at: string
   updated_at: string
 }
@@ -87,6 +87,7 @@ export function PublicProfilePageClient({ profile: initialProfile }: { profile?:
   }
 
   const getInitials = (name: string) => {
+    if (!name || typeof name !== "string") return "??"
     return name
       .split(" ")
       .map((n) => n[0])
@@ -96,6 +97,7 @@ export function PublicProfilePageClient({ profile: initialProfile }: { profile?:
   }
 
   const formatJoinDate = (dateString: string) => {
+    if (!dateString) return "Unknown"
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
@@ -103,6 +105,8 @@ export function PublicProfilePageClient({ profile: initialProfile }: { profile?:
   }
 
   const getSocialLink = (platform: string, username: string) => {
+    if (!platform || !username || typeof username !== "string") return "#"
+
     const socialPlatforms: { [key: string]: string } = {
       x: `https://x.com/${username}`,
       twitter: `https://twitter.com/${username}`,
@@ -113,7 +117,10 @@ export function PublicProfilePageClient({ profile: initialProfile }: { profile?:
       tiktok: `https://tiktok.com/@${username}`,
       facebook: `https://facebook.com/${username}`,
       telegram: `https://t.me/${username}`,
-      discord: username.includes("discord.gg") ? username : `https://discord.com/users/${username}`,
+      discord:
+        typeof username === "string" && username.includes("discord.gg")
+          ? username
+          : `https://discord.com/users/${username}`,
       rumble: `https://rumble.com/c/${username}`,
       therealworld: `https://therealworld.ai/profile/${username}`,
     }
@@ -199,7 +206,7 @@ export function PublicProfilePageClient({ profile: initialProfile }: { profile?:
 
   // Helper function to get the correct URL for social links
   const getSocialUrl = (platform: string, value: string) => {
-    if (!value) return null
+    if (!value || typeof value !== "string") return null
 
     // Clean the value by removing @ symbols and trimming
     const cleanValue = value.replace(/^@/, "").trim()
@@ -281,7 +288,7 @@ export function PublicProfilePageClient({ profile: initialProfile }: { profile?:
   }
 
   const formatBioWithLinks = (text: string) => {
-    if (!text) return ""
+    if (!text || typeof text !== "string") return ""
 
     // Regular expression to find URLs
     const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.[a-zA-Z]{2,}[^\s]*)/gi
@@ -519,32 +526,33 @@ export function PublicProfilePageClient({ profile: initialProfile }: { profile?:
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Social Links */}
-            {profile.social_links && Object.keys(profile.social_links).some((key) => profile.social_links[key]) && (
-              <Card className="profile-card-bg">
-                <CardHeader>
-                  <CardTitle className="text-lg">Connect</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {Object.entries(profile.social_links)
-                      .filter(([_, value]) => value)
-                      .map(([platform, username]) => (
-                        <a
-                          key={platform}
-                          href={getSocialLink(platform, username as string)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                        >
-                          {getSocialIcon(platform)}
-                          <span className="text-sm capitalize">{platform}</span>
-                          <ExternalLink className="h-3 w-3 ml-auto opacity-50" />
-                        </a>
-                      ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            {profile.social_links &&
+              Object.keys(profile.social_links).some((key) => profile.social_links && profile.social_links[key]) && (
+                <Card className="profile-card-bg">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Connect</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {Object.entries(profile.social_links)
+                        .filter(([_, value]) => value && typeof value === "string")
+                        .map(([platform, username]) => (
+                          <a
+                            key={platform}
+                            href={getSocialLink(platform, username as string)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                          >
+                            {getSocialIcon(platform)}
+                            <span className="text-sm capitalize">{platform}</span>
+                            <ExternalLink className="h-3 w-3 ml-auto opacity-50" />
+                          </a>
+                        ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
             {/* Personal Info */}
             <Card className="profile-card-bg">
@@ -573,7 +581,9 @@ export function PublicProfilePageClient({ profile: initialProfile }: { profile?:
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Relationship</span>
                     <span className="text-sm capitalize">
-                      {profile.personal_details.relationship_status.replace("_", " ")}
+                      {typeof profile.personal_details.relationship_status === "string"
+                        ? profile.personal_details.relationship_status.replace("_", " ")
+                        : profile.personal_details.relationship_status}
                     </span>
                   </div>
                 )}
@@ -589,12 +599,14 @@ export function PublicProfilePageClient({ profile: initialProfile }: { profile?:
                     <span className="text-sm capitalize">{profile.personal_details.religious_views}</span>
                   </div>
                 )}
-                {profile.personal_info?.languages && profile.personal_info.languages.length > 0 && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Languages</span>
-                    <span className="text-sm">{profile.personal_info.languages.join(", ")}</span>
-                  </div>
-                )}
+                {profile.personal_info?.languages &&
+                  Array.isArray(profile.personal_info.languages) &&
+                  profile.personal_info.languages.length > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Languages</span>
+                      <span className="text-sm">{profile.personal_info.languages.join(", ")}</span>
+                    </div>
+                  )}
               </CardContent>
             </Card>
 
