@@ -411,9 +411,9 @@ export default function ProfileClientPage() {
 
   if (isLoading || !user) {
     return (
-      <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+      <div className="min-h-screen profile-page-bg">
         <div className="container mx-auto py-10">
-          <Card>
+          <Card className="profile-card-bg">
             <CardHeader>
               <CardTitle>Loading Profile...</CardTitle>
               <CardDescription>Please wait while we load your profile information.</CardDescription>
@@ -496,7 +496,7 @@ export default function ProfileClientPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="min-h-screen profile-page-bg">
       <div className="container mx-auto py-4 space-y-8">
         {/* Debug Info */}
         {process.env.NODE_ENV === "development" && (
@@ -519,7 +519,7 @@ export default function ProfileClientPage() {
         )}
 
         {/* Profile Header with Banner Preview */}
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden profile-card-bg">
           <div className="relative">
             {/* Banner */}
             <InteractiveBannerUpload
@@ -572,7 +572,7 @@ export default function ProfileClientPage() {
 
         {/* Profile Tabs */}
         <Tabs defaultValue={initialTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-5 tabs-list">
             <TabsTrigger
               value="general"
               className="flex items-center space-x-2 hover:border-b-2 hover:border-gray-300 data-[state=active]:border-b-2 data-[state=active]:border-primary"
@@ -672,7 +672,7 @@ export default function ProfileClientPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Main Profile Form */}
               <div className="lg:col-span-2">
-                <Card>
+                <Card className="profile-card-bg">
                   <CardHeader>
                     <CardTitle>Profile Information</CardTitle>
                     <CardDescription>Update your profile information and personal details.</CardDescription>
@@ -1272,16 +1272,24 @@ export default function ProfileClientPage() {
               {/* Sidebar */}
               <div className="space-y-6">
                 {/* Profile Completion Wizard */}
-                <ProfileCompletionWizard profileData={formData} onSuggestionClick={handleSuggestionClick} />
+                <div className="profile-card-bg">
+                  <ProfileCompletionWizard profileData={formData} onSuggestionClick={handleSuggestionClick} />
+                </div>
 
                 {/* Social Media Preview */}
-                <SocialMediaPreview profileData={formData} />
+                <div className="profile-card-bg">
+                  <SocialMediaPreview profileData={formData} />
+                </div>
 
                 {/* Profile Insights */}
-                {profile && <ProfileInsights profileData={profile} />}
+                {profile && (
+                  <div className="profile-card-bg">
+                    <ProfileInsights profileData={profile} />
+                  </div>
+                )}
 
                 {/* Recent Activity */}
-                <Card>
+                <Card className="profile-card-bg">
                   <CardHeader>
                     <CardTitle className="text-lg">Recent Activity</CardTitle>
                   </CardHeader>
@@ -1303,7 +1311,7 @@ export default function ProfileClientPage() {
                 </Card>
 
                 {/* Quick Stats */}
-                <Card>
+                <Card className="profile-card-bg">
                   <CardHeader>
                     <CardTitle className="text-lg">Profile Stats</CardTitle>
                   </CardHeader>
@@ -1333,7 +1341,7 @@ export default function ProfileClientPage() {
 
           {/* Security Tab */}
           <TabsContent value="security">
-            <Card>
+            <Card className="profile-card-bg">
               <CardHeader>
                 <CardTitle>Security Settings</CardTitle>
                 <CardDescription>Manage your account security and authentication methods.</CardDescription>
@@ -1388,7 +1396,7 @@ export default function ProfileClientPage() {
 
           {/* Notifications Tab */}
           <TabsContent value="notifications">
-            <Card>
+            <Card className="profile-card-bg">
               <CardHeader>
                 <CardTitle>Notification Preferences</CardTitle>
                 <CardDescription>Choose how you want to be notified about activity.</CardDescription>
@@ -1423,7 +1431,7 @@ export default function ProfileClientPage() {
 
           {/* Billing Tab */}
           <TabsContent value="billing">
-            <Card>
+            <Card className="profile-card-bg">
               <CardHeader>
                 <CardTitle>Billing & Subscription</CardTitle>
                 <CardDescription>Manage your subscription and billing information.</CardDescription>
