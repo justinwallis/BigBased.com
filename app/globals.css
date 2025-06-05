@@ -170,22 +170,20 @@ html {
 }
 
 /* Three dot hamburger menu button - Set to #131313 */
-.dark
-  button.bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\].dark\:hover\:bg-gray-600.text-gray-700.dark\:text-gray-200.rounded-md.w-\[45px\].h-\[35px\] {
+.dark button[class*="w-[45px]"][class*="h-[35px]"] {
   background-color: #131313 !important;
 }
 
-.dark
-  button.bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\].dark\:hover\:bg-gray-600.text-gray-700.dark\:text-gray-200.rounded-md.w-\[45px\].h-\[35px\]:hover {
+.dark button[class*="w-[45px]"][class*="h-[35px]"]:hover {
   background-color: #1f1f1f !important;
 }
 
-/* Alternative selector for three dot button */
-.dark .flex.items-center.justify-center.p-2 {
+/* Alternative selector for three dot menu button */
+.dark .flex.items-center.justify-center.rounded-md.w-\[45px\].h-\[35px\] {
   background-color: #131313 !important;
 }
 
-.dark .flex.items-center.justify-center.p-2:hover {
+.dark .flex.items-center.justify-center.rounded-md.w-\[45px\].h-\[35px\]:hover {
   background-color: #1f1f1f !important;
 }
 
@@ -207,6 +205,24 @@ html {
 
 .dark .w-full.bg-blue-600.hover\:bg-blue-700:hover {
   background-color: #141414 !important;
+}
+
+/* Filters and Manage posts buttons - Set to #131313 */
+.dark .flex.items-center button.bg-gray-200.hover\:bg-gray-300 {
+  background-color: #131313 !important;
+}
+
+.dark .flex.items-center button.bg-gray-200.hover\:bg-gray-300:hover {
+  background-color: #1f1f1f !important;
+}
+
+/* More specific targeting for Filters and Manage posts */
+.dark button[class*="bg-gray-200"][class*="hover:bg-gray-300"] {
+  background-color: #131313 !important;
+}
+
+.dark button[class*="bg-gray-200"][class*="hover:bg-gray-300"]:hover {
+  background-color: #1f1f1f !important;
 }
 
 /* DON'T target Filters and Manage posts buttons - they're perfect as is */
@@ -300,4 +316,18 @@ html {
 .dark .avatar-container,
 .dark .relative .avatar-container {
   background-color: #080808 !important;
+}
+
+/* Restore tab highlighting */
+.tabs-list-hover-effect [data-state="active"] {
+  border-bottom: 2px solid #0284c7 !important;
+}
+
+.dark .tabs-list-hover-effect [data-state="active"] {
+  border-bottom: 2px solid #0284c7 !important;
+}
+
+/* Alternative tab highlighting selector */
+.dark .border-b-2.border-blue-600 {
+  border-color: #0284c7 !important;
 }
