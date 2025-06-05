@@ -102,68 +102,47 @@ body {
   border-bottom: 2px solid #0284c7;
 }
 
-/* Dark mode color scheme overrides - Force exact hex colors */
+/* Dark mode color scheme overrides - Target /justin page specifically */
 .dark body {
   background-color: #0d0d0d !important;
 }
 
-.dark .min-h-screen {
+/* Main page container - /justin page uses this exact class */
+.dark .min-h-screen.bg-gray-100.dark\:bg-gray-900 {
   background-color: #0d0d0d !important;
-}
-
-.dark header,
-.dark nav {
-  background-color: #0d0d0d !important;
-}
-
-/* Profile page specific overrides - target exact classes used */
-.dark .min-h-screen.bg-gradient-to-br.from-gray-50.to-blue-50 {
-  background: #0d0d0d !important;
-}
-
-.dark .dark\:from-gray-900.dark\:to-gray-800 {
-  background: #0d0d0d !important;
 }
 
 .dark .min-h-screen.bg-gray-100 {
   background-color: #0d0d0d !important;
 }
 
-.dark .bg-gray-100 {
-  background-color: #111111 !important;
+/* Cards and white backgrounds - /justin page uses these */
+.dark .bg-white.dark\:bg-gray-800.rounded-lg.shadow {
+  background-color: #1a1a1b !important;
+}
+
+.dark .bg-white.dark\:bg-gray-800 {
+  background-color: #1a1a1b !important;
+}
+
+.dark .bg-white.shadow {
+  background-color: #1a1a1b !important;
 }
 
 .dark .bg-white {
   background-color: #1a1a1b !important;
 }
 
-.dark .dark\:bg-gray-900 {
-  background-color: #0d0d0d !important;
-}
-
-.dark .dark\:bg-gray-800 {
-  background-color: #1a1a1b !important;
-}
-
-.dark .bg-gray-800 {
-  background-color: #1a1a1b !important;
-}
-
-.dark .bg-gray-50 {
+/* Button backgrounds */
+.dark .bg-gray-200.hover\:bg-gray-300.dark\:bg-gray-700.dark\:hover\:bg-gray-600 {
   background-color: #111111 !important;
 }
 
-/* Sticky elements and tabs */
-.dark .sticky.top-0.z-10.bg-white {
-  background-color: #0d0d0d !important;
-}
-
-.dark .bg-white.dark\:bg-gray-900 {
-  background-color: #0d0d0d !important;
-}
-
-/* Button backgrounds */
 .dark .bg-gray-200 {
+  background-color: #111111 !important;
+}
+
+.dark .dark\:bg-gray-700 {
   background-color: #111111 !important;
 }
 
@@ -171,51 +150,39 @@ body {
   background-color: #1a1a1b !important;
 }
 
-.dark .dark\:bg-gray-700 {
-  background-color: #111111 !important;
-}
-
 .dark .dark\:hover\:bg-gray-600:hover {
   background-color: #1a1a1b !important;
 }
 
-/* Form elements */
-.dark .bg-background {
+/* Sticky header - keep the blur effect but fix background */
+.dark .sticky.top-0.z-10.bg-white.dark\:bg-gray-900 {
+  background-color: rgba(13, 13, 13, 0.95) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* Form inputs and backgrounds */
+.dark .bg-gray-100.dark\:bg-gray-700 {
   background-color: #111111 !important;
 }
 
-/* Cards and containers */
-.dark .shadow {
+/* Border containers */
+.dark .border.border-gray-200\/50.dark\:border-gray-700\/50 {
   background-color: #1a1a1b !important;
 }
 
-.dark .rounded-lg.shadow {
-  background-color: #1a1a1b !important;
-}
-
-/* Debug and special cards */
-.dark .border-yellow-200.bg-yellow-50 {
-  background-color: #111111 !important;
-  border-color: #1a1a1b !important;
-}
-
-/* Ensure text remains visible */
-.dark .bg-white .text-gray-900,
-.dark .bg-gray-100 .text-gray-900 {
+/* Ensure text visibility */
+.dark .text-gray-900 {
   color: #ffffff !important;
 }
 
-.dark .bg-white .text-gray-700,
-.dark .bg-gray-100 .text-gray-700 {
+.dark .text-gray-700 {
   color: #e5e7eb !important;
 }
 
-.dark .bg-white .text-gray-600,
-.dark .bg-gray-100 .text-gray-600 {
+.dark .text-gray-600 {
   color: #d1d5db !important;
 }
 
-.dark .bg-white .text-gray-500,
-.dark .bg-gray-100 .text-gray-500 {
+.dark .text-gray-500 {
   color: #9ca3af !important;
 }
