@@ -189,18 +189,32 @@ html {
 }
 
 /* 3. EDIT COVER PHOTO BUTTON - Always white in both modes */
-.absolute.bottom-4.right-4.bg-gray-800 {
+.absolute.bottom-4.right-4 {
   background-color: rgba(255, 255, 255, 0.9) !important;
   color: #000000 !important;
 }
 
-.absolute.bottom-4.right-4.bg-gray-800:hover {
+.absolute.bottom-4.right-4:hover {
   background-color: rgba(255, 255, 255, 1) !important;
+  color: #000000 !important;
 }
 
-/* Edit cover photo icon - always black */
+/* Edit cover photo icon - always black (no invert) */
 .absolute.bottom-4.right-4 img[src*="camera"] {
   filter: none !important;
+}
+
+/* Ensure edit cover photo button text stays black in both modes */
+:not(.dark) .absolute.bottom-4.right-4,
+.dark .absolute.bottom-4.right-4 {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  color: #000000 !important;
+}
+
+:not(.dark) .absolute.bottom-4.right-4:hover,
+.dark .absolute.bottom-4.right-4:hover {
+  background-color: rgba(255, 255, 255, 1) !important;
+  color: #000000 !important;
 }
 
 /* 4. PROFILE PICTURE CAMERA ICON - Black in light, white in dark */
