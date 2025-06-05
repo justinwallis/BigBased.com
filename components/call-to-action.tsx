@@ -49,7 +49,7 @@ export default function CallToAction() {
       </div>
 
       <div className="text-center relative z-10 max-w-4xl mx-auto">
-        <h2 className="text-4xl md:text-6xl font-bold mb-8 leading-tight dark:text-white text-shadow-sm">
+        <h2 className="text-4xl md:text-6xl font-bold mb-8 leading-tight text-black dark:text-white text-shadow-sm">
           Embrace a Future
           <br />
           Rooted in God, Freedom,
