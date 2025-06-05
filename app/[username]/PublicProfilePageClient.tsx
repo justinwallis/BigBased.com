@@ -336,7 +336,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-100 dark:bg-background">
       {/* Cover Photo - Full width, breaks out of container */}
       <div className="relative w-full flex justify-center">
         <div
@@ -373,7 +373,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   {/* Profile Picture - 15% overlap on large screens */}
                   <div className="relative -mt-[50px]">
                     <div className="relative">
-                      <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
+                      <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-background shadow-lg">
                         <AvatarImage
                           src={profile?.avatar_url || "/placeholder.svg"}
                           alt={profile?.full_name || profile?.username}
@@ -418,7 +418,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                         {[1, 2, 3, 4, 5].map((i) => (
                           <div
                             key={i}
-                            className="w-8 h-8 rounded-full border-2 border-white dark:border-gray-900 bg-gray-200 dark:bg-gray-700 overflow-hidden"
+                            className="w-8 h-8 rounded-full border-2 border-white dark:border-background bg-gray-200 dark:bg-gray-700 overflow-hidden"
                           >
                             <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-500"></div>
                           </div>
@@ -498,7 +498,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   {/* Profile Picture - 0% overlap on medium screens, 5px under cover */}
                   <div className="relative">
                     <div className="relative">
-                      <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
+                      <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-background shadow-lg">
                         <AvatarImage
                           src={profile?.avatar_url || "/placeholder.svg"}
                           alt={profile?.full_name || profile?.username}
@@ -543,7 +543,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                         {[1, 2, 3, 4, 5].map((i) => (
                           <div
                             key={i}
-                            className="w-7 h-7 rounded-full border-2 border-white dark:border-gray-900 bg-gray-200 dark:bg-gray-700 overflow-hidden"
+                            className="w-7 h-7 rounded-full border-2 border-white dark:border-background bg-gray-200 dark:bg-gray-700 overflow-hidden"
                           >
                             <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-500"></div>
                           </div>
@@ -622,7 +622,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                 {/* Profile Picture - 50% overlap on small screens, centered, larger size */}
                 <div className="flex justify-center -mt-[105px] mb-[3px]">
                   <div className="relative">
-                    <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
+                    <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-background shadow-lg">
                       <AvatarImage
                         src={profile?.avatar_url || "/placeholder.svg"}
                         alt={profile?.full_name || profile?.username}
@@ -667,7 +667,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                       {[1, 2, 3, 4, 5].map((i) => (
                         <div
                           key={i}
-                          className="w-7 h-7 rounded-full border-2 border-white dark:border-gray-900 bg-gray-200 dark:bg-gray-700 overflow-hidden"
+                          className="w-7 h-7 rounded-full border-2 border-white dark:border-background bg-gray-200 dark:bg-gray-700 overflow-hidden"
                         >
                           <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-500"></div>
                         </div>
@@ -883,7 +883,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                                   {[...Array(Math.min(2, friend.mutualFriends))].map((_, i) => (
                                     <div
                                       key={i}
-                                      className="w-4 h-4 rounded-full border border-gray-800 dark:border-gray-900 bg-gray-300 dark:bg-gray-600 overflow-hidden"
+                                      className="w-4 h-4 rounded-full border border-gray-800 dark:border-background bg-gray-300 dark:bg-gray-600 overflow-hidden"
                                     ></div>
                                   ))}
                                 </div>
@@ -974,7 +974,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
           </div>
 
           {/* Navigation Tabs */}
-          <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 pt-[4px]">
+          <div className="sticky top-0 z-10 bg-white dark:bg-background pt-[4px]">
             <div className="px-4">
               <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
                 <div className="flex items-center justify-between">
@@ -1033,7 +1033,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                       </button>
 
                       {showMoreDropdown && (
-                        <div className="absolute left-0 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg rounded-md overflow-hidden z-50">
+                        <div className="absolute left-0 mt-1 w-48 bg-white dark:bg-card border border-gray-200 dark:border-gray-700 shadow-lg rounded-md overflow-hidden z-50">
                           <div className="py-1">
                             <button
                               onClick={() => {
@@ -1179,7 +1179,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               {/* Left Sidebar - Intro */}
               <div className="space-y-4 w-full max-w-[580px] mx-auto min-[900px]:max-w-none min-[900px]:mx-0 min-[900px]:w-auto">
                 {/* Intro Card */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                <div className="bg-white dark:bg-card rounded-lg shadow p-4">
                   <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Intro</h2>
 
                   {/* Bio */}
@@ -1343,7 +1343,7 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
                 </div>
 
                 {/* Profile Info Card */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                <div className="bg-white dark:bg-card rounded-lg shadow p-4">
                   <div className="flex items-center justify-between mb-2">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Profile</h2>
                     <span className="text-sm text-blue-600 dark:text-blue-400">Digital creator</span>
@@ -1351,7 +1351,7 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
                 </div>
 
                 {/* Stats Card */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                <div className="bg-white dark:bg-card rounded-lg shadow p-4">
                   <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Profile Stats</h2>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
@@ -1375,7 +1375,7 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
               {/* Main Content Area */}
               <div className="w-full max-w-[580px]">
                 {/* Create Post Card */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-4">
+                <div className="bg-white dark:bg-card rounded-lg shadow mb-4">
                   <div className="p-4">
                     <div className="flex items-center space-x-3">
                       <Avatar className="h-10 w-10">
@@ -1463,7 +1463,7 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
                 <Tabs defaultValue="posts" value={activeTab} className="w-full">
                   {/* Posts Tab */}
                   <TabsContent value="posts" className="mt-0">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div className="bg-white dark:bg-card rounded-lg shadow p-6">
                       <div className="flex justify-between items-center mb-4">
                         <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Posts</h3>
                         <div className="flex items-center">
@@ -1484,7 +1484,7 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
 
                   {/* About Tab */}
                   <TabsContent value="about" className="mt-0">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                    <div className="bg-white dark:bg-card rounded-lg shadow">
                       <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                         <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">About</h3>
                         {profile?.personal_details?.about_me ? (
@@ -1668,7 +1668,7 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
 
                   {/* Reels Tab */}
                   <TabsContent value="reels" className="mt-0">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div className="bg-white dark:bg-card rounded-lg shadow p-6">
                       <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                         <p>No reels to display yet.</p>
                         <p className="text-sm mt-2">Reels will appear here when shared.</p>
@@ -1678,7 +1678,7 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
 
                   {/* Photos Tab */}
                   <TabsContent value="photos" className="mt-0">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div className="bg-white dark:bg-card rounded-lg shadow p-6">
                       <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                         <p>No photos to display yet.</p>
                         <p className="text-sm mt-2">Photos will appear here when shared.</p>
@@ -1688,7 +1688,7 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
 
                   {/* Videos Tab */}
                   <TabsContent value="videos" className="mt-0">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div className="bg-white dark:bg-card rounded-lg shadow p-6">
                       <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                         <p>No videos to display yet.</p>
                         <p className="text-sm mt-2">Videos will appear here when shared.</p>
@@ -1698,7 +1698,7 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
 
                   {/* Groups Tab */}
                   <TabsContent value="groups" className="mt-0">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div className="bg-white dark:bg-card rounded-lg shadow p-6">
                       <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                         <p>No groups to display yet.</p>
                         <p className="text-sm mt-2">Groups will appear here when joined.</p>
