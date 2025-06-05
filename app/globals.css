@@ -146,70 +146,126 @@ html {
   background-color: #080808 !important;
 }
 
-/* SPECIFIC BUTTON TARGETING */
+/* RESET ALL PREVIOUS OVERRIDES - Start fresh with specific targeting */
 
-/* Cover photo button - Keep it white */
+/* LIGHT MODE FIXES */
+
+/* 1. Header navigation text - force black in light mode */
+:not(.dark) header nav a,
+:not(.dark) header .text-sm.font-medium {
+  color: #000000 !important;
+}
+
+/* 2. Remove search icon background highlight in light mode */
+:not(.dark) header button:hover {
+  background-color: transparent !important;
+}
+
+/* 3. Edit Cover Photo button - white in light mode */
+:not(.dark) .absolute.bottom-4.right-4 {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  color: #000000 !important;
+}
+
+/* 4. Add Friend button text - white in light mode */
+:not(.dark) .w-full.bg-gray-800 {
+  color: #ffffff !important;
+}
+
+/* DARK MODE FIXES */
+
+/* 1. Remove left menu icon background highlights */
+.dark .sidebar button:hover,
+.dark .left-menu button:hover {
+  background-color: transparent !important;
+}
+
+/* 2. Remove menu background highlights */
+.dark nav a:hover,
+.dark .menu-item:hover {
+  background-color: transparent !important;
+}
+
+/* 3. Search icon - white in dark mode */
+.dark header button svg,
+.dark header .search-icon {
+  color: #ffffff !important;
+}
+
+/* 4. Social icons - white in dark mode */
+.dark .social-icons svg,
+.dark .w-10.h-10 svg {
+  color: #ffffff !important;
+}
+
+/* 5. Remove "More" tab background highlight */ \
+.dark button:contains("More") {
+  background-color: transparent !important;
+}
+
+/* 6. Remove "Reel" background highlight */
+.dark button:contains("Reel") {
+  background-color: transparent !important;
+}
+
+/* 7. Tab navigation - only highlight on hover */
+.dark .tab-navigation button {
+  background-color: transparent !important;
+}
+
+.dark .tab-navigation button:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* SPECIFIC BUTTON TARGETING - Only the ones we want to be #131313 */
+
+/* Cover photo button - Keep it white in dark mode */
 .dark .absolute.bottom-4.right-4 {
-  background-color: rgba(255, 255, 255, 0.9) !important; /* White background */
-  color: #000000 !important; /* Black text */
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  color: #000000 !important;
 }
 
 .dark .absolute.bottom-4.right-4:hover {
-  background-color: rgba(255, 255, 255, 1) !important; /* Solid white on hover */
+  background-color: rgba(255, 255, 255, 1) !important;
 }
 
 /* Profile header buttons: Edit and Add to story - Set to #131313 */
-.dark .flex.items-center.space-x-2 button.bg-gray-200,
-.dark .flex.items-center.space-x-2 a button.bg-gray-200 {
+.dark .flex.items-center.space-x-2 button.bg-gray-200 {
   background-color: #131313 !important;
 }
 
-.dark .flex.items-center.space-x-2 button.bg-gray-200:hover,
-.dark .flex.items-center.space-x-2 a button.bg-gray-200:hover {
+.dark .flex.items-center.space-x-2 button.bg-gray-200:hover {
   background-color: #1f1f1f !important;
 }
 
-/* Three dot hamburger menu button - Set to #131313 */
-.dark
-  button.bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\].dark\:hover\:bg-gray-600.text-gray-700.dark\:text-gray-200.rounded-md.w-\[45px\].h-\[35px\] {
+/* Three dot button - Set to #131313 */
+.dark .flex.items-center.justify-end button:last-child {
   background-color: #131313 !important;
 }
 
-.dark
-  button.bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\].dark\:hover\:bg-gray-600.text-gray-700.dark\:text-gray-200.rounded-md.w-\[45px\].h-\[35px\]:hover {
+.dark .flex.items-center.justify-end button:last-child:hover {
   background-color: #1f1f1f !important;
 }
 
-/* Alternative selector for three dot button */
-.dark .flex.items-center.justify-center.p-2 {
+/* Edit bio button - Set to #131313 */
+.dark .sidebar button.w-full.h-\[35px\] {
   background-color: #131313 !important;
 }
 
-.dark .flex.items-center.justify-center.p-2:hover {
+.dark .sidebar button.w-full.h-\[35px\]:hover {
   background-color: #1f1f1f !important;
 }
 
-/* Edit bio button in sidebar - Set to #131313 */
-.dark
-  .w-full.h-\[35px\].bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\].dark\:hover\:bg-gray-600.text-gray-700.dark\:text-gray-200.rounded-md.font-medium {
+/* Filters and Manage posts buttons - Set to #131313 */
+.dark .Posts-section button.bg-gray-200 {
   background-color: #131313 !important;
 }
 
-.dark
-  .w-full.h-\[35px\].bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\].dark\:hover\:bg-gray-600.text-gray-700.dark\:text-gray-200.rounded-md.font-medium:hover {
+.dark .Posts-section button.bg-gray-200:hover {
   background-color: #1f1f1f !important;
 }
 
-/* Add friend buttons - Keep them dark as they were */
-.dark .w-full.bg-blue-600.hover\:bg-blue-700 {
-  background-color: #0a0a0a !important;
-}
-
-.dark .w-full.bg-blue-600.hover\:bg-blue-700:hover {
-  background-color: #141414 !important;
-}
-
-/* Add friend buttons in People You May Know section - Make them white */
+/* Add friend buttons in People You May Know - white */
 .dark .w-full.bg-gray-800.hover\:bg-gray-700.text-white {
   background-color: #ffffff !important;
   color: #000000 !important;
@@ -220,18 +276,7 @@ html {
   color: #000000 !important;
 }
 
-/* Alternative selector for Add friend buttons */
-.dark button.w-full.bg-gray-800 {
-  background-color: #ffffff !important;
-  color: #000000 !important;
-}
-
-.dark button.w-full.bg-gray-800:hover {
-  background-color: #f3f4f6 !important;
-  color: #000000 !important;
-}
-
-/* Social media icon circles - Make them match background (#080808) */
+/* Social media icon circles - match background */
 .dark .w-10.h-10.rounded-full.bg-gray-100 {
   background-color: #080808 !important;
 }
@@ -239,26 +284,6 @@ html {
 .dark .w-10.h-10.rounded-full.bg-gray-100:hover {
   background-color: #131313 !important;
 }
-
-/* Alternative selector for social media circles */
-.dark .flex.items-center.justify-center.w-10.h-10.rounded-full {
-  background-color: #080808 !important;
-}
-
-.dark .flex.items-center.justify-center.w-10.h-10.rounded-full:hover {
-  background-color: #131313 !important;
-}
-
-/* DON'T target Filters and Manage posts buttons - they're perfect as is */
-/* Leaving them with their current background color that matches the background */
-
-/* Keep the original styling for cover photo button */
-
-/* Keep hamburger menu button original */
-
-/* Preserve sidebar card backgrounds */
-
-/* Preserve Edit bio button in sidebar */
 
 /* Fix any remaining blue/light backgrounds around profile area */
 .dark .bg-gray-50,
@@ -272,26 +297,14 @@ html {
   background-color: transparent !important;
 }
 
-/* Fix any padding/margin areas that might show blue */
-.dark .pt-4,
-.dark .pb-3,
-.dark .px-4 {
-  background-color: transparent !important;
-}
-
-/* Make sure profile picture container area is correct */
-.dark .max-w-\[1220px\] {
-  background-color: transparent !important;
-}
-
 /* FRIEND AVATARS - Make them visible again */
 .dark .bg-gray-200.dark\:bg-\[\#0d0d0d\] {
-  background-color: #374151 !important; /* Visible gray for avatars */
+  background-color: #374151 !important;
 }
 
 .dark .w-8.h-8.rounded-full,
 .dark .w-7.h-7.rounded-full {
-  background-color: #374151 !important; /* Friend avatar circles */
+  background-color: #374151 !important;
 }
 
 /* Ensure text remains visible */
@@ -315,140 +328,7 @@ html {
   color: #ffffff !important;
 }
 
-/* Button text colors */
-.dark button .text-gray-700,
-.dark .bg-gray-200 .text-gray-700 {
-  color: #ffffff !important;
-}
-
-/* Make sure cover photos and important images still show */
-.dark [style*="background-image"] {
-  /* Don't override background images - let them show */
-}
-
-/* Specific fixes for profile elements */
-.dark .bg-gradient-to-r.from-blue-600.via-purple-600.to-indigo-600 {
-  /* Don't override cover photo gradients */
-}
-
 /* Fix avatar border color */
 .dark .border-white.dark\:border-gray-900 {
   border-color: #080808 !important;
-}
-
-/* Fix any remaining avatar padding issues */
-.dark .avatar-container,
-.dark .relative .avatar-container {
-  background-color: #080808 !important;
-}
-
-/* Three dot button - More specific targeting for dark mode */
-.dark button[class*="w-[45px]"][class*="h-[35px]"] {
-  background-color: #131313 !important;
-}
-
-.dark button[class*="w-[45px]"][class*="h-[35px]"]:hover {
-  background-color: #1f1f1f !important;
-}
-
-/* Light mode header navigation fixes */
-.text-muted-foreground {
-  color: #6b7280 !important; /* Gray for light mode */
-}
-
-.dark .text-muted-foreground {
-  color: #9ca3af !important; /* Keep gray for dark mode */
-}
-
-/* Header navigation text in light mode */
-.text-sm.font-medium.transition-colors.hover\:text-primary.text-muted-foreground {
-  color: #374151 !important; /* Dark gray for light mode */
-}
-
-.dark .text-sm.font-medium.transition-colors.hover\:text-primary.text-muted-foreground {
-  color: #9ca3af !important; /* Light gray for dark mode */
-}
-
-/* Search icon in light mode */
-.text-muted-foreground.hover\:text-foreground {
-  color: #374151 !important; /* Dark for light mode */
-}
-
-.dark .text-muted-foreground.hover\:text-foreground {
-  color: #9ca3af !important; /* Light for dark mode */
-}
-
-/* Left sidebar menu text fixes for light mode */
-.block.font-medium.hover\:text-gray-600.dark\:text-white.dark\:hover\:text-gray-300 {
-  color: #374151 !important; /* Dark text for light mode */
-}
-
-.dark .block.font-medium.hover\:text-gray-600.dark\:text-white.dark\:hover\:text-gray-300 {
-  color: #ffffff !important; /* White text for dark mode */
-}
-
-/* LIGHT MODE FIXES - Header navigation and search icon */
-/* Force header navigation text to be black in light mode */
-:not(.dark) .text-sm.font-medium.transition-colors,
-:not(.dark) nav .text-sm.font-medium,
-:not(.dark) header nav a,
-:not(.dark) header .text-muted-foreground {
-  color: #000000 !important;
-}
-
-/* Force search icon to be black in light mode */
-:not(.dark) .text-muted-foreground.hover\:text-foreground,
-:not(.dark) button .h-5.w-5,
-:not(.dark) header button svg {
-  color: #000000 !important;
-}
-
-/* DARK MODE BUTTON FIXES - Force specific buttons to #131313 */
-/* 3-dot button - multiple selectors to ensure it works */
-.dark button.bg-gray-200:not(.space-x-2 *):not(.flex-1),
-.dark .justify-between button:last-child,
-.dark .flex.items-center.justify-end button:last-child,
-.dark button[class*="w-[45px]"],
-.dark button[class*="h-[35px]"]:not(.space-x-2 *) {
-  background-color: #131313 !important;
-}
-
-.dark button.bg-gray-200:not(.space-x-2 *):not(.flex-1):hover,
-.dark .justify-between button:last-child:hover,
-.dark .flex.items-center.justify-end button:last-child:hover,
-.dark button[class*="w-[45px]"]:hover,
-.dark button[class*="h-[35px]"]:not(.space-x-2 *):hover {
-  background-color: #1f1f1f !important;
-}
-
-/* Filters and Manage posts buttons - force to #131313 */
-.dark .flex.items-center button.bg-gray-200,
-.dark .flex.justify-between .flex.items-center button,
-\
-.dark button:contains("Filters"),
-.dark button:contains("Manage posts") {
-  background-color: #131313 !important;
-}
-
-.dark .flex.items-center button.bg-gray-200:hover,
-.dark .flex.justify-between .flex.items-center button:hover {
-  background-color: #1f1f1f !important;
-}
-
-/* More specific targeting for Posts section buttons */
-.dark .bg-white.dark\:bg-\[\#0d0d0d\].rounded-lg.shadow .flex.justify-between.items-center button {
-  background-color: #131313 !important;
-}
-
-.dark .bg-white.dark\:bg-\[\#0d0d0d\].rounded-lg.shadow .flex.justify-between.items-center button:hover {
-  background-color: #1f1f1f !important;
-}
-
-/* Target by button text content if possible */
-.dark button[class*="bg-gray-200"][class*="hover:bg-gray-300"] {
-  background-color: #131313 !important;
-}
-
-.dark button[class*="bg-gray-200"][class*="hover:bg-gray-300"]:hover {
-  background-color: #1f1f1f !important;
 }
