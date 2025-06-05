@@ -3,13 +3,19 @@
 import type React from "react"
 import { useEffect } from "react"
 
-const OneSignalProvider: React.FC = ({ children }) => {
+declare global {
+  interface Window {
+    OneSignal: any
+  }
+}
+
+export function OneSignalProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       // Existing OneSignal initialization code
       window.OneSignal = window.OneSignal || []
-      OneSignal.push(() => {
-        OneSignal.init({
+      window.OneSignal.push(() => {
+        window.OneSignal.init({
           appId: "YOUR_ONESIGNAL_APP_ID",
           safari_web_id: "YOUR_SAFARI_WEB_ID",
           notifyButton: {

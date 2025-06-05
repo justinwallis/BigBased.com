@@ -7,7 +7,7 @@ import Image from "next/image"
 import { useTheme } from "@/components/theme-provider"
 import { useEffect, useState } from "react"
 
-export default function Footer() {
+export function Footer() {
   const { theme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
@@ -129,3 +129,5 @@ export default function Footer() {
     </footer>
   )
 }
+
+export default Footer
