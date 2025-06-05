@@ -146,24 +146,48 @@ html {
   background-color: #080808 !important;
 }
 
-/* TONED DOWN BUTTONS - Less bright */
+/* TONED DOWN BUTTONS - Much darker */
 .dark button.bg-gray-200,
 .dark .bg-gray-200 {
-  background-color: #1f2937 !important; /* Darker gray */
+  background-color: #111111 !important; /* Much darker */
 }
 
 .dark button:hover.bg-gray-300,
 .dark .hover\:bg-gray-300:hover {
-  background-color: #374151 !important; /* Slightly lighter on hover */
+  background-color: #1a1a1a !important; /* Slightly lighter on hover */
 }
 
-/* Keep blue buttons but tone them down */
+/* Keep blue buttons but make them much darker */
 .dark .bg-blue-600 {
-  background-color: #1e40af !important; /* Darker blue */
+  background-color: #0f172a !important; /* Very dark blue */
 }
 
 .dark .hover\:bg-blue-700:hover {
-  background-color: #1d4ed8 !important;
+  background-color: #1e293b !important;
+}
+
+/* Fix any remaining blue/light backgrounds around profile area */
+.dark .bg-gray-50,
+.dark .bg-gray-100 {
+  background-color: #080808 !important;
+}
+
+/* Ensure all containers match background */
+.dark .relative,
+.dark .flex.justify-center {
+  background-color: transparent !important;
+}
+
+/* Fix any padding/margin areas that might show blue */
+.dark .pt-4,
+.dark .pb-3,
+.dark .px-4 {
+  background-color: transparent !important;
+}
+
+/* Make sure profile picture container area is correct */
+.dark .max-w-\[1220px\] {
+  background-color: transparent !important;
 }
 
 /* FRIEND AVATARS - Make them visible again */
