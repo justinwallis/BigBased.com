@@ -110,7 +110,7 @@ html {
   background-color: #080808;
 }
 
-/* SELECTIVE DARK MODE BACKGROUND OVERRIDES */
+/* DARK MODE BACKGROUND OVERRIDES */
 .dark {
   background-color: #080808 !important;
 }
@@ -128,29 +128,32 @@ html {
   background-color: #080808 !important;
 }
 
-/* Card backgrounds - be more specific to avoid overriding buttons */
-.dark .bg-white.rounded-lg,
-.dark .bg-white.shadow,
-.dark .bg-white.border,
-.dark .bg-white.p-4,
-.dark .bg-white.p-6 {
+/* CARD BACKGROUNDS - Make all cards visible */
+.dark .bg-white {
   background-color: #0d0d0d !important;
 }
 
-/* Specific card selectors */
-.dark .bg-white:not(button):not(.hover\:bg-gray-300):not(.hover\:bg-gray-200) {
+.dark .bg-gray-100 {
   background-color: #0d0d0d !important;
 }
 
-.dark .bg-gray-100:not(button):not(.hover\:bg-gray-300):not(.hover\:bg-gray-200) {
+.dark .bg-gray-50 {
   background-color: #0d0d0d !important;
 }
 
-/* Keep button backgrounds visible */
+/* BUTTON OVERRIDES - Override cards for buttons specifically */
+.dark button.bg-white,
+.dark button.bg-gray-100,
+.dark button.bg-gray-50 {
+  background-color: #374151 !important; /* Darker gray for buttons */
+}
+
+.dark button.bg-gray-200,
 .dark .bg-gray-200 {
   background-color: #374151 !important; /* Darker gray for buttons */
 }
 
+.dark button:hover.bg-gray-300,
 .dark .hover\:bg-gray-300:hover {
   background-color: #4b5563 !important; /* Lighter on hover */
 }
@@ -184,7 +187,8 @@ html {
   color: #ffffff !important;
 }
 
-/* Specific button text colors */
+/* Button text colors */
+.dark button .text-gray-700,
 .dark .bg-gray-200 .text-gray-700 {
   color: #ffffff !important;
 }
