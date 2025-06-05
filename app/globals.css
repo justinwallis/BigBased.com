@@ -102,60 +102,104 @@ body {
   border-bottom: 2px solid #0284c7;
 }
 
-/* Dark mode color scheme overrides - Force #0d0d0d for backgrounds */
+/* Dark mode color scheme overrides - Force exact hex colors */
 .dark body {
-  background-color: #0d0d0d !important; /* Darkest background */
+  background-color: #0d0d0d !important;
 }
 
 .dark .min-h-screen {
-  background-color: #0d0d0d !important; /* Darkest background */
+  background-color: #0d0d0d !important;
 }
 
-.dark .min-h-screen.bg-gray-100 {
-  background-color: #0d0d0d !important; /* Darkest background */
-}
-
-.dark .bg-gray-100 {
-  background-color: #111111 !important; /* Light box color */
-}
-
-.dark .bg-white {
-  background-color: #1a1a1b !important; /* Lighter box color */
-}
-
-/* Force header/menubar to be darkest background */
 .dark header,
 .dark nav {
   background-color: #0d0d0d !important;
 }
 
-.dark .bg-background {
+/* Profile page specific overrides - target exact classes used */
+.dark .min-h-screen.bg-gradient-to-br.from-gray-50.to-blue-50 {
+  background: #0d0d0d !important;
+}
+
+.dark .dark\:from-gray-900.dark\:to-gray-800 {
+  background: #0d0d0d !important;
+}
+
+.dark .min-h-screen.bg-gray-100 {
   background-color: #0d0d0d !important;
 }
 
-.dark .bg-background\/95 {
-  background-color: #0d0d0d !important;
+.dark .bg-gray-100 {
+  background-color: #111111 !important;
 }
 
-/* Tabs area and sticky elements should be darkest background */
-.dark .sticky.top-0.z-10.bg-white {
-  background-color: #0d0d0d !important; /* Same as background for nested visual elements */
+.dark .bg-white {
+  background-color: #1a1a1b !important;
 }
 
-.dark .bg-white.dark\:bg-gray-900 {
-  background-color: #0d0d0d !important; /* Same as background for nested visual elements */
-}
-
-/* Override any remaining background classes */
 .dark .dark\:bg-gray-900 {
   background-color: #0d0d0d !important;
 }
 
-.dark .dark\:bg-background {
+.dark .dark\:bg-gray-800 {
+  background-color: #1a1a1b !important;
+}
+
+.dark .bg-gray-800 {
+  background-color: #1a1a1b !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: #111111 !important;
+}
+
+/* Sticky elements and tabs */
+.dark .sticky.top-0.z-10.bg-white {
   background-color: #0d0d0d !important;
 }
 
-/* Ensure text remains visible in dark mode */
+.dark .bg-white.dark\:bg-gray-900 {
+  background-color: #0d0d0d !important;
+}
+
+/* Button backgrounds */
+.dark .bg-gray-200 {
+  background-color: #111111 !important;
+}
+
+.dark .hover\:bg-gray-300:hover {
+  background-color: #1a1a1b !important;
+}
+
+.dark .dark\:bg-gray-700 {
+  background-color: #111111 !important;
+}
+
+.dark .dark\:hover\:bg-gray-600:hover {
+  background-color: #1a1a1b !important;
+}
+
+/* Form elements */
+.dark .bg-background {
+  background-color: #111111 !important;
+}
+
+/* Cards and containers */
+.dark .shadow {
+  background-color: #1a1a1b !important;
+}
+
+.dark .rounded-lg.shadow {
+  background-color: #1a1a1b !important;
+}
+
+/* Debug and special cards */
+.dark .border-yellow-200.bg-yellow-50 {
+  background-color: #111111 !important;
+  border-color: #1a1a1b !important;
+}
+
+/* Ensure text remains visible */
 .dark .bg-white .text-gray-900,
 .dark .bg-gray-100 .text-gray-900 {
   color: #ffffff !important;
@@ -174,80 +218,4 @@ body {
 .dark .bg-white .text-gray-500,
 .dark .bg-gray-100 .text-gray-500 {
   color: #9ca3af !important;
-}
-
-/* Special cases for nested elements that should match background */
-.dark .border.border-gray-200\/50 {
-  background-color: #0d0d0d !important; /* Nested visual elements */
-}
-
-.dark .bg-gray-200 {
-  background-color: #111111 !important; /* Button backgrounds */
-}
-
-.dark .hover\:bg-gray-300:hover {
-  background-color: #1a1a1b !important; /* Button hover states */
-}
-
-/* Profile page specific overrides */
-.dark .min-h-screen.bg-gradient-to-br {
-  background: #0d0d0d !important; /* Remove gradient, use darkest background */
-}
-
-.dark .bg-gradient-to-br.from-gray-50.to-blue-50 {
-  background: #0d0d0d !important; /* Remove gradient, use darkest background */
-}
-
-.dark .dark\:from-gray-900.dark\:to-gray-800 {
-  background: #0d0d0d !important; /* Remove gradient, use darkest background */
-}
-
-/* Profile page cards and containers */
-.dark .bg-white.dark\:bg-gray-800 {
-  background-color: #1a1a1b !important; /* Lighter box color for main cards */
-}
-
-.dark .bg-gray-800 {
-  background-color: #1a1a1b !important; /* Lighter box color */
-}
-
-.dark .bg-gray-50 {
-  background-color: #111111 !important; /* Light box color */
-}
-
-.dark .dark\:bg-gray-800 {
-  background-color: #1a1a1b !important; /* Lighter box color */
-}
-
-/* Profile page specific elements */
-.dark .border-yellow-200.bg-yellow-50 {
-  background-color: #111111 !important; /* Debug card background */
-  border-color: #1a1a1b !important;
-}
-
-/* Profile completion and sidebar cards */
-.dark .bg-white.shadow {
-  background-color: #1a1a1b !important; /* Lighter box color for cards */
-}
-
-/* Tabs and navigation in profile */
-.dark .bg-white.dark\:bg-gray-900.pt-\[4px\] {
-  background-color: #0d0d0d !important; /* Tabs area same as background */
-}
-
-/* Form elements in profile */
-.dark .bg-background {
-  background-color: #111111 !important; /* Form input backgrounds */
-}
-
-.dark input.bg-background {
-  background-color: #111111 !important; /* Input fields */
-}
-
-.dark textarea.bg-background {
-  background-color: #111111 !important; /* Textarea fields */
-}
-
-.dark select.bg-background {
-  background-color: #111111 !important; /* Select fields */
 }
