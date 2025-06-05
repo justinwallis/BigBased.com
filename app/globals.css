@@ -49,7 +49,6 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
   .dark {
-    /* Force the exact #080808 color */
     --background: 0 0% 3.1%;
     --foreground: 0 0% 98%;
     --card: 0 0% 5.1%;
@@ -103,7 +102,7 @@ body {
   border-bottom: 2px solid #0284c7;
 }
 
-/* FORCE EXACT #080808 BACKGROUND - NO DILUTION */
+/* FORCE EXACT #080808 BACKGROUND */
 html {
   background-color: #080808 !important;
 }
@@ -120,65 +119,61 @@ html {
   background-color: #080808 !important;
 }
 
-/* Remove any potential overlays or filters that could dilute the color */
-.dark *::before,
-.dark *::after {
-  background-color: transparent !important;
-}
-
-/* Force remove any backdrop filters or opacity effects */
-.dark * {
-  backdrop-filter: none !important;
-  filter: none !important;
-}
-
-/* Ensure no gradients or background images interfere */
+/* Main page containers */
 .dark .min-h-screen {
   background-color: #080808 !important;
-  background-image: none !important;
-  background: #080808 !important;
 }
 
-/* Target any potential overlay elements */
-.dark .bg-gradient-to-r,
-.dark .bg-gradient-to-l,
-.dark .bg-gradient-to-t,
-.dark .bg-gradient-to-b,
-.dark .bg-gradient-to-br,
-.dark .bg-gradient-to-bl,
-.dark .bg-gradient-to-tr,
-.dark .bg-gradient-to-tl {
-  background: #080808 !important;
-  background-image: none !important;
+/* REMOVE BLUE BACKGROUNDS - Replace with #080808 */
+.dark .bg-white {
+  background-color: #0d0d0d !important;
 }
 
-/* Remove any potential opacity effects */
-.dark .bg-opacity-90,
-.dark .bg-opacity-80,
-.dark .bg-opacity-70,
-.dark .bg-opacity-60,
-.dark .bg-opacity-50 {
+.dark .bg-gray-100 {
   background-color: #080808 !important;
-  opacity: 1 !important;
 }
 
-/* BUTTON OVERRIDES - Keep buttons visible */
+.dark .bg-gray-50 {
+  background-color: #080808 !important;
+}
+
+/* Navigation and tabs - remove blue backgrounds */
+.dark .bg-white.dark\:bg-gray-900 {
+  background-color: #080808 !important;
+}
+
+.dark .sticky {
+  background-color: #080808 !important;
+}
+
+/* TONED DOWN BUTTONS - Less bright */
 .dark button.bg-gray-200,
 .dark .bg-gray-200 {
-  background-color: #374151 !important;
+  background-color: #1f2937 !important; /* Darker gray */
 }
 
 .dark button:hover.bg-gray-300,
 .dark .hover\:bg-gray-300:hover {
-  background-color: #4b5563 !important;
+  background-color: #374151 !important; /* Slightly lighter on hover */
 }
 
+/* Keep blue buttons but tone them down */
 .dark .bg-blue-600 {
-  background-color: #2563eb !important;
+  background-color: #1e40af !important; /* Darker blue */
 }
 
 .dark .hover\:bg-blue-700:hover {
   background-color: #1d4ed8 !important;
+}
+
+/* FRIEND AVATARS - Make them visible again */
+.dark .bg-gray-200.dark\:bg-\[\#0d0d0d\] {
+  background-color: #374151 !important; /* Visible gray for avatars */
+}
+
+.dark .w-8.h-8.rounded-full,
+.dark .w-7.h-7.rounded-full {
+  background-color: #374151 !important; /* Friend avatar circles */
 }
 
 /* Ensure text remains visible */
@@ -206,4 +201,14 @@ html {
 .dark button .text-gray-700,
 .dark .bg-gray-200 .text-gray-700 {
   color: #ffffff !important;
+}
+
+/* Make sure cover photos and important images still show */
+.dark [style*="background-image"] {
+  /* Don't override background images - let them show */
+}
+
+/* Specific fixes for profile elements */
+.dark .bg-gradient-to-r.from-blue-600.via-purple-600.to-indigo-600 {
+  /* Don't override cover photo gradients */
 }

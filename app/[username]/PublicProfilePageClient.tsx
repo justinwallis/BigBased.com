@@ -418,7 +418,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                         {[1, 2, 3, 4, 5].map((i) => (
                           <div
                             key={i}
-                            className="w-8 h-8 rounded-full border-2 border-white dark:border-gray-900 bg-gray-200 dark:bg-[#0d0d0d] overflow-hidden"
+                            className="w-8 h-8 rounded-full border-2 border-white dark:border-gray-900 bg-gray-200 dark:bg-gray-600 overflow-hidden"
                           >
                             <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-500"></div>
                           </div>
@@ -547,7 +547,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                         {[1, 2, 3, 4, 5].map((i) => (
                           <div
                             key={i}
-                            className="w-7 h-7 rounded-full border-2 border-white dark:border-gray-900 bg-gray-200 dark:bg-[#0d0d0d] overflow-hidden"
+                            className="w-7 h-7 rounded-full border-2 border-white dark:border-gray-900 bg-gray-200 dark:bg-gray-600 overflow-hidden"
                           >
                             <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-500"></div>
                           </div>
@@ -671,7 +671,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                       {[1, 2, 3, 4, 5].map((i) => (
                         <div
                           key={i}
-                          className="w-7 h-7 rounded-full border-2 border-white dark:border-gray-900 bg-gray-200 dark:bg-[#0d0d0d] overflow-hidden"
+                          className="w-7 h-7 rounded-full border-2 border-white dark:border-gray-900 bg-gray-200 dark:bg-gray-600 overflow-hidden"
                         >
                           <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-500"></div>
                         </div>
@@ -978,7 +978,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
           </div>
 
           {/* Navigation Tabs */}
-          <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 pt-[4px]">
+          <div className="sticky top-0 z-10 bg-white dark:bg-[#080808] pt-[4px]">
             <div className="px-4">
               <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
                 <div className="flex items-center justify-between">
