@@ -115,6 +115,28 @@ body {
   background-color: #1a1a1b !important;
 }
 
+/* Keep tabs area dark like main background */
+.dark [role="tablist"] {
+  background-color: #111111 !important;
+}
+
+.dark .bg-white[role="tablist"] {
+  background-color: #111111 !important;
+}
+
+/* Header/menu should be #111111 in dark mode */
+.dark nav {
+  background-color: #111111 !important;
+}
+
+.dark .bg-white\/5 {
+  background-color: #111111 !important;
+}
+
+.dark .backdrop-blur-sm {
+  background-color: #111111 !important;
+}
+
 /* Ensure text remains visible in dark mode */
 .dark .bg-white .text-gray-900,
 .dark .bg-gray-100 .text-gray-900 {
