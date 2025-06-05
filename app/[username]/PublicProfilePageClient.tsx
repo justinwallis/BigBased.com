@@ -1,9 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter, useParams } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { useState } from "react"
+import React from "react"
+import { notFound, useRouter } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -14,40 +13,24 @@ import {
   Globe,
   Instagram,
   Youtube,
+  Home,
   MapPin,
-  LinkIcon,
-  Users,
-  Heart,
-  MessageCircle,
+  Briefcase,
+  GraduationCap,
 } from "lucide-react"
 import type { Profile } from "@/app/actions/profile-actions"
-import { uploadImageClient } from "@/lib/upload-client"
+import Link from "next/link"
+import Image from "next/image"
 
-interface PublicProfile {
-  id: string
-  username: string
-  displayName: string
-  bio: string
-  avatar: string
-  banner: string
-  location: string
-  website: string
-  joinedDate: string
-  followerCount: number
-  followingCount: number
-  postCount: number
-  isFollowing: boolean
-}
+// Add these imports at the top of the file
+import { ImageUploadDialog } from "@/components/image-upload-dialog"
+import { uploadImageClient } from "@/lib/upload-client"
 
 interface PublicProfilePageClientProps {
   profile: Profile | null
 }
 
-export function PublicProfilePageClient() {
-  const params = useParams()
-  const username = params?.username as string
-  const [profile, setProfile] = useState<PublicProfile | null>(null)
-  const [loading, setLoading] = useState(true)
+export function PublicProfilePageClient({ profile }: PublicProfilePageClientProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("posts")
   const [showFriendsSection, setShowFriendsSection] = useState(false)
@@ -61,88 +44,8 @@ export function PublicProfilePageClient() {
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
 
-  useEffect(() => {
-    // Fetch public profile data
-    const fetchProfile = async () => {
-      try {
-        // Mock data for now
-        setProfile({
-          id: "1",
-          username: username,
-          displayName: "John Doe",
-          bio: "Digital freedom advocate and technology enthusiast. Building the future of decentralized communication.",
-          avatar: "/placeholder.svg?height=120&width=120",
-          banner: "/placeholder.svg?height=200&width=800",
-          location: "Austin, TX",
-          website: "https://johndoe.com",
-          joinedDate: "2023-01-15",
-          followerCount: 1234,
-          followingCount: 567,
-          postCount: 89,
-          isFollowing: false,
-        })
-      } catch (error) {
-        console.error("Error fetching profile:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    if (username) {
-      fetchProfile()
-    }
-  }, [username])
-
-  const handleFollow = () => {
-    if (profile) {
-      setProfile((prev) =>
-        prev
-          ? {
-              ...prev,
-              isFollowing: !prev.isFollowing,
-              followerCount: prev.isFollowing ? prev.followerCount - 1 : prev.followerCount + 1,
-            }
-          : null,
-      )
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto py-6">
-          <Card>
-            <CardContent className="p-6">
-              <div className="animate-pulse space-y-4">
-                <div className="h-32 bg-muted rounded-lg"></div>
-                <div className="flex items-center space-x-4">
-                  <div className="h-24 w-24 bg-muted rounded-full"></div>
-                  <div className="space-y-2">
-                    <div className="h-6 bg-muted rounded w-48"></div>
-                    <div className="h-4 bg-muted rounded w-32"></div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    )
-  }
-
   if (!profile) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto py-6">
-          <Card>
-            <CardContent className="p-6 text-center">
-              <h1 className="text-2xl font-bold mb-2">Profile Not Found</h1>
-              <p className="text-muted-foreground">The user @{username} could not be found.</p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    )
+    notFound()
   }
 
   const getInitials = (name: string) => {
@@ -197,7 +100,7 @@ export function PublicProfilePageClient() {
     </svg>
   )
 
-  const socialLinks = {}
+  const socialLinks = profile?.social_links || {}
 
   // Helper function to get the correct URL for social links
   const getSocialUrl = (platform: string, value: string) => {
@@ -259,12 +162,34 @@ export function PublicProfilePageClient() {
 
   // Get current location string
   const getCurrentLocation = () => {
-    return profile?.location || null
+    if (!profile?.location_info) return null
+
+    const parts = [
+      profile?.location_info?.current_city,
+      profile?.location_info?.current_state,
+      profile?.location_info?.current_country,
+    ].filter(Boolean)
+
+    return parts.length > 0 ? parts.join(", ") : null
   }
 
   // Generate a short bio from profile data
   const generateShortBio = () => {
-    return profile?.bio || ""
+    const parts = []
+
+    if (profile?.personal_details?.religious_views) {
+      parts.push(profile?.personal_details.religious_views)
+    }
+
+    if (profile?.personal_details?.political_views) {
+      parts.push(profile?.personal_details.political_views)
+    }
+
+    if (profile?.personal_info?.gender) {
+      parts.push(profile?.personal_info.gender)
+    }
+
+    return parts.join(" · ")
   }
 
   // Add these functions inside the component, before the return statement
@@ -347,25 +272,17 @@ export function PublicProfilePageClient() {
   }
 
   // Add useEffect to set up scroll listener
-  useEffect(() => {
-    let container: HTMLElement | null = null
-
-    const setupScrollListener = () => {
-      container = document.querySelector(".friends-scroll-container")
+  React.useEffect(() => {
+    if (showFriendsSection) {
+      const container = document.querySelector(".friends-scroll-container")
       if (container) {
         container.addEventListener("scroll", handleScroll)
         // Initial check
         handleScroll({ target: container } as Event)
-      }
-    }
 
-    if (showFriendsSection) {
-      setupScrollListener()
-    }
-
-    return () => {
-      if (container) {
-        container.removeEventListener("scroll", handleScroll)
+        return () => {
+          container.removeEventListener("scroll", handleScroll)
+        }
       }
     }
   }, [showFriendsSection])
@@ -419,172 +336,1415 @@ export function PublicProfilePageClient() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto py-6 space-y-6">
-        {/* Profile Header */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="relative">
-              {/* Banner */}
-              <div
-                className="h-32 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg mb-4 bg-cover bg-center"
-                style={{ backgroundImage: `url(${profile?.banner})` }}
-              />
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+      {/* Cover Photo - Full width, breaks out of container */}
+      <div className="relative w-full flex justify-center">
+        <div
+          className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative md:rounded-b-lg overflow-hidden mx-auto"
+          style={{
+            height: "clamp(200px, 25vw + 75px, 455px)",
+            maxWidth: "1250px",
+            backgroundImage: profile?.banner_url ? `url(${profile.banner_url})` : undefined,
+            backgroundSize: "cover",
+            backgroundPosition: profile?.banner_position || "center",
+          }}
+        >
+          {/* Edit cover photo button */}
+          <button
+            onClick={() => setIsCoverDialogOpen(true)}
+            disabled={isUploading}
+            className="absolute bottom-4 right-4 bg-gray-800/90 dark:bg-white/90 text-white dark:text-gray-800 px-3 h-[35px] rounded-md text-sm font-medium flex items-center gap-1.5 hover:bg-gray-900 dark:hover:bg-white transition-colors disabled:opacity-50 z-50"
+          >
+            <Image src="/camera.png" alt="Camera" width={16} height={16} className="invert dark:invert-0" />
+            <span className="hidden md:inline">Edit cover photo</span>
+          </button>
+        </div>
+      </div>
 
-              {/* Avatar and Basic Info */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-16 relative z-10">
-                <Avatar className="h-24 w-24 border-4 border-background">
-                  <AvatarImage src={profile?.avatar || "/placeholder.svg"} />
-                  <AvatarFallback className="text-lg">{profile?.displayName?.charAt(0)}</AvatarFallback>
-                </Avatar>
-
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <h1 className="text-2xl font-bold">{profile?.displayName}</h1>
-                    <Badge variant="secondary">Member</Badge>
-                  </div>
-                  <p className="text-muted-foreground">@{profile?.username}</p>
-                  {profile?.bio && <p className="text-sm max-w-2xl">{profile?.bio}</p>}
-
-                  {/* Profile metadata */}
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                    {profile?.location && (
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4" />
-                        {profile?.location}
-                      </div>
-                    )}
-                    {profile?.website && (
-                      <div className="flex items-center gap-1">
-                        <LinkIcon className="h-4 w-4" />
-                        <a
-                          href={profile?.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-500 hover:underline"
-                        >
-                          {profile?.website?.replace(/^https?:\/\//, "")}
-                        </a>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-1">
-                      <CalendarDays className="h-4 w-4" />
-                      Joined{" "}
-                      {new Date(profile?.joinedDate || Date.now().toString()).toLocaleDateString("en-US", {
-                        month: "long",
-                        year: "numeric",
-                      })}
+      {/* Main Content Container - Constrained to 1220px */}
+      <div className="w-full flex justify-center">
+        <div className="max-w-[1220px] w-full">
+          {/* Profile Info - Responsive Layout */}
+          <div className="relative">
+            {/* Large screens: Horizontal layout with 15% overlap - Facebook style */}
+            <div className="hidden lg:block">
+              <div className="pt-4 pb-3 px-4 flex items-end justify-between">
+                <div className="flex items-end space-x-6">
+                  {/* Profile Picture - 15% overlap on large screens */}
+                  <div className="relative -mt-[50px]">
+                    <div className="relative">
+                      <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
+                        <AvatarImage
+                          src={profile?.avatar_url || "/placeholder.svg"}
+                          alt={profile?.full_name || profile?.username}
+                        />
+                        <AvatarFallback className="text-5xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                          {getInitials(profile?.full_name || profile?.username || "U")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <button
+                        onClick={() => setIsAvatarDialogOpen(true)}
+                        disabled={isUploading}
+                        className="absolute bottom-3 right-3 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                      >
+                        <Image src="/camera.png" alt="Camera" width={16} height={16} className="dark:invert" />
+                      </button>
                     </div>
                   </div>
 
-                  {/* Stats */}
-                  <div className="flex items-center gap-6 text-sm">
-                    <div className="flex items-center gap-1">
-                      <span className="font-semibold">{profile?.followingCount}</span>
-                      <span className="text-muted-foreground">Following</span>
+                  {/* Name and Info - positioned to the right of profile picture */}
+                  <div className="pb-2 -mt-[10px]">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                      {profile?.full_name || profile?.username}
+                      {profile?.personal_info?.nickname && (
+                        <span className="text-2xl text-gray-600 dark:text-gray-400 ml-2 font-normal">
+                          ({profile.personal_info.nickname})
+                        </span>
+                      )}
+                    </h1>
+                    <div className="flex items-center mb-2">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">@{profile?.username}</p>
+                      <span className="mx-2 text-gray-400">•</span>
+                      <Badge className="bg-green-500/80 text-white border-0">Active Member</Badge>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <span className="font-semibold">{profile?.followerCount}</span>
-                      <span className="text-muted-foreground">Followers</span>
+                    <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-2">
+                      <span className="mr-4 font-medium">0 followers</span>
+                      <span className="font-medium">0 following</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <span className="font-semibold">{profile?.postCount}</span>
-                      <span className="text-muted-foreground">Posts</span>
+
+                    {/* Friend avatars */}
+                    <div className="flex items-center">
+                      <div className="flex -space-x-2">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                          <div
+                            key={i}
+                            className="w-8 h-8 rounded-full border-2 border-white dark:border-gray-900 bg-gray-200 dark:bg-gray-700 overflow-hidden"
+                          >
+                            <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-500"></div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    Message
-                  </Button>
-                  <Button variant={profile?.isFollowing ? "outline" : "default"} size="sm" onClick={handleFollow}>
-                    {profile?.isFollowing ? (
-                      <>
-                        <Users className="h-4 w-4 mr-2" />
-                        Following
-                      </>
-                    ) : (
-                      <>
-                        <Heart className="h-4 w-4 mr-2" />
-                        Follow
-                      </>
-                    )}
-                  </Button>
+                {/* Action Buttons - Right aligned and vertically centered */}
+                <div className="flex items-center justify-end self-center">
+                  <div className="flex items-center space-x-2">
+                    <Link href="/profile">
+                      <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center gap-1.5">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                          <path d="m15 5 4 4" />
+                        </svg>
+                        Edit
+                      </button>
+                    </Link>
+                    <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center gap-1.5 whitespace-nowrap">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M12 5v14" />
+                        <path d="M5 12h14" />
+                      </svg>
+                      Add to story
+                    </button>
+                    <button
+                      onClick={() => setShowFriendsSection(!showFriendsSection)}
+                      className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md w-[45px] h-[35px] flex items-center justify-center p-2"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className={`transition-transform duration-200 ${showFriendsSection ? "rotate-180" : ""}`}
+                      >
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Profile Content */}
-        <Tabs defaultValue="posts" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="posts">Posts</TabsTrigger>
-            <TabsTrigger value="about">About</TabsTrigger>
-            <TabsTrigger value="media">Media</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="posts" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Posts</CardTitle>
-                <CardDescription>Latest posts from @{profile?.username}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-center py-8">No posts yet. Check back later!</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="about" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>About {profile?.displayName}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {profile?.bio && (
-                  <div>
-                    <h4 className="font-medium mb-2">Bio</h4>
-                    <p className="text-muted-foreground">{profile?.bio}</p>
-                  </div>
-                )}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {profile?.location && (
-                    <div>
-                      <h4 className="font-medium mb-1">Location</h4>
-                      <p className="text-muted-foreground">{profile?.location}</p>
+            {/* Medium screens: Horizontal layout with 0% overlap */}
+            <div className="hidden md:block lg:hidden">
+              <div className="pt-[5px] pb-[3px] px-6 flex items-start justify-between">
+                <div className="flex items-start space-x-4">
+                  {/* Profile Picture - 0% overlap on medium screens, 5px under cover */}
+                  <div className="relative">
+                    <div className="relative">
+                      <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
+                        <AvatarImage
+                          src={profile?.avatar_url || "/placeholder.svg"}
+                          alt={profile?.full_name || profile?.username}
+                        />
+                        <AvatarFallback className="text-5xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                          {getInitials(profile?.full_name || profile?.username || "U")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <button
+                        onClick={() => setIsAvatarDialogOpen(true)}
+                        disabled={isUploading}
+                        className="absolute bottom-3 right-3 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                      >
+                        <Image src="/camera.png" alt="Camera" width={16} height={16} className="dark:invert" />
+                      </button>
                     </div>
-                  )}
-                  <div>
-                    <h4 className="font-medium mb-1">Joined</h4>
-                    <p className="text-muted-foreground">
-                      {new Date(profile?.joinedDate || Date.now().toString()).toLocaleDateString("en-US", {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </p>
+                  </div>
+
+                  {/* Name and Info */}
+                  <div className="pt-[5px]">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                      {profile?.full_name || profile?.username}
+                      {profile?.personal_info?.nickname && (
+                        <span className="text-2xl text-gray-600 dark:text-gray-400 ml-2 font-normal">
+                          ({profile.personal_info.nickname})
+                        </span>
+                      )}
+                    </h1>
+                    <div className="flex items-center mt-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">@{profile?.username}</p>
+                      <span className="mx-2 text-gray-400">•</span>
+                      <Badge className="bg-green-500/80 text-white border-0">Active Member</Badge>
+                    </div>
+                    <div className="flex items-center mt-2 text-sm text-gray-600 dark:text-gray-400">
+                      <span className="mr-4 font-medium">0 followers</span>
+                      <span className="font-medium">0 following</span>
+                    </div>
+
+                    {/* Friend avatars */}
+                    <div className="flex items-center mt-3">
+                      <div className="flex -space-x-2 mr-2">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                          <div
+                            key={i}
+                            className="w-7 h-7 rounded-full border-2 border-white dark:border-gray-900 bg-gray-200 dark:bg-gray-700 overflow-hidden"
+                          >
+                            <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-500"></div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons - Right aligned */}
+                  <div className="flex items-center justify-end self-center">
+                    <div className="flex items-center space-x-2">
+                      <Link href="/profile">
+                        <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center gap-1.5">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                            <path d="m15 5 4 4" />
+                          </svg>
+                          Edit
+                        </button>
+                      </Link>
+                      <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center gap-1.5 whitespace-nowrap">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M12 5v14" />
+                          <path d="M5 12h14" />
+                        </svg>
+                        Add to story
+                      </button>
+                      <button
+                        onClick={() => setShowFriendsSection(!showFriendsSection)}
+                        className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md w-[45px] h-[35px] flex items-center justify-center p-2"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className={`transition-transform duration-200 ${showFriendsSection ? "rotate-180" : ""}`}
+                        >
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </div>
+            </div>
 
-          <TabsContent value="media" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Media</CardTitle>
-                <CardDescription>Photos and videos shared by @{profile?.username}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-center py-8">No media shared yet.</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+            {/* Small screens: Centered vertical layout with 50% overlap */}
+            <div className="block md:hidden">
+              <div className="pt-4 pb-4 px-4">
+                {/* Profile Picture - 50% overlap on small screens, centered, larger size */}
+                <div className="flex justify-center -mt-[105px] mb-[3px]">
+                  <div className="relative">
+                    <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
+                      <AvatarImage
+                        src={profile?.avatar_url || "/placeholder.svg"}
+                        alt={profile?.full_name || profile?.username}
+                      />
+                      <AvatarFallback className="text-5xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                        {getInitials(profile?.full_name || profile?.username || "U")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <button
+                      onClick={() => setIsAvatarDialogOpen(true)}
+                      disabled={isUploading}
+                      className="absolute bottom-3 right-3 bg-gray-200 dark:bg-gray-700 rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                    >
+                      <Image src="/camera.png" alt="Camera" width={16} height={16} className="dark:invert" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Name and Info - Centered */}
+                <div className="text-center">
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                    {profile?.full_name || profile?.username}
+                    {profile?.personal_info?.nickname && (
+                      <span className="text-2xl text-gray-600 dark:text-gray-400 ml-2 font-normal">
+                        ({profile.personal_info.nickname})
+                      </span>
+                    )}
+                  </h1>
+                  <div className="flex items-center justify-center mt-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">@{profile?.username}</p>
+                    <span className="mx-2 text-gray-400">•</span>
+                    <Badge className="bg-green-500/80 text-white border-0">Active Member</Badge>
+                  </div>
+                  <div className="flex items-center justify-center mt-2 text-sm text-gray-600 dark:text-gray-400">
+                    <span className="mr-4 font-medium">0 followers</span>
+                    <span className="font-medium">0 following</span>
+                  </div>
+
+                  {/* Friend avatars - Centered */}
+                  <div className="flex items-center justify-center mt-3">
+                    <div className="flex -space-x-2">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <div
+                          key={i}
+                          className="w-7 h-7 rounded-full border-2 border-white dark:border-gray-900 bg-gray-200 dark:bg-gray-700 overflow-hidden"
+                        >
+                          <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-500"></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Action Buttons - Centered and stacked */}
+                  <div className="flex flex-col space-y-2 mt-4">
+                    <div className="flex space-x-2">
+                      <Link href="/profile" className="flex-1">
+                        <button className="w-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center justify-center gap-1.5">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                            <path d="m15 5 4 4" />
+                          </svg>
+                          Edit
+                        </button>
+                      </Link>
+                      <button className="flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center justify-center gap-1.5">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M12 5v14" />
+                          <path d="M5 12h14" />
+                        </svg>
+                        Add to story
+                      </button>
+                      <button
+                        onClick={() => setShowFriendsSection(!showFriendsSection)}
+                        className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md w-[45px] h-[35px] flex items-center justify-center p-2"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className={`transition-transform duration-200 ${showFriendsSection ? "rotate-180" : ""}`}
+                        >
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* People You May Know Section */}
+          {showFriendsSection && (
+            <div className="pb-4 px-4">
+              <div className="border border-gray-200/50 dark:border-gray-700/50 rounded-lg px-4 py-2">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">People You May Know</h2>
+                  <button className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline">
+                    See all
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <div className="flex space-x-2 overflow-x-auto scrollbar-hide pb-2 friends-scroll-container">
+                    {/* Friend suggestion cards */}
+                    {[
+                      { name: "Dean White", mutualFriends: 4, avatar: "/placeholder.svg?height=300&width=300&text=DW" },
+                      {
+                        name: "Louis Prevost",
+                        mutualFriends: 2,
+                        followedBy: "2.1K",
+                        avatar: "/placeholder.svg?height=300&width=300&text=LP",
+                      },
+                      {
+                        name: "Jay Weinstein",
+                        mutualFriends: 6,
+                        avatar: "/placeholder.svg?height=300&width=300&text=JW",
+                      },
+                      {
+                        name: "Nicholas Holidazed",
+                        mutualFriends: 2,
+                        avatar: "/placeholder.svg?height=300&width=300&text=NH",
+                      },
+                      {
+                        name: "Kristina McCloy",
+                        mutualFriends: 2,
+                        avatar: "/placeholder.svg?height=300&width=300&text=KM",
+                      },
+                      {
+                        name: "Jess Griffin",
+                        mutualFriends: 2,
+                        avatar: "/placeholder.svg?height=300&width=300&text=JG",
+                      },
+                      {
+                        name: "Ross Carter",
+                        mutualFriends: 7,
+                        avatar: "/placeholder.svg?height=300&width=300&text=RC",
+                      },
+                      {
+                        name: "Sarah Johnson",
+                        mutualFriends: 3,
+                        avatar: "/placeholder.svg?height=300&width=300&text=SJ",
+                      },
+                      {
+                        name: "Mike Thompson",
+                        mutualFriends: 5,
+                        avatar: "/placeholder.svg?height=300&width=300&text=MT",
+                      },
+                      {
+                        name: "Emily Davis",
+                        mutualFriends: 1,
+                        avatar: "/placeholder.svg?height=300&width=300&text=ED",
+                      },
+                      {
+                        name: "Alex Rodriguez",
+                        mutualFriends: 8,
+                        avatar: "/placeholder.svg?height=300&width=300&text=AR",
+                      },
+                      { name: "Lisa Chen", mutualFriends: 4, avatar: "/placeholder.svg?height=300&width=300&text=LC" },
+                      {
+                        name: "David Wilson",
+                        mutualFriends: 3,
+                        avatar: "/placeholder.svg?height=300&width=300&text=DW2",
+                      },
+                      {
+                        name: "Rachel Green",
+                        mutualFriends: 6,
+                        avatar: "/placeholder.svg?height=300&width=300&text=RG",
+                      },
+                      {
+                        name: "Tom Anderson",
+                        mutualFriends: 2,
+                        avatar: "/placeholder.svg?height=300&width=300&text=TA",
+                      },
+                      {
+                        name: "Jessica Brown",
+                        mutualFriends: 9,
+                        avatar: "/placeholder.svg?height=300&width=300&text=JB",
+                      },
+                      {
+                        name: "Chris Martinez",
+                        mutualFriends: 1,
+                        avatar: "/placeholder.svg?height=300&width=300&text=CM",
+                      },
+                      {
+                        name: "Amanda Taylor",
+                        mutualFriends: 5,
+                        avatar: "/placeholder.svg?height=300&width=300&text=AT",
+                      },
+                    ].map((friend, index) => (
+                      <div
+                        key={index}
+                        className="flex-shrink-0 w-[175px] relative rounded-lg overflow-hidden border border-gray-300 dark:border-gray-700"
+                      >
+                        <button className="absolute top-2 right-2 w-8 h-8 bg-gray-800/60 hover:bg-gray-800/80 rounded-full flex items-center justify-center text-gray-200 z-10">
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path d="M18 6L6 18M6 6l12 12" />
+                          </svg>
+                        </button>
+
+                        {/* Full-sized image */}
+                        <div className="w-full h-[180px] bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                          <img
+                            src={friend.avatar || "/placeholder.svg"}
+                            alt={friend.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+
+                        {/* Info section */}
+                        <div className="p-3 bg-transparent">
+                          <h3 className="font-semibold text-sm text-gray-900 dark:text-white mb-1 truncate">
+                            {friend.name}
+                          </h3>
+
+                          {/* Mutual friends with icons */}
+                          <div className="flex items-center mb-3">
+                            {friend.followedBy ? (
+                              <p className="text-xs text-gray-600 dark:text-gray-400">
+                                Followed by {friend.followedBy}
+                              </p>
+                            ) : (
+                              <>
+                                <div className="flex -space-x-1 mr-1">
+                                  {[...Array(Math.min(2, friend.mutualFriends))].map((_, i) => (
+                                    <div
+                                      key={i}
+                                      className="w-4 h-4 rounded-full border border-gray-800 dark:border-gray-900 bg-gray-300 dark:bg-gray-600 overflow-hidden"
+                                    ></div>
+                                  ))}
+                                </div>
+                                <p className="text-xs text-gray-600 dark:text-gray-400">
+                                  {friend.mutualFriends} mutual friends
+                                </p>
+                              </>
+                            )}
+                          </div>
+
+                          {/* Add friend button */}
+                          <button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-1.5 px-3 rounded-md transition-colors flex items-center justify-center">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="mr-1.5"
+                            >
+                              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                              <circle cx="9" cy="7" r="4" />
+                              <line x1="19" y1="8" x2="19" y2="14" />
+                              <line x1="16" y1="11" x2="22" y2="11" />
+                            </svg>
+                            Add friend
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Left navigation arrow */}
+                  {showLeftArrow && (
+                    <button
+                      onClick={scrollFriendsLeft}
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-gray-800/60 hover:bg-gray-800/80 rounded-full flex items-center justify-center text-gray-200 z-10"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="m15 18-6-6 6-6" />
+                      </svg>
+                    </button>
+                  )}
+
+                  {/* Right navigation arrow */}
+                  {showRightArrow && (
+                    <button
+                      onClick={scrollFriendsRight}
+                      className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-gray-800/60 hover:bg-gray-800/80 rounded-full flex items-center justify-center text-gray-200 z-10"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="m9 18 6-6-6-6" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Divider */}
+          <div className="px-4">
+            <div className="h-px bg-gray-400 dark:bg-gray-600 w-full"></div>
+          </div>
+
+          {/* Navigation Tabs */}
+          <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 pt-[4px]">
+            <div className="px-4">
+              <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
+                <div className="flex items-center justify-between">
+                  <TabsList className="h-12 bg-transparent border-0 p-0 space-x-0 justify-start">
+                    <TabsTrigger
+                      value="posts"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
+                    >
+                      Posts
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="about"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
+                    >
+                      About
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="reels"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
+                    >
+                      Reels
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="photos"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden min-[450px]:flex"
+                    >
+                      Photos
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="videos"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden min-[625px]:flex"
+                    >
+                      Videos
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="groups"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden min-[575px]:flex"
+                    >
+                      Groups
+                    </TabsTrigger>
+
+                    {/* More Dropdown - Always visible */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowMoreDropdown(!showMoreDropdown)}
+                        className={`bg-transparent border-0 border-b-[3px] border-transparent rounded-none px-4 py-3 text-sm font-medium flex items-center justify-center space-x-1 transition-all duration-200 ${
+                          showMoreDropdown
+                            ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-md"
+                            : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md"
+                        }`}
+                      >
+                        <span>More</span>
+                        <svg className="w-3 h-3 ml-1" viewBox="0 0 12 12" fill="currentColor">
+                          <path d="M2 4l4 4 4-4H2z" />
+                        </svg>
+                      </button>
+
+                      {showMoreDropdown && (
+                        <div className="absolute left-0 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg rounded-md overflow-hidden z-50">
+                          <div className="py-1">
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                router.push(`/${profile?.username}/events`)
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Events
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                router.push(`/${profile?.username}/friends`)
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Friends
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                router.push(`/${profile?.username}/music`)
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Music
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                router.push(`/${profile?.username}/check-ins`)
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Check-ins
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                router.push(`/${profile?.username}/sports`)
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Sports
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                router.push(`/${profile?.username}/apps`)
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Apps and games
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                router.push(`/${profile?.username}/likes`)
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Likes
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                router.push(`/${profile?.username}/reviews`)
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Reviews given
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                router.push(`/${profile?.username}/manage-sections`)
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Manage sections
+                            </button>
+                            {/* Show Videos in dropdown on smallest screens */}
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                setActiveTab("videos")
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 max-[625px]:flex hidden"
+                            >
+                              Videos
+                            </button>
+                            {/* Show Groups in dropdown on small screens */}
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                setActiveTab("groups")
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 max-[575px]:flex hidden"
+                            >
+                              Groups
+                            </button>
+                            {/* Show Photos in dropdown on smallest screens */}
+                            <button
+                              onClick={() => {
+                                setShowMoreDropdown(false)
+                                setActiveTab("photos")
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 max-[450px]:flex hidden"
+                            >
+                              Photos
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </TabsList>
+                  <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md font-medium flex items-center justify-center">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="1" />
+                      <circle cx="19" cy="12" r="1" />
+                      <circle cx="5" cy="12" r="1" />
+                    </svg>
+                  </button>
+                </div>
+              </Tabs>
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <div className="py-4 px-4">
+            <div className="grid grid-cols-1 min-[900px]:grid-cols-[1fr_580px] gap-4 justify-items-center">
+              {/* Left Sidebar - Intro */}
+              <div className="space-y-4 w-full max-w-[580px] mx-auto min-[900px]:max-w-none min-[900px]:mx-0 min-[900px]:w-auto">
+                {/* Intro Card */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                  <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Intro</h2>
+
+                  {/* Bio */}
+                  <p className="text-gray-700 dark:text-gray-300 mb-2 text-center text-[0.875rem]">
+                    {formatBioWithLinks(profile?.bio || "")}
+                  </p>
+
+                  {/* Short Bio Tags */}
+                  {generateShortBio() && (
+                    <p className="text-gray-700 dark:text-gray-300 mb-2 text-center">{generateShortBio()}</p>
+                  )}
+
+                  {/* Website Link */}
+                  {socialLinks.website && (
+                    <a
+                      href={getSocialUrl("website", socialLinks.website)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center text-blue-600 dark:text-blue-400 hover:underline mb-4"
+                    >
+                      <Globe className="h-4 w-4 mr-2" />
+                      {socialLinks.website.replace(/^https?:\/\//, "")}
+                    </a>
+                  )}
+
+                  {/* Profile Info List */}
+                  <div className="space-y-3">
+                    {/* Work */}
+                    {profile?.work_info?.company && (
+                      <div className="flex items-center">
+                        <Briefcase className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                        <div>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">
+                            {profile?.work_info?.position ? `${profile?.work_info.position} at ` : "Works at "}
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {profile?.work_info.company}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Education */}
+                    {profile?.education_info?.school && (
+                      <div className="flex items-center">
+                        <GraduationCap className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                        <div>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">
+                            Studied {profile?.education_info?.degree || "at"}
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {" "}
+                              {profile?.education_info.school}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Location */}
+                    {getCurrentLocation() && (
+                      <div className="flex items-center">
+                        <MapPin className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                        <div>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">
+                            Lives in{" "}
+                            <span className="font-medium text-gray-900 dark:text-white">{getCurrentLocation()}</span>
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Hometown */}
+                    {profile?.location_info?.hometown && (
+                      <div className="flex items-center">
+                        <Home className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                        <div>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">
+                            From{" "}
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {profile?.location_info.hometown}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Joined Date */}
+                    <div className="flex items-center">
+                      <CalendarDays className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                      <div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          Joined{" "}
+                          {new Date(profile?.created_at || Date.now()).toLocaleDateString("en-US", {
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Edit Bio Button */}
+                  <Link href="/profile">
+                    <button className="w-full h-[35px] bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md font-medium mt-4">
+                      Edit bio
+                    </button>
+                  </Link>
+
+                  {/* Social Media Links */}
+                  {(socialPlatforms.some((platform) => socialLinks[platform.key]) ||
+                    specialPlatforms.some((platform) => socialLinks[platform.key])) && (
+                    <div className="flex flex-wrap items-center gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                      {/* Regular social platforms with links */}
+                      {socialPlatforms.map(({ key, icon: Icon, label }) => {
+                        const url = getSocialUrl(key, socialLinks[key])
+                        if (!url || key === "website") return null // Website already shown above
+
+                        return (
+                          <a
+                            key={key}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
+                            title={label}
+                          >
+                            <Icon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                          </a>
+                        )
+                      })}
+
+                      {/* Special platforms without links */}
+                      {specialPlatforms.map(({ key, icon: Icon, label }) => {
+                        if (!socialLinks[key]) return null
+
+                        const handleSpecialClick = () => {
+                          if (key === "discord") {
+                            alert(`Discord: ${socialLinks[key]}`)
+                          } else if (key === "therealworld") {
+                            alert(
+                              `The Real World member: ${socialLinks[key]}
+
+The Real World is Andrew Tate's exclusive community platform for entrepreneurs and high-achievers.`,
+                            )
+                          }
+                        }
+
+                        return (
+                          <button
+                            key={key}
+                            onClick={handleSpecialClick}
+                            className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
+                            title={`${label}: ${socialLinks[key]}`}
+                          >
+                            <Icon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Profile Info Card */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Profile</h2>
+                    <span className="text-sm text-blue-600 dark:text-blue-400">Digital creator</span>
+                  </div>
+                </div>
+
+                {/* Stats Card */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                  <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Profile Stats</h2>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 dark:text-gray-400">Member Since</span>
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {new Date(profile?.created_at || Date.now()).getFullYear()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 dark:text-gray-400">Profile Views</span>
+                      <span className="font-medium text-gray-900 dark:text-white">Coming Soon</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 dark:text-gray-400">Contributions</span>
+                      <span className="font-medium text-gray-900 dark:text-white">Coming Soon</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Main Content Area */}
+              <div className="w-full max-w-[580px]">
+                {/* Create Post Card */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-4">
+                  <div className="p-4">
+                    <div className="flex items-center space-x-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage
+                          src={profile?.avatar_url || "/placeholder.svg"}
+                          alt={profile?.full_name || profile?.username}
+                        />
+                        <AvatarFallback className="text-lg font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                          {getInitials(profile?.full_name || profile?.username || "U")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          placeholder="What's on your mind?"
+                          className="w-full bg-gray-100 dark:bg-gray-700 rounded-full px-4 py-2 text-gray-700 dark:text-gray-200 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                    <div className="border-t border-gray-200 dark:border-gray-700 mt-4 pt-3">
+                      <div className="flex justify-between">
+                        <button className="flex items-center justify-center flex-1 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 py-1.5 rounded-md">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="mr-2 text-red-500"
+                          >
+                            <path d="M2 12a5 5 0 0 0 5 5 8 8 0 0 1 5 2 8 8 0 0 1 5-2 5 5 0 0 0 5-5V7H2Z" />
+                            <path d="M6 11V8" />
+                            <path d="M10 11V7" />
+                            <path d="M14 11v-1" />
+                            <path d="M18 11V9" />
+                          </svg>
+                          Live video
+                        </button>
+                        <button className="flex items-center justify-center flex-1 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 py-1.5 rounded-md">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="mr-2 text-green-500"
+                          >
+                            <rect width="18" height="18" x="3" y="3" rx="2" />
+                            <circle cx="9" cy="9" r="2" />
+                            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                          </svg>
+                          Photo/video
+                        </button>
+                        <button className="flex items-center justify-center flex-1 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 py-1.5 rounded-md">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="mr-2 text-purple-500"
+                          >
+                            <rect width="14" height="14" x="8" y="8" rx="2" />
+                            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                          </svg>
+                          Reel
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <Tabs defaultValue="posts" value={activeTab} className="w-full">
+                  {/* Posts Tab */}
+                  <TabsContent value="posts" className="mt-0">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Posts</h3>
+                        <div className="flex items-center">
+                          <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium mr-2">
+                            Filters
+                          </button>
+                          <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium">
+                            Manage posts
+                          </button>
+                        </div>
+                      </div>
+                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <p>No posts to display yet.</p>
+                        <p className="text-sm mt-2">Check back later for updates!</p>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  {/* About Tab */}
+                  <TabsContent value="about" className="mt-0">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">About</h3>
+                        {profile?.personal_details?.about_me ? (
+                          <p className="text-gray-700 dark:text-gray-300">{profile?.personal_details.about_me}</p>
+                        ) : (
+                          <p className="text-gray-500 dark:text-gray-400">No additional information provided.</p>
+                        )}
+                      </div>
+
+                      {/* Personal Information */}
+                      {(profile?.personal_info?.nickname ||
+                        profile?.personal_info?.birthday ||
+                        profile?.personal_info?.gender ||
+                        (profile?.personal_info?.languages && profile?.personal_info.languages.length > 0)) && (
+                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                            Personal Information
+                          </h3>
+                          <div className="space-y-3">
+                            {profile?.personal_info?.nickname && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Nickname:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {profile?.personal_info.nickname}
+                                </span>
+                              </div>
+                            )}
+                            {profile?.personal_info?.birthday && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Birthday:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {new Date(profile?.personal_info.birthday).toLocaleDateString("en-US", {
+                                    month: "long",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </span>
+                              </div>
+                            )}
+                            {profile?.personal_info?.gender && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Gender:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white capitalize">
+                                  {profile?.personal_info.gender}
+                                </span>
+                              </div>
+                            )}
+                            {profile?.personal_info?.languages && profile?.personal_info.languages.length > 0 && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Languages:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {Array.isArray(profile?.personal_info.languages)
+                                    ? profile?.personal_info.languages.join(", ")
+                                    : profile?.personal_info.languages}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Location Information */}
+                      {(profile?.location_info?.current_city ||
+                        profile?.location_info?.current_state ||
+                        profile?.location_info?.current_country ||
+                        profile?.location_info?.hometown) && (
+                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Location</h3>
+                          <div className="space-y-3">
+                            {(profile?.location_info?.current_city ||
+                              profile?.location_info?.current_state ||
+                              profile?.location_info?.current_country) && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Current:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {[
+                                    profile?.location_info.current_city,
+                                    profile?.location_info.current_state,
+                                    profile?.location_info.current_country,
+                                  ]
+                                    .filter(Boolean)
+                                    .join(", ")}
+                                </span>
+                              </div>
+                            )}
+                            {profile?.location_info?.hometown && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Hometown:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {profile?.location_info.hometown}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Contact Information */}
+                      {(profile?.contact_info?.phone || profile?.contact_info?.alt_email) && (
+                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Contact</h3>
+                          <div className="space-y-3">
+                            {profile?.contact_info?.phone && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Phone:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {profile?.contact_info.phone}
+                                </span>
+                              </div>
+                            )}
+                            {profile?.contact_info?.alt_email && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Alt Email:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {profile?.contact_info.alt_email}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Personal Details */}
+                      {(profile?.personal_details?.relationship_status ||
+                        profile?.personal_details?.political_views ||
+                        profile?.personal_details?.religious_views) && (
+                        <div className="p-6">
+                          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Personal Details</h3>
+                          <div className="space-y-3">
+                            {profile?.personal_details?.relationship_status && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Relationship:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white capitalize">
+                                  {profile?.personal_details.relationship_status.replace(/_/g, " ")}
+                                </span>
+                              </div>
+                            )}
+                            {profile?.personal_details?.political_views && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Political Views:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white capitalize">
+                                  {profile?.personal_details.political_views}
+                                </span>
+                              </div>
+                            )}
+                            {profile?.personal_details?.religious_views && (
+                              <div className="flex items-start">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  Religious Views:
+                                </span>
+                                <span className="text-sm text-gray-900 dark:text-white capitalize">
+                                  {profile?.personal_details.religious_views}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </TabsContent>
+
+                  {/* Reels Tab */}
+                  <TabsContent value="reels" className="mt-0">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <p>No reels to display yet.</p>
+                        <p className="text-sm mt-2">Reels will appear here when shared.</p>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  {/* Photos Tab */}
+                  <TabsContent value="photos" className="mt-0">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <p>No photos to display yet.</p>
+                        <p className="text-sm mt-2">Photos will appear here when shared.</p>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  {/* Videos Tab */}
+                  <TabsContent value="videos" className="mt-0">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <p>No videos to display yet.</p>
+                        <p className="text-sm mt-2">Videos will appear here when shared.</p>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  {/* Groups Tab */}
+                  <TabsContent value="groups" className="mt-0">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <p>No groups to display yet.</p>
+                        <p className="text-sm mt-2">Groups will appear here when joined.</p>
+                      </div>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Upload Dialogs */}
+      <ImageUploadDialog
+        isOpen={isAvatarDialogOpen}
+        onClose={() => setIsAvatarDialogOpen(false)}
+        onUpload={handleAvatarUpload}
+        title="Upload Profile Picture"
+        description="Choose a new profile picture to represent you across Big Based."
+        imageType="avatar"
+        maxSizeMB={5}
+      />
+
+      <ImageUploadDialog
+        isOpen={isCoverDialogOpen}
+        onClose={() => setIsCoverDialogOpen(false)}
+        onUpload={handleCoverUpload}
+        title="Upload Cover Photo"
+        description="Choose a new cover photo for your profile. Recommended size: 1200x400px."
+        imageType="banner"
+        maxSizeMB={10}
+      />
+
+      {/* Show upload error if any */}
+      {uploadError && (
+        <div className="fixed bottom-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50">
+          <p>{uploadError}</p>
+          <button onClick={() => setUploadError(null)} className="mt-2 text-sm underline hover:no-underline">
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Click outside to close dropdown */}
+      {showMoreDropdown && <div className="fixed inset-0 z-40" onClick={() => setShowMoreDropdown(false)} />}
     </div>
   )
 }

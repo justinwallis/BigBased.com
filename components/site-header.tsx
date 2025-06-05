@@ -1,148 +1,324 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu, X } from "lucide-react"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { BBLogo } from "@/components/bb-logo"
-import { useAuth } from "@/contexts/auth-context"
-import { HeaderAuthIntegration } from "@/components/auth/header-auth-integration"
-import { NotificationBell } from "@/components/notification-bell"
 import { cn } from "@/lib/utils"
+import AuthButton from "@/components/auth/auth-button"
+import { Button } from "@/components/ui/button"
+import {
+  Menu,
+  Search,
+  Layers,
+  Monitor,
+  Layout,
+  Smartphone,
+  Code,
+  FileText,
+  ImageIcon,
+  PresentationIcon,
+  Type,
+  Shapes,
+  Box,
+  VideoIcon as Vector,
+  CuboidIcon as Cube,
+  ShoppingBag,
+  Users,
+  Building2,
+  HelpCircle,
+  Sparkles,
+} from "lucide-react"
+import { useState, useEffect } from "react"
+import MegaMenu from "@/components/mega-menu"
+import SearchPopup from "@/components/search-popup"
 
-const mainNavigation = [
+const navItems = [
   { name: "Home", href: "/" },
   { name: "About", href: "/about" },
-  { name: "Features", href: "/features" },
-  { name: "Revolution", href: "/revolution" },
   { name: "Transform", href: "/transform" },
-  { name: "Partners", href: "/partners" },
-  { name: "FAQ", href: "/faq" },
   { name: "Contact", href: "/contact" },
 ]
 
+// Define the features mega menu content
+const featuresMegaMenu = {
+  sections: [
+    {
+      title: "UX/UI",
+      items: [
+        {
+          icon: <Layers className="h-5 w-5" />,
+          label: "Framer Templates",
+          href: "/features/framer-templates",
+        },
+        {
+          icon: <Monitor className="h-5 w-5" />,
+          label: "Web UI Kits",
+          href: "/features/web-ui-kits",
+        },
+        {
+          icon: <Layout className="h-5 w-5" />,
+          label: "Wireframes",
+          href: "/features/wireframes",
+        },
+        {
+          icon: <Smartphone className="h-5 w-5" />,
+          label: "Mobile UI Kits",
+          href: "/features/mobile-ui-kits",
+        },
+        {
+          icon: <Code className="h-5 w-5" />,
+          label: "Coded Templates",
+          href: "/features/coded-templates",
+        },
+        {
+          icon: <FileText className="h-5 w-5" />,
+          label: "Notion Templates",
+          href: "/features/notion-templates",
+        },
+      ],
+    },
+    {
+      title: "GRAPHICS",
+      items: [
+        {
+          icon: <ImageIcon className="h-5 w-5" />,
+          label: "Mockups",
+          href: "/features/mockups",
+        },
+        {
+          icon: <PresentationIcon className="h-5 w-5" />,
+          label: "Presentations",
+          href: "/features/presentations",
+        },
+        {
+          icon: <Type className="h-5 w-5" />,
+          label: "Fonts",
+          href: "/features/fonts",
+        },
+        {
+          icon: <Shapes className="h-5 w-5" />,
+          label: "Icons",
+          href: "/features/icons",
+        },
+        {
+          icon: <Box className="h-5 w-5" />,
+          label: "Objects",
+          href: "/features/objects",
+        },
+      ],
+    },
+    {
+      title: "ILLUSTRATIONS",
+      items: [
+        {
+          icon: <Vector className="h-5 w-5" />,
+          label: "Vector",
+          href: "/features/vector",
+        },
+        {
+          icon: <Cube className="h-5 w-5" />,
+          label: "3D Assets",
+          href: "/features/3d-assets",
+        },
+      ],
+    },
+  ],
+  sideSections: [
+    {
+      title: "WORK WITH US",
+      items: [
+        {
+          icon: <ShoppingBag className="h-5 w-5" />,
+          label: "Open a shop",
+          href: "/features/open-shop",
+        },
+        {
+          icon: <Users className="h-5 w-5" />,
+          label: "Become an affiliate",
+          href: "/features/become-affiliate",
+        },
+      ],
+    },
+    {
+      title: "NEED HELP?",
+      items: [
+        {
+          icon: <Building2 className="h-5 w-5" />,
+          label: "Contacts",
+          href: "/contact",
+        },
+        {
+          icon: <HelpCircle className="h-5 w-5" />,
+          label: "F.A.Q.",
+          href: "/faq",
+        },
+      ],
+    },
+  ],
+  promoItem: {
+    icon: <Sparkles className="h-5 w-5" />,
+    title: "Magic launch",
+    subtitle: "Spring 2024",
+  },
+}
+
 export function SiteHeader() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
-  const { user, isAuthenticated } = useAuth()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const [visible, setVisible] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
+  const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false)
 
+  // Add scroll event listener
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
 
-  if (!mounted) {
-    return (
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 max-w-screen-2xl items-center">
-          <div className="mr-4 hidden md:flex">
-            <Link href="/" className="mr-6 flex items-center space-x-2">
-              <div className="h-6 w-6 bg-muted animate-pulse rounded" />
-              <span className="hidden font-bold sm:inline-block">Big Based</span>
-            </Link>
-          </div>
-        </div>
-      </header>
-    )
-  }
+      // Determine if scrolled past threshold
+      setScrolled(currentScrollY > 10)
+
+      // Determine scroll direction and visibility
+      if (currentScrollY > lastScrollY && currentScrollY > 80) {
+        // Scrolling down & past threshold - hide header
+        setVisible(false)
+      } else {
+        // Scrolling up or at top - show header
+        setVisible(true)
+      }
+
+      setLastScrollY(currentScrollY)
+    }
+
+    // Add event listener
+    window.addEventListener("scroll", handleScroll, { passive: true })
+
+    // Initial check
+    handleScroll()
+
+    // Clean up
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [lastScrollY])
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 max-w-screen-2xl items-center">
-        <div className="mr-4 hidden md:flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
-            <BBLogo className="h-6 w-6" />
-            <span className="hidden font-bold sm:inline-block">Big Based</span>
-          </Link>
-          <nav className="flex items-center gap-6 text-sm">
-            {mainNavigation.map((item) => (
+    <>
+      <SearchPopup isOpen={isSearchPopupOpen} onClose={() => setIsSearchPopupOpen(false)} />
+
+      <header
+        className={cn(
+          "fixed top-0 left-0 right-0 z-[100] w-full border-b transition-all duration-300",
+          scrolled
+            ? "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-md"
+            : "bg-background",
+          visible ? "translate-y-0" : "-translate-y-full",
+        )}
+      >
+        <div className="flex h-16 items-center justify-between px-4 w-full max-w-[1150px] mx-auto">
+          <div className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="relative w-8 h-8">
+                <Image
+                  src="/bb-logo.png"
+                  alt="Big Based Logo"
+                  width={32}
+                  height={32}
+                  className="object-contain"
+                  priority
+                />
+              </div>
+              <span className="font-bold text-xl">BigBased</span>
+            </Link>
+          </div>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-6">
+            {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "transition-colors hover:text-foreground/80",
-                  pathname === item.href ? "text-foreground" : "text-foreground/60",
+                  "text-sm font-medium transition-colors hover:text-primary",
+                  pathname === item.href ? "text-foreground" : "text-muted-foreground",
                 )}
               >
                 {item.name}
               </Link>
             ))}
+            <MegaMenu
+              label="Features"
+              sections={featuresMegaMenu.sections}
+              sideSections={featuresMegaMenu.sideSections}
+              promoItem={featuresMegaMenu.promoItem}
+              className="text-sm font-medium"
+            />
           </nav>
-        </div>
 
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild>
+          <div className="flex items-center space-x-2">
+            {/* Search Button */}
             <Button
               variant="ghost"
-              className="mr-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
+              size="icon"
+              onClick={() => setIsSearchPopupOpen(true)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <Search className="h-5 w-5" />
+              <span className="sr-only">Search</span>
+            </Button>
+
+            {/* Mobile Menu Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               <Menu className="h-5 w-5" />
-              <span className="sr-only">Toggle Menu</span>
+              <span className="sr-only">Toggle menu</span>
             </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="pr-0">
-            <div className="flex items-center justify-between">
-              <Link href="/" className="flex items-center space-x-2" onClick={() => setIsOpen(false)}>
-                <BBLogo className="h-6 w-6" />
-                <span className="font-bold">Big Based</span>
-              </Link>
-              <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)}>
-                <X className="h-4 w-4" />
-              </Button>
+
+            {/* Auth Button */}
+            <div className="hidden md:block">
+              <AuthButton />
             </div>
-            <nav className="flex flex-col gap-3 mt-6">
-              {mainNavigation.map((item) => (
+          </div>
+        </div>
+
+        {/* Mobile Navigation */}
+        {mobileMenuOpen && (
+          <div className="md:hidden px-4 py-4 border-t bg-background">
+            <nav className="flex flex-col space-y-4">
+              {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  onClick={() => setIsOpen(false)}
                   className={cn(
-                    "block px-2 py-1 text-lg transition-colors hover:text-foreground/80",
-                    pathname === item.href ? "text-foreground" : "text-foreground/60",
+                    "text-sm font-medium transition-colors hover:text-primary",
+                    pathname === item.href ? "text-foreground" : "text-muted-foreground",
                   )}
+                  onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.name}
                 </Link>
               ))}
-              {isAuthenticated && (
-                <Link
-                  href="/profile"
-                  onClick={() => setIsOpen(false)}
-                  className="block px-2 py-1 text-lg transition-colors hover:text-foreground/80"
-                >
-                  Profile
-                </Link>
-              )}
+              <Link
+                href="/features"
+                className={cn(
+                  "text-sm font-medium transition-colors hover:text-primary",
+                  pathname === "/features" ? "text-foreground" : "text-muted-foreground",
+                )}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Features
+              </Link>
+              <div className="pt-2">
+                <AuthButton />
+              </div>
             </nav>
-          </SheetContent>
-        </Sheet>
-
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <div className="w-full flex-1 md:w-auto md:flex-none">
-            <Link href="/" className="flex items-center space-x-2 md:hidden">
-              <BBLogo className="h-6 w-6" />
-              <span className="font-bold">Big Based</span>
-            </Link>
           </div>
-          <nav className="flex items-center gap-2">
-            {isAuthenticated && (
-              <>
-                <NotificationBell />
-                <Button variant="ghost" size="sm" asChild className="hidden md:inline-flex">
-                  <Link href="/profile">Profile</Link>
-                </Button>
-              </>
-            )}
-            <HeaderAuthIntegration />
-            <ThemeToggle />
-          </nav>
-        </div>
-      </div>
-    </header>
+        )}
+      </header>
+      {/* Add a spacer to prevent content from being hidden under the header */}
+      <div className="h-16"></div>
+    </>
   )
 }
-
-export default SiteHeader

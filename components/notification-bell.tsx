@@ -5,15 +5,15 @@ import { motion } from "framer-motion"
 import { useState, useEffect } from "react"
 
 interface NotificationBellProps {
-  onClick?: () => void
-  isSubscribed?: boolean
+  onClick: () => void
+  isSubscribed: boolean
   variant?: "fixed" | "inline" | "menu"
   className?: string
 }
 
-export function NotificationBell({
-  onClick = () => {},
-  isSubscribed = false,
+export default function NotificationBell({
+  onClick,
+  isSubscribed,
   variant = "fixed",
   className = "",
 }: NotificationBellProps) {
@@ -81,5 +81,3 @@ export function NotificationBell({
     </motion.button>
   )
 }
-
-export default NotificationBell

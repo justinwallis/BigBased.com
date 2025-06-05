@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-export function HeaderAuthIntegration() {
+export default function HeaderAuthIntegration() {
   const { user, signOut, isLoading } = useAuth()
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [authTab, setAuthTab] = useState<"login" | "signup">("login")
@@ -66,5 +66,3 @@ export function HeaderAuthIntegration() {
     </>
   )
 }
-
-export default HeaderAuthIntegration

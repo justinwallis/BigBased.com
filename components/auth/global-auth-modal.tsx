@@ -13,7 +13,7 @@ import { X } from "lucide-react"
 const LoginForm = dynamic(() => import("./login-form"), { ssr: false })
 const SignupForm = dynamic(() => import("./signup-form"), { ssr: false })
 
-export function GlobalAuthModal() {
+export default function GlobalAuthModal() {
   const { showAuthModal, setShowAuthModal, currentAuthTab, setAuthTab } = useAuth()
   const [isMounted, setIsMounted] = useState(false)
   const { theme } = useTheme()
@@ -111,5 +111,3 @@ export function GlobalAuthModal() {
     </Dialog>
   )
 }
-
-export default GlobalAuthModal

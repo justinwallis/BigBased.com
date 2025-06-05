@@ -11,7 +11,7 @@ interface BBLogoProps {
   inverted?: boolean
 }
 
-export function BBLogo({ size = "md", className, inverted = false }: BBLogoProps) {
+export default function BBLogo({ size = "md", className, inverted = false }: BBLogoProps) {
   const [mounted, setMounted] = useState(false)
   const { theme, systemTheme } = useTheme()
 
@@ -44,5 +44,3 @@ export function BBLogo({ size = "md", className, inverted = false }: BBLogoProps
     </div>
   )
 }
-
-export default BBLogo
