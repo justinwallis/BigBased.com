@@ -102,53 +102,46 @@ body {
   border-bottom: 2px solid #0284c7;
 }
 
-/* Dark mode background overrides for both profile pages */
-.dark .min-h-screen.bg-gray-100,
-.dark .min-h-screen.bg-gradient-to-br {
-  background: #030712 !important;
+/* Prevent FOUC by setting initial dark background */
+html {
+  background-color: #080808;
+}
+
+/* Dark mode profile page background overrides */
+.dark .min-h-screen.bg-gray-100 {
+  background-color: #080808 !important;
 }
 
 .dark .bg-white {
-  background-color: #111111 !important;
+  background-color: #0d0d0d !important;
 }
 
 .dark .bg-gray-100 {
-  background-color: #111111 !important;
+  background-color: #0d0d0d !important;
 }
 
-.dark .bg-gray-50 {
-  background-color: #111111 !important;
-}
-
-.dark .bg-blue-50 {
-  background-color: #111111 !important;
+/* Also target the main body background in dark mode */
+.dark body {
+  background-color: #080808 !important;
 }
 
 /* Ensure text remains visible in dark mode */
 .dark .bg-white .text-gray-900,
-.dark .bg-gray-100 .text-gray-900,
-.dark .bg-gray-50 .text-gray-900,
-.dark .bg-blue-50 .text-gray-900 {
+.dark .bg-gray-100 .text-gray-900 {
   color: #ffffff !important;
 }
 
 .dark .bg-white .text-gray-700,
-.dark .bg-gray-100 .text-gray-700,
-.dark .bg-gray-50 .text-gray-700,
-.dark .bg-blue-50 .text-gray-700 {
+.dark .bg-gray-100 .text-gray-700 {
   color: #e5e7eb !important;
 }
 
 .dark .bg-white .text-gray-600,
-.dark .bg-gray-100 .text-gray-600,
-.dark .bg-gray-50 .text-gray-600,
-.dark .bg-blue-50 .text-gray-600 {
+.dark .bg-gray-100 .text-gray-600 {
   color: #d1d5db !important;
 }
 
 .dark .bg-white .text-gray-500,
-.dark .bg-gray-100 .text-gray-500,
-.dark .bg-gray-50 .text-gray-500,
-.dark .bg-blue-50 .text-gray-500 {
+.dark .bg-gray-100 .text-gray-500 {
   color: #9ca3af !important;
 }
