@@ -386,3 +386,69 @@ html {
 .dark .block.font-medium.hover\:text-gray-600.dark\:text-white.dark\:hover\:text-gray-300 {
   color: #ffffff !important; /* White text for dark mode */
 }
+
+/* LIGHT MODE FIXES - Header navigation and search icon */
+/* Force header navigation text to be black in light mode */
+:not(.dark) .text-sm.font-medium.transition-colors,
+:not(.dark) nav .text-sm.font-medium,
+:not(.dark) header nav a,
+:not(.dark) header .text-muted-foreground {
+  color: #000000 !important;
+}
+
+/* Force search icon to be black in light mode */
+:not(.dark) .text-muted-foreground.hover\:text-foreground,
+:not(.dark) button .h-5.w-5,
+:not(.dark) header button svg {
+  color: #000000 !important;
+}
+
+/* DARK MODE BUTTON FIXES - Force specific buttons to #131313 */
+/* 3-dot button - multiple selectors to ensure it works */
+.dark button.bg-gray-200:not(.space-x-2 *):not(.flex-1),
+.dark .justify-between button:last-child,
+.dark .flex.items-center.justify-end button:last-child,
+.dark button[class*="w-[45px]"],
+.dark button[class*="h-[35px]"]:not(.space-x-2 *) {
+  background-color: #131313 !important;
+}
+
+.dark button.bg-gray-200:not(.space-x-2 *):not(.flex-1):hover,
+.dark .justify-between button:last-child:hover,
+.dark .flex.items-center.justify-end button:last-child:hover,
+.dark button[class*="w-[45px]"]:hover,
+.dark button[class*="h-[35px]"]:not(.space-x-2 *):hover {
+  background-color: #1f1f1f !important;
+}
+
+/* Filters and Manage posts buttons - force to #131313 */
+.dark .flex.items-center button.bg-gray-200,
+.dark .flex.justify-between .flex.items-center button,
+\
+.dark button:contains("Filters"),
+.dark button:contains("Manage posts") {
+  background-color: #131313 !important;
+}
+
+.dark .flex.items-center button.bg-gray-200:hover,
+.dark .flex.justify-between .flex.items-center button:hover {
+  background-color: #1f1f1f !important;
+}
+
+/* More specific targeting for Posts section buttons */
+.dark .bg-white.dark\:bg-\[\#0d0d0d\].rounded-lg.shadow .flex.justify-between.items-center button {
+  background-color: #131313 !important;
+}
+
+.dark .bg-white.dark\:bg-\[\#0d0d0d\].rounded-lg.shadow .flex.justify-between.items-center button:hover {
+  background-color: #1f1f1f !important;
+}
+
+/* Target by button text content if possible */
+.dark button[class*="bg-gray-200"][class*="hover:bg-gray-300"] {
+  background-color: #131313 !important;
+}
+
+.dark button[class*="bg-gray-200"][class*="hover:bg-gray-300"]:hover {
+  background-color: #1f1f1f !important;
+}
