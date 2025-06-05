@@ -102,46 +102,97 @@ body {
   border-bottom: 2px solid #0284c7;
 }
 
-/* Prevent FOUC by setting initial dark background */
-html {
-  background-color: #080808;
-}
-
-/* Dark mode profile page background overrides */
-.dark .min-h-screen.bg-gray-100 {
+/* COMPREHENSIVE DARK MODE BACKGROUND OVERRIDES - APPLIES TO ALL PAGES */
+.dark {
+  /* Main page backgrounds */
   background-color: #080808 !important;
 }
 
-.dark .bg-white {
-  background-color: #0d0d0d !important;
-}
-
-.dark .bg-gray-100 {
-  background-color: #0d0d0d !important;
-}
-
-/* Also target the main body background in dark mode */
 .dark body {
+  background-color: #080808 !important;
+}
+
+.dark html {
+  background-color: #080808 !important;
+}
+
+/* All white backgrounds become cards */
+.dark .bg-white,
+.dark [class*="bg-white"] {
+  background-color: #0d0d0d !important;
+}
+
+/* All gray backgrounds become cards */
+.dark .bg-gray-50,
+.dark .bg-gray-100,
+.dark .bg-gray-200,
+.dark [class*="bg-gray-50"],
+.dark [class*="bg-gray-100"],
+.dark [class*="bg-gray-200"] {
+  background-color: #0d0d0d !important;
+}
+
+/* All slate backgrounds become cards */
+.dark .bg-slate-50,
+.dark .bg-slate-100,
+.dark .bg-slate-200,
+.dark [class*="bg-slate-50"],
+.dark [class*="bg-slate-100"],
+.dark [class*="bg-slate-200"] {
+  background-color: #0d0d0d !important;
+}
+
+/* All neutral backgrounds become cards */
+.dark .bg-neutral-50,
+.dark .bg-neutral-100,
+.dark .bg-neutral-200,
+.dark [class*="bg-neutral-50"],
+.dark [class*="bg-neutral-100"],
+.dark [class*="bg-neutral-200"] {
+  background-color: #0d0d0d !important;
+}
+
+/* Main page containers */
+.dark .min-h-screen,
+.dark [class*="min-h-screen"] {
   background-color: #080808 !important;
 }
 
 /* Ensure text remains visible in dark mode */
 .dark .bg-white .text-gray-900,
-.dark .bg-gray-100 .text-gray-900 {
+.dark .bg-gray-100 .text-gray-900,
+.dark .bg-gray-50 .text-gray-900,
+.dark .bg-slate-100 .text-gray-900,
+.dark .bg-neutral-100 .text-gray-900 {
   color: #ffffff !important;
 }
 
 .dark .bg-white .text-gray-700,
-.dark .bg-gray-100 .text-gray-700 {
+.dark .bg-gray-100 .text-gray-700,
+.dark .bg-gray-50 .text-gray-700,
+.dark .bg-slate-100 .text-gray-700,
+.dark .bg-neutral-100 .text-gray-700 {
   color: #e5e7eb !important;
 }
 
 .dark .bg-white .text-gray-600,
-.dark .bg-gray-100 .text-gray-600 {
+.dark .bg-gray-100 .text-gray-600,
+.dark .bg-gray-50 .text-gray-600,
+.dark .bg-slate-100 .text-gray-600,
+.dark .bg-neutral-100 .text-gray-600 {
   color: #d1d5db !important;
 }
 
 .dark .bg-white .text-gray-500,
-.dark .bg-gray-100 .text-gray-500 {
+.dark .bg-gray-100 .text-gray-500,
+.dark .bg-gray-50 .text-gray-500,
+.dark .bg-slate-100 .text-gray-500,
+.dark .bg-neutral-100 .text-gray-500 {
   color: #9ca3af !important;
+}
+
+.dark .bg-white .text-black,
+.dark .bg-gray-100 .text-black,
+.dark .bg-gray-50 .text-black {
+  color: #ffffff !important;
 }
