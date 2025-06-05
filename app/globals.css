@@ -15,7 +15,7 @@ body {
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
@@ -49,11 +49,14 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
   .dark {
-    --background: 0 0% 3.9%;
+    /* Changed from 0 0% 3.9% to match #080808 */
+    --background: 0 0% 3.1%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
+    /* Changed from 0 0% 3.9% to match #0d0d0d */
+    --card: 0 0% 5.1%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
+    /* Changed from 0 0% 3.9% to match #0d0d0d */
+    --popover: 0 0% 5.1%;
     --popover-foreground: 0 0% 98%;
     --primary: 0 0% 98%;
     --primary-foreground: 0 0% 9%;
@@ -100,6 +103,11 @@ body {
 
 .tabs-list-hover-effect [data-state="active"] {
   border-bottom: 2px solid #0284c7;
+}
+
+/* Set initial background to prevent flash */
+html {
+  background-color: #080808;
 }
 
 /* COMPREHENSIVE DARK MODE BACKGROUND OVERRIDES - APPLIES TO ALL PAGES */
@@ -156,6 +164,16 @@ body {
 .dark .min-h-screen,
 .dark [class*="min-h-screen"] {
   background-color: #080808 !important;
+}
+
+/* Target any remaining gray backgrounds that might be causing the flash */
+.dark .bg-gray-900,
+.dark .bg-gray-800,
+.dark .bg-gray-700,
+.dark [class*="bg-gray-900"],
+.dark [class*="bg-gray-800"],
+.dark [class*="bg-gray-700"] {
+  background-color: #0d0d0d !important;
 }
 
 /* Ensure text remains visible in dark mode */
