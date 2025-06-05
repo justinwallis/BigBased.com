@@ -110,9 +110,8 @@ html {
   background-color: #080808;
 }
 
-/* COMPREHENSIVE DARK MODE BACKGROUND OVERRIDES - APPLIES TO ALL PAGES */
+/* SELECTIVE DARK MODE BACKGROUND OVERRIDES */
 .dark {
-  /* Main page backgrounds */
   background-color: #080808 !important;
 }
 
@@ -124,93 +123,68 @@ html {
   background-color: #080808 !important;
 }
 
-/* All white backgrounds become cards */
-.dark .bg-white,
-.dark [class*="bg-white"] {
-  background-color: #0d0d0d !important;
-}
-
-/* All gray backgrounds become cards */
-.dark .bg-gray-50,
-.dark .bg-gray-100,
-.dark .bg-gray-200,
-.dark [class*="bg-gray-50"],
-.dark [class*="bg-gray-100"],
-.dark [class*="bg-gray-200"] {
-  background-color: #0d0d0d !important;
-}
-
-/* All slate backgrounds become cards */
-.dark .bg-slate-50,
-.dark .bg-slate-100,
-.dark .bg-slate-200,
-.dark [class*="bg-slate-50"],
-.dark [class*="bg-slate-100"],
-.dark [class*="bg-slate-200"] {
-  background-color: #0d0d0d !important;
-}
-
-/* All neutral backgrounds become cards */
-.dark .bg-neutral-50,
-.dark .bg-neutral-100,
-.dark .bg-neutral-200,
-.dark [class*="bg-neutral-50"],
-.dark [class*="bg-neutral-100"],
-.dark [class*="bg-neutral-200"] {
-  background-color: #0d0d0d !important;
-}
-
 /* Main page containers */
-.dark .min-h-screen,
-.dark [class*="min-h-screen"] {
+.dark .min-h-screen {
   background-color: #080808 !important;
 }
 
-/* Target any remaining gray backgrounds that might be causing the flash */
-.dark .bg-gray-900,
-.dark .bg-gray-800,
-.dark .bg-gray-700,
-.dark [class*="bg-gray-900"],
-.dark [class*="bg-gray-800"],
-.dark [class*="bg-gray-700"] {
+/* Card backgrounds - be more specific to avoid overriding buttons */
+.dark .bg-white.rounded-lg,
+.dark .bg-white.shadow,
+.dark .bg-white.border,
+.dark .bg-white.p-4,
+.dark .bg-white.p-6 {
   background-color: #0d0d0d !important;
 }
 
-/* Ensure text remains visible in dark mode */
-.dark .bg-white .text-gray-900,
-.dark .bg-gray-100 .text-gray-900,
-.dark .bg-gray-50 .text-gray-900,
-.dark .bg-slate-100 .text-gray-900,
-.dark .bg-neutral-100 .text-gray-900 {
+/* Specific card selectors */
+.dark .bg-white:not(button):not(.hover\:bg-gray-300):not(.hover\:bg-gray-200) {
+  background-color: #0d0d0d !important;
+}
+
+.dark .bg-gray-100:not(button):not(.hover\:bg-gray-300):not(.hover\:bg-gray-200) {
+  background-color: #0d0d0d !important;
+}
+
+/* Keep button backgrounds visible */
+.dark .bg-gray-200 {
+  background-color: #374151 !important; /* Darker gray for buttons */
+}
+
+.dark .hover\:bg-gray-300:hover {
+  background-color: #4b5563 !important; /* Lighter on hover */
+}
+
+.dark .bg-blue-600 {
+  background-color: #2563eb !important; /* Keep blue buttons blue */
+}
+
+.dark .hover\:bg-blue-700:hover {
+  background-color: #1d4ed8 !important;
+}
+
+/* Ensure text remains visible */
+.dark .text-gray-900 {
   color: #ffffff !important;
 }
 
-.dark .bg-white .text-gray-700,
-.dark .bg-gray-100 .text-gray-700,
-.dark .bg-gray-50 .text-gray-700,
-.dark .bg-slate-100 .text-gray-700,
-.dark .bg-neutral-100 .text-gray-700 {
+.dark .text-gray-700 {
   color: #e5e7eb !important;
 }
 
-.dark .bg-white .text-gray-600,
-.dark .bg-gray-100 .text-gray-600,
-.dark .bg-gray-50 .text-gray-600,
-.dark .bg-slate-100 .text-gray-600,
-.dark .bg-neutral-100 .text-gray-600 {
+.dark .text-gray-600 {
   color: #d1d5db !important;
 }
 
-.dark .bg-white .text-gray-500,
-.dark .bg-gray-100 .text-gray-500,
-.dark .bg-gray-50 .text-gray-500,
-.dark .bg-slate-100 .text-gray-500,
-.dark .bg-neutral-100 .text-gray-500 {
+.dark .text-gray-500 {
   color: #9ca3af !important;
 }
 
-.dark .bg-white .text-black,
-.dark .bg-gray-100 .text-black,
-.dark .bg-gray-50 .text-black {
+.dark .text-black {
+  color: #ffffff !important;
+}
+
+/* Specific button text colors */
+.dark .bg-gray-200 .text-gray-700 {
   color: #ffffff !important;
 }
