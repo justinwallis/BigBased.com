@@ -49,13 +49,11 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
   .dark {
-    /* Changed from 0 0% 3.9% to match #080808 */
+    /* Force the exact #080808 color */
     --background: 0 0% 3.1%;
     --foreground: 0 0% 98%;
-    /* Changed from 0 0% 3.9% to match #0d0d0d */
     --card: 0 0% 5.1%;
     --card-foreground: 0 0% 98%;
-    /* Changed from 0 0% 3.9% to match #0d0d0d */
     --popover: 0 0% 5.1%;
     --popover-foreground: 0 0% 98%;
     --primary: 0 0% 98%;
@@ -105,12 +103,11 @@ body {
   border-bottom: 2px solid #0284c7;
 }
 
-/* Set initial background to prevent flash */
+/* FORCE EXACT #080808 BACKGROUND - NO DILUTION */
 html {
-  background-color: #080808;
+  background-color: #080808 !important;
 }
 
-/* DARK MODE BACKGROUND OVERRIDES */
 .dark {
   background-color: #080808 !important;
 }
@@ -123,43 +120,61 @@ html {
   background-color: #080808 !important;
 }
 
-/* Main page containers */
+/* Remove any potential overlays or filters that could dilute the color */
+.dark *::before,
+.dark *::after {
+  background-color: transparent !important;
+}
+
+/* Force remove any backdrop filters or opacity effects */
+.dark * {
+  backdrop-filter: none !important;
+  filter: none !important;
+}
+
+/* Ensure no gradients or background images interfere */
 .dark .min-h-screen {
   background-color: #080808 !important;
+  background-image: none !important;
+  background: #080808 !important;
 }
 
-/* CARD BACKGROUNDS - Make all cards visible */
-.dark .bg-white {
-  background-color: #0d0d0d !important;
+/* Target any potential overlay elements */
+.dark .bg-gradient-to-r,
+.dark .bg-gradient-to-l,
+.dark .bg-gradient-to-t,
+.dark .bg-gradient-to-b,
+.dark .bg-gradient-to-br,
+.dark .bg-gradient-to-bl,
+.dark .bg-gradient-to-tr,
+.dark .bg-gradient-to-tl {
+  background: #080808 !important;
+  background-image: none !important;
 }
 
-.dark .bg-gray-100 {
-  background-color: #0d0d0d !important;
+/* Remove any potential opacity effects */
+.dark .bg-opacity-90,
+.dark .bg-opacity-80,
+.dark .bg-opacity-70,
+.dark .bg-opacity-60,
+.dark .bg-opacity-50 {
+  background-color: #080808 !important;
+  opacity: 1 !important;
 }
 
-.dark .bg-gray-50 {
-  background-color: #0d0d0d !important;
-}
-
-/* BUTTON OVERRIDES - Override cards for buttons specifically */
-.dark button.bg-white,
-.dark button.bg-gray-100,
-.dark button.bg-gray-50 {
-  background-color: #374151 !important; /* Darker gray for buttons */
-}
-
+/* BUTTON OVERRIDES - Keep buttons visible */
 .dark button.bg-gray-200,
 .dark .bg-gray-200 {
-  background-color: #374151 !important; /* Darker gray for buttons */
+  background-color: #374151 !important;
 }
 
 .dark button:hover.bg-gray-300,
 .dark .hover\:bg-gray-300:hover {
-  background-color: #4b5563 !important; /* Lighter on hover */
+  background-color: #4b5563 !important;
 }
 
 .dark .bg-blue-600 {
-  background-color: #2563eb !important; /* Keep blue buttons blue */
+  background-color: #2563eb !important;
 }
 
 .dark .hover\:bg-blue-700:hover {
