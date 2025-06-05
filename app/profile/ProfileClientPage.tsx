@@ -494,11 +494,11 @@ export default function ProfileClientPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-bb-darkest dark:bg-bb-darkest">
       <div className="container mx-auto py-4 space-y-8">
         {/* Debug Info */}
         {process.env.NODE_ENV === "development" && (
-          <Card className="border-yellow-200 bg-yellow-50">
+          <Card className="border-yellow-200 bg-bb-light dark:bg-bb-light">
             <CardHeader>
               <CardTitle className="text-sm">Debug Info</CardTitle>
             </CardHeader>
@@ -517,7 +517,7 @@ export default function ProfileClientPage() {
         )}
 
         {/* Profile Header with Banner Preview */}
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden bg-bb-lighter dark:bg-bb-lighter">
           <div className="relative">
             {/* Banner */}
             <InteractiveBannerUpload
@@ -569,7 +569,7 @@ export default function ProfileClientPage() {
         </Card>
 
         {/* Profile Tabs */}
-        <Tabs defaultValue={initialTab} className="space-y-6">
+        <Tabs defaultValue={initialTab} className="space-y-6 bg-bb-darkest dark:bg-bb-darkest">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger
               value="general"
@@ -666,11 +666,11 @@ export default function ProfileClientPage() {
           </TabsList>
 
           {/* General Tab */}
-          <TabsContent value="general">
+          <TabsContent value="general" className="bg-bb-darkest dark:bg-bb-darkest">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Main Profile Form */}
               <div className="lg:col-span-2">
-                <Card>
+                <Card className="bg-bb-lighter dark:bg-bb-lighter">
                   <CardHeader>
                     <CardTitle>Profile Information</CardTitle>
                     <CardDescription>Update your profile information and personal details.</CardDescription>
@@ -1279,7 +1279,7 @@ export default function ProfileClientPage() {
                 {profile && <ProfileInsights profileData={profile} />}
 
                 {/* Recent Activity */}
-                <Card>
+                <Card className="bg-bb-lighter dark:bg-bb-lighter">
                   <CardHeader>
                     <CardTitle className="text-lg">Recent Activity</CardTitle>
                   </CardHeader>
@@ -1301,7 +1301,7 @@ export default function ProfileClientPage() {
                 </Card>
 
                 {/* Quick Stats */}
-                <Card>
+                <Card className="bg-bb-lighter dark:bg-bb-lighter">
                   <CardHeader>
                     <CardTitle className="text-lg">Profile Stats</CardTitle>
                   </CardHeader>
@@ -1330,8 +1330,8 @@ export default function ProfileClientPage() {
           </TabsContent>
 
           {/* Security Tab */}
-          <TabsContent value="security">
-            <Card>
+          <TabsContent value="security" className="bg-bb-darkest dark:bg-bb-darkest">
+            <Card className="bg-bb-lighter dark:bg-bb-lighter">
               <CardHeader>
                 <CardTitle>Security Settings</CardTitle>
                 <CardDescription>Manage your account security and authentication methods.</CardDescription>
@@ -1385,8 +1385,8 @@ export default function ProfileClientPage() {
           </TabsContent>
 
           {/* Notifications Tab */}
-          <TabsContent value="notifications">
-            <Card>
+          <TabsContent value="notifications" className="bg-bb-darkest dark:bg-bb-darkest">
+            <Card className="bg-bb-lighter dark:bg-bb-lighter">
               <CardHeader>
                 <CardTitle>Notification Preferences</CardTitle>
                 <CardDescription>Choose how you want to be notified about activity.</CardDescription>
@@ -1420,8 +1420,8 @@ export default function ProfileClientPage() {
           </TabsContent>
 
           {/* Billing Tab */}
-          <TabsContent value="billing">
-            <Card>
+          <TabsContent value="billing" className="bg-bb-darkest dark:bg-bb-darkest">
+            <Card className="bg-bb-lighter dark:bg-bb-lighter">
               <CardHeader>
                 <CardTitle>Billing & Subscription</CardTitle>
                 <CardDescription>Manage your subscription and billing information.</CardDescription>
