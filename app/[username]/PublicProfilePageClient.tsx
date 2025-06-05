@@ -353,7 +353,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
           <button
             onClick={() => setIsCoverDialogOpen(true)}
             disabled={isUploading}
-            className="absolute bottom-4 right-4 bg-gray-800/90 dark:bg-white/90 text-white dark:text-gray-800 px-3 h-[35px] rounded-md text-sm font-medium flex items-center gap-1.5 hover:bg-gray-900 dark:hover:bg-white transition-colors disabled:opacity-50"
+            className="absolute bottom-4 right-4 bg-gray-800/90 dark:bg-white/90 text-white dark:text-gray-800 px-3 h-[35px] rounded-md text-sm font-medium flex items-center gap-1.5 hover:bg-gray-900 dark:hover:bg-white transition-colors disabled:opacity-50 z-50"
           >
             <Image src="/camera.png" alt="Camera" width={16} height={16} className="invert dark:invert-0" />
             <span className="hidden md:inline">Edit cover photo</span>
