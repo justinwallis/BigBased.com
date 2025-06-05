@@ -188,3 +188,66 @@ body {
 .dark .hover\:bg-gray-300:hover {
   background-color: #1a1a1b !important; /* Button hover states */
 }
+
+/* Profile page specific overrides */
+.dark .min-h-screen.bg-gradient-to-br {
+  background: #0d0d0d !important; /* Remove gradient, use darkest background */
+}
+
+.dark .bg-gradient-to-br.from-gray-50.to-blue-50 {
+  background: #0d0d0d !important; /* Remove gradient, use darkest background */
+}
+
+.dark .dark\:from-gray-900.dark\:to-gray-800 {
+  background: #0d0d0d !important; /* Remove gradient, use darkest background */
+}
+
+/* Profile page cards and containers */
+.dark .bg-white.dark\:bg-gray-800 {
+  background-color: #1a1a1b !important; /* Lighter box color for main cards */
+}
+
+.dark .bg-gray-800 {
+  background-color: #1a1a1b !important; /* Lighter box color */
+}
+
+.dark .bg-gray-50 {
+  background-color: #111111 !important; /* Light box color */
+}
+
+.dark .dark\:bg-gray-800 {
+  background-color: #1a1a1b !important; /* Lighter box color */
+}
+
+/* Profile page specific elements */
+.dark .border-yellow-200.bg-yellow-50 {
+  background-color: #111111 !important; /* Debug card background */
+  border-color: #1a1a1b !important;
+}
+
+/* Profile completion and sidebar cards */
+.dark .bg-white.shadow {
+  background-color: #1a1a1b !important; /* Lighter box color for cards */
+}
+
+/* Tabs and navigation in profile */
+.dark .bg-white.dark\:bg-gray-900.pt-\[4px\] {
+  background-color: #0d0d0d !important; /* Tabs area same as background */
+}
+
+/* Form elements in profile */
+.dark .bg-background {
+  background-color: #111111 !important; /* Form input backgrounds */
+}
+
+.dark input.bg-background {
+  background-color: #111111 !important; /* Input fields */
+}
+
+.dark textarea.bg-background {
+  background-color: #111111 !important; /* Textarea fields */
+}
+
+.dark select.bg-background {
+  background-color: #111111 !important; /* Select fields */
+}
