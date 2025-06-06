@@ -17,6 +17,7 @@ import { ErrorBoundary } from "@/components/error-boundary"
 import type React from "react"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/use-toast"
+import { checkUserMfaStatus } from "@/app/actions/mfa-actions"
 
 import { useAuth } from "@/contexts/auth-context"
 import { SignupPopup } from "@/components/signup-popup"
@@ -195,7 +196,12 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    console.log("🚀 === HEADER LOGIN START ===")
+    console.log("📧 Email:", email)
+    console.log("🔒 Password length:", password.length)
+
     if (!email || !password) {
+      console.log("❌ Missing email or password")
       toast({
         title: "Error",
         description: "Email and password are required",
@@ -207,10 +213,28 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     setIsLoggingIn(true)
 
     try {
+      // First check MFA status before attempting login
+      console.log("🔍 Checking MFA status for:", email)
+      const mfaCheck = await checkUserMfaStatus(email)
+      console.log("🔍 MFA Check Result:", JSON.stringify(mfaCheck, null, 2))
+
+      if (mfaCheck.success && mfaCheck.data?.enabled) {
+        console.log("🔐 MFA IS ENABLED - Redirecting to sign-in page")
+        sessionStorage.setItem("mfaEmail", email)
+        sessionStorage.setItem("mfaPassword", password)
+        router.push("/auth/sign-in?mfa=required")
+        return
+      } else {
+        console.log("🔓 MFA NOT ENABLED - Proceeding with normal login")
+      }
+
       // Use the same signIn function as the sign-in page
+      console.log("🔑 Calling signIn function...")
       const result = await signIn(email, password)
+      console.log("🔑 SignIn Result:", JSON.stringify(result, null, 2))
 
       if (result.error) {
+        console.log("❌ SignIn Error:", result.error)
         // Store email and error info for sign-in page
         sessionStorage.setItem("loginEmail", email)
 
@@ -218,6 +242,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           result.error.message.includes("Invalid login credentials") ||
           result.error.message.includes("Email not confirmed")
         ) {
+          console.log("❌ Invalid credentials error")
           sessionStorage.setItem(
             "loginError",
             "The email or mobile number you entered isn't connected to an account. Find your account and log in",
@@ -226,39 +251,50 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           result.error.message.includes("Invalid password") ||
           result.error.message.includes("Wrong password")
         ) {
+          console.log("❌ Wrong password error")
           sessionStorage.setItem("loginError", "The password you've entered is incorrect. Forgot Password?")
         } else {
+          console.log("❌ Other error:", result.error.message)
           sessionStorage.setItem("loginError", result.error.message)
         }
 
+        console.log("🔄 Redirecting to sign-in page with error")
         router.push("/auth/sign-in")
         return
       }
 
       if (result.mfaRequired) {
-        // MFA is required, redirect to sign-in page for MFA verification
+        console.log("🔐 MFA REQUIRED from signIn result - Redirecting to sign-in page")
         sessionStorage.setItem("mfaEmail", email)
         sessionStorage.setItem("mfaPassword", password)
         router.push("/auth/sign-in?mfa=required")
         return
       }
 
-      // Login successful
-      toast({
-        title: "Success",
-        description: "You have been logged in successfully",
-      })
-      // Clear form
-      setEmail("")
-      setPassword("")
+      if (result.data && result.data.user) {
+        console.log("✅ Login successful!")
+        console.log("👤 User:", result.data.user.email)
+        // Login successful
+        toast({
+          title: "Success",
+          description: "You have been logged in successfully",
+        })
+        // Clear form
+        setEmail("")
+        setPassword("")
+      } else {
+        console.log("⚠️ Unexpected result structure:", result)
+      }
     } catch (error) {
-      console.error("Login error:", error)
+      console.error("💥 Login error:", error)
+      console.error("💥 Error stack:", error.stack)
       toast({
         title: "Error",
         description: "An unexpected error occurred",
         variant: "destructive",
       })
     } finally {
+      console.log("🏁 === HEADER LOGIN END ===")
       setIsLoggingIn(false)
     }
   }
