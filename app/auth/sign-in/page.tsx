@@ -12,6 +12,7 @@ export default function SignInPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState("")
   const [prefillEmail, setPrefillEmail] = useState("")
+  const [prefillPassword, setPrefillPassword] = useState("")
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -35,9 +36,10 @@ export default function SignInPage() {
       }
     }
 
-    // Check for error messages and email from header login
+    // Check for error messages and credentials from header login
     const loginError = sessionStorage.getItem("loginError")
     const loginEmail = sessionStorage.getItem("loginEmail")
+    const loginPassword = sessionStorage.getItem("loginPassword")
 
     if (loginError) {
       setErrorMessage(loginError)
@@ -47,6 +49,11 @@ export default function SignInPage() {
     if (loginEmail) {
       setPrefillEmail(loginEmail)
       sessionStorage.removeItem("loginEmail")
+    }
+
+    if (loginPassword) {
+      setPrefillPassword(loginPassword)
+      sessionStorage.removeItem("loginPassword")
     }
 
     checkSession()
@@ -98,7 +105,7 @@ export default function SignInPage() {
         </Alert>
       )}
 
-      <SignInForm prefillEmail={prefillEmail} />
+      <SignInForm prefillEmail={prefillEmail} prefillPassword={prefillPassword} />
     </>
   )
 }

@@ -16,8 +16,6 @@ import { cn } from "@/lib/utils"
 import { ErrorBoundary } from "@/components/error-boundary"
 import type React from "react"
 import { Input } from "@/components/ui/input"
-import { toast } from "@/components/ui/use-toast"
-import { checkUserMfaStatus } from "@/app/actions/mfa-actions"
 
 import { useAuth } from "@/contexts/auth-context"
 import { SignupPopup } from "@/components/signup-popup"
@@ -161,7 +159,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     lastScrollY: 0,
   })
 
-  const { user, signIn } = useAuth()
+  const { user } = useAuth()
   const router = useRouter()
 
   // Handle header visibility and transparency on scroll
@@ -207,53 +205,11 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     setIsLoggingIn(true)
 
     try {
-      // First check if user has MFA enabled BEFORE attempting login
-      const mfaStatusResult = await checkUserMfaStatus(email)
-
-      if (mfaStatusResult.success && mfaStatusResult.data?.enabled) {
-        // User has MFA enabled, redirect to sign-in page for MFA flow
-        sessionStorage.setItem("mfaEmail", email)
-        sessionStorage.setItem("mfaPassword", password)
-        router.push("/auth/sign-in?mfa=required")
-        return
-      }
-
-      // User doesn't have MFA, proceed with normal login using auth context
-      const result = await signIn(email, password)
-
-      if (result.error) {
-        // Store email and error info for sign-in page
-        sessionStorage.setItem("loginEmail", email)
-
-        if (
-          result.error.message.includes("Invalid login credentials") ||
-          result.error.message.includes("Email not confirmed")
-        ) {
-          sessionStorage.setItem(
-            "loginError",
-            "The email or mobile number you entered isn't connected to an account. Find your account and log in",
-          )
-        } else if (
-          result.error.message.includes("Invalid password") ||
-          result.error.message.includes("Wrong password")
-        ) {
-          sessionStorage.setItem("loginError", "The password you've entered is incorrect. Forgot Password?")
-        } else {
-          sessionStorage.setItem("loginError", result.error.message)
-        }
-
-        router.push("/auth/sign-in")
-        return
-      }
-
-      // Login successful
-      toast({
-        title: "Success",
-        description: "You have been logged in successfully",
-      })
-      // Clear form
-      setEmail("")
-      setPassword("")
+      // Instead of trying to detect MFA here, just store credentials and redirect to sign-in page
+      // This ensures we use the same auth flow as the sign-in page
+      sessionStorage.setItem("loginEmail", email)
+      sessionStorage.setItem("loginPassword", password) // This will be used by the sign-in page
+      router.push("/auth/sign-in")
     } catch (error) {
       console.error("Login error:", error)
       // Store email and redirect to sign-in page with error
@@ -309,7 +265,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
       <div className="flex items-center">
         {!user && (
-          <form onSubmit={handleLogin} className="flex items-center mr-2">
+          <form onSubmit={handleLogin} className="flex items-center">
             <Input
               type="email"
               placeholder="Email"
@@ -324,15 +280,14 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-40 h-[35px] mr-2 text-sm bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-gray-400 dark:border-gray-300 text-black dark:text-white placeholder:text-gray-600 dark:placeholder:text-gray-400 px-2"
+              className="w-40 h-[35px] mr-1 text-sm bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-gray-400 dark:border-gray-300 text-black dark:text-white placeholder:text-gray-600 dark:placeholder:text-gray-400 px-2"
               disabled={isLoggingIn}
               required
             />
+            <AuthButton onLogin={handleLogin} isLoggingIn={isLoggingIn} />
           </form>
         )}
-        <div className="pl-0">
-          <AuthButton onLogin={handleLogin} isLoggingIn={isLoggingIn} />
-        </div>
+        {user && <AuthButton />}
       </div>
     </>
   )
