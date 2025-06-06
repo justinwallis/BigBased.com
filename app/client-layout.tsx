@@ -17,6 +17,7 @@ import { ErrorBoundary } from "@/components/error-boundary"
 import type React from "react"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/use-toast"
+import { supabaseClient } from "@/lib/supabase/client"
 
 import { useAuth } from "@/contexts/auth-context"
 import { SignupPopup } from "@/components/signup-popup"
@@ -160,7 +161,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     lastScrollY: 0,
   })
 
-  const { user, signIn } = useAuth()
+  const { user } = useAuth()
   const router = useRouter()
 
   // Handle header visibility and transparency on scroll
@@ -207,21 +208,43 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     setIsLoggingIn(true)
 
     try {
-      const result = await signIn(email, password)
+      const supabase = supabaseClient()
+      if (!supabase) {
+        throw new Error("Supabase client not available")
+      }
 
-      if (result.error) {
+      // First, try to sign in
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) {
+        // Check if it's an MFA error
+        if (error.message.includes("MFA") || error.message.includes("multi-factor")) {
+          // Store email for MFA verification
+          sessionStorage.setItem("mfaEmail", email)
+          router.push("/auth/sign-in?mfa=required")
+          return
+        }
+
         toast({
           title: "Login failed",
-          description: result.error.message || "Invalid email or password",
+          description: error.message || "Invalid email or password",
           variant: "destructive",
         })
-      } else if (result.mfaRequired) {
-        // Redirect to sign-in page for MFA verification
-        // Store email in sessionStorage so the sign-in page knows which user is trying to log in
-        sessionStorage.setItem("mfaEmail", email)
-        router.push("/auth/sign-in?mfa=required")
-      } else {
-        // Login successful
+      } else if (data.user) {
+        // Check if user has MFA enabled but hasn't completed it
+        const { data: factors } = await supabase.auth.mfa.listFactors()
+
+        if (factors && factors.length > 0) {
+          // User has MFA enabled, redirect to MFA verification
+          sessionStorage.setItem("mfaEmail", email)
+          router.push("/auth/sign-in?mfa=required")
+          return
+        }
+
+        // Login successful without MFA
         toast({
           title: "Success",
           description: "You have been logged in successfully",
@@ -292,7 +315,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-32 h-8 mr-2 text-sm bg-white/10 dark:bg-black/10 backdrop-blur-sm border-white/20 dark:border-gray-700/20 text-black dark:text-white placeholder:text-gray-600 dark:placeholder:text-gray-400"
+              className="w-40 h-[35px] mr-2 text-sm bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-gray-400 dark:border-gray-300 text-black dark:text-white placeholder:text-gray-600 dark:placeholder:text-gray-400"
               disabled={isLoggingIn}
               required
             />
@@ -301,7 +324,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-32 h-8 mr-2 text-sm bg-white/10 dark:bg-black/10 backdrop-blur-sm border-white/20 dark:border-gray-700/20 text-black dark:text-white placeholder:text-gray-600 dark:placeholder:text-gray-400"
+              className="w-40 h-[35px] mr-2 text-sm bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-gray-400 dark:border-gray-300 text-black dark:text-white placeholder:text-gray-600 dark:placeholder:text-gray-400"
               disabled={isLoggingIn}
               required
             />

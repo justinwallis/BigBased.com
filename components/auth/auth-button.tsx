@@ -125,7 +125,7 @@ export default function AuthButton({ onLogin, isLoggingIn = false }: AuthButtonP
   }
 
   if (loading) {
-    return <div className="w-[140px] h-[36px] bg-gray-300 dark:bg-gray-700 rounded-md animate-pulse"></div>
+    return <div className="w-[140px] h-[35px] bg-gray-300 dark:bg-gray-700 rounded-md animate-pulse"></div>
   }
 
   if (user) {
@@ -277,7 +277,7 @@ export default function AuthButton({ onLogin, isLoggingIn = false }: AuthButtonP
       <button
         onClick={onLogin}
         disabled={isLoggingIn}
-        className="inline-flex items-center justify-center px-4 py-1.5 text-sm font-medium text-white bg-gray-900 dark:bg-gray-100 dark:text-gray-900 border border-gray-900 dark:border-gray-100 rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors duration-200 disabled:opacity-50"
+        className="inline-flex items-center justify-center px-4 h-[35px] text-sm font-medium text-white bg-gray-900 dark:bg-gray-100 dark:text-gray-900 border border-gray-900 dark:border-gray-100 rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors duration-200 disabled:opacity-50"
       >
         {isLoggingIn ? "Signing in..." : "Login"}
       </button>
@@ -291,9 +291,9 @@ export default function AuthButton({ onLogin, isLoggingIn = false }: AuthButtonP
       ) : (
         <Link
           href="/auth/sign-up"
-          className="inline-flex items-center justify-center px-4 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+          className="inline-flex items-center justify-center px-4 h-[35px] text-sm font-medium text-gray-700 dark:text-gray-200 bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-gray-400 dark:border-gray-300 rounded-md hover:bg-gray-50/20 dark:hover:bg-gray-700/20 transition-colors duration-200"
         >
-          Register
+          Sign-up
         </Link>
       )}
     </div>
