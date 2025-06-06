@@ -467,7 +467,7 @@ export default function SideMenu({
               <li>
                 <Link
                   href="/about"
-                  className="block font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300"
+                  className="block font-medium text-black hover:text-gray-600 dark:text-white dark:hover:text-gray-300"
                 >
                   About BB
                 </Link>
@@ -475,7 +475,7 @@ export default function SideMenu({
               <li>
                 <Link
                   href="/revolution"
-                  className="block font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300"
+                  className="block font-medium text-black hover:text-gray-600 dark:text-white dark:hover:text-gray-300"
                 >
                   Revolution
                 </Link>
@@ -483,7 +483,7 @@ export default function SideMenu({
               <li>
                 <Link
                   href="/features"
-                  className="block font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300"
+                  className="block font-medium text-black hover:text-gray-600 dark:text-white dark:hover:text-gray-300"
                 >
                   Features
                 </Link>
@@ -491,7 +491,7 @@ export default function SideMenu({
               <li>
                 <Link
                   href="/partners"
-                  className="block font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300"
+                  className="block font-medium text-black hover:text-gray-600 dark:text-white dark:hover:text-gray-300"
                 >
                   Partners
                 </Link>
@@ -499,7 +499,7 @@ export default function SideMenu({
               <li>
                 <Link
                   href="/contact"
-                  className="block font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300"
+                  className="block font-medium text-black hover:text-gray-600 dark:text-white dark:hover:text-gray-300"
                 >
                   Contact
                 </Link>
@@ -508,7 +508,7 @@ export default function SideMenu({
           </nav>
 
           <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-            <h3 className="font-bold mb-4 dark:text-white">Our Partners</h3>
+            <h3 className="font-bold mb-4 text-black dark:text-white">Our Partners</h3>
             <div className="grid grid-cols-2 gap-4">
               {logos.map((logo, index) => (
                 <div
@@ -533,11 +533,11 @@ export default function SideMenu({
 
           {/* Add more content to demonstrate scrolling */}
           <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
-            <h3 className="font-bold mb-4 dark:text-white">Recent Updates</h3>
+            <h3 className="font-bold mb-4 text-black dark:text-white">Recent Updates</h3>
             <div className="space-y-4">
               {Array.from({ length: 5 }).map((_, index) => (
                 <div key={index} className="p-3 bg-gray-50 dark:bg-gray-800 rounded">
-                  <h4 className="font-medium text-sm dark:text-white">Update {index + 1}</h4>
+                  <h4 className="font-medium text-sm text-black dark:text-white">Update {index + 1}</h4>
                   <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore.
                   </p>
