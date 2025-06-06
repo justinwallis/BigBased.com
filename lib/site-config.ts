@@ -1,105 +1,105 @@
-// Dynamic configuration based on domain
-const getCurrentDomain = () => {
-  if (typeof window !== "undefined") {
-    return window.location.hostname
+import { getDomainConfig, type DomainConfig } from "./domain-config"
+
+// Dynamic site configuration based on domain
+export class SiteConfig {
+  private domainConfig: DomainConfig | null = null
+
+  async initialize(hostname?: string): Promise<void> {
+    if (hostname) {
+      this.domainConfig = await getDomainConfig(hostname)
+    } else if (typeof window !== "undefined") {
+      this.domainConfig = await getDomainConfig(window.location.hostname)
+    } else {
+      // Server-side fallback
+      const domain = process.env.VERCEL_URL || process.env.NEXT_PUBLIC_DOMAIN || "bigbased.com"
+      this.domainConfig = await getDomainConfig(domain)
+    }
   }
-  return process.env.VERCEL_URL || process.env.NEXT_PUBLIC_DOMAIN || "bigbased.com"
-}
 
-const isDomain = (domain: string) => {
-  const currentDomain = getCurrentDomain()
-  return currentDomain.includes(domain)
-}
+  get isBigBased(): boolean {
+    return this.domainConfig?.siteType === "bigbased"
+  }
 
-export const siteConfig = {
-  // Domain detection
-  isBigBased: isDomain("bigbased.com"),
-  isBasedBook: isDomain("basedbook.com"),
+  get isBasedBook(): boolean {
+    return this.domainConfig?.siteType === "basedbook"
+  }
 
-  // Dynamic branding
-  siteName: isDomain("bigbased.com") ? "Big Based" : "BasedBook",
-  tagline: isDomain("bigbased.com") ? "Answer to Madness" : "Your Conservative Digital Library",
+  get isCustomDomain(): boolean {
+    return this.domainConfig?.siteType === "custom"
+  }
 
-  logo: isDomain("bigbased.com") ? "/bb-logo.png" : "/basedbook-logo.png",
-  favicon: isDomain("bigbased.com") ? "/favicon.ico" : "/basedbook-favicon.ico",
+  get siteName(): string {
+    return this.domainConfig?.customBranding?.siteName || (this.isBigBased ? "Big Based" : "BasedBook")
+  }
 
-  // Color schemes
-  colors: {
-    primary: isDomain("bigbased.com") ? "#1f2937" : "#7c3aed",
-    secondary: isDomain("bigbased.com") ? "#3b82f6" : "#a855f7",
-    accent: isDomain("bigbased.com") ? "#ef4444" : "#ec4899",
-  },
+  get logo(): string {
+    return this.domainConfig?.customBranding?.logo || (this.isBigBased ? "/bb-logo.png" : "/basedbook-logo.png")
+  }
 
-  // Feature flags per site
-  features: {
-    enableBilling: isDomain("bigbased.com"),
-    enableBookReader: isDomain("bigbased.com"), // BigBased exclusive
-    enableVoting: isDomain("bigbased.com"), // BigBased exclusive
-    enablePrayerFeed: isDomain("bigbased.com"), // BigBased exclusive
-    enableRevolution: isDomain("bigbased.com"), // BigBased exclusive
+  get colors() {
+    return (
+      this.domainConfig?.customBranding?.colors ||
+      (this.isBigBased
+        ? {
+            primary: "#1f2937",
+            secondary: "#3b82f6",
+            accent: "#ef4444",
+          }
+        : {
+            primary: "#7c3aed",
+            secondary: "#a855f7",
+            accent: "#ec4899",
+          })
+    )
+  }
 
-    enableLibraryBrowse: isDomain("basedbook.com"), // BasedBook exclusive
-    enableAuthorProfiles: isDomain("basedbook.com"), // BasedBook exclusive
-    enableCollections: isDomain("basedbook.com"), // BasedBook exclusive
+  get features() {
+    const siteType = this.domainConfig?.siteType || "bigbased"
 
-    // Shared features
-    enableProfiles: true, // Both sites
-    enableAuth: true, // Both sites
-    enableSettings: true, // Both sites
-  },
+    return {
+      enableBilling: siteType === "bigbased",
+      enableBookReader: siteType === "bigbased",
+      enableVoting: siteType === "bigbased",
+      enablePrayerFeed: siteType === "bigbased",
+      enableRevolution: siteType === "bigbased",
 
-  // Navigation per site (only for site-specific pages)
-  navigation: isDomain("bigbased.com")
-    ? [
+      enableLibraryBrowse: siteType === "basedbook",
+      enableAuthorProfiles: siteType === "basedbook",
+      enableCollections: siteType === "basedbook",
+
+      // Shared features
+      enableProfiles: true,
+      enableAuth: true,
+      enableSettings: true,
+    }
+  }
+
+  get navigation() {
+    const siteType = this.domainConfig?.siteType || "bigbased"
+
+    if (siteType === "basedbook") {
+      return [
+        { name: "Library", href: "/library" },
+        { name: "Authors", href: "/authors" },
+        { name: "Collections", href: "/collections" },
         { name: "About", href: "/about" },
-        { name: "Features", href: "/features" },
-        { name: "Revolution", href: "/revolution" },
-        { name: "Transform", href: "/transform" },
-        { name: "Books", href: "/books" }, // BigBased exclusive
-        { name: "Voting", href: "/voting" }, // BigBased exclusive
-        { name: "Partners", href: "/partners" },
         { name: "Contact", href: "/contact" },
       ]
-    : [
-        { name: "Library", href: "/library" }, // BasedBook exclusive
-        { name: "Authors", href: "/authors" }, // BasedBook exclusive
-        { name: "Collections", href: "/collections" }, // BasedBook exclusive
-        { name: "About", href: "/about" },
-        { name: "Contact", href: "/contact" },
-      ],
+    }
 
-  // SEO per site
-  seo: {
-    title: isDomain("bigbased.com") ? "Big Based - Answer to Madness" : "BasedBook - Conservative Digital Library",
-    description: isDomain("bigbased.com")
-      ? "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform."
-      : "BasedBook is your premier destination for conservative literature, educational resources, and community-driven content. Discover thousands of books, connect with authors, and join meaningful discussions.",
-    ogImage: isDomain("bigbased.com") ? "/BigBasedPreview.png" : "/BasedBookPreview.png",
-  },
-
-  // Page access control
-  pageAccess: {
-    // BigBased exclusive pages
-    "/books": "bigbased",
-    "/voting": "bigbased",
-    "/revolution": "bigbased",
-    "/transform": "bigbased",
-    "/features": "bigbased",
-    "/partners": "bigbased",
-
-    // BasedBook exclusive pages
-    "/library": "basedbook",
-    "/authors": "basedbook",
-    "/collections": "basedbook",
-
-    // Shared pages (accessible from both domains)
-    "/profile": "shared",
-    "/auth": "shared",
-    "/contact": "shared",
-    "/about": "shared",
-    // All username pages are shared
-    "/[username]": "shared",
-  },
+    // BigBased or custom domains default to BigBased nav
+    return [
+      { name: "About", href: "/about" },
+      { name: "Features", href: "/features" },
+      { name: "Revolution", href: "/revolution" },
+      { name: "Transform", href: "/transform" },
+      { name: "Books", href: "/books" },
+      { name: "Voting", href: "/voting" },
+      { name: "Partners", href: "/partners" },
+      { name: "Contact", href: "/contact" },
+    ]
+  }
 }
 
-export default siteConfig
+// Global instance
+export const siteConfig = new SiteConfig()
