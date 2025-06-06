@@ -4,6 +4,10 @@ import { neon } from "@neondatabase/serverless"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { headers } from "next/headers"
 
+// Add at the top after imports
+const sessionTrackingCache = new Map<string, number>()
+const TRACKING_THROTTLE_MS = 30000 // 30 seconds
+
 // Helper function to parse user agent
 function parseUserAgent(userAgent: string) {
   const ua = userAgent.toLowerCase()
@@ -94,7 +98,6 @@ export async function trackSession() {
     const supabase = createServerSupabaseClient()
     const sql = getNeonClient()
 
-    // Get the current user from Supabase Auth
     const {
       data: { user },
     } = await supabase.auth.getUser()
@@ -103,7 +106,6 @@ export async function trackSession() {
       return { success: false, error: "Not authenticated" }
     }
 
-    // Get current session
     const {
       data: { session },
     } = await supabase.auth.getSession()
@@ -112,7 +114,18 @@ export async function trackSession() {
       return { success: false, error: "No session found" }
     }
 
-    // Get request headers
+    // Throttle session tracking to prevent excessive database calls
+    const lastTracked = sessionTrackingCache.get(session.access_token)
+    const now = Date.now()
+
+    if (lastTracked && now - lastTracked < TRACKING_THROTTLE_MS) {
+      return { success: true, cached: true }
+    }
+
+    // Update cache
+    sessionTrackingCache.set(session.access_token, now)
+
+    // Rest of your existing session tracking logic...
     const headersList = headers()
     const ipAddress =
       headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ||
@@ -121,21 +134,16 @@ export async function trackSession() {
       "unknown"
     const userAgent = headersList.get("user-agent") || "unknown"
 
-    // Parse user agent
     const { deviceType, browser, os } = parseUserAgent(userAgent)
-
-    // Get location from IP
     const location = await getLocationFromIP(ipAddress)
 
     try {
-      // Check if session already exists in Neon
       const existingSessions = await sql`
         SELECT * FROM user_sessions 
         WHERE session_token = ${session.access_token}
       `
 
       if (existingSessions.length > 0) {
-        // Update last activity and location
         await sql`
           UPDATE user_sessions 
           SET 
@@ -146,7 +154,6 @@ export async function trackSession() {
           WHERE session_token = ${session.access_token}
         `
       } else {
-        // Create new session record
         await sql`
           INSERT INTO user_sessions (
             user_id, session_token, ip_address, user_agent, 
@@ -159,7 +166,6 @@ export async function trackSession() {
         `
       }
     } catch (error) {
-      // If there's a duplicate key error, just update the session
       if (error.code === "23505") {
         await sql`
           UPDATE user_sessions 
@@ -171,7 +177,6 @@ export async function trackSession() {
           WHERE session_token = ${session.access_token}
         `
       } else {
-        // Re-throw other errors
         throw error
       }
     }

@@ -1,13 +1,72 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-export async function middleware(request: NextRequest) {
-  // Get the pathname of the request
-  const path = request.nextUrl.pathname
+// Add rate limiting map
+const rateLimitMap = new Map<string, { count: number; lastReset: number }>()
 
-  // Skip middleware entirely for static assets and API routes that don't need auth
+// Bot detection patterns
+const botPatterns = [
+  /bot/i,
+  /crawler/i,
+  /spider/i,
+  /scraper/i,
+  /facebookexternalhit/i,
+  /twitterbot/i,
+  /linkedinbot/i,
+  /whatsapp/i,
+  /telegram/i,
+  /slack/i,
+  /curl/i,
+  /wget/i,
+  /python/i,
+  /java/i,
+  /postman/i,
+  /insomnia/i,
+  /httpie/i,
+]
+
+function isBot(userAgent: string): boolean {
+  return botPatterns.some((pattern) => pattern.test(userAgent))
+}
+
+function rateLimit(ip: string, limit = 60, windowMs = 60000): boolean {
+  const now = Date.now()
+  const userLimit = rateLimitMap.get(ip)
+
+  if (!userLimit || now - userLimit.lastReset > windowMs) {
+    rateLimitMap.set(ip, { count: 1, lastReset: now })
+    return false
+  }
+
+  if (userLimit.count >= limit) {
+    return true
+  }
+
+  userLimit.count++
+  return false
+}
+
+export async function middleware(request: NextRequest) {
+  const path = request.nextUrl.pathname
+  const userAgent = request.headers.get("user-agent") || ""
+  const ip = request.ip || request.headers.get("x-forwarded-for") || "unknown"
+
+  // Enhanced bot detection
+  if (isBot(userAgent)) {
+    console.log(`🤖 Bot detected: ${userAgent}`)
+    return new NextResponse("Bot access denied", { status: 403 })
+  }
+
+  // Rate limiting
+  if (rateLimit(ip, 30, 60000)) {
+    // 30 requests per minute
+    console.log(`⚡ Rate limit exceeded for IP: ${ip}`)
+    return new NextResponse("Rate limit exceeded", { status: 429 })
+  }
+
+  // Get the pathname of the request
+  // Rest of your existing middleware logic...
   const shouldSkipMiddleware =
-    // Static files
     path.startsWith("/_next/") ||
     path.startsWith("/static/") ||
     path.startsWith("/public/") ||
@@ -29,12 +88,10 @@ export async function middleware(request: NextRequest) {
         path.endsWith(".webm") ||
         path.endsWith(".mp3") ||
         path.endsWith(".wav"))) ||
-    // API routes that don't need auth
     path.startsWith("/api/auth") ||
     path.startsWith("/api/debug") ||
     path === "/api/notifications/send" ||
     path.startsWith("/debug-static") ||
-    // Specific files
     path === "/favicon.ico" ||
     path === "/robots.txt" ||
     path === "/sitemap.xml" ||
@@ -46,14 +103,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  console.log(`🔍 Middleware checking: ${path}`)
+  // Only log for debugging when needed
+  if (process.env.NODE_ENV === "development") {
+    console.log(`🔍 Middleware checking: ${path}`)
+  }
 
-  // Handle specific redirects
+  // Rest of your existing logic...
   if (path === "/profile/security") {
     return NextResponse.redirect(new URL("/profile?tab=security", request.url))
   }
 
-  // Public paths that don't require authentication
   const isPublicPath =
     path === "/" ||
     path === "/about" ||
@@ -71,49 +130,31 @@ export async function middleware(request: NextRequest) {
     path.startsWith("/auth/callback") ||
     path.startsWith("/account-recovery") ||
     path.startsWith("/checkout") ||
-    // Public profile pages (but still need to check auth for private features)
-    path.match(/^\/[^/]+$/) // matches /username pattern
+    path.match(/^\/[^/]+$/)
 
-  // Protected paths that require authentication
   const isProtectedPath = path.startsWith("/profile") || path.startsWith("/dashboard")
 
-  // Skip middleware for public paths
   if (isPublicPath && !isProtectedPath) {
     return NextResponse.next()
   }
 
-  // Only check auth for protected paths
   if (isProtectedPath) {
-    // Check for Supabase session token in cookies
     const supabaseSession =
       request.cookies.get("sb-access-token") ||
       request.cookies.get("supabase-auth-token") ||
       request.cookies.get("sb-zcmjnapixchrzafkbzhq-auth-token") ||
       request.cookies.getAll().find((cookie) => cookie.name.startsWith("sb-") && cookie.name.includes("-auth-token"))
 
-    // If it's a protected path and the user is not authenticated,
-    // redirect to the sign-in page
     if (!supabaseSession) {
-      console.log("🔒 No session found, redirecting to sign-in. Path:", path)
       const redirectUrl = new URL("/auth/sign-in", request.url)
       redirectUrl.searchParams.set("redirect", request.nextUrl.pathname)
       return NextResponse.redirect(redirectUrl)
     }
   }
 
-  // Allow access
   return NextResponse.next()
 }
 
-// Simplified matcher - let the middleware logic handle the filtering
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    "/((?!_next/static|_next/image|favicon.ico).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 }
