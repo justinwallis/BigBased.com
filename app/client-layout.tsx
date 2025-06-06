@@ -17,6 +17,7 @@ import { ErrorBoundary } from "@/components/error-boundary"
 import type React from "react"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/use-toast"
+import { supabaseClient } from "@/lib/supabase/client"
 
 import { useAuth } from "@/contexts/auth-context"
 import { SignupPopup } from "@/components/signup-popup"
@@ -160,7 +161,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     lastScrollY: 0,
   })
 
-  const { user, signIn } = useAuth()
+  const { user } = useAuth()
   const router = useRouter()
 
   // Handle header visibility and transparency on scroll
@@ -196,36 +197,60 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     e.preventDefault()
 
     if (!email || !password) {
-      toast({
-        title: "Error",
-        description: "Email and password are required",
-        variant: "destructive",
-      })
+      // Store email and redirect to sign-in page with error
+      sessionStorage.setItem("loginEmail", email)
+      sessionStorage.setItem("loginError", "Email and password are required")
+      router.push("/auth/sign-in")
       return
     }
 
     setIsLoggingIn(true)
 
     try {
-      console.log("=== Header Login Attempt ===")
-      console.log("Email:", email)
+      const supabase = supabaseClient()
+      if (!supabase) {
+        throw new Error("Supabase client not available")
+      }
 
-      const result = await signIn(email, password)
-      console.log("SignIn result:", result)
+      // First check if user exists by trying to sign in
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
 
-      if (result.error) {
-        toast({
-          title: "Login failed",
-          description: result.error.message || "Invalid email or password",
-          variant: "destructive",
-        })
-      } else if (result.mfaRequired) {
-        console.log("MFA required, redirecting to sign-in page")
-        // Store email in sessionStorage so the sign-in page knows which user is trying to log in
-        sessionStorage.setItem("mfaEmail", email)
-        router.push("/auth/sign-in?mfa=required")
-      } else {
-        // Login successful
+      if (error) {
+        // Store email and error info for sign-in page
+        sessionStorage.setItem("loginEmail", email)
+
+        if (error.message.includes("Invalid login credentials") || error.message.includes("Email not confirmed")) {
+          sessionStorage.setItem(
+            "loginError",
+            "The email or mobile number you entered isn't connected to an account. Find your account and log in",
+          )
+        } else if (error.message.includes("Invalid password") || error.message.includes("Wrong password")) {
+          sessionStorage.setItem("loginError", "The password you've entered is incorrect. Forgot Password?")
+        } else {
+          sessionStorage.setItem("loginError", error.message)
+        }
+
+        router.push("/auth/sign-in")
+        return
+      }
+
+      if (data.user) {
+        // Check if user has MFA enabled
+        const { data: factors } = await supabase.auth.mfa.listFactors()
+
+        if (factors && factors.length > 0) {
+          // User has MFA enabled, sign them out and redirect to sign-in page for MFA
+          await supabase.auth.signOut()
+          sessionStorage.setItem("mfaEmail", email)
+          sessionStorage.setItem("mfaPassword", password)
+          router.push("/auth/sign-in?mfa=required")
+          return
+        }
+
+        // Login successful without MFA
         toast({
           title: "Success",
           description: "You have been logged in successfully",
@@ -236,11 +261,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       }
     } catch (error) {
       console.error("Login error:", error)
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      })
+      // Store email and redirect to sign-in page with error
+      sessionStorage.setItem("loginEmail", email)
+      sessionStorage.setItem("loginError", "An unexpected error occurred")
+      router.push("/auth/sign-in")
     } finally {
       setIsLoggingIn(false)
     }

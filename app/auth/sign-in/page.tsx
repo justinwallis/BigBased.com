@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { supabaseClient } from "@/lib/supabase/client"
 import SignInForm from "@/components/auth/sign-in-form"
@@ -10,7 +10,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 export default function SignInPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState("")
+  const [prefillEmail, setPrefillEmail] = useState("")
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
     const checkSession = async () => {
@@ -30,6 +33,20 @@ export default function SignInPage() {
         console.error("Error checking session:", error)
         setIsLoading(false)
       }
+    }
+
+    // Check for error messages and email from header login
+    const loginError = sessionStorage.getItem("loginError")
+    const loginEmail = sessionStorage.getItem("loginEmail")
+
+    if (loginError) {
+      setErrorMessage(loginError)
+      sessionStorage.removeItem("loginError")
+    }
+
+    if (loginEmail) {
+      setPrefillEmail(loginEmail)
+      sessionStorage.removeItem("loginEmail")
     }
 
     checkSession()
@@ -74,7 +91,14 @@ export default function SignInPage() {
           </Link>
         </p>
       </div>
-      <SignInForm />
+
+      {errorMessage && (
+        <Alert className="mb-6 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900">
+          <AlertDescription className="text-red-800 dark:text-red-300">{errorMessage}</AlertDescription>
+        </Alert>
+      )}
+
+      <SignInForm prefillEmail={prefillEmail} />
     </>
   )
 }
