@@ -13,57 +13,94 @@ export default function SignInPage() {
   const [errorMessage, setErrorMessage] = useState("")
   const [prefillEmail, setPrefillEmail] = useState("")
   const [prefillPassword, setPrefillPassword] = useState("")
+  const [mfaRequired, setMfaRequired] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
 
   useEffect(() => {
+    console.log("🔍 === SIGN-IN PAGE LOADING ===")
+
     const checkSession = async () => {
       try {
         const supabase = supabaseClient()
         if (!supabase) {
+          console.log("❌ No Supabase client")
           setIsLoading(false)
           return
         }
 
         const { data } = await supabase.auth.getSession()
         if (data.session) {
+          console.log("✅ User already logged in")
           setIsLoggedIn(true)
         }
         setIsLoading(false)
       } catch (error) {
-        console.error("Error checking session:", error)
+        console.error("❌ Error checking session:", error)
         setIsLoading(false)
       }
     }
+
+    // Check URL parameters
+    const mfaParam = searchParams.get("mfa")
+    console.log("🔍 URL mfa parameter:", mfaParam)
+
+    // Check sessionStorage for MFA requirement
+    const mfaEmailStored = sessionStorage.getItem("mfaEmail")
+    const mfaRequiredStored = sessionStorage.getItem("mfaRequired")
+    console.log("🔍 SessionStorage mfaEmail:", mfaEmailStored)
+    console.log("🔍 SessionStorage mfaRequired:", mfaRequiredStored)
 
     // Check for error messages and credentials from header login
     const loginError = sessionStorage.getItem("loginError")
     const loginEmail = sessionStorage.getItem("loginEmail")
     const loginPassword = sessionStorage.getItem("loginPassword")
 
+    console.log("🔍 SessionStorage loginError:", loginError)
+    console.log("🔍 SessionStorage loginEmail:", loginEmail)
+    console.log("🔍 SessionStorage loginPassword:", !!loginPassword)
+
+    // Handle MFA requirement
+    if (mfaParam === "required" || mfaRequiredStored === "true") {
+      console.log("🔐 MFA REQUIRED detected!")
+      setMfaRequired(true)
+
+      if (mfaEmailStored) {
+        console.log("📧 Setting prefill email from MFA:", mfaEmailStored)
+        setPrefillEmail(mfaEmailStored)
+      }
+    }
+
+    // Handle error messages
     if (loginError) {
+      console.log("❌ Setting error message:", loginError)
       setErrorMessage(loginError)
       sessionStorage.removeItem("loginError")
     }
 
+    // Handle email prefill
     if (loginEmail) {
+      console.log("📧 Setting prefill email from login:", loginEmail)
       setPrefillEmail(loginEmail)
       sessionStorage.removeItem("loginEmail")
     }
 
+    // Handle password prefill (if exists - but we're removing this for security)
     if (loginPassword) {
-      setPrefillPassword(loginPassword)
+      console.log("🔒 Found stored password - removing for security")
       sessionStorage.removeItem("loginPassword")
     }
 
     checkSession()
-  }, [])
+  }, [searchParams])
 
   if (isLoading) {
+    console.log("⏳ Page loading...")
     return <div className="container mx-auto py-10 text-gray-900 dark:text-white">Loading...</div>
   }
 
   if (isLoggedIn) {
+    console.log("✅ User already logged in - showing logged in message")
     return (
       <div className="container mx-auto py-10">
         <div className="max-w-md mx-auto">
@@ -84,18 +121,31 @@ export default function SignInPage() {
     )
   }
 
+  console.log("🎯 Rendering sign-in form with:")
+  console.log("📧 Prefill email:", prefillEmail)
+  console.log("🔐 MFA required:", mfaRequired)
+  console.log("❌ Error message:", errorMessage)
+
   return (
     <>
       <div className="mb-6 text-center">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome back!</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          {mfaRequired ? "Two-Factor Authentication Required" : "Welcome back!"}
+        </h2>
         <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          Don't have an account yet?{" "}
-          <Link
-            href="/auth/sign-up"
-            className="font-medium text-primary hover:underline dark:text-blue-400 dark:hover:text-blue-300"
-          >
-            Sign up
-          </Link>
+          {mfaRequired ? (
+            "Please enter your verification code to continue"
+          ) : (
+            <>
+              Don't have an account yet?{" "}
+              <Link
+                href="/auth/sign-up"
+                className="font-medium text-primary hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+              >
+                Sign up
+              </Link>
+            </>
+          )}
         </p>
       </div>
 
@@ -105,7 +155,7 @@ export default function SignInPage() {
         </Alert>
       )}
 
-      <SignInForm prefillEmail={prefillEmail} prefillPassword={prefillPassword} />
+      <SignInForm prefillEmail={prefillEmail} prefillPassword={prefillPassword} mfaRequired={mfaRequired} />
     </>
   )
 }

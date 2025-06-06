@@ -220,8 +220,12 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
       if (mfaCheck.success && mfaCheck.data?.enabled) {
         console.log("🔐 MFA IS ENABLED - Redirecting to sign-in page")
+        // SECURITY: Only store email, not password
         sessionStorage.setItem("mfaEmail", email)
-        sessionStorage.setItem("mfaPassword", password)
+        sessionStorage.setItem("mfaRequired", "true")
+        console.log("💾 Stored mfaEmail in sessionStorage:", email)
+        console.log("💾 Stored mfaRequired in sessionStorage: true")
+        console.log("🔄 Redirecting to /auth/sign-in?mfa=required")
         router.push("/auth/sign-in?mfa=required")
         return
       } else {
@@ -266,7 +270,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       if (result.mfaRequired) {
         console.log("🔐 MFA REQUIRED from signIn result - Redirecting to sign-in page")
         sessionStorage.setItem("mfaEmail", email)
-        sessionStorage.setItem("mfaPassword", password)
+        sessionStorage.setItem("mfaRequired", "true")
         router.push("/auth/sign-in?mfa=required")
         return
       }
