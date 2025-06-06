@@ -10,14 +10,14 @@ export default async function AdminLayout({
   const supabase = createClient()
 
   try {
-    // Get the current session
+    // Use getUser() instead of getSession() for better security
     const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser()
 
-    if (sessionError || !session) {
-      console.log("❌ No session found, redirecting to sign-in")
+    if (userError || !user) {
+      console.log("❌ No authenticated user found, redirecting to sign-in")
       redirect("/auth/sign-in?redirect=/admin")
     }
 
@@ -25,7 +25,7 @@ export default async function AdminLayout({
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("id, username, role")
-      .eq("id", session.user.id)
+      .eq("id", user.id)
       .single()
 
     if (profileError || !profile) {
