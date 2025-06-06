@@ -11,10 +11,8 @@ export const viewportConfig: Viewport = {
   colorScheme: "light dark",
 }
 
-// Update the getAbsoluteUrl function to handle undefined paths
+// Ensure we have absolute URLs for all OpenGraph images
 const getAbsoluteUrl = (path: string): string => {
-  if (!path) return process.env.NEXT_PUBLIC_BASE_URL || "https://bigbased.com"
-
   // Use a hardcoded URL if environment variable isn't available
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bigbased.com"
 
@@ -113,48 +111,46 @@ export const baseMetadata: Metadata = {
   },
 }
 
-// Update the generateMetadata function to handle undefined cases
+// Helper function to generate metadata for specific pages
 export function generateMetadata(title: string, description: string, imagePath?: string): Metadata {
-  const safeTitle = title || "Big Based"
-  const safeDescription = description || "Cultural Revolution Platform"
   const imageUrl = imagePath ? getAbsoluteUrl(imagePath) : getAbsoluteUrl("/BigBasedPreview.png")
 
   return {
     ...baseMetadata,
-    title: safeTitle,
-    description: safeDescription,
+    title,
+    description,
     openGraph: {
       ...baseMetadata.openGraph,
-      title: `${safeTitle} | Big Based`,
-      description: safeDescription,
+      title: `${title} | Big Based`,
+      description,
       images: [
         {
           url: imageUrl,
           width: 1200,
           height: 630,
-          alt: `${safeTitle} | Big Based`,
+          alt: `${title} | Big Based`,
         },
       ],
     },
     twitter: {
       ...baseMetadata.twitter,
-      title: `${safeTitle} | Big Based`,
-      description: safeDescription,
+      title: `${title} | Big Based`,
+      description,
       images: [imageUrl],
     },
     alternates: {
-      canonical: `/${safeTitle.toLowerCase().replace(/\s+/g, "-")}`,
+      canonical: `/${title.toLowerCase().replace(/\s+/g, "-")}`,
     },
     other: {
       ...baseMetadata.other,
-      "discord:title": `${safeTitle} | Big Based`,
-      "discord:description": safeDescription,
+      "discord:title": `${title} | Big Based`,
+      "discord:description": description,
       "discord:image": imageUrl,
-      "linkedin:title": `${safeTitle} | Big Based`,
-      "linkedin:description": safeDescription,
+      "linkedin:title": `${title} | Big Based`,
+      "linkedin:description": description,
       "linkedin:image": imageUrl,
-      "slack:title": `${safeTitle} | Big Based`,
-      "slack:description": safeDescription,
+      "slack:title": `${title} | Big Based`,
+      "slack:description": description,
       "slack:image": imageUrl,
     },
   }

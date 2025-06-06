@@ -1,37 +1,38 @@
 import type { Metadata, Viewport } from "next/types"
 import { baseMetadata, viewportConfig } from "./metadata-config"
 import ClientPage from "./ClientPage"
-import BasedBookLanding from "@/components/basedbook-landing"
 import { getWebPageData, getBreadcrumbData } from "@/lib/structured-data"
 import StructuredData from "@/components/structured-data"
-import { siteConfig } from "@/lib/site-config"
 
 // Get the base URL for absolute URLs
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bigbased.com"
 
 export const metadata: Metadata = {
   ...baseMetadata,
-  title: siteConfig.seo.title,
-  description: siteConfig.seo.description,
+  title: "Big Based - Answer to Madness",
+  description:
+    "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform.",
   openGraph: {
     ...baseMetadata.openGraph,
-    title: siteConfig.seo.title,
-    description: siteConfig.seo.description,
+    title: "Big Based - Answer to Madness",
+    description:
+      "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform.",
     url: baseUrl,
     images: [
       {
-        url: `${baseUrl}${siteConfig.seo.ogImage}`,
+        url: `${baseUrl}/BigBasedPreview.png`,
         width: 1200,
         height: 630,
-        alt: siteConfig.seo.title,
+        alt: "Big Based - Answer to Madness",
       },
     ],
   },
   twitter: {
     ...baseMetadata.twitter,
-    title: siteConfig.seo.title,
-    description: siteConfig.seo.description,
-    images: [`${baseUrl}${siteConfig.seo.ogImage}`],
+    title: "Big Based - Answer to Madness",
+    description:
+      "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform.",
+    images: [`${baseUrl}/BigBasedPreview.png`],
   },
 }
 
@@ -40,10 +41,10 @@ export const viewport: Viewport = viewportConfig
 export default function Home() {
   // Structured data for the homepage
   const pageStructuredData = getWebPageData(
-    siteConfig.seo.title,
-    siteConfig.seo.description,
+    "Big Based - Answer to Madness",
+    "Big Based isn't just a platform, it's a cultural revolution. At its core lies a living library of truth, faith, and insight, 10,000+ meticulously researched pages designed to educate, inspire, and transform.",
     "/",
-    `${baseUrl}${siteConfig.seo.ogImage}`,
+    `${baseUrl}/BigBasedPreview.png`,
   )
 
   // Breadcrumb data for the homepage
@@ -55,17 +56,6 @@ export default function Home() {
     "@graph": [pageStructuredData, breadcrumbData],
   }
 
-  // Conditional rendering based on site
-  if (siteConfig.isBasedBook) {
-    return (
-      <>
-        <BasedBookLanding />
-        <StructuredData data={structuredData} />
-      </>
-    )
-  }
-
-  // Default to Big Based
   return (
     <>
       <ClientPage />

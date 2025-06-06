@@ -1,13 +1,6 @@
 import { Suspense } from "react"
 import ProfileClientPage from "./ProfileClientPage"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import type { Metadata } from "next"
-
-// Add static metadata to prevent build errors
-export const metadata: Metadata = {
-  title: "Profile | Big Based",
-  description: "Manage your Big Based profile settings and preferences",
-}
 
 export default function ProfilePage() {
   return (

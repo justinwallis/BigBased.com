@@ -100,6 +100,7 @@ type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
 
 type ToastActionElement = React.ReactElement<typeof ToastAction>
 
+// Add the missing Toaster component
 function Toaster() {
   return (
     <ToastProvider>
@@ -118,5 +119,5 @@ export {
   ToastDescription,
   ToastClose,
   ToastAction,
-  Toaster,
+  Toaster, // Export the missing Toaster component
 }
