@@ -1,18 +1,11 @@
 import Link from "next/link"
-import type { Metadata, Viewport } from "next/types"
-import { baseMetadata, viewportConfig } from "./metadata-config"
+import type { Metadata } from "next"
 
+// Add static metadata to prevent build errors
 export const metadata: Metadata = {
-  ...baseMetadata,
   title: "Page Not Found | Big Based",
   description: "The page you are looking for does not exist or has been moved.",
-  robots: {
-    index: false,
-    follow: true,
-  },
 }
-
-export const viewport: Viewport = viewportConfig
 
 export default function NotFound() {
   return (

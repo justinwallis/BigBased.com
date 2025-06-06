@@ -1,21 +1,25 @@
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import type { Metadata } from "next"
+
+// Add static metadata to prevent build errors
+export const metadata: Metadata = {
+  title: "Profile Not Found | Big Based",
+  description: "The user profile you are looking for does not exist or has been moved.",
+}
 
 export default function ProfileNotFound() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[70vh] px-4">
-      <h1 className="text-4xl font-bold mb-4">User Not Found</h1>
-      <p className="text-xl text-muted-foreground mb-8">
-        The profile you're looking for doesn't exist or has been removed.
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-white dark:bg-gray-900">
+      <h1 className="text-4xl font-bold mb-4 dark:text-white">404 - Profile Not Found</h1>
+      <p className="mb-8 text-lg dark:text-gray-200">
+        The user profile you are looking for does not exist or has been moved.
       </p>
-      <div className="flex gap-4">
-        <Button asChild>
-          <Link href="/">Return Home</Link>
-        </Button>
-        <Button variant="outline" asChild>
-          <Link href="/auth/sign-up">Create Account</Link>
-        </Button>
-      </div>
+      <Link
+        href="/"
+        className="px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+      >
+        Return Home
+      </Link>
     </div>
   )
 }
