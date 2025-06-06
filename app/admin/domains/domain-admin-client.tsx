@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState, useRef } from "react"
 import { createDomain, updateDomain, deleteDomain, type Domain } from "@/app/actions/domain-actions"
+import BulkImportClient from "./bulk-import-client"
 import { useRouter } from "next/navigation"
 
 export default function DomainAdminClient({
@@ -13,6 +14,7 @@ export default function DomainAdminClient({
 }) {
   const [domains, setDomains] = useState<Domain[]>(initialDomains)
   const [isCreating, setIsCreating] = useState(false)
+  const [showBulkImport, setShowBulkImport] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -103,19 +105,35 @@ export default function DomainAdminClient({
     setSuccess(null)
   }
 
+  const handleImportComplete = () => {
+    // Refresh the page to show newly imported domains
+    router.refresh()
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Domain Management</h1>
-        <button
-          onClick={() => {
-            setIsCreating(!isCreating)
-            clearMessages()
-          }}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-        >
-          {isCreating ? "Cancel" : "Add Domain"}
-        </button>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => {
+              setShowBulkImport(!showBulkImport)
+              clearMessages()
+            }}
+            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition"
+          >
+            {showBulkImport ? "Hide Bulk Import" : "Bulk Import"}
+          </button>
+          <button
+            onClick={() => {
+              setIsCreating(!isCreating)
+              clearMessages()
+            }}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+          >
+            {isCreating ? "Cancel" : "Add Domain"}
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -139,6 +157,9 @@ export default function DomainAdminClient({
           </div>
         </div>
       )}
+
+      {/* Bulk Import Section */}
+      {showBulkImport && <BulkImportClient onImportComplete={handleImportComplete} />}
 
       {isCreating && (
         <div className="p-6 border rounded-md bg-gray-50">
@@ -198,6 +219,16 @@ export default function DomainAdminClient({
       )}
 
       <div className="bg-white shadow overflow-hidden rounded-md">
+        <div className="px-6 py-3 bg-gray-50 border-b">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium text-gray-700">Total Domains: {domains.length}</span>
+            <span className="text-sm text-gray-500">
+              Active: {domains.filter((d) => d.is_active).length} | Inactive:{" "}
+              {domains.filter((d) => !d.is_active).length}
+            </span>
+          </div>
+        </div>
+
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -218,7 +249,7 @@ export default function DomainAdminClient({
             {domains.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                  No domains found. Add your first domain above.
+                  No domains found. Add your first domain above or use bulk import.
                 </td>
               </tr>
             ) : (
