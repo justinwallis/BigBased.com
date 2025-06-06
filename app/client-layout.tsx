@@ -218,7 +218,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             <div className="hidden md:flex items-center space-x-6">
               <Link
                 href="/about"
-                className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
+                className="font-medium text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
               >
                 About
               </Link>
@@ -227,13 +227,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                 sections={featuresMegaMenu.sections}
                 sideSections={featuresMegaMenu.sideSections}
                 promoItem={featuresMegaMenu.promoItem}
+                className="font-medium text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
               />
-              <Link
-                href="/contact"
-                className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
-              >
-                Contact
-              </Link>
             </div>
           </div>
           <div className="flex items-center space-x-4">
@@ -274,7 +269,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             <div className="hidden md:flex items-center space-x-6">
               <Link
                 href="/about"
-                className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
+                className="font-medium text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
               >
                 About
               </Link>
@@ -283,13 +278,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                 sections={featuresMegaMenu.sections}
                 sideSections={featuresMegaMenu.sideSections}
                 promoItem={featuresMegaMenu.promoItem}
+                className="font-medium text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
               />
-              <Link
-                href="/contact"
-                className="font-medium hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors duration-200"
-              >
-                Contact
-              </Link>
             </div>
           </div>
           <div className="flex items-center space-x-4">
