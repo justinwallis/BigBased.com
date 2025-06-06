@@ -105,7 +105,7 @@ export async function middleware(request: NextRequest) {
   return NextResponse.next()
 }
 
-// Much more specific matcher - exclude static assets entirely
+// Simplified matcher - let the middleware logic handle the filtering
 export const config = {
   matcher: [
     /*
@@ -113,9 +113,7 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - All file extensions for static assets
-     * - API routes that don't need auth
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(png|jpg|jpeg|gif|svg|ico|css|js|woff|woff2|ttf|eot|pdf|mp4|webm|mp3|wav)$|api/auth|api/debug|debug-static|robots.txt|sitemap.xml|manifest.json|browserconfig.xml|site.webmanifest).*)",
+    "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 }
