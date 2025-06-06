@@ -292,7 +292,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-32 h-8 mr-2 text-sm"
+              className="w-32 h-8 mr-2 text-sm bg-white/10 dark:bg-black/10 backdrop-blur-sm border-white/20 dark:border-gray-700/20 text-black dark:text-white placeholder:text-gray-600 dark:placeholder:text-gray-400"
               disabled={isLoggingIn}
               required
             />
@@ -301,7 +301,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-32 h-8 mr-2 text-sm"
+              className="w-32 h-8 mr-2 text-sm bg-white/10 dark:bg-black/10 backdrop-blur-sm border-white/20 dark:border-gray-700/20 text-black dark:text-white placeholder:text-gray-600 dark:placeholder:text-gray-400"
               disabled={isLoggingIn}
               required
             />
