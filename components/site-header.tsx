@@ -36,7 +36,6 @@ const navItems = [
   { name: "Home", href: "/" },
   { name: "About", href: "/about" },
   { name: "Transform", href: "/transform" },
-  { name: "Contact", href: "/contact" },
 ]
 
 // Define the features mega menu content
@@ -238,7 +237,9 @@ export function SiteHeader() {
                 href={item.href}
                 className={cn(
                   "text-sm font-medium transition-colors hover:text-primary",
-                  pathname === item.href ? "text-foreground" : "text-muted-foreground",
+                  pathname === item.href
+                    ? "text-black dark:text-white"
+                    : "text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white",
                 )}
               >
                 {item.name}
@@ -293,7 +294,9 @@ export function SiteHeader() {
                   href={item.href}
                   className={cn(
                     "text-sm font-medium transition-colors hover:text-primary",
-                    pathname === item.href ? "text-foreground" : "text-muted-foreground",
+                    pathname === item.href
+                      ? "text-black dark:text-white"
+                      : "text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white",
                   )}
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -304,7 +307,9 @@ export function SiteHeader() {
                 href="/features"
                 className={cn(
                   "text-sm font-medium transition-colors hover:text-primary",
-                  pathname === "/features" ? "text-foreground" : "text-muted-foreground",
+                  pathname === "/features"
+                    ? "text-black dark:text-white"
+                    : "text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white",
                 )}
                 onClick={() => setMobileMenuOpen(false)}
               >
