@@ -1,6 +1,12 @@
 import { Suspense } from "react"
 import EmailNotificationsClientPage from "./EmailNotificationsClientPage"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Email Notifications | Big Based",
+  description: "Manage your email notification preferences",
+}
 
 export default function EmailNotificationsPage() {
   return (
