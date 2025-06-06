@@ -14,6 +14,7 @@ import AuthButton from "@/components/auth/auth-button"
 import { cn } from "@/lib/utils"
 import { ErrorBoundary } from "@/components/error-boundary"
 import type React from "react"
+import { Input } from "@/components/ui/input"
 
 import { useAuth } from "@/contexts/auth-context"
 import { SignupPopup } from "@/components/signup-popup"
@@ -146,6 +147,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const [openWithSearch, setOpenWithSearch] = useState(false)
   const [logoHovered, setLogoHovered] = useState(false)
   const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const { theme } = useTheme()
   const [scrollState, setScrollState] = useState({
     isAtTop: true,
@@ -185,8 +188,79 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     setIsSearchPopupOpen(true)
   }
 
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault()
+    // Login logic would go here
+    console.log("Login attempt with:", email, password)
+  }
+
   // Determine if the header should be fixed
   const shouldBeFixed = !scrollState.isAtTop && (scrollState.isScrollingUp || !scrollState.hasScrolledDown)
+
+  const renderNavContent = () => (
+    <>
+      <div className="flex items-center">
+        <Link
+          href="/"
+          className={`font-bold text-2xl transition-transform duration-300 ${logoHovered ? "scale-110" : ""} flex items-center`}
+          onMouseEnter={() => setLogoHovered(true)}
+          onMouseLeave={() => setLogoHovered(false)}
+        >
+          <div className="relative w-12 h-12 transition-all duration-300 flex items-center justify-center">
+            <BBLogo size="md" />
+          </div>
+        </Link>
+
+        {/* Theme toggle and search moved here */}
+        <div className="flex items-center ml-4 mr-6">
+          <ThemeToggle />
+          <button className="ml-3" onClick={handleSearchClick}>
+            <Search className="h-5 w-5 text-black dark:text-white" />
+          </button>
+        </div>
+
+        <div className="hidden md:flex items-center space-x-6">
+          <Link
+            href="/about"
+            className="font-medium text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
+          >
+            About
+          </Link>
+          <MegaMenu
+            label="Features"
+            sections={featuresMegaMenu.sections}
+            sideSections={featuresMegaMenu.sideSections}
+            promoItem={featuresMegaMenu.promoItem}
+            className="font-medium text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center">
+        {!user && (
+          <form onSubmit={handleLogin} className="flex items-center mr-2">
+            <Input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-32 h-8 mr-2 text-sm"
+              required
+            />
+            <Input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-32 h-8 mr-2 text-sm"
+              required
+            />
+          </form>
+        )}
+        <AuthButton />
+      </div>
+    </>
+  )
 
   return (
     <>
@@ -204,43 +278,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       {/* Regular header at the top of the page */}
       {scrollState.isAtTop && (
         <nav className="absolute top-0 left-0 right-0 z-50 w-full flex items-center justify-between px-3 py-1 md:px-6 dark:text-white bg-transparent">
-          <div className="flex items-center space-x-8">
-            <Link
-              href="/"
-              className={`font-bold text-2xl transition-transform duration-300 ${logoHovered ? "scale-110" : ""} flex items-center`}
-              onMouseEnter={() => setLogoHovered(true)}
-              onMouseLeave={() => setLogoHovered(false)}
-            >
-              <div className="relative w-12 h-12 transition-all duration-300 flex items-center justify-center">
-                <BBLogo size="md" />
-              </div>
-            </Link>
-            <div className="hidden md:flex items-center space-x-6">
-              <Link
-                href="/about"
-                className="font-medium text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
-              >
-                About
-              </Link>
-              <MegaMenu
-                label="Features"
-                sections={featuresMegaMenu.sections}
-                sideSections={featuresMegaMenu.sideSections}
-                promoItem={featuresMegaMenu.promoItem}
-                className="font-medium text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
-              />
-            </div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <ThemeToggle />
-            <button
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors duration-200"
-              onClick={handleSearchClick}
-            >
-              <Search className="h-5 w-5 dark:text-white" />
-            </button>
-            <AuthButton />
-          </div>
+          {renderNavContent()}
         </nav>
       )}
 
@@ -255,43 +293,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             scrollState.isScrollingUp ? "opacity-100" : "opacity-0 pointer-events-none",
           )}
         >
-          <div className="flex items-center space-x-8">
-            <Link
-              href="/"
-              className={`font-bold text-2xl transition-transform duration-300 ${logoHovered ? "scale-110" : ""} flex items-center`}
-              onMouseEnter={() => setLogoHovered(true)}
-              onMouseLeave={() => setLogoHovered(false)}
-            >
-              <div className="relative w-12 h-12 transition-all duration-300 flex items-center justify-center">
-                <BBLogo size="md" />
-              </div>
-            </Link>
-            <div className="hidden md:flex items-center space-x-6">
-              <Link
-                href="/about"
-                className="font-medium text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
-              >
-                About
-              </Link>
-              <MegaMenu
-                label="Features"
-                sections={featuresMegaMenu.sections}
-                sideSections={featuresMegaMenu.sideSections}
-                promoItem={featuresMegaMenu.promoItem}
-                className="font-medium text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
-              />
-            </div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <ThemeToggle />
-            <button
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors duration-200"
-              onClick={handleSearchClick}
-            >
-              <Search className="h-5 w-5 dark:text-white" />
-            </button>
-            <AuthButton />
-          </div>
+          {renderNavContent()}
         </nav>
       )}
 
