@@ -71,11 +71,13 @@ export async function middleware(request: NextRequest) {
     path.startsWith("/auth/callback") ||
     path.startsWith("/account-recovery") ||
     path.startsWith("/checkout") ||
+    // Admin routes (protected)
+    path.startsWith("/admin") ||
     // Public profile pages (but still need to check auth for private features)
     path.match(/^\/[^/]+$/) // matches /username pattern
 
   // Protected paths that require authentication
-  const isProtectedPath = path.startsWith("/profile") || path.startsWith("/dashboard")
+  const isProtectedPath = path.startsWith("/profile") || path.startsWith("/dashboard") || path.startsWith("/admin")
 
   // Skip middleware for public paths
   if (isPublicPath && !isProtectedPath) {
@@ -98,6 +100,12 @@ export async function middleware(request: NextRequest) {
       const redirectUrl = new URL("/auth/sign-in", request.url)
       redirectUrl.searchParams.set("redirect", request.nextUrl.pathname)
       return NextResponse.redirect(redirectUrl)
+    }
+
+    // For admin paths, check for admin role
+    if (path.startsWith("/admin")) {
+      // Additional admin role check will be handled by the admin layout
+      console.log("🔑 Admin path detected, allowing through to admin layout")
     }
   }
 
