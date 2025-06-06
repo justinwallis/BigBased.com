@@ -1,13 +1,12 @@
-// BigBased exclusive page
-import { siteConfig } from "@/lib/site-config"
-import { notFound } from "next/navigation"
+import { generateSafePageMetadata } from "@/lib/metadata-error-handler"
+
+// Static metadata to prevent build errors
+export const metadata = generateSafePageMetadata(
+  "Big Based Book Reader",
+  "Explore our exclusive collection of books on digital sovereignty, faith, freedom, and cultural resistance.",
+)
 
 export default function BooksPage() {
-  // Only accessible from BigBased
-  if (!siteConfig.isBigBased) {
-    notFound()
-  }
-
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold mb-8">Big Based Book Reader</h1>
