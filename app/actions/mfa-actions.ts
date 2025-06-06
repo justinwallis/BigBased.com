@@ -433,7 +433,10 @@ export async function checkUserMfaStatus(email: string) {
       }
     }
 
-    const user = userData.users.find((u) => u.email === email)
+    // Replace this line:
+    // const user = userData.users.find((u) => u.email === email)
+    // With this case-insensitive version:
+    const user = userData.users.find((u) => u.email?.toLowerCase() === email.toLowerCase())
 
     if (!user) {
       return {
@@ -498,7 +501,10 @@ export async function verifyMfaForLogin(email: string, token: string) {
       }
     }
 
-    const user = userData.users.find((u) => u.email === email)
+    // Replace this line:
+    // const user = userData.users.find((u) => u.email === email)
+    // With this case-insensitive version:
+    const user = userData.users.find((u) => u.email?.toLowerCase() === email.toLowerCase())
 
     if (!user) {
       return {
