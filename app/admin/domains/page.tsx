@@ -1,6 +1,9 @@
 import { getAllDomains } from "@/app/actions/domain-actions"
 import DomainAdminClient from "./domain-admin-client"
 
+// Force dynamic rendering to avoid static generation issues
+export const dynamic = "force-dynamic"
+
 export default async function DomainsAdminPage() {
   const { success, data: domains, error } = await getAllDomains()
 
