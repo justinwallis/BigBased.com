@@ -101,46 +101,11 @@ type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
 type ToastActionElement = React.ReactElement<typeof ToastAction>
 
 function Toaster() {
-  const { toasts } = useToast()
-
   return (
     <ToastProvider>
-      {toasts.map(({ id, title, description, action, ...props }) => (
-        <Toast key={id} {...props}>
-          <div className="grid gap-1">
-            {title && <ToastTitle>{title}</ToastTitle>}
-            {description && <ToastDescription>{description}</ToastDescription>}
-          </div>
-          {action}
-          <ToastClose />
-        </Toast>
-      ))}
       <ToastViewport />
     </ToastProvider>
   )
-}
-
-// Hook for using toasts
-function useToast() {
-  const [toasts, setToasts] = React.useState<(ToastProps & { id: string })[]>([])
-
-  const toast = React.useCallback((props: ToastProps) => {
-    const id = Math.random().toString(36).substr(2, 9)
-    setToasts((prev) => [...prev, { ...props, id }])
-
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((toast) => toast.id !== id))
-    }, 5000)
-  }, [])
-
-  return {
-    toasts,
-    toast,
-    dismiss: (toastId?: string) => {
-      setToasts((prev) => (toastId ? prev.filter((toast) => toast.id !== toastId) : []))
-    },
-  }
 }
 
 export {
@@ -154,5 +119,4 @@ export {
   ToastClose,
   ToastAction,
   Toaster,
-  useToast,
 }
