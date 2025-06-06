@@ -134,7 +134,15 @@ export default function SignInPage() {
         </h2>
         <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
           {mfaRequired ? (
-            "Please enter your verification code to continue"
+            <>
+              Please enter your verification code to continue.{" "}
+              <Link
+                href="/auth/sign-up"
+                className="font-medium text-primary hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+              >
+                Don't have an account? Sign up
+              </Link>
+            </>
           ) : (
             <>
               Don't have an account yet?{" "}

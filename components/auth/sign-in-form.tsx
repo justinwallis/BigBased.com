@@ -120,7 +120,9 @@ export default function SignInForm({ prefillEmail = "", prefillPassword = "", mf
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email" className="text-black dark:text-white">
+            Email
+          </Label>
           <Input
             id="email"
             type="email"
@@ -129,12 +131,15 @@ export default function SignInForm({ prefillEmail = "", prefillPassword = "", mf
             placeholder="Enter your email"
             required
             disabled={isLoading}
-            className="w-full"
+            autoComplete="email"
+            className="w-full text-black dark:text-white bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 placeholder:text-gray-500 dark:placeholder:text-gray-400"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password" className="text-black dark:text-white">
+            Password
+          </Label>
           <div className="relative">
             <Input
               id="password"
@@ -144,7 +149,8 @@ export default function SignInForm({ prefillEmail = "", prefillPassword = "", mf
               placeholder="Enter your password"
               required
               disabled={isLoading}
-              className="w-full pr-10"
+              autoComplete="current-password"
+              className="w-full pr-10 text-black dark:text-white bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 placeholder:text-gray-500 dark:placeholder:text-gray-400"
             />
             <button
               type="button"
@@ -159,7 +165,9 @@ export default function SignInForm({ prefillEmail = "", prefillPassword = "", mf
 
         {showMfaInput && (
           <div className="space-y-2">
-            <Label htmlFor="mfaCode">Verification Code</Label>
+            <Label htmlFor="mfaCode" className="text-black dark:text-white">
+              Verification Code
+            </Label>
             <Input
               id="mfaCode"
               type="text"
@@ -169,7 +177,7 @@ export default function SignInForm({ prefillEmail = "", prefillPassword = "", mf
               maxLength={6}
               required
               disabled={isLoading}
-              className="w-full text-center text-lg tracking-widest"
+              className="w-full text-center text-lg tracking-widest text-black dark:text-white bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 placeholder:text-gray-500 dark:placeholder:text-gray-400"
               autoComplete="one-time-code"
               autoFocus
             />

@@ -193,6 +193,12 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     setIsSearchPopupOpen(true)
   }
 
+  const clearHeaderForm = () => {
+    console.log("🧹 Clearing header form for security")
+    setEmail("")
+    setPassword("")
+  }
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -225,6 +231,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         sessionStorage.setItem("mfaRequired", "true")
         console.log("💾 Stored mfaEmail in sessionStorage:", email)
         console.log("💾 Stored mfaRequired in sessionStorage: true")
+
+        // Clear the header form for security
+        clearHeaderForm()
+
         console.log("🔄 Redirecting to /auth/sign-in?mfa=required")
         router.push("/auth/sign-in?mfa=required")
         return
@@ -262,6 +272,9 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           sessionStorage.setItem("loginError", result.error.message)
         }
 
+        // Clear the header form for security
+        clearHeaderForm()
+
         console.log("🔄 Redirecting to sign-in page with error")
         router.push("/auth/sign-in")
         return
@@ -271,6 +284,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         console.log("🔐 MFA REQUIRED from signIn result - Redirecting to sign-in page")
         sessionStorage.setItem("mfaEmail", email)
         sessionStorage.setItem("mfaRequired", "true")
+
+        // Clear the header form for security
+        clearHeaderForm()
+
         router.push("/auth/sign-in?mfa=required")
         return
       }
@@ -284,8 +301,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           description: "You have been logged in successfully",
         })
         // Clear form
-        setEmail("")
-        setPassword("")
+        clearHeaderForm()
       } else {
         console.log("⚠️ Unexpected result structure:", result)
       }
@@ -355,6 +371,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               onChange={(e) => setEmail(e.target.value)}
               className="w-40 h-[35px] mr-2 text-sm bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-gray-400 dark:border-gray-300 text-black dark:text-white placeholder:text-gray-600 dark:placeholder:text-gray-400 pl-3 pr-2"
               disabled={isLoggingIn}
+              autoComplete="email"
               required
             />
             <Input
@@ -364,6 +381,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               onChange={(e) => setPassword(e.target.value)}
               className="w-40 h-[35px] mr-1 text-sm bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-gray-400 dark:border-gray-300 text-black dark:text-white placeholder:text-gray-600 dark:placeholder:text-gray-400 px-2"
               disabled={isLoggingIn}
+              autoComplete="current-password"
               required
             />
             <AuthButton onLogin={handleLogin} isLoggingIn={isLoggingIn} />
