@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils"
 import { ErrorBoundary } from "@/components/error-boundary"
 import type React from "react"
 import { Input } from "@/components/ui/input"
+import { toast } from "@/components/ui/use-toast"
 
 import { useAuth } from "@/contexts/auth-context"
 import { SignupPopup } from "@/components/signup-popup"
@@ -159,7 +160,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     lastScrollY: 0,
   })
 
-  const { user } = useAuth()
+  const { user, signIn } = useAuth()
   const router = useRouter()
 
   // Handle header visibility and transparency on scroll
@@ -195,27 +196,68 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     e.preventDefault()
 
     if (!email || !password) {
-      // Store email and redirect to sign-in page with error
-      sessionStorage.setItem("loginEmail", email)
-      sessionStorage.setItem("loginError", "Email and password are required")
-      router.push("/auth/sign-in")
+      toast({
+        title: "Error",
+        description: "Email and password are required",
+        variant: "destructive",
+      })
       return
     }
 
     setIsLoggingIn(true)
 
     try {
-      // Instead of trying to detect MFA here, just store credentials and redirect to sign-in page
-      // This ensures we use the same auth flow as the sign-in page
-      sessionStorage.setItem("loginEmail", email)
-      sessionStorage.setItem("loginPassword", password) // This will be used by the sign-in page
-      router.push("/auth/sign-in")
+      // Use the same signIn function as the sign-in page
+      const result = await signIn(email, password)
+
+      if (result.error) {
+        // Store email and error info for sign-in page
+        sessionStorage.setItem("loginEmail", email)
+
+        if (
+          result.error.message.includes("Invalid login credentials") ||
+          result.error.message.includes("Email not confirmed")
+        ) {
+          sessionStorage.setItem(
+            "loginError",
+            "The email or mobile number you entered isn't connected to an account. Find your account and log in",
+          )
+        } else if (
+          result.error.message.includes("Invalid password") ||
+          result.error.message.includes("Wrong password")
+        ) {
+          sessionStorage.setItem("loginError", "The password you've entered is incorrect. Forgot Password?")
+        } else {
+          sessionStorage.setItem("loginError", result.error.message)
+        }
+
+        router.push("/auth/sign-in")
+        return
+      }
+
+      if (result.mfaRequired) {
+        // MFA is required, redirect to sign-in page for MFA verification
+        sessionStorage.setItem("mfaEmail", email)
+        sessionStorage.setItem("mfaPassword", password)
+        router.push("/auth/sign-in?mfa=required")
+        return
+      }
+
+      // Login successful
+      toast({
+        title: "Success",
+        description: "You have been logged in successfully",
+      })
+      // Clear form
+      setEmail("")
+      setPassword("")
     } catch (error) {
       console.error("Login error:", error)
-      // Store email and redirect to sign-in page with error
-      sessionStorage.setItem("loginEmail", email)
-      sessionStorage.setItem("loginError", "An unexpected error occurred")
-      router.push("/auth/sign-in")
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      })
     } finally {
       setIsLoggingIn(false)
     }
