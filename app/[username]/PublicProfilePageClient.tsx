@@ -18,7 +18,6 @@ import {
   Briefcase,
   GraduationCap,
 } from "lucide-react"
-import type { Profile } from "@/app/actions/profile-actions"
 import Link from "next/link"
 import Image from "next/image"
 
@@ -26,8 +25,25 @@ import Image from "next/image"
 import { ImageUploadDialog } from "@/components/image-upload-dialog"
 import { uploadImageClient } from "@/lib/upload-client"
 
+// Import any components you need
+
+// Define the profile type explicitly to avoid undefined issues
+interface ProfileType {
+  id: string
+  username: string
+  full_name?: string
+  bio?: string
+  avatar_url?: string
+  social_links?: Record<string, any>
+  personal_info?: Record<string, any>
+  location_info?: Record<string, any>
+  contact_info?: Record<string, any>
+  personal_details?: Record<string, any>
+  [key: string]: any // Allow other properties
+}
+
 interface PublicProfilePageClientProps {
-  profile: Profile | null
+  profile: ProfileType
 }
 
 export function PublicProfilePageClient({ profile }: PublicProfilePageClientProps) {
@@ -47,6 +63,10 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
   if (!profile) {
     notFound()
   }
+
+  // Ensure all properties have fallbacks to prevent undefined errors
+  const displayName = profile?.full_name || profile?.username || "User"
+  const bio = profile?.bio || "No bio available"
 
   const getInitials = (name: string) => {
     return name

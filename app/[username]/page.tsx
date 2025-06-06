@@ -9,6 +9,7 @@ interface ProfilePageProps {
   }
 }
 
+// Dynamic metadata generation at request time
 export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
   const { username } = params
 
@@ -23,13 +24,12 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
       }
     }
 
-    // Use fallback values instead of siteConfig during build
-    const siteName = "Big Based" // Fallback during build
+    // Safe fallback values
     const profileName = profile.full_name || profile.username
 
     return {
-      title: `${profileName} | ${siteName}`,
-      description: profile.bio || `${profile.username}'s profile on ${siteName}`,
+      title: `${profileName} | Big Based`,
+      description: profile.bio || `${profile.username}'s profile on Big Based`,
     }
   } catch (error) {
     console.error("Error generating metadata:", error)
@@ -71,7 +71,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       profile.personal_details = {}
     }
 
-    console.log("Profile data extracted:", profile)
     return <PublicProfilePageClient profile={profile} />
   } catch (error) {
     console.error("Error loading profile:", error)
