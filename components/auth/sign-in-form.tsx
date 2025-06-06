@@ -60,11 +60,13 @@ export default function SignInForm({ prefillEmail = "", prefillPassword = "", mf
 
     try {
       if (!email || !password) {
+        console.log("❌ Missing email or password")
         setError("Email and password are required")
         return
       }
 
       if (showMfaInput && !mfaCode) {
+        console.log("❌ Missing MFA code")
         setError("Verification code is required")
         return
       }
@@ -126,7 +128,7 @@ export default function SignInForm({ prefillEmail = "", prefillPassword = "", mf
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email"
             required
-            disabled={isLoading || showMfaInput}
+            disabled={isLoading}
             className="w-full"
           />
         </div>
@@ -141,7 +143,7 @@ export default function SignInForm({ prefillEmail = "", prefillPassword = "", mf
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               required
-              disabled={isLoading || showMfaInput}
+              disabled={isLoading}
               className="w-full pr-10"
             />
             <button
@@ -169,6 +171,7 @@ export default function SignInForm({ prefillEmail = "", prefillPassword = "", mf
               disabled={isLoading}
               className="w-full text-center text-lg tracking-widest"
               autoComplete="one-time-code"
+              autoFocus
             />
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Enter the 6-digit code from your authenticator app
