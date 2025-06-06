@@ -23,9 +23,13 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
       }
     }
 
+    // Use fallback values instead of siteConfig during build
+    const siteName = "Big Based" // Fallback during build
+    const profileName = profile.full_name || profile.username
+
     return {
-      title: `${profile.full_name || profile.username} | Big Based`,
-      description: profile.bio || `${profile.username}'s profile on Big Based`,
+      title: `${profileName} | ${siteName}`,
+      description: profile.bio || `${profile.username}'s profile on ${siteName}`,
     }
   } catch (error) {
     console.error("Error generating metadata:", error)
