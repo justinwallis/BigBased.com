@@ -94,4 +94,5 @@ const TrustedDevicesClientPage = () => {
   )
 }
 
+export { TrustedDevicesClientPage }
 export default TrustedDevicesClientPage

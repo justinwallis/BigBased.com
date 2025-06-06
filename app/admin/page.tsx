@@ -1,62 +1,27 @@
-import Link from "next/link"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { createClient } from "@/lib/supabase/server"
+import type { Metadata } from "next"
 
-export default async function AdminPage() {
-  const supabase = createClient()
+export const metadata: Metadata = {
+  title: "Admin Dashboard | Big Based",
+  description: "Admin dashboard for Big Based",
+}
 
-  // Get domain count
-  const { count: domainCount } = await supabase.from("domains").select("*", { count: "exact", head: true })
-
-  // Get active domain count
-  const { count: activeDomainCount } = await supabase
-    .from("domains")
-    .select("*", { count: "exact", head: true })
-    .eq("is_active", true)
-
+export default function AdminPage() {
   return (
-    <div className="grid gap-6">
-      <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Link href="/admin/domains">
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader>
-              <CardTitle>Domain Management</CardTitle>
-              <CardDescription>Manage all your domains</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{domainCount || 0} domains</div>
-              <p className="text-muted-foreground">{activeDomainCount || 0} active</p>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/admin/analytics">
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader>
-              <CardTitle>Analytics</CardTitle>
-              <CardDescription>View domain performance</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">Coming Soon</div>
-              <p className="text-muted-foreground">Domain analytics</p>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/admin/settings">
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader>
-              <CardTitle>Settings</CardTitle>
-              <CardDescription>Configure system settings</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">Coming Soon</div>
-              <p className="text-muted-foreground">Global configuration</p>
-            </CardContent>
-          </Card>
-        </Link>
+    <div className="container mx-auto py-10">
+      <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <h2 className="text-xl font-semibold mb-4">User Management</h2>
+          <p className="text-gray-600 dark:text-gray-300">Manage users and permissions</p>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <h2 className="text-xl font-semibold mb-4">Content Management</h2>
+          <p className="text-gray-600 dark:text-gray-300">Manage content and resources</p>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <h2 className="text-xl font-semibold mb-4">System Settings</h2>
+          <p className="text-gray-600 dark:text-gray-300">Configure system settings</p>
+        </div>
       </div>
     </div>
   )

@@ -2,6 +2,12 @@ import { createServerClient } from "@/lib/supabase/server"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import TwoFactorClientPage from "./TwoFactorClientPage"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Two-Factor Authentication | Big Based",
+  description: "Set up and manage two-factor authentication for your account",
+}
 
 export default async function TwoFactorPage() {
   const cookieStore = cookies()

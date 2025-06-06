@@ -9,6 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Key, Smartphone, Settings, Eye, Lock } from "lucide-react"
 import Link from "next/link"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Security Center | Big Based",
+  description: "Manage your account security settings and monitor activity",
+}
 
 export default async function SecurityPage() {
   const supabase = createServerSupabaseClient()
