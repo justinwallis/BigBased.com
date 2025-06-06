@@ -10,7 +10,7 @@ export interface Domain {
   is_active: boolean
   created_at: string
   updated_at: string
-  owner_id: string | null
+  owner_user_id: string | null // Fixed: was owner_id
   settings: DomainSettings
 }
 
@@ -133,15 +133,15 @@ export async function createDomain(formData: FormData) {
       },
     }
 
-    // Create domain
+    // Create domain - Fixed column names
     const { data, error } = await supabase
       .from("domains")
       .insert([
         {
           domain,
           is_active: isActive,
-          owner_id: null,
-          settings,
+          owner_user_id: null, // Fixed: was owner_id
+          custom_branding: settings, // Fixed: use custom_branding column
         },
       ])
       .select()
@@ -196,19 +196,19 @@ export async function updateDomain(domainId: string, formData: FormData) {
 
     // Get feature toggles
     const enhancedDomains = formData.get("enhanced_domains") === "true"
-    const customBranding = formData.get("custom_branding") === "true"
+    const customBrandingEnabled = formData.get("custom_branding") === "true"
     const analytics = formData.get("analytics") === "true"
 
     // Get branding settings
-    const logoUrl = (formData.get("logo_url") as string) || currentDomain.settings?.logo_url
-    const faviconUrl = (formData.get("favicon_url") as string) || currentDomain.settings?.favicon_url
-    const primaryColor = (formData.get("primary_color") as string) || currentDomain.settings?.primary_color
-    const secondaryColor = (formData.get("secondary_color") as string) || currentDomain.settings?.secondary_color
-    const customCss = (formData.get("custom_css") as string) || currentDomain.settings?.custom_css
+    const logoUrl = (formData.get("logo_url") as string) || currentDomain.custom_branding?.logo_url
+    const faviconUrl = (formData.get("favicon_url") as string) || currentDomain.custom_branding?.favicon_url
+    const primaryColor = (formData.get("primary_color") as string) || currentDomain.custom_branding?.primary_color
+    const secondaryColor = (formData.get("secondary_color") as string) || currentDomain.custom_branding?.secondary_color
+    const customCss = (formData.get("custom_css") as string) || currentDomain.custom_branding?.custom_css
 
-    // Prepare settings object
-    const settings = {
-      ...currentDomain.settings,
+    // Prepare settings object for custom_branding column
+    const customBranding = {
+      ...currentDomain.custom_branding,
       logo_url: logoUrl,
       favicon_url: faviconUrl,
       primary_color: primaryColor,
@@ -216,18 +216,18 @@ export async function updateDomain(domainId: string, formData: FormData) {
       custom_css: customCss,
       features: {
         enhanced_domains: enhancedDomains,
-        custom_branding: customBranding,
+        custom_branding: customBrandingEnabled,
         analytics: analytics,
       },
     }
 
-    // Update domain
+    // Update domain - Fixed column names
     const { data, error } = await supabase
       .from("domains")
       .update({
         domain,
         is_active: isActive,
-        settings,
+        custom_branding: customBranding, // Fixed: use custom_branding column
       })
       .eq("id", domainId)
       .select()

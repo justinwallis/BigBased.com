@@ -221,7 +221,7 @@ export default function DomainAdminClient({
                                   id="enhanced_domains"
                                   name="enhanced_domains"
                                   value="true"
-                                  defaultChecked={domain.settings?.features?.enhanced_domains}
+                                  defaultChecked={domain.custom_branding?.features?.enhanced_domains}
                                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                                 />
                                 <label htmlFor="enhanced_domains" className="ml-2 block text-sm text-gray-700">
@@ -235,7 +235,7 @@ export default function DomainAdminClient({
                                   id="custom_branding"
                                   name="custom_branding"
                                   value="true"
-                                  defaultChecked={domain.settings?.features?.custom_branding}
+                                  defaultChecked={domain.custom_branding?.features?.custom_branding}
                                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                                 />
                                 <label htmlFor="custom_branding" className="ml-2 block text-sm text-gray-700">
@@ -249,7 +249,7 @@ export default function DomainAdminClient({
                                   id="analytics"
                                   name="analytics"
                                   value="true"
-                                  defaultChecked={domain.settings?.features?.analytics}
+                                  defaultChecked={domain.custom_branding?.features?.analytics}
                                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                                 />
                                 <label htmlFor="analytics" className="ml-2 block text-sm text-gray-700">
@@ -259,7 +259,7 @@ export default function DomainAdminClient({
                             </div>
                           </div>
 
-                          {domain.settings?.features?.custom_branding && (
+                          {domain.custom_branding?.features?.custom_branding && (
                             <div className="border-t pt-4 mt-4">
                               <h3 className="text-lg font-medium mb-2">Branding</h3>
                               <div className="space-y-4">
@@ -271,7 +271,7 @@ export default function DomainAdminClient({
                                     type="text"
                                     id="logo_url"
                                     name="logo_url"
-                                    defaultValue={domain.settings?.logo_url || ""}
+                                    defaultValue={domain.custom_branding?.logo_url || ""}
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                   />
                                 </div>
@@ -284,7 +284,7 @@ export default function DomainAdminClient({
                                     type="text"
                                     id="favicon_url"
                                     name="favicon_url"
-                                    defaultValue={domain.settings?.favicon_url || ""}
+                                    defaultValue={domain.custom_branding?.favicon_url || ""}
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                   />
                                 </div>
@@ -297,7 +297,7 @@ export default function DomainAdminClient({
                                     type="text"
                                     id="primary_color"
                                     name="primary_color"
-                                    defaultValue={domain.settings?.primary_color || ""}
+                                    defaultValue={domain.custom_branding?.primary_color || ""}
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                     placeholder="#000000"
                                   />
@@ -311,7 +311,7 @@ export default function DomainAdminClient({
                                     type="text"
                                     id="secondary_color"
                                     name="secondary_color"
-                                    defaultValue={domain.settings?.secondary_color || ""}
+                                    defaultValue={domain.custom_branding?.secondary_color || ""}
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                     placeholder="#ffffff"
                                   />
@@ -325,7 +325,7 @@ export default function DomainAdminClient({
                                     id="custom_css"
                                     name="custom_css"
                                     rows={4}
-                                    defaultValue={domain.settings?.custom_css || ""}
+                                    defaultValue={domain.custom_branding?.custom_css || ""}
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                   />
                                 </div>
@@ -368,17 +368,17 @@ export default function DomainAdminClient({
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-500">
-                          {domain.settings?.features?.enhanced_domains && (
+                          {domain.custom_branding?.features?.enhanced_domains && (
                             <span className="mr-2 px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-xs">
                               Enhanced
                             </span>
                           )}
-                          {domain.settings?.features?.custom_branding && (
+                          {domain.custom_branding?.features?.custom_branding && (
                             <span className="mr-2 px-2 py-1 bg-purple-100 text-purple-800 rounded-md text-xs">
                               Branding
                             </span>
                           )}
-                          {domain.settings?.features?.analytics && (
+                          {domain.custom_branding?.features?.analytics && (
                             <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-md text-xs">
                               Analytics
                             </span>
