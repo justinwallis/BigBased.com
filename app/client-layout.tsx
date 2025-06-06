@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Search } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useTheme } from "@/components/theme-provider"
 import MegaMenu from "@/components/mega-menu"
@@ -15,6 +16,7 @@ import { cn } from "@/lib/utils"
 import { ErrorBoundary } from "@/components/error-boundary"
 import type React from "react"
 import { Input } from "@/components/ui/input"
+import { toast } from "@/components/ui/use-toast"
 
 import { useAuth } from "@/contexts/auth-context"
 import { SignupPopup } from "@/components/signup-popup"
@@ -149,6 +151,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [isLoggingIn, setIsLoggingIn] = useState(false)
   const { theme } = useTheme()
   const [scrollState, setScrollState] = useState({
     isAtTop: true,
@@ -157,7 +160,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     lastScrollY: 0,
   })
 
-  const { user } = useAuth()
+  const { user, signIn } = useAuth()
+  const router = useRouter()
 
   // Handle header visibility and transparency on scroll
   useEffect(() => {
@@ -188,10 +192,54 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     setIsSearchPopupOpen(true)
   }
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Login logic would go here
-    console.log("Login attempt with:", email, password)
+
+    if (!email || !password) {
+      toast({
+        title: "Error",
+        description: "Email and password are required",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsLoggingIn(true)
+
+    try {
+      const result = await signIn(email, password)
+
+      if (result.error) {
+        toast({
+          title: "Login failed",
+          description: result.error.message || "Invalid email or password",
+          variant: "destructive",
+        })
+      } else if (result.mfaRequired) {
+        // Redirect to sign-in page for MFA verification
+        // Store email in sessionStorage so the sign-in page knows which user is trying to log in
+        sessionStorage.setItem("mfaEmail", email)
+        router.push("/auth/sign-in?mfa=required")
+      } else {
+        // Login successful
+        toast({
+          title: "Success",
+          description: "You have been logged in successfully",
+        })
+        // Clear form
+        setEmail("")
+        setPassword("")
+      }
+    } catch (error) {
+      console.error("Login error:", error)
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoggingIn(false)
+    }
   }
 
   // Determine if the header should be fixed
@@ -245,6 +293,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-32 h-8 mr-2 text-sm"
+              disabled={isLoggingIn}
               required
             />
             <Input
@@ -253,11 +302,12 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-32 h-8 mr-2 text-sm"
+              disabled={isLoggingIn}
               required
             />
           </form>
         )}
-        <AuthButton />
+        <AuthButton onLogin={handleLogin} isLoggingIn={isLoggingIn} />
       </div>
     </>
   )
