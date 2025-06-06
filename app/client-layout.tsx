@@ -17,7 +17,7 @@ import { ErrorBoundary } from "@/components/error-boundary"
 import type React from "react"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/use-toast"
-import { supabaseClient } from "@/lib/supabase/client"
+import { checkUserMfaStatus } from "@/app/actions/mfa-actions"
 
 import { useAuth } from "@/contexts/auth-context"
 import { SignupPopup } from "@/components/signup-popup"
@@ -161,7 +161,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     lastScrollY: 0,
   })
 
-  const { user } = useAuth()
+  const { user, signIn } = useAuth()
   const router = useRouter()
 
   // Handle header visibility and transparency on scroll
@@ -207,58 +207,53 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     setIsLoggingIn(true)
 
     try {
-      const supabase = supabaseClient()
-      if (!supabase) {
-        throw new Error("Supabase client not available")
+      // First check if user has MFA enabled BEFORE attempting login
+      const mfaStatusResult = await checkUserMfaStatus(email)
+
+      if (mfaStatusResult.success && mfaStatusResult.data?.enabled) {
+        // User has MFA enabled, redirect to sign-in page for MFA flow
+        sessionStorage.setItem("mfaEmail", email)
+        sessionStorage.setItem("mfaPassword", password)
+        router.push("/auth/sign-in?mfa=required")
+        return
       }
 
-      // First check if user exists by trying to sign in
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+      // User doesn't have MFA, proceed with normal login using auth context
+      const result = await signIn(email, password)
 
-      if (error) {
+      if (result.error) {
         // Store email and error info for sign-in page
         sessionStorage.setItem("loginEmail", email)
 
-        if (error.message.includes("Invalid login credentials") || error.message.includes("Email not confirmed")) {
+        if (
+          result.error.message.includes("Invalid login credentials") ||
+          result.error.message.includes("Email not confirmed")
+        ) {
           sessionStorage.setItem(
             "loginError",
             "The email or mobile number you entered isn't connected to an account. Find your account and log in",
           )
-        } else if (error.message.includes("Invalid password") || error.message.includes("Wrong password")) {
+        } else if (
+          result.error.message.includes("Invalid password") ||
+          result.error.message.includes("Wrong password")
+        ) {
           sessionStorage.setItem("loginError", "The password you've entered is incorrect. Forgot Password?")
         } else {
-          sessionStorage.setItem("loginError", error.message)
+          sessionStorage.setItem("loginError", result.error.message)
         }
 
         router.push("/auth/sign-in")
         return
       }
 
-      if (data.user) {
-        // Check if user has MFA enabled
-        const { data: factors } = await supabase.auth.mfa.listFactors()
-
-        if (factors && factors.length > 0) {
-          // User has MFA enabled, sign them out and redirect to sign-in page for MFA
-          await supabase.auth.signOut()
-          sessionStorage.setItem("mfaEmail", email)
-          sessionStorage.setItem("mfaPassword", password)
-          router.push("/auth/sign-in?mfa=required")
-          return
-        }
-
-        // Login successful without MFA
-        toast({
-          title: "Success",
-          description: "You have been logged in successfully",
-        })
-        // Clear form
-        setEmail("")
-        setPassword("")
-      }
+      // Login successful
+      toast({
+        title: "Success",
+        description: "You have been logged in successfully",
+      })
+      // Clear form
+      setEmail("")
+      setPassword("")
     } catch (error) {
       console.error("Login error:", error)
       // Store email and redirect to sign-in page with error
@@ -320,7 +315,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-40 h-[35px] mr-2 text-sm bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-gray-400 dark:border-gray-300 text-black dark:text-white placeholder:text-gray-600 dark:placeholder:text-gray-400 px-2"
+              className="w-40 h-[35px] mr-2 text-sm bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-gray-400 dark:border-gray-300 text-black dark:text-white placeholder:text-gray-600 dark:placeholder:text-gray-400 pl-3 pr-2"
               disabled={isLoggingIn}
               required
             />
@@ -335,7 +330,9 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             />
           </form>
         )}
-        <AuthButton onLogin={handleLogin} isLoggingIn={isLoggingIn} />
+        <div className="pl-0">
+          <AuthButton onLogin={handleLogin} isLoggingIn={isLoggingIn} />
+        </div>
       </div>
     </>
   )
