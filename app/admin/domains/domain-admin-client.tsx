@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { createDomain, updateDomain, deleteDomain, type Domain } from "@/app/actions/domain-actions"
 import { useRouter } from "next/navigation"
 
@@ -17,12 +17,14 @@ export default function DomainAdminClient({
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [editingDomain, setEditingDomain] = useState<Domain | null>(null)
+  const createFormRef = useRef<HTMLFormElement>(null)
   const router = useRouter()
 
   const handleCreateSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsSubmitting(true)
     setError(null)
+    setSuccess(null)
 
     try {
       const formData = new FormData(e.currentTarget)
@@ -32,7 +34,11 @@ export default function DomainAdminClient({
         setDomains([result.data, ...domains])
         setSuccess("Domain created successfully!")
         setIsCreating(false)
-        e.currentTarget.reset()
+
+        // Safe form reset
+        if (createFormRef.current) {
+          createFormRef.current.reset()
+        }
       } else {
         setError(result.error || "Failed to create domain")
       }
@@ -47,6 +53,7 @@ export default function DomainAdminClient({
     e.preventDefault()
     setIsSubmitting(true)
     setError(null)
+    setSuccess(null)
 
     try {
       const formData = new FormData(e.currentTarget)
@@ -73,6 +80,7 @@ export default function DomainAdminClient({
 
     setIsSubmitting(true)
     setError(null)
+    setSuccess(null)
 
     try {
       const result = await deleteDomain(domainId)
@@ -90,26 +98,52 @@ export default function DomainAdminClient({
     }
   }
 
+  const clearMessages = () => {
+    setError(null)
+    setSuccess(null)
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Domain Management</h1>
         <button
-          onClick={() => setIsCreating(!isCreating)}
+          onClick={() => {
+            setIsCreating(!isCreating)
+            clearMessages()
+          }}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
         >
           {isCreating ? "Cancel" : "Add Domain"}
         </button>
       </div>
 
-      {error && <div className="p-4 bg-red-50 border border-red-200 rounded-md text-red-700">{error}</div>}
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-md text-red-700">
+          <div className="flex justify-between items-center">
+            <span>{error}</span>
+            <button onClick={clearMessages} className="text-red-500 hover:text-red-700">
+              ×
+            </button>
+          </div>
+        </div>
+      )}
 
-      {success && <div className="p-4 bg-green-50 border border-green-200 rounded-md text-green-700">{success}</div>}
+      {success && (
+        <div className="p-4 bg-green-50 border border-green-200 rounded-md text-green-700">
+          <div className="flex justify-between items-center">
+            <span>{success}</span>
+            <button onClick={clearMessages} className="text-green-500 hover:text-green-700">
+              ×
+            </button>
+          </div>
+        </div>
+      )}
 
       {isCreating && (
         <div className="p-6 border rounded-md bg-gray-50">
           <h2 className="text-xl font-semibold mb-4">Add New Domain</h2>
-          <form onSubmit={handleCreateSubmit}>
+          <form ref={createFormRef} onSubmit={handleCreateSubmit}>
             <div className="space-y-4">
               <div>
                 <label htmlFor="domain" className="block text-sm font-medium text-gray-700">
@@ -139,7 +173,17 @@ export default function DomainAdminClient({
                 </label>
               </div>
 
-              <div className="flex justify-end">
+              <div className="flex justify-end space-x-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCreating(false)
+                    clearMessages()
+                  }}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
+                >
+                  Cancel
+                </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
@@ -185,12 +229,12 @@ export default function DomainAdminClient({
                       <form onSubmit={(e) => handleUpdateSubmit(e, domain.id)}>
                         <div className="space-y-4">
                           <div>
-                            <label htmlFor="domain" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="edit_domain" className="block text-sm font-medium text-gray-700">
                               Domain Name
                             </label>
                             <input
                               type="text"
-                              id="domain"
+                              id="edit_domain"
                               name="domain"
                               required
                               defaultValue={domain.domain}
@@ -201,13 +245,13 @@ export default function DomainAdminClient({
                           <div className="flex items-center">
                             <input
                               type="checkbox"
-                              id="is_active"
+                              id="edit_is_active"
                               name="is_active"
                               value="true"
                               defaultChecked={domain.is_active}
                               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                             />
-                            <label htmlFor="is_active" className="ml-2 block text-sm text-gray-700">
+                            <label htmlFor="edit_is_active" className="ml-2 block text-sm text-gray-700">
                               Active
                             </label>
                           </div>
@@ -218,13 +262,13 @@ export default function DomainAdminClient({
                               <div className="flex items-center">
                                 <input
                                   type="checkbox"
-                                  id="enhanced_domains"
+                                  id="edit_enhanced_domains"
                                   name="enhanced_domains"
                                   value="true"
                                   defaultChecked={domain.custom_branding?.features?.enhanced_domains}
                                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                                 />
-                                <label htmlFor="enhanced_domains" className="ml-2 block text-sm text-gray-700">
+                                <label htmlFor="edit_enhanced_domains" className="ml-2 block text-sm text-gray-700">
                                   Enhanced Domains
                                 </label>
                               </div>
@@ -232,13 +276,13 @@ export default function DomainAdminClient({
                               <div className="flex items-center">
                                 <input
                                   type="checkbox"
-                                  id="custom_branding"
+                                  id="edit_custom_branding"
                                   name="custom_branding"
                                   value="true"
                                   defaultChecked={domain.custom_branding?.features?.custom_branding}
                                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                                 />
-                                <label htmlFor="custom_branding" className="ml-2 block text-sm text-gray-700">
+                                <label htmlFor="edit_custom_branding" className="ml-2 block text-sm text-gray-700">
                                   Custom Branding
                                 </label>
                               </div>
@@ -246,13 +290,13 @@ export default function DomainAdminClient({
                               <div className="flex items-center">
                                 <input
                                   type="checkbox"
-                                  id="analytics"
+                                  id="edit_analytics"
                                   name="analytics"
                                   value="true"
                                   defaultChecked={domain.custom_branding?.features?.analytics}
                                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                                 />
-                                <label htmlFor="analytics" className="ml-2 block text-sm text-gray-700">
+                                <label htmlFor="edit_analytics" className="ml-2 block text-sm text-gray-700">
                                   Analytics
                                 </label>
                               </div>
@@ -264,12 +308,12 @@ export default function DomainAdminClient({
                               <h3 className="text-lg font-medium mb-2">Branding</h3>
                               <div className="space-y-4">
                                 <div>
-                                  <label htmlFor="logo_url" className="block text-sm font-medium text-gray-700">
+                                  <label htmlFor="edit_logo_url" className="block text-sm font-medium text-gray-700">
                                     Logo URL
                                   </label>
                                   <input
                                     type="text"
-                                    id="logo_url"
+                                    id="edit_logo_url"
                                     name="logo_url"
                                     defaultValue={domain.custom_branding?.logo_url || ""}
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -277,12 +321,12 @@ export default function DomainAdminClient({
                                 </div>
 
                                 <div>
-                                  <label htmlFor="favicon_url" className="block text-sm font-medium text-gray-700">
+                                  <label htmlFor="edit_favicon_url" className="block text-sm font-medium text-gray-700">
                                     Favicon URL
                                   </label>
                                   <input
                                     type="text"
-                                    id="favicon_url"
+                                    id="edit_favicon_url"
                                     name="favicon_url"
                                     defaultValue={domain.custom_branding?.favicon_url || ""}
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -290,12 +334,15 @@ export default function DomainAdminClient({
                                 </div>
 
                                 <div>
-                                  <label htmlFor="primary_color" className="block text-sm font-medium text-gray-700">
+                                  <label
+                                    htmlFor="edit_primary_color"
+                                    className="block text-sm font-medium text-gray-700"
+                                  >
                                     Primary Color
                                   </label>
                                   <input
                                     type="text"
-                                    id="primary_color"
+                                    id="edit_primary_color"
                                     name="primary_color"
                                     defaultValue={domain.custom_branding?.primary_color || ""}
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -304,12 +351,15 @@ export default function DomainAdminClient({
                                 </div>
 
                                 <div>
-                                  <label htmlFor="secondary_color" className="block text-sm font-medium text-gray-700">
+                                  <label
+                                    htmlFor="edit_secondary_color"
+                                    className="block text-sm font-medium text-gray-700"
+                                  >
                                     Secondary Color
                                   </label>
                                   <input
                                     type="text"
-                                    id="secondary_color"
+                                    id="edit_secondary_color"
                                     name="secondary_color"
                                     defaultValue={domain.custom_branding?.secondary_color || ""}
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -318,11 +368,11 @@ export default function DomainAdminClient({
                                 </div>
 
                                 <div>
-                                  <label htmlFor="custom_css" className="block text-sm font-medium text-gray-700">
+                                  <label htmlFor="edit_custom_css" className="block text-sm font-medium text-gray-700">
                                     Custom CSS
                                   </label>
                                   <textarea
-                                    id="custom_css"
+                                    id="edit_custom_css"
                                     name="custom_css"
                                     rows={4}
                                     defaultValue={domain.custom_branding?.custom_css || ""}
@@ -336,7 +386,10 @@ export default function DomainAdminClient({
                           <div className="flex justify-end space-x-2">
                             <button
                               type="button"
-                              onClick={() => setEditingDomain(null)}
+                              onClick={() => {
+                                setEditingDomain(null)
+                                clearMessages()
+                              }}
                               className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
                             >
                               Cancel
@@ -390,7 +443,10 @@ export default function DomainAdminClient({
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
-                          onClick={() => setEditingDomain(domain)}
+                          onClick={() => {
+                            setEditingDomain(domain)
+                            clearMessages()
+                          }}
                           className="text-blue-600 hover:text-blue-900 mr-4"
                         >
                           Edit
