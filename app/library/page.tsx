@@ -1,13 +1,21 @@
-// BasedBook exclusive page
-import { siteConfig } from "@/lib/site-config"
 import { notFound } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { BookOpen, Search, Filter } from "lucide-react"
+import type { Metadata } from "next"
+
+// Static metadata to prevent build errors
+export const metadata: Metadata = {
+  title: "Library | BasedBook",
+  description: "Discover thousands of conservative books, articles, and educational resources",
+}
 
 export default function LibraryPage() {
+  // Simple domain check without complex configuration
+  const isBasedBook = process.env.NEXT_PUBLIC_DOMAIN?.includes("basedbook") || false
+
   // Only accessible from BasedBook
-  if (!siteConfig.isBasedBook) {
+  if (!isBasedBook) {
     notFound()
   }
 
