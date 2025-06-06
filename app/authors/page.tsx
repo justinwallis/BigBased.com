@@ -1,13 +1,19 @@
-// BasedBook exclusive page
+import type { Metadata } from "next"
 import { siteConfig } from "@/lib/site-config"
 import { notFound } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { User, BookOpen, Users } from "lucide-react"
 
+// Static metadata to prevent build errors
+export const metadata: Metadata = {
+  title: "Conservative Authors | Big Based",
+  description: "Connect with leading conservative thinkers, writers, and intellectuals on Big Based",
+}
+
 export default function AuthorsPage() {
   // Only accessible from BasedBook
-  if (!siteConfig.isBasedBook) {
+  if (!siteConfig?.isBasedBook) {
     notFound()
   }
 
