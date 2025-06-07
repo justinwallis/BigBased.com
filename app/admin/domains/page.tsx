@@ -1,20 +1,22 @@
-import { getAllDomains } from "@/app/actions/domain-actions"
-import DomainAdminClient from "./domain-admin-client"
+import { Button } from "@/components/ui/button"
+import { ArrowLeft } from "lucide-react"
+import Link from "next/link"
 
-// Force dynamic rendering to avoid static generation issues
-export const dynamic = "force-dynamic"
-
-export default async function DomainsAdminPage() {
-  const { success, data: domains, error } = await getAllDomains()
-
-  if (!success) {
-    return (
-      <div className="p-6 bg-red-50 border border-red-200 rounded-lg">
-        <h2 className="text-xl font-bold text-red-700 mb-2">Error Loading Domains</h2>
-        <p className="text-red-600">{error || "Failed to load domains"}</p>
+export default function DomainsPage() {
+  return (
+    <div>
+      <div className="flex items-center gap-4 mb-6">
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/admin">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Admin
+          </Link>
+        </Button>
+        <div>
+          <h1 className="text-3xl font-bold">Domain Management</h1>
+          <p className="text-muted-foreground">Configure and manage your domains</p>
+        </div>
       </div>
-    )
-  }
-
-  return <DomainAdminClient initialDomains={domains || []} />
+    </div>
+  )
 }

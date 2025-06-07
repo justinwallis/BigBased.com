@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -18,8 +18,10 @@ import {
   RefreshCw,
   Lock,
   Unlock,
+  ArrowLeft,
 } from "lucide-react"
-import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,42 +31,45 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import Link from "next/link"
 
 // Force dynamic rendering
 export const dynamic = "force-dynamic"
 
 async function getUsersData() {
   try {
-    const supabase = createServerSupabaseClient()
+    // Use admin client for user operations
+    const adminClient = createAdminClient()
+    const regularClient = createClient()
 
-    // Get all users from auth.users
-    const { data: users, error: usersError } = await supabase.auth.admin.listUsers()
+    // Get all users using admin client
+    const { data: usersData, error: usersError } = await adminClient.auth.admin.listUsers()
 
     if (usersError) {
       console.error("Error fetching users:", usersError)
       return { users: [], profiles: [], sessions: [], adminLogs: [] }
     }
 
-    // Get profiles for additional user info
-    const { data: profiles, error: profilesError } = await supabase.from("profiles").select("*")
+    // Get profiles using regular client
+    const { data: profiles, error: profilesError } = await regularClient.from("profiles").select("*")
 
     if (profilesError) {
       console.error("Error fetching profiles:", profilesError)
     }
 
-    // Get active sessions (you might need to adjust this based on your session tracking)
-    const { data: sessions, error: sessionsError } = await supabase
+    // Get active sessions
+    const { data: sessions, error: sessionsError } = await regularClient
       .from("auth_logs")
       .select("user_id, created_at")
       .eq("event", "login_success")
-      .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Last 24 hours
+      .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
 
     if (sessionsError) {
       console.error("Error fetching sessions:", sessionsError)
     }
 
     // Get admin action logs
-    const { data: adminLogs, error: adminLogsError } = await supabase
+    const { data: adminLogs, error: adminLogsError } = await regularClient
       .from("admin_logs")
       .select("*")
       .order("created_at", { ascending: false })
@@ -76,7 +81,7 @@ async function getUsersData() {
     }
 
     return {
-      users: users?.users || [],
+      users: usersData?.users || [],
       profiles: profiles || [],
       sessions: sessions || [],
       adminLogs: adminLogs || [],
@@ -122,14 +127,6 @@ export default async function UsersPage() {
       created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
       status: "success",
     },
-    {
-      id: 3,
-      action: "suspend_user",
-      target_user: "spammer@example.com",
-      admin_user: process.env.ADMIN_EMAIL,
-      created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-      status: "success",
-    },
   ]
 
   const recentActions = adminLogs.length > 0 ? adminLogs : sampleAdminActions
@@ -149,9 +146,17 @@ export default async function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">User Management</h1>
-        <p className="text-muted-foreground">Manage user accounts and permissions</p>
+      <div className="flex items-center gap-4">
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/admin">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Admin
+          </Link>
+        </Button>
+        <div>
+          <h1 className="text-3xl font-bold">User Management</h1>
+          <p className="text-muted-foreground">Manage user accounts and permissions</p>
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-4">
@@ -210,7 +215,6 @@ export default async function UsersPage() {
         </TabsList>
 
         <TabsContent value="users" className="space-y-4 pt-4">
-          {/* Users Table */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
@@ -332,19 +336,10 @@ export default async function UsersPage() {
                 </TableBody>
               </Table>
             </CardContent>
-            <CardFooter className="flex justify-between">
-              <Button variant="outline" size="sm">
-                Previous
-              </Button>
-              <Button variant="outline" size="sm">
-                Next
-              </Button>
-            </CardFooter>
           </Card>
         </TabsContent>
 
         <TabsContent value="actions" className="space-y-4 pt-4">
-          {/* Recent Admin Actions */}
           <Card>
             <CardHeader>
               <CardTitle>Recent Administrative Actions</CardTitle>
@@ -386,16 +381,10 @@ export default async function UsersPage() {
                 </TableBody>
               </Table>
             </CardContent>
-            <CardFooter>
-              <Button variant="outline" className="w-full">
-                View All Actions
-              </Button>
-            </CardFooter>
           </Card>
         </TabsContent>
 
         <TabsContent value="bulk" className="space-y-4 pt-4">
-          {/* Bulk User Operations */}
           <Card>
             <CardHeader>
               <CardTitle>Bulk User Operations</CardTitle>
@@ -442,20 +431,6 @@ export default async function UsersPage() {
                     </Button>
                   </CardContent>
                 </Card>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Export User Data</CardTitle>
-              <CardDescription>Download user information for reporting or analysis</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-3">
-                <Button variant="outline">Export All Users (CSV)</Button>
-                <Button variant="outline">Export Admin Users (CSV)</Button>
-                <Button variant="outline">Export Recent Users (CSV)</Button>
               </div>
             </CardContent>
           </Card>
