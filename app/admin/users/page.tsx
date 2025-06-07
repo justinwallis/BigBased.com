@@ -19,6 +19,7 @@ import {
   Lock,
   Unlock,
   ArrowLeft,
+  Bug,
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import {
@@ -38,94 +39,133 @@ export const dynamic = "force-dynamic"
 async function getUsersData() {
   try {
     const supabase = createClient()
+    console.log("=== Starting getUsersData ===")
 
-    // Get users directly from profiles table (using actual columns)
-    const { data: profiles, error: profilesError } = await supabase
-      .from("profiles")
-      .select("*")
-      .order("created_at", { ascending: false })
+    // Step 1: Get profiles data (safely)
+    let profiles = []
+    let profilesError = null
 
-    if (profilesError) {
-      console.error("Error fetching profiles:", profilesError)
+    try {
+      const profilesResult = await supabase.from("profiles").select("*").order("created_at", { ascending: false })
+
+      profiles = profilesResult.data || []
+      profilesError = profilesResult.error
+      console.log("Profiles fetched:", { count: profiles.length, error: profilesError })
+    } catch (error) {
+      console.error("Error fetching profiles:", error)
+      profilesError = error
     }
 
-    // Try to get auth logs (check if table exists and what columns it has)
-    const { data: authLogs, error: authLogsError } = await supabase
-      .from("auth_logs")
-      .select("*")
-      .limit(10)
-      .catch(() => ({ data: [], error: null }))
+    // Step 2: Get auth logs data (safely)
+    let authLogs = []
+    let authLogsError = null
 
-    if (authLogsError) {
-      console.error("Error fetching auth logs:", authLogsError)
+    try {
+      const authLogsResult = await supabase.from("auth_logs").select("*").limit(10)
+
+      authLogs = authLogsResult.data || []
+      authLogsError = authLogsResult.error
+      console.log("Auth logs fetched:", { count: authLogs.length, error: authLogsError })
+    } catch (error) {
+      console.error("Error fetching auth logs:", error)
+      authLogsError = error
     }
 
-    // Get admin action logs (if table exists)
-    const { data: adminLogs, error: adminLogsError } = await supabase
-      .from("admin_logs")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(10)
-      .catch(() => ({ data: [], error: null }))
+    // Step 3: Get admin logs data (safely)
+    let adminLogs = []
+    let adminLogsError = null
 
-    if (adminLogsError) {
-      console.error("Error fetching admin logs:", adminLogsError)
+    try {
+      const adminLogsResult = await supabase
+        .from("admin_logs")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(10)
+
+      adminLogs = adminLogsResult.data || []
+      adminLogsError = adminLogsResult.error
+      console.log("Admin logs fetched:", { count: adminLogs.length, error: adminLogsError })
+    } catch (error) {
+      console.error("Error fetching admin logs:", error)
+      adminLogsError = error
     }
 
-    // Create mock users from profiles or use sample data if profiles is empty
+    // Step 4: Try to get actual auth users count
+    let authUsersCount = 2 // We know this from your query
+    try {
+      const { count } = await supabase.from("auth.users").select("*", { count: "exact", head: true })
+
+      if (count !== null) {
+        authUsersCount = count
+      }
+      console.log("Auth users count:", authUsersCount)
+    } catch (error) {
+      console.error("Cannot access auth.users directly:", error)
+    }
+
+    // Step 5: Create users array from available data
     let users = []
 
-    if (profiles && profiles.length > 0) {
-      users = profiles.map((profile) => ({
-        id: profile.id,
-        email: profile.username ? `${profile.username}@example.com` : "user@example.com", // Mock email from username
-        created_at: profile.created_at,
-        last_sign_in_at: profile.updated_at || null,
+    if (profiles.length > 0) {
+      // Use actual profiles data
+      users = profiles.map((profile, index) => ({
+        id: profile.id || `user-${index}`,
+        email: profile.email || `${profile.username || "user"}@example.com`,
+        created_at: profile.created_at || new Date().toISOString(),
+        last_sign_in_at: profile.updated_at || profile.last_sign_in || null,
         app_metadata: { role: profile.role || "user" },
-        user_metadata: { username: profile.username },
-        email_confirmed_at: profile.created_at, // Assume verified
+        user_metadata: {
+          username: profile.username || `user${index + 1}`,
+          full_name: profile.full_name || profile.display_name,
+        },
+        email_confirmed_at: profile.email_confirmed_at || profile.created_at,
         banned_until: null,
+        profile: profile, // Keep original profile data
       }))
     } else {
-      // If no profiles, create sample users to show the 2 users we know exist
-      users = [
-        {
-          id: "1",
-          email: process.env.ADMIN_EMAIL || "admin@example.com",
+      // Create placeholder users based on known count
+      for (let i = 0; i < authUsersCount; i++) {
+        users.push({
+          id: `user-${i + 1}`,
+          email: i === 0 ? process.env.ADMIN_EMAIL || "admin@example.com" : `user${i + 1}@example.com`,
           created_at: new Date().toISOString(),
           last_sign_in_at: new Date().toISOString(),
-          app_metadata: { role: "admin" },
-          user_metadata: { username: "admin" },
+          app_metadata: { role: i === 0 ? "admin" : "user" },
+          user_metadata: { username: i === 0 ? "admin" : `user${i + 1}` },
           email_confirmed_at: new Date().toISOString(),
           banned_until: null,
-        },
-        {
-          id: "2",
-          email: "user@example.com",
-          created_at: new Date().toISOString(),
-          last_sign_in_at: new Date().toISOString(),
-          app_metadata: { role: "user" },
-          user_metadata: { username: "user" },
-          email_confirmed_at: new Date().toISOString(),
-          banned_until: null,
-        },
-      ]
+          profile: null,
+        })
+      }
     }
+
+    console.log("Final users array:", { count: users.length, users: users.map((u) => ({ id: u.id, email: u.email })) })
 
     return {
       users,
-      profiles: profiles || [],
-      sessions: authLogs || [],
-      adminLogs: adminLogs || [],
+      profiles,
+      sessions: authLogs,
+      adminLogs,
+      errors: {
+        profilesError,
+        authLogsError,
+        adminLogsError,
+      },
+      debug: {
+        profilesCount: profiles.length,
+        authLogsCount: authLogs.length,
+        adminLogsCount: adminLogs.length,
+        authUsersCount,
+      },
     }
   } catch (error) {
-    console.error("Error in getUsersData:", error)
+    console.error("Critical error in getUsersData:", error)
 
-    // Return sample data if everything fails
+    // Return minimal fallback data
     return {
       users: [
         {
-          id: "1",
+          id: "admin-1",
           email: process.env.ADMIN_EMAIL || "admin@example.com",
           created_at: new Date().toISOString(),
           last_sign_in_at: new Date().toISOString(),
@@ -133,9 +173,10 @@ async function getUsersData() {
           user_metadata: { username: "admin" },
           email_confirmed_at: new Date().toISOString(),
           banned_until: null,
+          profile: null,
         },
         {
-          id: "2",
+          id: "user-1",
           email: "user@example.com",
           created_at: new Date().toISOString(),
           last_sign_in_at: new Date().toISOString(),
@@ -143,17 +184,27 @@ async function getUsersData() {
           user_metadata: { username: "user" },
           email_confirmed_at: new Date().toISOString(),
           banned_until: null,
+          profile: null,
         },
       ],
       profiles: [],
       sessions: [],
       adminLogs: [],
+      errors: {
+        critical: error.message,
+      },
+      debug: {
+        profilesCount: 0,
+        authLogsCount: 0,
+        adminLogsCount: 0,
+        authUsersCount: 2,
+      },
     }
   }
 }
 
 export default async function UsersPage() {
-  const { users, profiles, sessions, adminLogs } = await getUsersData()
+  const { users, profiles, sessions, adminLogs, errors, debug } = await getUsersData()
 
   // Calculate metrics
   const totalUsers = users.length
@@ -164,7 +215,7 @@ export default async function UsersPage() {
       user.user_metadata?.role === "admin",
   ).length
 
-  const activeSessions = Math.min(sessions.length, totalUsers) // Estimate active sessions
+  const activeSessions = sessions.length
   const recentUsers = users.filter(
     (user) => new Date(user.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
   ).length
@@ -215,11 +266,44 @@ export default async function UsersPage() {
             Back to Admin
           </Link>
         </Button>
-        <div>
+        <div className="flex-1">
           <h1 className="text-3xl font-bold">User Management</h1>
           <p className="text-muted-foreground">Manage user accounts and permissions</p>
         </div>
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/api/debug/users-data" target="_blank">
+            <Bug className="h-4 w-4 mr-2" />
+            Debug Data
+          </Link>
+        </Button>
       </div>
+
+      {/* Debug Info Card */}
+      {(errors.profilesError || errors.authLogsError || errors.critical) && (
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardHeader>
+            <CardTitle className="text-yellow-800">Debug Information</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm">
+            <div className="grid gap-2">
+              <div>
+                Profiles: {debug.profilesCount} records{" "}
+                {errors.profilesError && `(Error: ${errors.profilesError.message})`}
+              </div>
+              <div>
+                Auth Logs: {debug.authLogsCount} records{" "}
+                {errors.authLogsError && `(Error: ${errors.authLogsError.message})`}
+              </div>
+              <div>
+                Admin Logs: {debug.adminLogsCount} records{" "}
+                {errors.adminLogsError && `(Error: ${errors.adminLogsError.message})`}
+              </div>
+              <div>Known Auth Users: {debug.authUsersCount}</div>
+              {errors.critical && <div className="text-red-600">Critical Error: {errors.critical}</div>}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 md:grid-cols-4">
         <Card>
@@ -230,7 +314,7 @@ export default async function UsersPage() {
           <CardContent>
             <div className="text-2xl font-bold">{totalUsers}</div>
             <p className="text-xs text-muted-foreground">
-              {recentUsers > 0 ? `+${recentUsers} this week` : "Active users"}
+              {profiles.length > 0 ? `${profiles.length} profiles found` : "Using fallback data"}
             </p>
           </CardContent>
         </Card>
@@ -253,18 +337,18 @@ export default async function UsersPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeSessions}</div>
-            <p className="text-xs text-muted-foreground">Estimated active</p>
+            <p className="text-xs text-muted-foreground">From auth logs</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">System Status</CardTitle>
+            <CardTitle className="text-sm font-medium">Data Source</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">✓</div>
-            <p className="text-xs text-muted-foreground">All systems operational</p>
+            <div className="text-2xl font-bold">{profiles.length > 0 ? "✓" : "⚠"}</div>
+            <p className="text-xs text-muted-foreground">{profiles.length > 0 ? "Live data" : "Fallback data"}</p>
           </CardContent>
         </Card>
       </div>
@@ -273,7 +357,7 @@ export default async function UsersPage() {
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="users">User Management</TabsTrigger>
           <TabsTrigger value="actions">Recent Actions</TabsTrigger>
-          <TabsTrigger value="bulk">Bulk Operations</TabsTrigger>
+          <TabsTrigger value="debug">Debug Info</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users" className="space-y-4 pt-4">
@@ -281,7 +365,11 @@ export default async function UsersPage() {
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>All Users</CardTitle>
-                <CardDescription>Complete list of registered users ({totalUsers} total)</CardDescription>
+                <CardDescription>
+                  {profiles.length > 0
+                    ? `Showing ${totalUsers} users from profiles table`
+                    : `Showing ${totalUsers} users (fallback data - check debug tab)`}
+                </CardDescription>
               </div>
               <Button>
                 <UserPlus className="h-4 w-4 mr-2" />
@@ -303,7 +391,6 @@ export default async function UsersPage() {
                 </TableHeader>
                 <TableBody>
                   {users.map((user) => {
-                    const profile = profiles.find((p) => p.id === user.id)
                     const isAdmin =
                       user.app_metadata?.role === "admin" ||
                       user.email === process.env.ADMIN_EMAIL ||
@@ -316,9 +403,14 @@ export default async function UsersPage() {
                           <div className="flex items-center gap-2">
                             <Mail className="h-4 w-4 text-muted-foreground" />
                             {user.email}
+                            {!user.profile && (
+                              <Badge variant="outline" className="text-xs">
+                                Fallback
+                              </Badge>
+                            )}
                           </div>
                         </TableCell>
-                        <TableCell>{profile?.username || user.user_metadata?.username || "Not set"}</TableCell>
+                        <TableCell>{user.user_metadata?.username || "Not set"}</TableCell>
                         <TableCell>
                           <Badge variant={isAdmin ? "default" : "secondary"}>{isAdmin ? "Admin" : "User"}</Badge>
                         </TableCell>
@@ -446,53 +538,46 @@ export default async function UsersPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="bulk" className="space-y-4 pt-4">
+        <TabsContent value="debug" className="space-y-4 pt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Bulk User Operations</CardTitle>
-              <CardDescription>Perform actions on multiple users at once</CardDescription>
+              <CardTitle>Debug Information</CardTitle>
+              <CardDescription>Technical details about data fetching</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-6 md:grid-cols-2">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Email Operations</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Mail className="h-4 w-4 mr-2" />
-                      Send Welcome Email
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Resend Verification Emails
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <Mail className="h-4 w-4 mr-2" />
-                      Send Password Reset
-                    </Button>
-                  </CardContent>
-                </Card>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-semibold">Data Sources:</h4>
+                  <ul className="list-disc list-inside space-y-1 text-sm">
+                    <li>
+                      Profiles table: {debug.profilesCount} records{" "}
+                      {errors.profilesError && `❌ ${errors.profilesError.message}`}
+                    </li>
+                    <li>
+                      Auth logs table: {debug.authLogsCount} records{" "}
+                      {errors.authLogsError && `❌ ${errors.authLogsError.message}`}
+                    </li>
+                    <li>
+                      Admin logs table: {debug.adminLogsCount} records{" "}
+                      {errors.adminLogsError && `❌ ${errors.adminLogsError.message}`}
+                    </li>
+                    <li>Known auth users: {debug.authUsersCount}</li>
+                  </ul>
+                </div>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Account Operations</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Lock className="h-4 w-4 mr-2" />
-                      Suspend Inactive Users
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <Shield className="h-4 w-4 mr-2" />
-                      Update Role Permissions
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start text-red-600">
-                      <XCircle className="h-4 w-4 mr-2" />
-                      Delete Unverified Users
-                    </Button>
-                  </CardContent>
-                </Card>
+                {errors.critical && (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded">
+                    <h4 className="font-semibold text-red-800">Critical Error:</h4>
+                    <p className="text-red-700">{errors.critical}</p>
+                  </div>
+                )}
+
+                <div>
+                  <h4 className="font-semibold">Raw Data Preview:</h4>
+                  <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto max-h-40">
+                    {JSON.stringify({ profiles: profiles.slice(0, 2), sessions: sessions.slice(0, 2) }, null, 2)}
+                  </pre>
+                </div>
               </div>
             </CardContent>
           </Card>
