@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { getUserShops } from "@/app/actions/shop-actions"
 import ShopsClientPage from "./shops-client-page"
 
