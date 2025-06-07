@@ -119,6 +119,36 @@ export default function AdminDashboard() {
             </Button>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Documentation Management
+            </CardTitle>
+            <CardDescription>Manage technical documentation, articles, and knowledge base content</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/admin/documentation">Manage Docs</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Community Management
+            </CardTitle>
+            <CardDescription>Moderate forums, manage topics, and oversee community engagement</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/admin/community">Manage Community</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
 
       {/* ORIGINAL QUICK ACTIONS - PRESERVED */}
@@ -139,6 +169,12 @@ export default function AdminDashboard() {
             </Button>
             <Button variant="outline" asChild>
               <Link href="/admin/analytics">View Reports</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/admin/documentation/articles/new">Create Documentation</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/admin/community/moderate">Moderate Community</Link>
             </Button>
           </div>
         </CardContent>
