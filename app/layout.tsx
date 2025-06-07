@@ -5,6 +5,7 @@ import "./globals.css"
 import { Toaster } from "@/components/ui/toast"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/contexts/auth-context"
+import { DomainProvider } from "@/contexts/domain-context"
 import ClientLayout from "./client-layout"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -25,8 +26,10 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <AuthProvider>
-            <ClientLayout>{children}</ClientLayout>
-            <Toaster />
+            <DomainProvider>
+              <ClientLayout>{children}</ClientLayout>
+              <Toaster />
+            </DomainProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
