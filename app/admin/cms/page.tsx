@@ -1,7 +1,19 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, FileText, ImageIcon, Settings, BarChart3, Plus, Folder, ShapesIcon as Form } from "lucide-react"
+import {
+  ArrowLeft,
+  FileText,
+  ImageIcon,
+  Settings,
+  BarChart3,
+  Plus,
+  Folder,
+  ShapesIcon as Form,
+  ArrowRight,
+  Users,
+  Globe,
+} from "lucide-react"
 import { getContentTypes, getContentItems } from "@/app/actions/cms-actions"
 
 export default async function CMSPage() {
@@ -171,6 +183,27 @@ export default async function CMSPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
+              <ArrowRight className="h-5 w-5" />
+              Redirects
+            </CardTitle>
+            <CardDescription>Manage URL redirects and track their performance</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/admin/cms/redirects">
+                <ArrowRight className="h-4 w-4 mr-2" />
+                Manage Redirects
+              </Link>
+            </Button>
+            <div className="text-sm text-muted-foreground">
+              <p>URL redirect management</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
               SEO Management
             </CardTitle>
@@ -192,10 +225,52 @@ export default async function CMSPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Workflows
+            </CardTitle>
+            <CardDescription>Content approval workflows and collaboration tools</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/admin/cms/workflows">
+                <Users className="h-4 w-4 mr-2" />
+                Manage Workflows
+              </Link>
+            </Button>
+            <div className="text-sm text-muted-foreground">
+              <p>Content approval system</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Globe className="h-5 w-5" />
+              Localization
+            </CardTitle>
+            <CardDescription>Multi-language content management and translation</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/admin/cms/localization">
+                <Globe className="h-4 w-4 mr-2" />
+                Manage Languages
+              </Link>
+            </Button>
+            <div className="text-sm text-muted-foreground">
+              <p>Multi-language support</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5" />
               Advanced Tools
             </CardTitle>
-            <CardDescription>Jobs queue, query presets, and system monitoring</CardDescription>
+            <CardDescription>Jobs queue, query presets, hooks, and system monitoring</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <Button asChild variant="outline" className="w-full">
