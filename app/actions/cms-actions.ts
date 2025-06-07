@@ -250,6 +250,30 @@ export async function getContentItems(contentTypeId?: string) {
   }
 }
 
+// Add this function after getContentItems
+export async function getContentItem(id: string) {
+  try {
+    const supabase = createClient()
+
+    const { data, error } = await supabase
+      .from("content_items")
+      .select(`
+        *,
+        content_types(*)
+      `)
+      .eq("id", id)
+      .single()
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: true, data }
+  } catch (error: any) {
+    return { success: false, error: error.message }
+  }
+}
+
 export async function updateContentItem(id: string, formData: FormData) {
   try {
     const supabase = createClient()
