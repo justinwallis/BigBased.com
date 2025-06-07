@@ -114,11 +114,11 @@ export function CommunityClientLayout({ children }: CommunityClientLayoutProps) 
   ]
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white">
       {/* Main Layout */}
       <div className="flex">
         {/* Left Sidebar */}
-        <div className="w-64 bg-black border-r border-gray-800 h-screen overflow-y-auto">
+        <div className="w-64 bg-gray-50 dark:bg-black border-r border-gray-200 dark:border-gray-800 h-screen overflow-y-auto">
           <div className="p-4 space-y-6">
             {/* Main Navigation */}
             <nav className="space-y-1">
@@ -128,7 +128,9 @@ export function CommunityClientLayout({ children }: CommunityClientLayoutProps) 
                   href={item.href}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
-                    item.active ? "bg-gray-800 text-white" : "text-gray-400 hover:text-white hover:bg-gray-800",
+                    item.active
+                      ? "bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800",
                   )}
                 >
                   <item.icon className="h-4 w-4" />
@@ -141,7 +143,7 @@ export function CommunityClientLayout({ children }: CommunityClientLayoutProps) 
             <div>
               <button
                 onClick={() => toggleSection("communityArea")}
-                className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 hover:text-white transition-colors"
+                className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
               >
                 {expandedSections.communityArea ? (
                   <ChevronDown className="h-3 w-3" />
@@ -156,7 +158,7 @@ export function CommunityClientLayout({ children }: CommunityClientLayoutProps) 
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+                      className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     >
                       <item.icon className="h-4 w-4" />
                       {item.label}
@@ -168,7 +170,7 @@ export function CommunityClientLayout({ children }: CommunityClientLayoutProps) 
 
             {/* Chat Section */}
             <div>
-              <div className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                 <Hash className="h-3 w-3" />
                 Chat
               </div>
@@ -177,7 +179,7 @@ export function CommunityClientLayout({ children }: CommunityClientLayoutProps) 
                   <button
                     key={item.href}
                     onClick={() => setIsChatOpen(true)}
-                    className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-colors w-full text-left"
+                    className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors w-full text-left"
                   >
                     <item.icon className="h-4 w-4" />
                     {item.label}
@@ -190,7 +192,7 @@ export function CommunityClientLayout({ children }: CommunityClientLayoutProps) 
             <div>
               <button
                 onClick={() => toggleSection("tags")}
-                className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 hover:text-white transition-colors"
+                className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
               >
                 {expandedSections.tags ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
                 Tags
@@ -201,16 +203,16 @@ export function CommunityClientLayout({ children }: CommunityClientLayoutProps) 
                     <Link
                       key={tag.name}
                       href={`/community/tags/${tag.name}`}
-                      className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+                      className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     >
                       <div className={cn("w-2 h-2 rounded-full", tag.color)} />
                       <span className="flex-1">{tag.name}</span>
-                      <span className="text-xs text-gray-500">{tag.count}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-500">{tag.count}</span>
                     </Link>
                   ))}
                   <Link
                     href="/community/tags"
-                    className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+                    className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                   >
                     <Hash className="h-4 w-4" />
                     All tags
@@ -223,7 +225,7 @@ export function CommunityClientLayout({ children }: CommunityClientLayoutProps) 
             <div>
               <button
                 onClick={() => toggleSection("channels")}
-                className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 hover:text-white transition-colors"
+                className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
               >
                 {expandedSections.channels ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
                 Channels
@@ -237,7 +239,7 @@ export function CommunityClientLayout({ children }: CommunityClientLayoutProps) 
                         setSelectedChannel(channel.id)
                         setIsChatOpen(true)
                       }}
-                      className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-colors w-full text-left"
+                      className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors w-full text-left"
                     >
                       <div className={cn("w-2 h-2 rounded-full", channel.color)} />
                       <span className="flex-1">{channel.name}</span>
@@ -262,24 +264,27 @@ export function CommunityClientLayout({ children }: CommunityClientLayoutProps) 
       {isChatOpen && (
         <div
           className={cn(
-            "fixed bottom-4 right-4 bg-gray-900 border border-gray-700 rounded-lg shadow-2xl transition-all duration-300",
+            "fixed bottom-4 right-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl transition-all duration-300",
             isChatMinimized ? "w-80 h-12" : "w-96 h-96",
           )}
         >
           {/* Chat Header */}
-          <div className="flex items-center justify-between p-3 border-b border-gray-700">
+          <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-2">
-              <MessageCircle className="h-4 w-4 text-blue-400" />
-              <span className="font-medium text-sm">Chat</span>
+              <MessageCircle className="h-4 w-4 text-blue-500 dark:text-blue-400" />
+              <span className="font-medium text-sm text-gray-900 dark:text-white">Chat</span>
             </div>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setIsChatMinimized(!isChatMinimized)}
-                className="p-1 hover:bg-gray-700 rounded transition-colors"
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
               >
                 {isChatMinimized ? <Maximize2 className="h-3 w-3" /> : <Minimize2 className="h-3 w-3" />}
               </button>
-              <button onClick={() => setIsChatOpen(false)} className="p-1 hover:bg-gray-700 rounded transition-colors">
+              <button
+                onClick={() => setIsChatOpen(false)}
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+              >
                 <X className="h-3 w-3" />
               </button>
             </div>
@@ -288,8 +293,10 @@ export function CommunityClientLayout({ children }: CommunityClientLayoutProps) 
           {!isChatMinimized && (
             <>
               {/* Channels List */}
-              <div className="p-3 border-b border-gray-700">
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Channels</h3>
+              <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                  Channels
+                </h3>
                 <div className="space-y-1">
                   {chatChannels.map((channel) => (
                     <button
@@ -298,8 +305,8 @@ export function CommunityClientLayout({ children }: CommunityClientLayoutProps) 
                       className={cn(
                         "flex items-center gap-2 w-full p-2 rounded text-sm transition-colors",
                         selectedChannel === channel.id
-                          ? "bg-gray-700 text-white"
-                          : "text-gray-400 hover:text-white hover:bg-gray-800",
+                          ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
+                          : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800",
                       )}
                     >
                       <div className={cn("w-2 h-2 rounded-full", channel.color)} />
@@ -320,28 +327,28 @@ export function CommunityClientLayout({ children }: CommunityClientLayoutProps) 
                   .filter((msg) => msg.channel === selectedChannel)
                   .map((message) => (
                     <div key={message.id} className="flex items-start gap-2">
-                      <div className="w-6 h-6 bg-gray-700 rounded-full flex items-center justify-center text-xs font-medium">
+                      <div className="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center text-xs font-medium text-gray-700 dark:text-gray-300">
                         {message.avatar}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-white">{message.user}</span>
-                          <span className="text-xs text-gray-500">{message.time}</span>
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">{message.user}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-500">{message.time}</span>
                         </div>
-                        <p className="text-sm text-gray-300 truncate">{message.message}</p>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 truncate">{message.message}</p>
                       </div>
                     </div>
                   ))}
               </div>
 
               {/* Chat Input */}
-              <div className="p-3 border-t border-gray-700">
+              <div className="p-3 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-2">
                   <Input
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Type a message..."
-                    className="flex-1 bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                    className="flex-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     onKeyPress={(e) => {
                       if (e.key === "Enter") {
                         // Handle send message
