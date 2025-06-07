@@ -109,10 +109,10 @@ export async function deleteOrphanedProfile(profileId: string): Promise<{
 
     console.log("🗑️ Attempting to delete orphaned profile:", profileId)
 
-    // Get profile info before deletion for logging
+    // Get profile info before deletion for logging - only select columns that exist
     const { data: profile, error: profileFetchError } = await supabase
       .from("profiles")
-      .select("username, email")
+      .select("username") // Only select username, not email
       .eq("id", profileId)
       .single()
 
