@@ -474,12 +474,13 @@ export default function HeroCarousel() {
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-visible py-3 px-4 md:px-8 bg-white dark:bg-gray-900 transition-colors duration-300"
+      className="relative overflow-hidden py-3 px-4 md:px-8 bg-white dark:bg-gray-900 transition-colors duration-300"
       style={{
         height: windowWidth < 768 ? "auto" : "610px",
         minHeight: windowWidth < 768 ? "650px" : "610px",
-        marginTop: "0", // Remove negative margin
-        paddingTop: "80px", // Add padding to create space for the header
+        marginTop: "0",
+        paddingTop: "80px",
+        overflowX: "hidden", // Prevent horizontal scrolling
       }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
@@ -490,15 +491,15 @@ export default function HeroCarousel() {
       aria-roledescription="carousel"
       aria-label="Hero content carousel"
     >
-      {/* Left and Right Edge Fade Effects - Light Mode Only */}
+      {/* Left and Right Edge Fade Effects - Light Mode */}
       <div
         className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none dark:hidden"
         style={{
           background:
             "linear-gradient(to right, rgba(255,255,255,1) 0%, rgba(255,255,255,0.8) 40%, rgba(255,255,255,0) 100%)",
-          height: "calc(130% - 17px)", // Reduced height by 17px (14px + 3px)
-          top: "-25%", // Keep the same top position to maintain upward extension
-          bottom: "auto", // Override the bottom: 0 from the className
+          height: "calc(130% - 17px)",
+          top: "-25%",
+          bottom: "auto",
         }}
       ></div>
       <div
@@ -506,29 +507,29 @@ export default function HeroCarousel() {
         style={{
           background:
             "linear-gradient(to left, rgba(255,255,255,1) 0%, rgba(255,255,255,0.8) 40%, rgba(255,255,255,0) 100%)",
-          height: "calc(130% - 17px)", // Reduced height by 17px (14px + 3px)
-          top: "-25%", // Keep the same top position to maintain upward extension
-          bottom: "auto", // Override the bottom: 0 from the className
+          height: "calc(130% - 17px)",
+          top: "-25%",
+          bottom: "auto",
         }}
       ></div>
 
-      {/* Dark mode fade effects - Updated to match dark:bg-gray-900 */}
+      {/* Dark mode fade effects - Updated to match current dark background */}
       <div
         className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none hidden dark:block"
         style={{
-          background: "linear-gradient(to right, rgba(17,24,39,1) 0%, rgba(17,24,39,0.8) 40%, rgba(17,24,39,0) 100%)",
-          height: "calc(130% - 17px)", // Reduced height by 17px (14px + 3px)
-          top: "-25%", // Keep the same top position to maintain upward extension
-          bottom: "auto", // Override the bottom: 0 from the className
+          background: "linear-gradient(to right, rgba(15,23,42,1) 0%, rgba(15,23,42,0.8) 40%, rgba(15,23,42,0) 100%)",
+          height: "calc(130% - 17px)",
+          top: "-25%",
+          bottom: "auto",
         }}
       ></div>
       <div
         className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none hidden dark:block"
         style={{
-          background: "linear-gradient(to left, rgba(17,24,39,1) 0%, rgba(17,24,39,0.8) 40%, rgba(17,24,39,0) 100%)",
-          height: "calc(130% - 17px)", // Reduced height by 17px (14px + 3px)
-          top: "-25%", // Keep the same top position to maintain upward extension
-          bottom: "auto", // Override the bottom: 0 from the className
+          background: "linear-gradient(to left, rgba(15,23,42,1) 0%, rgba(15,23,42,0.8) 40%, rgba(15,23,42,0) 100%)",
+          height: "calc(130% - 17px)",
+          top: "-25%",
+          bottom: "auto",
         }}
       ></div>
 
