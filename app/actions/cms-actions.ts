@@ -2,6 +2,8 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
+import { requireCMSPermission } from "@/lib/cms-access-control"
+import { CMSHooksManager, CMS_EVENTS } from "@/lib/cms-hooks"
 
 // Types
 export interface ContentType {
@@ -171,6 +173,9 @@ export async function createContentItem(formData: FormData) {
       return { success: false, error: "Not authenticated" }
     }
 
+    // Check permissions
+    await requireCMSPermission(user.id, "content", "create")
+
     const content_type_id = formData.get("content_type_id") as string
     const title = formData.get("title") as string
     const slug = formData.get("slug") as string
@@ -214,6 +219,22 @@ export async function createContentItem(formData: FormData) {
       created_by: user.id,
       change_summary: "Initial version",
     })
+
+    // Trigger hooks
+    const hooksManager = new CMSHooksManager()
+    await hooksManager.triggerHooks(CMS_EVENTS.CONTENT_CREATED, {
+      content_item: data,
+      user_id: user.id,
+      timestamp: new Date().toISOString(),
+    })
+
+    if (status === "published") {
+      await hooksManager.triggerHooks(CMS_EVENTS.CONTENT_PUBLISHED, {
+        content_item: data,
+        user_id: user.id,
+        timestamp: new Date().toISOString(),
+      })
+    }
 
     revalidatePath("/admin/cms")
     return { success: true, data }
@@ -285,6 +306,9 @@ export async function updateContentItem(id: string, formData: FormData) {
       return { success: false, error: "Not authenticated" }
     }
 
+    // Check permissions
+    await requireCMSPermission(user.id, "content", "update")
+
     // Get current item for versioning
     const { data: currentItem } = await supabase.from("content_items").select("*").eq("id", id).single()
 
@@ -300,6 +324,11 @@ export async function updateContentItem(id: string, formData: FormData) {
     const seo_description = formData.get("seo_description") as string
     const seo_keywords = formData.get("seo_keywords") as string
     const change_summary = (formData.get("change_summary") as string) || "Updated content"
+
+    // Check publish permission if status is changing to published
+    if (status === "published" && currentItem.status !== "published") {
+      await requireCMSPermission(user.id, "content", "publish")
+    }
 
     // Get next version number
     const { data: lastVersion } = await supabase
@@ -350,6 +379,30 @@ export async function updateContentItem(id: string, formData: FormData) {
       created_by: user.id,
       change_summary,
     })
+
+    // Trigger hooks
+    const hooksManager = new CMSHooksManager()
+    await hooksManager.triggerHooks(CMS_EVENTS.CONTENT_UPDATED, {
+      content_item: data,
+      previous_item: currentItem,
+      user_id: user.id,
+      timestamp: new Date().toISOString(),
+    })
+
+    // Check for status changes
+    if (status === "published" && currentItem.status !== "published") {
+      await hooksManager.triggerHooks(CMS_EVENTS.CONTENT_PUBLISHED, {
+        content_item: data,
+        user_id: user.id,
+        timestamp: new Date().toISOString(),
+      })
+    } else if (status !== "published" && currentItem.status === "published") {
+      await hooksManager.triggerHooks(CMS_EVENTS.CONTENT_UNPUBLISHED, {
+        content_item: data,
+        user_id: user.id,
+        timestamp: new Date().toISOString(),
+      })
+    }
 
     revalidatePath("/admin/cms")
     return { success: true, data }
