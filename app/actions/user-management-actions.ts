@@ -192,6 +192,7 @@ export async function restoreUserAccount(
 ): Promise<{
   success: boolean
   error?: string
+  tempPassword?: string
 }> {
   try {
     const supabase = createClient()
@@ -225,44 +226,135 @@ export async function restoreUserAccount(
       console.log("✅ Confirmed: No auth user exists (good for restoration)")
     }
 
-    // Generate a secure password if none provided
-    const actualPassword = password || Math.random().toString(36).slice(-12) + "Temp123!"
+    // Check if email is already in use by another user
+    try {
+      const { data: emailCheck } = await adminClient.auth.admin.listUsers()
+      const emailInUse = emailCheck.users.some((user) => user.email === email && user.id !== profileId)
 
-    // Create a new auth user with the same ID
-    const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
-      uid: profileId,
-      email: email,
-      password: actualPassword,
-      email_confirm: true,
-      user_metadata: {
-        restored: true,
-        restored_at: new Date().toISOString(),
-        username: profile.username,
-        full_name: profile.full_name,
-      },
-      app_metadata: {
-        role: profile.role || "user",
-      },
-    })
-
-    if (createError) {
-      console.error("❌ Error creating auth user:", createError)
-      return { success: false, error: createError.message }
+      if (emailInUse) {
+        return {
+          success: false,
+          error: `Email ${email} is already in use by another account. Please use a different email.`,
+        }
+      }
+    } catch (error) {
+      console.warn("Could not check email uniqueness:", error)
     }
 
-    console.log("✅ Successfully created new auth user with ID:", profileId)
+    // Generate a secure password if none provided
+    const actualPassword = password || Math.random().toString(36).slice(-12) + "Temp123!"
+    const isGeneratedPassword = !password
 
-    // Update the profile with any needed updates
-    const { error: updateError } = await supabase
-      .from("profiles")
-      .update({
-        updated_at: new Date().toISOString(),
+    console.log("🔐 Creating auth user with email:", email)
+
+    // Try creating the user without specifying the UID first
+    let newUser
+    let createError
+
+    try {
+      // First attempt: Create user without specifying UID
+      const createResult = await adminClient.auth.admin.createUser({
+        email: email,
+        password: actualPassword,
+        email_confirm: true,
+        user_metadata: {
+          restored: true,
+          restored_at: new Date().toISOString(),
+          username: profile.username,
+          full_name: profile.full_name,
+          original_profile_id: profileId,
+        },
+        app_metadata: {
+          role: profile.role || "user",
+        },
       })
-      .eq("id", profileId)
 
-    if (updateError) {
-      console.warn("⚠️ Warning: Could not update profile timestamp:", updateError)
-      // Non-fatal, continue
+      newUser = createResult.data
+      createError = createResult.error
+
+      if (!createError && newUser?.user) {
+        console.log("✅ Created new auth user with new ID:", newUser.user.id)
+
+        // Update the profile to use the new auth user ID
+        const { error: updateError } = await supabase
+          .from("profiles")
+          .update({
+            id: newUser.user.id,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", profileId)
+
+        if (updateError) {
+          console.error("❌ Error updating profile with new ID:", updateError)
+          // Try to delete the created auth user to avoid orphaned auth
+          try {
+            await adminClient.auth.admin.deleteUser(newUser.user.id)
+          } catch (cleanupError) {
+            console.error("Failed to cleanup created auth user:", cleanupError)
+          }
+          return { success: false, error: "Failed to update profile with new auth ID" }
+        }
+
+        console.log("✅ Successfully updated profile with new auth ID")
+      }
+    } catch (error) {
+      console.log("First attempt failed, trying with original UID...")
+      createError = error
+    }
+
+    // If first attempt failed, try with the original UID
+    if (createError) {
+      try {
+        const createResult = await adminClient.auth.admin.createUser({
+          uid: profileId,
+          email: email,
+          password: actualPassword,
+          email_confirm: true,
+          user_metadata: {
+            restored: true,
+            restored_at: new Date().toISOString(),
+            username: profile.username,
+            full_name: profile.full_name,
+          },
+          app_metadata: {
+            role: profile.role || "user",
+          },
+        })
+
+        newUser = createResult.data
+        createError = createResult.error
+
+        if (!createError && newUser?.user) {
+          console.log("✅ Successfully created auth user with original ID:", profileId)
+
+          // Update the profile timestamp
+          const { error: updateError } = await supabase
+            .from("profiles")
+            .update({
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", profileId)
+
+          if (updateError) {
+            console.warn("⚠️ Warning: Could not update profile timestamp:", updateError)
+            // Non-fatal, continue
+          }
+        }
+      } catch (secondError) {
+        console.error("❌ Both attempts failed:", secondError)
+        return {
+          success: false,
+          error: `Failed to create auth user. Original error: ${createError?.message || "Unknown"}. Second attempt: ${secondError instanceof Error ? secondError.message : "Unknown"}`,
+        }
+      }
+    }
+
+    if (createError || !newUser?.user) {
+      console.error("❌ Error creating auth user:", createError)
+      return {
+        success: false,
+        error: createError?.message || "Failed to create auth user",
+      }
     }
 
     // Log the action
@@ -274,8 +366,7 @@ export async function restoreUserAccount(
 
     return {
       success: true,
-      // Return info about whether a password was generated
-      error: password ? undefined : "Account restored with temporary password",
+      tempPassword: isGeneratedPassword ? actualPassword : undefined,
     }
   } catch (error) {
     console.error("💥 Error restoring user account:", error)
