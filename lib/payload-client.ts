@@ -1,13 +1,13 @@
 import payload from "payload"
-import config from "./payload.config"
+import config from "./payload-config"
 
-let cached = (global as any).payload
+let cached = global.payload
 
 if (!cached) {
-  cached = (global as any).payload = { client: null, promise: null }
+  cached = global.payload = { client: null, promise: null }
 }
 
-export const getPayload = async () => {
+export const getPayloadClient = async () => {
   if (cached.client) {
     return cached.client
   }
@@ -15,7 +15,6 @@ export const getPayload = async () => {
   if (!cached.promise) {
     cached.promise = payload.init({
       config,
-      local: true,
     })
   }
 
