@@ -513,11 +513,11 @@ export default function HeroCarousel() {
         }}
       ></div>
 
-      {/* Dark mode fade effects - Updated to match current dark background */}
+      {/* Dark mode fade effects - Updated to match #080808 background */}
       <div
         className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none hidden dark:block"
         style={{
-          background: "linear-gradient(to right, rgba(15,23,42,1) 0%, rgba(15,23,42,0.8) 40%, rgba(15,23,42,0) 100%)",
+          background: "linear-gradient(to right, rgba(8,8,8,1) 0%, rgba(8,8,8,0.8) 40%, rgba(8,8,8,0) 100%)",
           height: "calc(130% - 17px)",
           top: "-25%",
           bottom: "auto",
@@ -526,7 +526,7 @@ export default function HeroCarousel() {
       <div
         className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none hidden dark:block"
         style={{
-          background: "linear-gradient(to left, rgba(15,23,42,1) 0%, rgba(15,23,42,0.8) 40%, rgba(15,23,42,0) 100%)",
+          background: "linear-gradient(to left, rgba(8,8,8,1) 0%, rgba(8,8,8,0.8) 40%, rgba(8,8,8,0) 100%)",
           height: "calc(130% - 17px)",
           top: "-25%",
           bottom: "auto",
