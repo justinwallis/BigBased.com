@@ -1,127 +1,72 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { parseDomain, isEnhancedDomainsEnabled } from "./lib/domain-utils"
+
+// Domains that should always be allowed
+const ALWAYS_ALLOWED_DOMAINS = ["bigbased.com", "bigbased.us", "basedbook.com", "localhost", "vercel.app"]
 
 export async function middleware(request: NextRequest) {
-  // Get the pathname of the request
-  const path = request.nextUrl.pathname
+  const { pathname } = request.nextUrl
+  const hostname = request.headers.get("host") || ""
+  const domain = parseDomain(hostname)
 
-  // Skip middleware entirely for static assets and API routes that don't need auth
-  const shouldSkipMiddleware =
-    // Static files
-    path.startsWith("/_next/") ||
-    path.startsWith("/static/") ||
-    path.startsWith("/public/") ||
-    (path.includes(".") &&
-      (path.endsWith(".png") ||
-        path.endsWith(".jpg") ||
-        path.endsWith(".jpeg") ||
-        path.endsWith(".gif") ||
-        path.endsWith(".svg") ||
-        path.endsWith(".ico") ||
-        path.endsWith(".css") ||
-        path.endsWith(".js") ||
-        path.endsWith(".woff") ||
-        path.endsWith(".woff2") ||
-        path.endsWith(".ttf") ||
-        path.endsWith(".eot") ||
-        path.endsWith(".pdf") ||
-        path.endsWith(".mp4") ||
-        path.endsWith(".webm") ||
-        path.endsWith(".mp3") ||
-        path.endsWith(".wav"))) ||
-    // API routes that don't need auth
-    path.startsWith("/api/auth") ||
-    path.startsWith("/api/debug") ||
-    path === "/api/notifications/send" ||
-    path.startsWith("/debug-static") ||
-    // Specific files
-    path === "/favicon.ico" ||
-    path === "/robots.txt" ||
-    path === "/sitemap.xml" ||
-    path === "/manifest.json" ||
-    path === "/browserconfig.xml" ||
-    path === "/site.webmanifest"
-
-  if (shouldSkipMiddleware) {
+  // Skip middleware for static files and API routes
+  if (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/static") ||
+    pathname.includes(".") ||
+    pathname === "/favicon.ico"
+  ) {
     return NextResponse.next()
   }
 
-  console.log(`🔍 Middleware checking: ${path}`)
-
-  // Handle specific redirects
-  if (path === "/profile/security") {
-    return NextResponse.redirect(new URL("/profile?tab=security", request.url))
-  }
-
-  // Public paths that don't require authentication
-  const isPublicPath =
-    path === "/" ||
-    path === "/about" ||
-    path === "/features" ||
-    path === "/partners" ||
-    path === "/contact" ||
-    path === "/transform" ||
-    path === "/faq" ||
-    path === "/revolution" ||
-    path.startsWith("/auth/sign-in") ||
-    path.startsWith("/auth/sign-up") ||
-    path.startsWith("/auth/signup") ||
-    path.startsWith("/auth/forgot-password") ||
-    path.startsWith("/auth/reset-password") ||
-    path.startsWith("/auth/callback") ||
-    path.startsWith("/account-recovery") ||
-    path.startsWith("/checkout") ||
-    // Admin routes (protected)
-    path.startsWith("/admin") ||
-    // Public profile pages (but still need to check auth for private features)
-    path.match(/^\/[^/]+$/) // matches /username pattern
-
-  // Protected paths that require authentication
-  const isProtectedPath = path.startsWith("/profile") || path.startsWith("/dashboard") || path.startsWith("/admin")
-
-  // Skip middleware for public paths
-  if (isPublicPath && !isProtectedPath) {
+  // Check if enhanced domains are enabled
+  if (!isEnhancedDomainsEnabled()) {
     return NextResponse.next()
   }
 
-  // Only check auth for protected paths
-  if (isProtectedPath) {
-    // Check for Supabase session token in cookies
-    const supabaseSession =
-      request.cookies.get("sb-access-token") ||
-      request.cookies.get("supabase-auth-token") ||
-      request.cookies.get("sb-zcmjnapixchrzafkbzhq-auth-token") ||
-      request.cookies.getAll().find((cookie) => cookie.name.startsWith("sb-") && cookie.name.includes("-auth-token"))
+  try {
+    // Track domain visit (non-blocking)
+    fetch(`${request.nextUrl.origin}/api/analytics/track-visit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ domain }),
+    }).catch(() => {
+      // Silently fail - analytics shouldn't break the app
+    })
 
-    // If it's a protected path and the user is not authenticated,
-    // redirect to the sign-in page
-    if (!supabaseSession) {
-      console.log("🔒 No session found, redirecting to sign-in. Path:", path)
-      const redirectUrl = new URL("/auth/sign-in", request.url)
-      redirectUrl.searchParams.set("redirect", request.nextUrl.pathname)
-      return NextResponse.redirect(redirectUrl)
-    }
+    // Set domain context headers for server components
+    const response = NextResponse.next()
+    response.headers.set("x-domain", domain)
+    response.headers.set("x-original-host", hostname)
 
-    // For admin paths, check for admin role
-    if (path.startsWith("/admin")) {
-      // Additional admin role check will be handled by the admin layout
-      console.log("🔑 Admin path detected, allowing through to admin layout")
-    }
+    // Add domain-specific cookie for client-side awareness
+    response.cookies.set("current-domain", domain, {
+      path: "/",
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 24, // 1 day
+    })
+
+    return response
+  } catch (error) {
+    console.error("Middleware error:", error)
+    return NextResponse.next()
   }
-
-  // Allow access
-  return NextResponse.next()
 }
 
-// Simplified matcher - let the middleware logic handle the filtering
+// Configure middleware to run on specific paths
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
+     * Match all request paths except:
+     * 1. /api routes
+     * 2. /_next (Next.js internals)
+     * 3. /fonts (inside public)
+     * 4. /examples (inside public)
+     * 5. all root files inside public (e.g. /favicon.ico)
      */
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    "/((?!api|_next|fonts|examples|[\\w-]+\\.\\w+).*)",
   ],
 }
