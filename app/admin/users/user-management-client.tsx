@@ -57,6 +57,7 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
   const handleDeleteOrphanedProfile = async (user: UserProfile) => {
     setLoading(true)
     try {
+      console.log("Deleting orphaned profile:", user.id, user.username)
       const result = await deleteOrphanedProfile(user.id)
       if (result.success) {
         toast({
@@ -72,6 +73,7 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
         })
       }
     } catch (error) {
+      console.error("Delete error:", error)
       toast({
         title: "Error",
         description: "An unexpected error occurred",
@@ -200,13 +202,13 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
   return (
     <div className="space-y-4">
       {orphanedUsers.length > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-yellow-600" />
+              <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
               <div>
-                <h4 className="font-semibold text-yellow-800">Orphaned Profiles Found</h4>
-                <p className="text-sm text-yellow-700">
+                <h4 className="font-semibold text-yellow-800 dark:text-yellow-200">Orphaned Profiles Found</h4>
+                <p className="text-sm text-yellow-700 dark:text-yellow-300">
                   {orphanedUsers.length} profile(s) exist without corresponding auth users
                 </p>
               </div>
@@ -222,12 +224,12 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Email</TableHead>
-            <TableHead>Username</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Auth Status</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="text-foreground">Email</TableHead>
+            <TableHead className="text-foreground">Username</TableHead>
+            <TableHead className="text-foreground">Role</TableHead>
+            <TableHead className="text-foreground">Auth Status</TableHead>
+            <TableHead className="text-foreground">Created</TableHead>
+            <TableHead className="text-foreground">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -236,14 +238,17 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
             const isOrphaned = !user.auth_exists
 
             return (
-              <TableRow key={user.id} className={isOrphaned ? "bg-red-50" : ""}>
-                <TableCell className="font-medium">
+              <TableRow
+                key={user.id}
+                className={isOrphaned ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800" : ""}
+              >
+                <TableCell className="font-medium text-foreground">
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />
                     {user.email}
                   </div>
                 </TableCell>
-                <TableCell>{user.username}</TableCell>
+                <TableCell className="text-foreground">{user.username}</TableCell>
                 <TableCell>
                   <Badge variant={isAdmin ? "default" : "secondary"}>{isAdmin ? "Admin" : "User"}</Badge>
                 </TableCell>
@@ -251,12 +256,12 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
                   {isOrphaned ? (
                     <Badge variant="destructive">No Auth</Badge>
                   ) : (
-                    <Badge variant="default" className="bg-green-500">
+                    <Badge variant="default" className="bg-green-500 hover:bg-green-600">
                       Active
                     </Badge>
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-foreground">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     {new Date(user.created_at).toLocaleDateString()}

@@ -1,6 +1,6 @@
 "use server"
 
-import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { revalidatePath } from "next/cache"
 
@@ -20,13 +20,24 @@ export interface UserProfile {
   auth_exists?: boolean
 }
 
+// Extract domain from email or generate a realistic one
+function generateRealisticEmail(username: string, authEmail?: string): string {
+  if (authEmail) return authEmail
+
+  // Common email domains for realistic mock emails
+  const domains = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com"]
+  const randomDomain = domains[Math.floor(Math.random() * domains.length)]
+
+  return `${username}@${randomDomain}`
+}
+
 export async function getUsersWithAuthStatus(): Promise<{
   success: boolean
   users: UserProfile[]
   error?: string
 }> {
   try {
-    const supabase = createServerSupabaseClient()
+    const supabase = createClient()
     const adminClient = createAdminClient()
 
     // Get all profiles
@@ -48,13 +59,13 @@ export async function getUsersWithAuthStatus(): Promise<{
 
           return {
             ...profile,
-            email: authUser?.user?.email || `${profile.username}@example.com`,
+            email: authUser?.user?.email || generateRealisticEmail(profile.username),
             auth_exists: !error && !!authUser?.user,
           }
         } catch (error) {
           return {
             ...profile,
-            email: `${profile.username}@example.com`,
+            email: generateRealisticEmail(profile.username),
             auth_exists: false,
           }
         }
@@ -80,8 +91,10 @@ export async function deleteOrphanedProfile(profileId: string): Promise<{
   error?: string
 }> {
   try {
-    const supabase = createServerSupabaseClient()
+    const supabase = createClient()
     const adminClient = createAdminClient()
+
+    console.log("Attempting to delete orphaned profile:", profileId)
 
     // First verify this profile doesn't have auth
     try {
@@ -93,16 +106,21 @@ export async function deleteOrphanedProfile(profileId: string): Promise<{
         }
       }
     } catch (error) {
-      // Auth user doesn't exist, safe to delete profile
+      console.log("Auth user doesn't exist (expected for orphaned profile):", error)
     }
 
-    // Delete the profile
-    const { error } = await supabase.from("profiles").delete().eq("id", profileId)
+    // Delete the profile from database
+    const { error: deleteError } = await supabase.from("profiles").delete().eq("id", profileId)
 
-    if (error) {
-      return { success: false, error: error.message }
+    if (deleteError) {
+      console.error("Database delete error:", deleteError)
+      return { success: false, error: deleteError.message }
     }
 
+    // Log the action
+    await logAdminAction("delete_orphaned_profile", profileId, "Profile deleted successfully")
+
+    console.log("Successfully deleted orphaned profile:", profileId)
     revalidatePath("/admin/users")
     return { success: true }
   } catch (error) {
@@ -122,7 +140,7 @@ export async function updateUserRole(
   error?: string
 }> {
   try {
-    const supabase = createServerSupabaseClient()
+    const supabase = createClient()
     const adminClient = createAdminClient()
 
     // Update in profiles table
@@ -145,7 +163,7 @@ export async function updateUserRole(
     }
 
     // Log the action
-    await logAdminAction("update_role", userId, newRole)
+    await logAdminAction("update_role", userId, `Role updated to ${newRole}`)
 
     revalidatePath("/admin/users")
     return { success: true }
@@ -163,7 +181,7 @@ export async function deleteUserCompletely(userId: string): Promise<{
   error?: string
 }> {
   try {
-    const supabase = createServerSupabaseClient()
+    const supabase = createClient()
     const adminClient = createAdminClient()
 
     // Delete auth user first (if exists)
@@ -181,7 +199,7 @@ export async function deleteUserCompletely(userId: string): Promise<{
     }
 
     // Log the action
-    await logAdminAction("delete_user", userId, "deleted")
+    await logAdminAction("delete_user_complete", userId, "User completely deleted")
 
     revalidatePath("/admin/users")
     return { success: true }
@@ -214,7 +232,7 @@ export async function resetUserPassword(userId: string): Promise<{
     }
 
     // Log the action
-    await logAdminAction("reset_password", userId, "password_reset")
+    await logAdminAction("reset_password", userId, "Password reset successfully")
 
     revalidatePath("/admin/users")
     return { success: true }
@@ -250,7 +268,7 @@ export async function cleanupOrphanedProfiles(): Promise<{
     }
 
     // Log the cleanup action
-    await logAdminAction("cleanup_orphaned", "system", `deleted_${deletedCount}_profiles`)
+    await logAdminAction("cleanup_orphaned_profiles", "system", `Deleted ${deletedCount} orphaned profiles`)
 
     revalidatePath("/admin/users")
     return { success: true, deletedCount }
@@ -266,12 +284,12 @@ export async function cleanupOrphanedProfiles(): Promise<{
 
 async function logAdminAction(action: string, targetUser: string, details: string) {
   try {
-    const supabase = createServerSupabaseClient()
+    const supabase = createClient()
     const {
       data: { user },
     } = await supabase.auth.getUser()
 
-    await supabase.from("admin_logs").insert({
+    const { error } = await supabase.from("admin_logs").insert({
       action,
       target_user: targetUser,
       admin_user: user?.email || "system",
@@ -279,6 +297,12 @@ async function logAdminAction(action: string, targetUser: string, details: strin
       created_at: new Date().toISOString(),
       status: "success",
     })
+
+    if (error) {
+      console.error("Error logging admin action:", error)
+    } else {
+      console.log("Admin action logged:", { action, targetUser, details })
+    }
   } catch (error) {
     console.error("Error logging admin action:", error)
   }

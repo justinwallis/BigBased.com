@@ -17,13 +17,13 @@ export default async function UsersPage() {
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="sm" asChild>
-            <Link href="/admin">
+            <Link href="/admin" className="text-foreground">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Admin
             </Link>
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">User Management</h1>
+            <h1 className="text-3xl font-bold text-foreground">User Management</h1>
             <p className="text-muted-foreground">Error loading users: {error}</p>
           </div>
         </div>
@@ -41,13 +41,13 @@ export default async function UsersPage() {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="sm" asChild>
-          <Link href="/admin">
+          <Link href="/admin" className="text-foreground">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Admin
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">User Management</h1>
+          <h1 className="text-3xl font-bold text-foreground">User Management</h1>
           <p className="text-muted-foreground">Manage user accounts and permissions</p>
         </div>
       </div>
@@ -109,7 +109,7 @@ export default async function UsersPage() {
         <TabsContent value="users" className="space-y-4 pt-4">
           <Card>
             <CardHeader>
-              <CardTitle>All Users</CardTitle>
+              <CardTitle className="text-foreground">All Users</CardTitle>
               <CardDescription>Manage user accounts, roles, and cleanup orphaned profiles</CardDescription>
             </CardHeader>
             <CardContent>
@@ -121,7 +121,7 @@ export default async function UsersPage() {
         <TabsContent value="actions" className="space-y-4 pt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Recent Administrative Actions</CardTitle>
+              <CardTitle className="text-foreground">Recent Administrative Actions</CardTitle>
               <CardDescription>Log of recent actions taken by administrators</CardDescription>
             </CardHeader>
             <CardContent>
