@@ -8,24 +8,8 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ["localhost", "vercel.app"],
+    domains: ["placeholder.com", "via.placeholder.com"],
     unoptimized: true,
-  },
-  async rewrites() {
-    return [
-      {
-        source: "/social-preview",
-        destination: "/static-meta.html",
-      },
-      {
-        source: "/cms-admin",
-        destination: "/api/payload/admin",
-      },
-      {
-        source: "/cms-admin/:path*",
-        destination: "/api/payload/admin/:path*",
-      },
-    ]
   },
   async headers() {
     return [
@@ -93,7 +77,14 @@ const nextConfig = {
       },
     ]
   },
-  swcMinify: true,
+  async rewrites() {
+    return [
+      {
+        source: "/social-preview",
+        destination: "/static-meta.html",
+      },
+    ]
+  },
 }
 
 module.exports = nextConfig
