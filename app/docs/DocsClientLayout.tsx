@@ -2,7 +2,7 @@
 
 import type React from "react"
 import Link from "next/link"
-import { Search, ChevronDown, ChevronRight, Menu, X } from "lucide-react"
+import { Search, ChevronDown, ChevronRight, Menu, X, BookOpen, Shield, Zap, Building, Code, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
@@ -12,10 +12,12 @@ function CollapsibleNavItem({
   title,
   children,
   defaultOpen = false,
+  icon,
 }: {
   title: string
   children: React.ReactNode
   defaultOpen?: boolean
+  icon?: React.ReactNode
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
@@ -25,7 +27,10 @@ function CollapsibleNavItem({
         onClick={() => setIsOpen(!isOpen)}
         className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white"
       >
-        <span>{title}</span>
+        <span className="flex items-center gap-2">
+          {icon}
+          {title}
+        </span>
         {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
       </button>
       {isOpen && <div className="ml-4 space-y-1">{children}</div>}
@@ -99,98 +104,168 @@ export default function DocsClientLayout({
 
         <nav className="flex-1 px-4 pb-6">
           <div className="space-y-2">
-            <CollapsibleNavItem title="Getting Started" defaultOpen={true}>
+            <CollapsibleNavItem title="Getting Started" defaultOpen={true} icon={<BookOpen className="h-4 w-4" />}>
               <Link
-                href="/docs/getting-started/introduction"
+                href="/docs/platform-architecture/introduction"
                 className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
               >
                 Introduction
               </Link>
               <Link
-                href="/docs/getting-started/quick-start"
+                href="/docs/platform-architecture/quick-start-guide"
                 className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
               >
-                Quick Start
+                Quick Start Guide
               </Link>
               <Link
-                href="/docs/getting-started/installation"
+                href="/docs/platform-architecture/system-requirements"
                 className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
               >
-                Installation
+                System Requirements
               </Link>
             </CollapsibleNavItem>
 
-            <CollapsibleNavItem title="Platform Features">
-              {categories
-                .filter((cat) => cat.name.includes("Platform"))
-                .map((category) => (
-                  <Link
-                    key={category.id}
-                    href={`/docs/${category.slug}`}
-                    className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
-                  >
-                    {category.name.replace("Platform ", "")}
-                  </Link>
-                ))}
+            <CollapsibleNavItem title="Authentication & Security" icon={<Shield className="h-4 w-4" />}>
+              <Link
+                href="/docs/multi-factor-authentication/setup-guide"
+                className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                MFA Setup Guide
+              </Link>
+              <Link
+                href="/docs/multi-factor-authentication/troubleshooting"
+                className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                MFA Troubleshooting
+              </Link>
+              <Link
+                href="/docs/security-features/overview"
+                className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                Security Overview
+              </Link>
+              <Link
+                href="/docs/security-features/best-practices"
+                className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                Security Best Practices
+              </Link>
             </CollapsibleNavItem>
 
-            <CollapsibleNavItem title="Security & Authentication">
-              {categories
-                .filter((cat) => cat.name.includes("Security") || cat.name.includes("Authentication"))
-                .map((category) => (
-                  <Link
-                    key={category.id}
-                    href={`/docs/${category.slug}`}
-                    className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
-                  >
-                    {category.name}
-                  </Link>
-                ))}
+            <CollapsibleNavItem title="Platform Features" icon={<Zap className="h-4 w-4" />}>
+              <Link
+                href="/docs/profile-customization/user-guide"
+                className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                Profile Customization
+              </Link>
+              <Link
+                href="/docs/admin-panel-guide/overview"
+                className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                Admin Panel Guide
+              </Link>
+              <Link
+                href="/docs/cms-guide/content-management"
+                className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                Content Management
+              </Link>
             </CollapsibleNavItem>
 
-            <CollapsibleNavItem title="Enterprise Features">
-              {categories
-                .filter(
-                  (cat) => cat.name.includes("Enterprise") || cat.name.includes("CMS") || cat.name.includes("Shop"),
-                )
-                .map((category) => (
-                  <Link
-                    key={category.id}
-                    href={`/docs/${category.slug}`}
-                    className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
-                  >
-                    {category.name}
-                  </Link>
-                ))}
+            <CollapsibleNavItem title="Enterprise Features" icon={<Building className="h-4 w-4" />}>
+              <Link
+                href="/docs/enterprise-knowledge-graph/overview"
+                className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                Knowledge Graph
+              </Link>
+              <Link
+                href="/docs/shop-system/setup-guide"
+                className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                Shop System Setup
+              </Link>
+              <Link
+                href="/docs/shop-system/management-guide"
+                className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                Shop Management
+              </Link>
             </CollapsibleNavItem>
 
-            <CollapsibleNavItem title="API & Integration">
-              {categories
-                .filter((cat) => cat.name.includes("API") || cat.name.includes("Integration"))
-                .map((category) => (
-                  <Link
-                    key={category.id}
-                    href={`/docs/${category.slug}`}
-                    className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
-                  >
-                    {category.name}
-                  </Link>
-                ))}
+            <CollapsibleNavItem title="API & Integration" icon={<Code className="h-4 w-4" />}>
+              <Link
+                href="/docs/api-integration/getting-started"
+                className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                API Getting Started
+              </Link>
+              <Link
+                href="/docs/api-integration/authentication"
+                className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                API Authentication
+              </Link>
+              <Link
+                href="/docs/api-integration/endpoints"
+                className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                API Endpoints
+              </Link>
             </CollapsibleNavItem>
 
-            <CollapsibleNavItem title="Community & Support">
-              {categories
-                .filter((cat) => cat.name.includes("Community") || cat.name.includes("Support"))
-                .map((category) => (
-                  <Link
-                    key={category.id}
-                    href={`/docs/${category.slug}`}
-                    className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
-                  >
-                    {category.name}
-                  </Link>
-                ))}
+            <CollapsibleNavItem title="Community & Support" icon={<Users className="h-4 w-4" />}>
+              <Link
+                href="/docs/community-forum/getting-started"
+                className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                Forum Getting Started
+              </Link>
+              <Link
+                href="/docs/community-forum/moderation-guide"
+                className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                Moderation Guide
+              </Link>
+              <Link
+                href="/community"
+                className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                Visit Community
+              </Link>
             </CollapsibleNavItem>
+
+            {/* Additional Resources */}
+            <div className="mt-6 pt-4 border-t border-gray-800">
+              <h4 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Resources</h4>
+              <div className="space-y-1">
+                <Link
+                  href="/docs/api-reference"
+                  className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+                >
+                  API Reference
+                </Link>
+                <Link
+                  href="/docs/tutorials"
+                  className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+                >
+                  Tutorials
+                </Link>
+                <Link
+                  href="/docs/changelog"
+                  className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+                >
+                  Changelog
+                </Link>
+                <Link
+                  href="/contact"
+                  className="block rounded-md px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+                >
+                  Contact Support
+                </Link>
+              </div>
+            </div>
           </div>
         </nav>
       </aside>
