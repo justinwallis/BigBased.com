@@ -1,15 +1,16 @@
--- Fix the admin_logs table structure
+-- Fix admin_logs table structure
 ALTER TABLE admin_logs 
 DROP COLUMN IF EXISTS metadata,
 ADD COLUMN IF NOT EXISTS details TEXT;
 
--- Update the table structure to match what we're using
+-- Ensure all required columns exist
 ALTER TABLE admin_logs 
-ALTER COLUMN details SET DEFAULT '';
+ADD COLUMN IF NOT EXISTS action VARCHAR(100) NOT NULL DEFAULT '',
+ADD COLUMN IF NOT EXISTS target_user VARCHAR(255),
+ADD COLUMN IF NOT EXISTS admin_user VARCHAR(255),
+ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'success',
+ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();
 
--- Check the current structure
-SELECT column_name, data_type, is_nullable, column_default
-FROM information_schema.columns 
-WHERE table_name = 'admin_logs' 
-AND table_schema = 'public'
-ORDER BY ordinal_position;
+-- Create index for better performance
+CREATE INDEX IF NOT EXISTS idx_admin_logs_created_at ON admin_logs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_admin_logs_action ON admin_logs(action);

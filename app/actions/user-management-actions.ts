@@ -20,35 +20,6 @@ export interface UserProfile {
   auth_exists?: boolean
 }
 
-// Extract actual domain from real email or use a realistic fallback
-function generateEmailFromProfile(username: string, authEmail?: string): string {
-  if (authEmail) return authEmail
-
-  // For orphaned profiles, try to extract domain from username or use realistic domains
-  // Check if username looks like an email
-  if (username.includes("@")) {
-    return username
-  }
-
-  // Check if username suggests a real email pattern
-  const emailPatterns = [
-    { pattern: /gmail|google/, domain: "gmail.com" },
-    { pattern: /yahoo/, domain: "yahoo.com" },
-    { pattern: /hotmail|outlook|live/, domain: "outlook.com" },
-    { pattern: /icloud|apple/, domain: "icloud.com" },
-    { pattern: /proton/, domain: "protonmail.com" },
-  ]
-
-  for (const { pattern, domain } of emailPatterns) {
-    if (pattern.test(username.toLowerCase())) {
-      return `${username}@${domain}`
-    }
-  }
-
-  // For completely orphaned profiles, use the actual domain from your site
-  return `${username}@bigbased.com`
-}
-
 export async function getUsersWithAuthStatus(): Promise<{
   success: boolean
   users: UserProfile[]
@@ -58,6 +29,8 @@ export async function getUsersWithAuthStatus(): Promise<{
     const supabase = createClient()
     const adminClient = createAdminClient()
 
+    console.log("🔍 Starting user fetch process...")
+
     // Get all profiles
     const { data: profiles, error: profilesError } = await supabase
       .from("profiles")
@@ -65,45 +38,59 @@ export async function getUsersWithAuthStatus(): Promise<{
       .order("created_at", { ascending: false })
 
     if (profilesError) {
+      console.error("❌ Error fetching profiles:", profilesError)
       return { success: false, users: [], error: profilesError.message }
     }
 
-    console.log("Fetched profiles:", profiles.length)
+    console.log(`📊 Fetched ${profiles.length} profiles from database`)
 
-    // Check which profiles have corresponding auth users and get real emails
-    const usersWithAuthStatus = await Promise.all(
-      profiles.map(async (profile) => {
-        try {
-          // Try to get the auth user
-          const { data: authUser, error } = await adminClient.auth.admin.getUserById(profile.id)
+    // Get ALL auth users to cross-reference
+    const { data: authData, error: authError } = await adminClient.auth.admin.listUsers()
 
-          const hasAuth = !error && !!authUser?.user
-          const realEmail = authUser?.user?.email
+    if (authError) {
+      console.error("❌ Error fetching auth users:", authError)
+      return { success: false, users: [], error: authError.message }
+    }
 
-          console.log(`Profile ${profile.username}: auth=${hasAuth}, email=${realEmail}`)
+    console.log(`🔐 Fetched ${authData.users.length} auth users`)
 
-          return {
-            ...profile,
-            email: generateEmailFromProfile(profile.username, realEmail),
-            auth_exists: hasAuth,
-          }
-        } catch (error) {
-          console.log(`Error checking auth for ${profile.username}:`, error)
-          return {
-            ...profile,
-            email: generateEmailFromProfile(profile.username),
-            auth_exists: false,
-          }
-        }
-      }),
-    )
+    // Create a map of auth users by ID for quick lookup
+    const authUserMap = new Map()
+    authData.users.forEach((user) => {
+      authUserMap.set(user.id, user)
+    })
+
+    // Process each profile
+    const usersWithAuthStatus = profiles.map((profile) => {
+      const authUser = authUserMap.get(profile.id)
+      const hasAuth = !!authUser
+      const realEmail = authUser?.email
+
+      console.log(`👤 Profile ${profile.username}: auth=${hasAuth}, email=${realEmail || "none"}`)
+
+      return {
+        ...profile,
+        email: realEmail || `${profile.username}@deleted-account.local`,
+        auth_exists: hasAuth,
+      }
+    })
+
+    // Also check for auth users without profiles (shouldn't happen but let's be thorough)
+    const profileIds = new Set(profiles.map((p) => p.id))
+    const orphanedAuthUsers = authData.users.filter((user) => !profileIds.has(user.id))
+
+    if (orphanedAuthUsers.length > 0) {
+      console.log(`⚠️ Found ${orphanedAuthUsers.length} auth users without profiles`)
+    }
+
+    console.log(`✅ Processed ${usersWithAuthStatus.length} users successfully`)
 
     return {
       success: true,
       users: usersWithAuthStatus,
     }
   } catch (error) {
-    console.error("Error in getUsersWithAuthStatus:", error)
+    console.error("💥 Error in getUsersWithAuthStatus:", error)
     return {
       success: false,
       users: [],
@@ -120,40 +107,64 @@ export async function deleteOrphanedProfile(profileId: string): Promise<{
     const supabase = createClient()
     const adminClient = createAdminClient()
 
-    console.log("Attempting to delete orphaned profile:", profileId)
+    console.log("🗑️ Attempting to delete orphaned profile:", profileId)
 
     // Get profile info before deletion for logging
-    const { data: profile } = await supabase.from("profiles").select("username").eq("id", profileId).single()
+    const { data: profile, error: profileFetchError } = await supabase
+      .from("profiles")
+      .select("username, email")
+      .eq("id", profileId)
+      .single()
 
-    // First verify this profile doesn't have auth
+    if (profileFetchError) {
+      console.error("❌ Error fetching profile before deletion:", profileFetchError)
+      return { success: false, error: "Profile not found" }
+    }
+
+    console.log(`📋 Found profile to delete: ${profile.username}`)
+
+    // Double-check this profile doesn't have auth
     try {
-      const { data: authUser } = await adminClient.auth.admin.getUserById(profileId)
-      if (authUser?.user) {
+      const { data: authUser, error: authError } = await adminClient.auth.admin.getUserById(profileId)
+      if (!authError && authUser?.user) {
+        console.log("⚠️ Auth user still exists, cannot delete profile")
         return {
           success: false,
           error: "Cannot delete profile - auth user still exists. Delete auth user first.",
         }
       }
     } catch (error) {
-      console.log("Auth user doesn't exist (expected for orphaned profile):", error)
+      console.log("✅ Confirmed: Auth user doesn't exist (expected for orphaned profile)")
     }
 
     // Delete the profile from database
-    const { error: deleteError } = await supabase.from("profiles").delete().eq("id", profileId)
+    console.log("🔥 Executing database deletion...")
+    const { error: deleteError, count } = await supabase.from("profiles").delete({ count: "exact" }).eq("id", profileId)
 
     if (deleteError) {
-      console.error("Database delete error:", deleteError)
+      console.error("❌ Database delete error:", deleteError)
       return { success: false, error: deleteError.message }
     }
 
-    // Log the action (with simpler structure)
-    await logAdminAction("delete_orphaned_profile", profile?.username || profileId, "Profile deleted successfully")
+    console.log(`✅ Database deletion result: ${count} rows affected`)
 
-    console.log("Successfully deleted orphaned profile:", profileId)
+    if (count === 0) {
+      console.log("⚠️ No rows were deleted - profile may not exist")
+      return { success: false, error: "Profile not found or already deleted" }
+    }
+
+    // Log the action
+    await logAdminAction("delete_orphaned_profile", profile.username, "Profile deleted successfully")
+
+    console.log("🎉 Successfully deleted orphaned profile:", profileId)
+
+    // Force revalidation
     revalidatePath("/admin/users")
+    revalidatePath("/admin")
+
     return { success: true }
   } catch (error) {
-    console.error("Error deleting orphaned profile:", error)
+    console.error("💥 Error deleting orphaned profile:", error)
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -219,19 +230,29 @@ export async function deleteUserCompletely(userId: string): Promise<{
     // Get username for logging
     const { data: profile } = await supabase.from("profiles").select("username").eq("id", userId).single()
 
+    console.log("🗑️ Deleting user completely:", profile?.username || userId)
+
     // Delete auth user first (if exists)
     try {
-      await adminClient.auth.admin.deleteUser(userId)
+      const { error: authDeleteError } = await adminClient.auth.admin.deleteUser(userId)
+      if (authDeleteError) {
+        console.log("Auth deletion error:", authDeleteError)
+      } else {
+        console.log("✅ Auth user deleted")
+      }
     } catch (error) {
       console.log("Auth user may not exist:", error)
     }
 
     // Delete profile
-    const { error: profileError } = await supabase.from("profiles").delete().eq("id", userId)
+    const { error: profileError, count } = await supabase.from("profiles").delete({ count: "exact" }).eq("id", userId)
 
     if (profileError) {
+      console.error("Profile deletion error:", profileError)
       return { success: false, error: profileError.message }
     }
+
+    console.log(`✅ Profile deletion result: ${count} rows affected`)
 
     // Log the action
     await logAdminAction("delete_user_complete", profile?.username || userId, "User completely deleted")
@@ -290,6 +311,8 @@ export async function cleanupOrphanedProfiles(): Promise<{
   error?: string
 }> {
   try {
+    console.log("🧹 Starting cleanup of orphaned profiles...")
+
     const { success, users } = await getUsersWithAuthStatus()
 
     if (!success) {
@@ -297,17 +320,25 @@ export async function cleanupOrphanedProfiles(): Promise<{
     }
 
     const orphanedUsers = users.filter((user) => !user.auth_exists)
+    console.log(`🎯 Found ${orphanedUsers.length} orphaned profiles to delete`)
+
     let deletedCount = 0
 
     for (const user of orphanedUsers) {
+      console.log(`🗑️ Deleting orphaned profile: ${user.username} (${user.id})`)
       const result = await deleteOrphanedProfile(user.id)
       if (result.success) {
         deletedCount++
+        console.log(`✅ Successfully deleted: ${user.username}`)
+      } else {
+        console.log(`❌ Failed to delete: ${user.username} - ${result.error}`)
       }
     }
 
     // Log the cleanup action
     await logAdminAction("cleanup_orphaned_profiles", "system", `Deleted ${deletedCount} orphaned profiles`)
+
+    console.log(`🎉 Cleanup complete: ${deletedCount}/${orphanedUsers.length} profiles deleted`)
 
     revalidatePath("/admin/users")
     return { success: true, deletedCount }
@@ -332,7 +363,7 @@ async function logAdminAction(action: string, targetUser: string, details: strin
       action,
       target_user: targetUser,
       admin_user: user?.email || "system",
-      details, // This should now work with the fixed table
+      details,
       created_at: new Date().toISOString(),
       status: "success",
     })
@@ -340,7 +371,7 @@ async function logAdminAction(action: string, targetUser: string, details: strin
     if (error) {
       console.error("Error logging admin action:", error)
     } else {
-      console.log("Admin action logged successfully:", { action, targetUser, details })
+      console.log("📝 Admin action logged successfully:", { action, targetUser, details })
     }
   } catch (error) {
     console.error("Error logging admin action:", error)
