@@ -21,7 +21,6 @@ import {
   ArrowLeft,
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
-import { createAdminClient } from "@/lib/supabase/admin"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,27 +37,21 @@ export const dynamic = "force-dynamic"
 
 async function getUsersData() {
   try {
-    // Use admin client for user operations
-    const adminClient = createAdminClient()
-    const regularClient = createClient()
+    const supabase = createClient()
 
-    // Get all users using admin client
-    const { data: usersData, error: usersError } = await adminClient.auth.admin.listUsers()
-
-    if (usersError) {
-      console.error("Error fetching users:", usersError)
-      return { users: [], profiles: [], sessions: [], adminLogs: [] }
-    }
-
-    // Get profiles using regular client
-    const { data: profiles, error: profilesError } = await regularClient.from("profiles").select("*")
+    // Get users directly from the profiles table instead of auth API
+    const { data: profiles, error: profilesError } = await supabase
+      .from("profiles")
+      .select("*")
+      .order("created_at", { ascending: false })
 
     if (profilesError) {
       console.error("Error fetching profiles:", profilesError)
+      return { users: [], profiles: [], sessions: [], adminLogs: [] }
     }
 
     // Get active sessions
-    const { data: sessions, error: sessionsError } = await regularClient
+    const { data: sessions, error: sessionsError } = await supabase
       .from("auth_logs")
       .select("user_id, created_at")
       .eq("event", "login_success")
@@ -69,7 +62,7 @@ async function getUsersData() {
     }
 
     // Get admin action logs
-    const { data: adminLogs, error: adminLogsError } = await regularClient
+    const { data: adminLogs, error: adminLogsError } = await supabase
       .from("admin_logs")
       .select("*")
       .order("created_at", { ascending: false })
@@ -80,9 +73,21 @@ async function getUsersData() {
       console.error("Error fetching admin logs:", adminLogsError)
     }
 
+    // Convert profiles to user format
+    const users = profiles.map((profile) => ({
+      id: profile.id,
+      email: profile.email || "No email",
+      created_at: profile.created_at,
+      last_sign_in_at: profile.last_sign_in || null,
+      app_metadata: { role: profile.role || "user" },
+      user_metadata: { username: profile.username },
+      email_confirmed_at: profile.email_confirmed_at || null,
+      banned_until: null,
+    }))
+
     return {
-      users: usersData?.users || [],
-      profiles: profiles || [],
+      users,
+      profiles,
       sessions: sessions || [],
       adminLogs: adminLogs || [],
     }
@@ -256,7 +261,7 @@ export default async function UsersPage() {
                             {user.email}
                           </div>
                         </TableCell>
-                        <TableCell>{profile?.username || "Not set"}</TableCell>
+                        <TableCell>{profile?.username || user.user_metadata?.username || "Not set"}</TableCell>
                         <TableCell>
                           <Badge variant={isAdmin ? "default" : "secondary"}>{isAdmin ? "Admin" : "User"}</Badge>
                         </TableCell>
