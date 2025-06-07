@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -32,6 +32,7 @@ import {
   cleanupOrphanedProfiles,
   type UserProfile,
 } from "@/app/actions/user-management-actions"
+import { useRouter } from "next/navigation"
 
 interface UserManagementClientProps {
   initialUsers: UserProfile[]
@@ -40,6 +41,7 @@ interface UserManagementClientProps {
 export default function UserManagementClient({ initialUsers }: UserManagementClientProps) {
   const [users, setUsers] = useState(initialUsers)
   const [loading, setLoading] = useState(false)
+  const [isPending, startTransition] = useTransition()
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean
     user?: UserProfile
@@ -48,10 +50,12 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
     open: false,
   })
   const { toast } = useToast()
+  const router = useRouter()
 
-  const refreshUsers = async () => {
-    // In a real app, you'd refetch the data here
-    window.location.reload()
+  const refreshUsers = () => {
+    startTransition(() => {
+      router.refresh()
+    })
   }
 
   const handleDeleteOrphanedProfile = async (user: UserProfile) => {
@@ -64,7 +68,10 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
           title: "Profile deleted",
           description: `Orphaned profile for ${user.username} has been deleted.`,
         })
+        // Remove from local state immediately
         setUsers(users.filter((u) => u.id !== user.id))
+        // Also refresh the page data
+        refreshUsers()
       } else {
         toast({
           title: "Error",
@@ -95,6 +102,7 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
           description: `User ${user.username} has been completely deleted.`,
         })
         setUsers(users.filter((u) => u.id !== user.id))
+        refreshUsers()
       } else {
         toast({
           title: "Error",
@@ -124,6 +132,7 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
           description: `User role has been updated to ${newRole}.`,
         })
         setUsers(users.map((u) => (u.id === userId ? { ...u, role: newRole } : u)))
+        refreshUsers()
       } else {
         toast({
           title: "Error",
@@ -178,6 +187,7 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
           title: "Cleanup complete",
           description: `Deleted ${result.deletedCount} orphaned profiles.`,
         })
+        // Refresh the entire page to get updated data
         refreshUsers()
       } else {
         toast({
@@ -198,6 +208,7 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
   }
 
   const orphanedUsers = users.filter((user) => !user.auth_exists)
+  const isLoading = loading || isPending
 
   return (
     <div className="space-y-4">
@@ -213,9 +224,9 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
                 </p>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={handleCleanupOrphaned} disabled={loading}>
+            <Button variant="outline" size="sm" onClick={handleCleanupOrphaned} disabled={isLoading}>
               <Trash2 className="h-4 w-4 mr-2" />
-              Cleanup All
+              {isLoading ? "Cleaning..." : "Cleanup All"}
             </Button>
           </div>
         </div>
@@ -246,6 +257,11 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />
                     {user.email}
+                    {isOrphaned && (
+                      <Badge variant="outline" className="text-xs">
+                        Orphaned
+                      </Badge>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell className="text-foreground">{user.username}</TableCell>
@@ -270,7 +286,7 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" disabled={loading}>
+                      <Button variant="ghost" size="sm" disabled={isLoading}>
                         <MoreHorizontal className="h-4 w-4" />
                         <span className="sr-only">Actions</span>
                       </Button>

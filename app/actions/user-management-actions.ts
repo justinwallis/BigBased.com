@@ -20,15 +20,33 @@ export interface UserProfile {
   auth_exists?: boolean
 }
 
-// Extract domain from email or generate a realistic one
-function generateRealisticEmail(username: string, authEmail?: string): string {
+// Extract actual domain from real email or use a realistic fallback
+function generateEmailFromProfile(username: string, authEmail?: string): string {
   if (authEmail) return authEmail
 
-  // Common email domains for realistic mock emails
-  const domains = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com"]
-  const randomDomain = domains[Math.floor(Math.random() * domains.length)]
+  // For orphaned profiles, try to extract domain from username or use realistic domains
+  // Check if username looks like an email
+  if (username.includes("@")) {
+    return username
+  }
 
-  return `${username}@${randomDomain}`
+  // Check if username suggests a real email pattern
+  const emailPatterns = [
+    { pattern: /gmail|google/, domain: "gmail.com" },
+    { pattern: /yahoo/, domain: "yahoo.com" },
+    { pattern: /hotmail|outlook|live/, domain: "outlook.com" },
+    { pattern: /icloud|apple/, domain: "icloud.com" },
+    { pattern: /proton/, domain: "protonmail.com" },
+  ]
+
+  for (const { pattern, domain } of emailPatterns) {
+    if (pattern.test(username.toLowerCase())) {
+      return `${username}@${domain}`
+    }
+  }
+
+  // For completely orphaned profiles, use the actual domain from your site
+  return `${username}@bigbased.com`
 }
 
 export async function getUsersWithAuthStatus(): Promise<{
@@ -50,22 +68,30 @@ export async function getUsersWithAuthStatus(): Promise<{
       return { success: false, users: [], error: profilesError.message }
     }
 
-    // Check which profiles have corresponding auth users
+    console.log("Fetched profiles:", profiles.length)
+
+    // Check which profiles have corresponding auth users and get real emails
     const usersWithAuthStatus = await Promise.all(
       profiles.map(async (profile) => {
         try {
           // Try to get the auth user
           const { data: authUser, error } = await adminClient.auth.admin.getUserById(profile.id)
 
+          const hasAuth = !error && !!authUser?.user
+          const realEmail = authUser?.user?.email
+
+          console.log(`Profile ${profile.username}: auth=${hasAuth}, email=${realEmail}`)
+
           return {
             ...profile,
-            email: authUser?.user?.email || generateRealisticEmail(profile.username),
-            auth_exists: !error && !!authUser?.user,
+            email: generateEmailFromProfile(profile.username, realEmail),
+            auth_exists: hasAuth,
           }
         } catch (error) {
+          console.log(`Error checking auth for ${profile.username}:`, error)
           return {
             ...profile,
-            email: generateRealisticEmail(profile.username),
+            email: generateEmailFromProfile(profile.username),
             auth_exists: false,
           }
         }
@@ -96,6 +122,9 @@ export async function deleteOrphanedProfile(profileId: string): Promise<{
 
     console.log("Attempting to delete orphaned profile:", profileId)
 
+    // Get profile info before deletion for logging
+    const { data: profile } = await supabase.from("profiles").select("username").eq("id", profileId).single()
+
     // First verify this profile doesn't have auth
     try {
       const { data: authUser } = await adminClient.auth.admin.getUserById(profileId)
@@ -117,8 +146,8 @@ export async function deleteOrphanedProfile(profileId: string): Promise<{
       return { success: false, error: deleteError.message }
     }
 
-    // Log the action
-    await logAdminAction("delete_orphaned_profile", profileId, "Profile deleted successfully")
+    // Log the action (with simpler structure)
+    await logAdminAction("delete_orphaned_profile", profile?.username || profileId, "Profile deleted successfully")
 
     console.log("Successfully deleted orphaned profile:", profileId)
     revalidatePath("/admin/users")
@@ -143,6 +172,9 @@ export async function updateUserRole(
     const supabase = createClient()
     const adminClient = createAdminClient()
 
+    // Get username for logging
+    const { data: profile } = await supabase.from("profiles").select("username").eq("id", userId).single()
+
     // Update in profiles table
     const { error: profileError } = await supabase
       .from("profiles")
@@ -163,7 +195,7 @@ export async function updateUserRole(
     }
 
     // Log the action
-    await logAdminAction("update_role", userId, `Role updated to ${newRole}`)
+    await logAdminAction("update_role", profile?.username || userId, `Role updated to ${newRole}`)
 
     revalidatePath("/admin/users")
     return { success: true }
@@ -184,6 +216,9 @@ export async function deleteUserCompletely(userId: string): Promise<{
     const supabase = createClient()
     const adminClient = createAdminClient()
 
+    // Get username for logging
+    const { data: profile } = await supabase.from("profiles").select("username").eq("id", userId).single()
+
     // Delete auth user first (if exists)
     try {
       await adminClient.auth.admin.deleteUser(userId)
@@ -199,7 +234,7 @@ export async function deleteUserCompletely(userId: string): Promise<{
     }
 
     // Log the action
-    await logAdminAction("delete_user_complete", userId, "User completely deleted")
+    await logAdminAction("delete_user_complete", profile?.username || userId, "User completely deleted")
 
     revalidatePath("/admin/users")
     return { success: true }
@@ -218,6 +253,10 @@ export async function resetUserPassword(userId: string): Promise<{
 }> {
   try {
     const adminClient = createAdminClient()
+    const supabase = createClient()
+
+    // Get username for logging
+    const { data: profile } = await supabase.from("profiles").select("username").eq("id", userId).single()
 
     // Generate a temporary password
     const tempPassword = Math.random().toString(36).slice(-12) + "Temp123!"
@@ -232,7 +271,7 @@ export async function resetUserPassword(userId: string): Promise<{
     }
 
     // Log the action
-    await logAdminAction("reset_password", userId, "Password reset successfully")
+    await logAdminAction("reset_password", profile?.username || userId, "Password reset successfully")
 
     revalidatePath("/admin/users")
     return { success: true }
@@ -293,7 +332,7 @@ async function logAdminAction(action: string, targetUser: string, details: strin
       action,
       target_user: targetUser,
       admin_user: user?.email || "system",
-      details,
+      details, // This should now work with the fixed table
       created_at: new Date().toISOString(),
       status: "success",
     })
@@ -301,7 +340,7 @@ async function logAdminAction(action: string, targetUser: string, details: strin
     if (error) {
       console.error("Error logging admin action:", error)
     } else {
-      console.log("Admin action logged:", { action, targetUser, details })
+      console.log("Admin action logged successfully:", { action, targetUser, details })
     }
   } catch (error) {
     console.error("Error logging admin action:", error)
