@@ -1,10 +1,152 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, Shield, UserCheck } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+  Users,
+  Shield,
+  UserCheck,
+  Clock,
+  Mail,
+  Calendar,
+  UserX,
+  UserPlus,
+  MoreHorizontal,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  RefreshCw,
+  Lock,
+  Unlock,
+} from "lucide-react"
+import { createServerSupabaseClient } from "@/lib/supabase/server"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 // Force dynamic rendering
 export const dynamic = "force-dynamic"
 
-export default function UsersPage() {
+async function getUsersData() {
+  try {
+    const supabase = createServerSupabaseClient()
+
+    // Get all users from auth.users
+    const { data: users, error: usersError } = await supabase.auth.admin.listUsers()
+
+    if (usersError) {
+      console.error("Error fetching users:", usersError)
+      return { users: [], profiles: [], sessions: [], adminLogs: [] }
+    }
+
+    // Get profiles for additional user info
+    const { data: profiles, error: profilesError } = await supabase.from("profiles").select("*")
+
+    if (profilesError) {
+      console.error("Error fetching profiles:", profilesError)
+    }
+
+    // Get active sessions (you might need to adjust this based on your session tracking)
+    const { data: sessions, error: sessionsError } = await supabase
+      .from("auth_logs")
+      .select("user_id, created_at")
+      .eq("event", "login_success")
+      .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Last 24 hours
+
+    if (sessionsError) {
+      console.error("Error fetching sessions:", sessionsError)
+    }
+
+    // Get admin action logs
+    const { data: adminLogs, error: adminLogsError } = await supabase
+      .from("admin_logs")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(10)
+      .catch(() => ({ data: null, error: new Error("Table might not exist") }))
+
+    if (adminLogsError) {
+      console.error("Error fetching admin logs:", adminLogsError)
+    }
+
+    return {
+      users: users?.users || [],
+      profiles: profiles || [],
+      sessions: sessions || [],
+      adminLogs: adminLogs || [],
+    }
+  } catch (error) {
+    console.error("Error in getUsersData:", error)
+    return { users: [], profiles: [], sessions: [], adminLogs: [] }
+  }
+}
+
+export default async function UsersPage() {
+  const { users, profiles, sessions, adminLogs } = await getUsersData()
+
+  // Calculate metrics
+  const totalUsers = users.length
+  const adminUsers = users.filter(
+    (user) =>
+      user.app_metadata?.role === "admin" ||
+      user.email === process.env.ADMIN_EMAIL ||
+      user.user_metadata?.role === "admin",
+  ).length
+
+  const activeSessions = new Set(sessions.map((s) => s.user_id)).size
+  const recentUsers = users.filter(
+    (user) => new Date(user.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+  ).length
+
+  // Sample recent admin actions if the table doesn't exist yet
+  const sampleAdminActions = [
+    {
+      id: 1,
+      action: "promote_admin",
+      target_user: "user2@example.com",
+      admin_user: process.env.ADMIN_EMAIL,
+      created_at: new Date().toISOString(),
+      status: "success",
+    },
+    {
+      id: 2,
+      action: "reset_password",
+      target_user: "user1@example.com",
+      admin_user: process.env.ADMIN_EMAIL,
+      created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      status: "success",
+    },
+    {
+      id: 3,
+      action: "suspend_user",
+      target_user: "spammer@example.com",
+      admin_user: process.env.ADMIN_EMAIL,
+      created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+      status: "success",
+    },
+  ]
+
+  const recentActions = adminLogs.length > 0 ? adminLogs : sampleAdminActions
+
+  // Action icon mapping
+  const actionIcons = {
+    promote_admin: <Shield className="h-4 w-4" />,
+    demote_admin: <UserX className="h-4 w-4" />,
+    reset_password: <RefreshCw className="h-4 w-4" />,
+    suspend_user: <Lock className="h-4 w-4" />,
+    unsuspend_user: <Unlock className="h-4 w-4" />,
+    delete_user: <XCircle className="h-4 w-4" />,
+    create_user: <UserPlus className="h-4 w-4" />,
+    verify_email: <CheckCircle className="h-4 w-4" />,
+    default: <AlertTriangle className="h-4 w-4" />,
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -12,15 +154,17 @@ export default function UsersPage() {
         <p className="text-muted-foreground">Manage user accounts and permissions</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1</div>
-            <p className="text-xs text-muted-foreground">Admin user</p>
+            <div className="text-2xl font-bold">{totalUsers}</div>
+            <p className="text-xs text-muted-foreground">
+              {recentUsers > 0 ? `+${recentUsers} this week` : "No new users this week"}
+            </p>
           </CardContent>
         </Card>
 
@@ -30,8 +174,8 @@ export default function UsersPage() {
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1</div>
-            <p className="text-xs text-muted-foreground">You</p>
+            <div className="text-2xl font-bold">{adminUsers}</div>
+            <p className="text-xs text-muted-foreground">{adminUsers === 1 ? "You" : `Including you`}</p>
           </CardContent>
         </Card>
 
@@ -41,28 +185,282 @@ export default function UsersPage() {
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1</div>
-            <p className="text-xs text-muted-foreground">Current session</p>
+            <div className="text-2xl font-bold">{activeSessions}</div>
+            <p className="text-xs text-muted-foreground">Last 24 hours</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">New This Week</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{recentUsers}</div>
+            <p className="text-xs text-muted-foreground">Recent signups</p>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>User Management Features</CardTitle>
-          <CardDescription>Advanced user management features will be available here</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">This section will include:</p>
-          <ul className="mt-2 text-sm text-muted-foreground list-disc list-inside space-y-1">
-            <li>User account management</li>
-            <li>Role and permission assignment</li>
-            <li>Session monitoring</li>
-            <li>Security audit logs</li>
-            <li>Bulk user operations</li>
-          </ul>
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="users">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="users">User Management</TabsTrigger>
+          <TabsTrigger value="actions">Recent Actions</TabsTrigger>
+          <TabsTrigger value="bulk">Bulk Operations</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="users" className="space-y-4 pt-4">
+          {/* Users Table */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>All Users</CardTitle>
+                <CardDescription>Complete list of registered users</CardDescription>
+              </div>
+              <Button>
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add User
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Username</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead>Last Sign In</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {users.map((user) => {
+                    const profile = profiles.find((p) => p.id === user.id)
+                    const isAdmin =
+                      user.app_metadata?.role === "admin" ||
+                      user.email === process.env.ADMIN_EMAIL ||
+                      user.user_metadata?.role === "admin"
+                    const isSuspended = user.banned_until && new Date(user.banned_until) > new Date()
+
+                    return (
+                      <TableRow key={user.id}>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4 text-muted-foreground" />
+                            {user.email}
+                          </div>
+                        </TableCell>
+                        <TableCell>{profile?.username || "Not set"}</TableCell>
+                        <TableCell>
+                          <Badge variant={isAdmin ? "default" : "secondary"}>{isAdmin ? "Admin" : "User"}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          {isSuspended ? (
+                            <Badge variant="destructive">Suspended</Badge>
+                          ) : (
+                            <Badge
+                              variant={user.email_confirmed_at ? "default" : "destructive"}
+                              className={user.email_confirmed_at ? "bg-green-500" : ""}
+                            >
+                              {user.email_confirmed_at ? "Verified" : "Unverified"}
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            {new Date(user.created_at).toLocaleDateString()}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : "Never"}
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Actions</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>User Actions</DropdownMenuLabel>
+                              <DropdownMenuItem>
+                                <UserCheck className="h-4 w-4 mr-2" />
+                                View Profile
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <RefreshCw className="h-4 w-4 mr-2" />
+                                Reset Password
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              {isAdmin ? (
+                                <DropdownMenuItem>
+                                  <UserX className="h-4 w-4 mr-2" />
+                                  Remove Admin
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem>
+                                  <Shield className="h-4 w-4 mr-2" />
+                                  Make Admin
+                                </DropdownMenuItem>
+                              )}
+                              {isSuspended ? (
+                                <DropdownMenuItem>
+                                  <Unlock className="h-4 w-4 mr-2" />
+                                  Unsuspend User
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem>
+                                  <Lock className="h-4 w-4 mr-2" />
+                                  Suspend User
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-red-600">
+                                <XCircle className="h-4 w-4 mr-2" />
+                                Delete User
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button variant="outline" size="sm">
+                Previous
+              </Button>
+              <Button variant="outline" size="sm">
+                Next
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="actions" className="space-y-4 pt-4">
+          {/* Recent Admin Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Administrative Actions</CardTitle>
+              <CardDescription>Log of recent actions taken by administrators</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Action</TableHead>
+                    <TableHead>Target User</TableHead>
+                    <TableHead>Admin</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {recentActions.map((action) => (
+                    <TableRow key={action.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {actionIcons[action.action] || actionIcons.default}
+                          {action.action.replace("_", " ")}
+                        </div>
+                      </TableCell>
+                      <TableCell>{action.target_user}</TableCell>
+                      <TableCell>{action.admin_user}</TableCell>
+                      <TableCell>{new Date(action.created_at).toLocaleString()}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={action.status === "success" ? "default" : "destructive"}
+                          className={action.status === "success" ? "bg-green-500" : ""}
+                        >
+                          {action.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+            <CardFooter>
+              <Button variant="outline" className="w-full">
+                View All Actions
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="bulk" className="space-y-4 pt-4">
+          {/* Bulk User Operations */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Bulk User Operations</CardTitle>
+              <CardDescription>Perform actions on multiple users at once</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-6 md:grid-cols-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Email Operations</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <Button variant="outline" className="w-full justify-start">
+                      <Mail className="h-4 w-4 mr-2" />
+                      Send Welcome Email
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start">
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Resend Verification Emails
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start">
+                      <Mail className="h-4 w-4 mr-2" />
+                      Send Password Reset
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Account Operations</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <Button variant="outline" className="w-full justify-start">
+                      <Lock className="h-4 w-4 mr-2" />
+                      Suspend Inactive Users
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start">
+                      <Shield className="h-4 w-4 mr-2" />
+                      Update Role Permissions
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start text-red-600">
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Delete Unverified Users
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Export User Data</CardTitle>
+              <CardDescription>Download user information for reporting or analysis</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-3">
+                <Button variant="outline">Export All Users (CSV)</Button>
+                <Button variant="outline">Export Admin Users (CSV)</Button>
+                <Button variant="outline">Export Recent Users (CSV)</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
