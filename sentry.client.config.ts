@@ -6,14 +6,14 @@ Sentry.init({
   dsn: SENTRY_DSN,
   tracesSampleRate: 1.0,
   debug: process.env.NODE_ENV === "development",
-  replaysOnErrorSampleRate: 1.0,
-  replaysSessionSampleRate: 0.1,
-  integrations: [
-    new Sentry.Replay({
-      maskAllText: false,
-      blockAllMedia: false,
-    }),
-  ],
+
+  // Remove the Replay integration which is causing the error
+  // integrations: [
+  //   new Sentry.Replay({
+  //     maskAllText: false,
+  //     blockAllMedia: false,
+  //   }),
+  // ],
 })
 
-console.log("Sentry initialized on client side")
+console.log("Sentry initialized on client side with DSN:", SENTRY_DSN)

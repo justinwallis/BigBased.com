@@ -8,4 +8,4 @@ Sentry.init({
   debug: process.env.NODE_ENV === "development",
 })
 
-console.log("Sentry initialized on server side")
+console.log("Sentry initialized on server side with DSN:", SENTRY_DSN)
