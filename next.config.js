@@ -85,6 +85,32 @@ const nextConfig = {
       },
     ]
   },
+  // Add Sentry configuration
+  sentry: {
+    hideSourceMaps: false,
+    widenClientFileUpload: true,
+  },
 }
 
-module.exports = nextConfig
+// Wrap with Sentry if not in development
+const { withSentryConfig } = require("@sentry/nextjs")
+
+module.exports =
+  process.env.NODE_ENV === "development"
+    ? nextConfig
+    : withSentryConfig(
+        nextConfig,
+        {
+          // For all available options, see:
+          // https://github.com/getsentry/sentry-webpack-plugin#options
+          org: "your-org-name",
+          project: "big-based",
+          authToken: process.env.SENTRY_AUTH_TOKEN,
+        },
+        {
+          // For all available options, see:
+          // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
+          disableServerWebpackPlugin: false,
+          disableClientWebpackPlugin: false,
+        },
+      )
