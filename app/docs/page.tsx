@@ -5,10 +5,9 @@ import {
   getFeaturedArticles,
   getPopularArticles,
 } from "@/app/actions/documentation-actions"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Search, ArrowRight, BookOpen, FileText, Bookmark, Star, Clock } from "lucide-react"
+import { ArrowRight, Zap, Shield, Code } from "lucide-react"
 
 export const metadata: Metadata = {
   title: "Documentation | Big Based",
@@ -21,135 +20,160 @@ export default async function DocsPage() {
   const popularArticles = await getPopularArticles()
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mx-auto max-w-4xl text-center">
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Documentation</h1>
-        <p className="mt-4 text-lg text-muted-foreground">
-          Everything you need to know about using the Big Based platform.
-        </p>
-      </div>
+    <div className="flex">
+      {/* Main Content */}
+      <div className="flex-1 p-8">
+        <div className="max-w-4xl">
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold mb-4">Big Based Documentation</h1>
+            <p className="text-xl text-gray-400">
+              Everything you need to build, deploy, and scale your applications on the Big Based platform.
+            </p>
+          </div>
 
-      <div className="mx-auto mt-8 max-w-2xl">
-        <div className="relative">
-          <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-          <Input type="search" placeholder="Search documentation..." className="pl-10 py-6 text-lg" />
-        </div>
-      </div>
-
-      <div className="mt-12">
-        <h2 className="text-2xl font-bold mb-6">Browse by Category</h2>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {categories.map((category) => (
-            <Card key={category.id} className="overflow-hidden">
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-2">
-                  {category.icon === "book-open" && <BookOpen className="h-5 w-5 text-primary" />}
-                  {category.icon === "file-text" && <FileText className="h-5 w-5 text-primary" />}
-                  {category.icon === "bookmark" && <Bookmark className="h-5 w-5 text-primary" />}
-                  {category.icon === "star" && <Star className="h-5 w-5 text-primary" />}
-                  {category.icon === "clock" && <Clock className="h-5 w-5 text-primary" />}
-                  {!category.icon && <BookOpen className="h-5 w-5 text-primary" />}
-                  <CardTitle>{category.name}</CardTitle>
+          {/* Quick Start Cards */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-12">
+            <Card className="bg-gray-900 border-gray-800 hover:border-gray-700 transition-colors">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-500/10 rounded-lg">
+                    <Zap className="h-5 w-5 text-blue-400" />
+                  </div>
+                  <CardTitle className="text-white">Quick Start</CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
-                <CardDescription className="line-clamp-2 h-10">
-                  {category.description || `Browse all ${category.name.toLowerCase()} documentation.`}
+                <CardDescription className="text-gray-400 mb-4">
+                  Get up and running with Big Based in minutes.
                 </CardDescription>
-              </CardContent>
-              <CardFooter>
-                <Button asChild variant="ghost" className="w-full justify-between">
-                  <Link href={`/docs/${category.slug}`}>
-                    <span>Browse Documentation</span>
-                    <ArrowRight className="h-4 w-4" />
+                <Button asChild variant="outline" className="w-full border-gray-700 text-white hover:bg-gray-800">
+                  <Link href="/docs/getting-started/quick-start">
+                    Start Building
+                    <ArrowRight className="h-4 w-4 ml-2" />
                   </Link>
                 </Button>
-              </CardFooter>
+              </CardContent>
             </Card>
-          ))}
-        </div>
-      </div>
 
-      <div className="mt-16">
-        <h2 className="text-2xl font-bold mb-6">Featured Articles</h2>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {featuredArticles.length > 0 ? (
-            featuredArticles.map((article) => (
-              <Card key={article.id}>
-                <CardHeader>
-                  <CardTitle className="line-clamp-2">{article.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="line-clamp-3">
-                    {article.excerpt || article.content.substring(0, 150) + "..."}
-                  </CardDescription>
-                </CardContent>
-                <CardFooter>
-                  <Button asChild variant="ghost" className="w-full justify-between">
-                    <Link href={`/docs/${article.category?.slug}/${article.slug}`}>
-                      <span>Read Article</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))
-          ) : (
-            <div className="col-span-3 text-center py-12">
-              <p className="text-muted-foreground">No featured articles yet.</p>
+            <Card className="bg-gray-900 border-gray-800 hover:border-gray-700 transition-colors">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-500/10 rounded-lg">
+                    <Shield className="h-5 w-5 text-green-400" />
+                  </div>
+                  <CardTitle className="text-white">Security</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-gray-400 mb-4">
+                  Learn about authentication, MFA, and security best practices.
+                </CardDescription>
+                <Button asChild variant="outline" className="w-full border-gray-700 text-white hover:bg-gray-800">
+                  <Link href="/docs/security-authentication">
+                    Security Guide
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-900 border-gray-800 hover:border-gray-700 transition-colors">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-500/10 rounded-lg">
+                    <Code className="h-5 w-5 text-purple-400" />
+                  </div>
+                  <CardTitle className="text-white">API Reference</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-gray-400 mb-4">
+                  Complete API documentation and integration guides.
+                </CardDescription>
+                <Button asChild variant="outline" className="w-full border-gray-700 text-white hover:bg-gray-800">
+                  <Link href="/docs/api-integration">
+                    View API Docs
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Featured Articles */}
+          {featuredArticles.length > 0 && (
+            <div className="mb-12">
+              <h2 className="text-2xl font-bold mb-6 text-white">Featured Articles</h2>
+              <div className="grid gap-4 md:grid-cols-2">
+                {featuredArticles.slice(0, 4).map((article) => (
+                  <Link
+                    key={article.id}
+                    href={`/docs/${article.category?.slug}/${article.slug}`}
+                    className="block p-4 bg-gray-900 border border-gray-800 rounded-lg hover:border-gray-700 transition-colors"
+                  >
+                    <h3 className="font-semibold text-white mb-2">{article.title}</h3>
+                    <p className="text-sm text-gray-400 line-clamp-2">
+                      {article.excerpt || article.content.substring(0, 120) + "..."}
+                    </p>
+                    <div className="flex items-center mt-3 text-xs text-gray-500">
+                      <span>{article.category?.name}</span>
+                      <span className="mx-2">•</span>
+                      <span>{article.view_count} views</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
           )}
-        </div>
-      </div>
 
-      <div className="mt-16">
-        <h2 className="text-2xl font-bold mb-6">Popular Articles</h2>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {popularArticles.length > 0 ? (
-            popularArticles.map((article) => (
-              <Card key={article.id}>
-                <CardHeader>
-                  <CardTitle className="line-clamp-2">{article.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="line-clamp-3">
-                    {article.excerpt || article.content.substring(0, 150) + "..."}
-                  </CardDescription>
-                </CardContent>
-                <CardFooter>
-                  <Button asChild variant="ghost" className="w-full justify-between">
-                    <Link href={`/docs/${article.category?.slug}/${article.slug}`}>
-                      <span>Read Article</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))
-          ) : (
-            <div className="col-span-3 text-center py-12">
-              <p className="text-muted-foreground">No popular articles yet.</p>
+          {/* All Categories */}
+          <div>
+            <h2 className="text-2xl font-bold mb-6 text-white">Browse Documentation</h2>
+            <div className="grid gap-4 md:grid-cols-2">
+              {categories.map((category) => (
+                <Link
+                  key={category.id}
+                  href={`/docs/${category.slug}`}
+                  className="block p-4 bg-gray-900 border border-gray-800 rounded-lg hover:border-gray-700 transition-colors group"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-white group-hover:text-blue-400 transition-colors">
+                        {category.name}
+                      </h3>
+                      <p className="text-sm text-gray-400 mt-1">
+                        {category.description || `Learn about ${category.name.toLowerCase()}`}
+                      </p>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-gray-600 group-hover:text-blue-400 transition-colors" />
+                  </div>
+                </Link>
+              ))}
             </div>
-          )}
-        </div>
-      </div>
-
-      <div className="mt-16 bg-muted rounded-lg p-8">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-2xl font-bold">Need Help?</h2>
-          <p className="mt-2 text-muted-foreground">
-            Can't find what you're looking for? Our community is here to help.
-          </p>
-          <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild>
-              <Link href="/community">Visit Community Forum</Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link href="/contact">Contact Support</Link>
-            </Button>
           </div>
         </div>
       </div>
+
+      {/* Right Sidebar - Table of Contents */}
+      <aside className="hidden xl:block w-64 p-8 border-l border-gray-800">
+        <div className="sticky top-8">
+          <h3 className="text-sm font-semibold text-white mb-4">On this page</h3>
+          <nav className="space-y-2 text-sm">
+            <a href="#quick-start" className="block text-gray-400 hover:text-white transition-colors">
+              Quick Start
+            </a>
+            <a href="#featured" className="block text-gray-400 hover:text-white transition-colors">
+              Featured Articles
+            </a>
+            <a href="#browse" className="block text-gray-400 hover:text-white transition-colors">
+              Browse Documentation
+            </a>
+            <a href="#support" className="block text-gray-400 hover:text-white transition-colors">
+              Get Support
+            </a>
+          </nav>
+        </div>
+      </aside>
     </div>
   )
 }

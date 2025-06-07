@@ -102,7 +102,7 @@ export async function getArticleBySlug(slug: string, categorySlug: string): Prom
   // First get the category
   const { data: category, error: categoryError } = await supabase
     .from("documentation_categories")
-    .select("id")
+    .select("id, slug")
     .eq("slug", categorySlug)
     .single()
 
@@ -111,16 +111,16 @@ export async function getArticleBySlug(slug: string, categorySlug: string): Prom
     return null
   }
 
-  // Then get the article
+  // Then get the article - fix the author relationship
   const { data, error } = await supabase
     .from("documentation_articles")
     .select(`
       *,
-      category:documentation_categories(*),
-      author:author_id(name, email, image)
+      category:documentation_categories(*)
     `)
     .eq("slug", slug)
     .eq("category_id", category.id)
+    .eq("status", "published")
     .single()
 
   if (error) {
