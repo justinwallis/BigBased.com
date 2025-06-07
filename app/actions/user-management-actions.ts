@@ -18,7 +18,11 @@ export interface UserProfile {
   role?: string
   email?: string
   auth_exists?: boolean
+  last_known_email?: string
 }
+
+// Store last known emails for orphaned profiles
+const orphanedEmailCache = new Map<string, string>()
 
 export async function getUsersWithAuthStatus(): Promise<{
   success: boolean
@@ -66,12 +70,21 @@ export async function getUsersWithAuthStatus(): Promise<{
       const hasAuth = !!authUser
       const realEmail = authUser?.email
 
-      console.log(`👤 Profile ${profile.username}: auth=${hasAuth}, email=${realEmail || "none"}`)
+      // If we have a real email, store it in our cache for future reference
+      if (realEmail) {
+        orphanedEmailCache.set(profile.id, realEmail)
+      }
+
+      // If this profile is orphaned, try to get the last known email
+      const lastKnownEmail = !hasAuth ? orphanedEmailCache.get(profile.id) : undefined
+
+      console.log(`👤 Profile ${profile.username}: auth=${hasAuth}, email=${realEmail || lastKnownEmail || "unknown"}`)
 
       return {
         ...profile,
-        email: realEmail || `${profile.username}@deleted-account.local`,
+        email: realEmail || lastKnownEmail || `${profile.username}@deleted-account.local`,
         auth_exists: hasAuth,
+        last_known_email: lastKnownEmail,
       }
     })
 
@@ -172,6 +185,107 @@ export async function deleteOrphanedProfile(profileId: string): Promise<{
   }
 }
 
+export async function restoreUserAccount(
+  profileId: string,
+  email: string,
+  password = "",
+): Promise<{
+  success: boolean
+  error?: string
+}> {
+  try {
+    const supabase = createClient()
+    const adminClient = createAdminClient()
+
+    console.log("🔄 Attempting to restore account for profile:", profileId)
+
+    // Check if profile exists
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", profileId)
+      .single()
+
+    if (profileError) {
+      console.error("❌ Error fetching profile:", profileError)
+      return { success: false, error: "Profile not found" }
+    }
+
+    // Check if auth user already exists
+    try {
+      const { data: existingUser } = await adminClient.auth.admin.getUserById(profileId)
+      if (existingUser?.user) {
+        return {
+          success: false,
+          error: "Auth user already exists for this profile. No restoration needed.",
+        }
+      }
+    } catch (error) {
+      // This is expected - the auth user shouldn't exist
+      console.log("✅ Confirmed: No auth user exists (good for restoration)")
+    }
+
+    // Generate a secure password if none provided
+    const actualPassword = password || Math.random().toString(36).slice(-12) + "Temp123!"
+
+    // Create a new auth user with the same ID
+    const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
+      uid: profileId,
+      email: email,
+      password: actualPassword,
+      email_confirm: true,
+      user_metadata: {
+        restored: true,
+        restored_at: new Date().toISOString(),
+        username: profile.username,
+        full_name: profile.full_name,
+      },
+      app_metadata: {
+        role: profile.role || "user",
+      },
+    })
+
+    if (createError) {
+      console.error("❌ Error creating auth user:", createError)
+      return { success: false, error: createError.message }
+    }
+
+    console.log("✅ Successfully created new auth user with ID:", profileId)
+
+    // Update the profile with any needed updates
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", profileId)
+
+    if (updateError) {
+      console.warn("⚠️ Warning: Could not update profile timestamp:", updateError)
+      // Non-fatal, continue
+    }
+
+    // Log the action
+    await logAdminAction("restore_account", profile.username, `Account restored with email ${email}`)
+
+    // Force revalidation
+    revalidatePath("/admin/users")
+    revalidatePath("/admin")
+
+    return {
+      success: true,
+      // Return info about whether a password was generated
+      error: password ? undefined : "Account restored with temporary password",
+    }
+  } catch (error) {
+    console.error("💥 Error restoring user account:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    }
+  }
+}
+
 export async function updateUserRole(
   userId: string,
   newRole: "admin" | "user",
@@ -232,6 +346,18 @@ export async function deleteUserCompletely(userId: string): Promise<{
 
     console.log("🗑️ Deleting user completely:", profile?.username || userId)
 
+    // Get the email before deletion for our cache
+    try {
+      const { data: authUser } = await adminClient.auth.admin.getUserById(userId)
+      if (authUser?.user?.email) {
+        // Store the email in our cache for future restoration
+        orphanedEmailCache.set(userId, authUser.user.email)
+        console.log(`📝 Cached email ${authUser.user.email} for possible future restoration`)
+      }
+    } catch (error) {
+      console.log("Could not cache email (user may not exist):", error)
+    }
+
     // Delete auth user first (if exists)
     try {
       const { error: authDeleteError } = await adminClient.auth.admin.deleteUser(userId)
@@ -244,18 +370,11 @@ export async function deleteUserCompletely(userId: string): Promise<{
       console.log("Auth user may not exist:", error)
     }
 
-    // Delete profile
-    const { error: profileError, count } = await supabase.from("profiles").delete({ count: "exact" }).eq("id", userId)
-
-    if (profileError) {
-      console.error("Profile deletion error:", profileError)
-      return { success: false, error: profileError.message }
-    }
-
-    console.log(`✅ Profile deletion result: ${count} rows affected`)
+    // We don't delete the profile - we keep it as orphaned
+    console.log("✅ Profile kept as orphaned for possible future restoration")
 
     // Log the action
-    await logAdminAction("delete_user_complete", profile?.username || userId, "User completely deleted")
+    await logAdminAction("delete_user_auth", profile?.username || userId, "User auth deleted, profile kept as orphaned")
 
     revalidatePath("/admin/users")
     return { success: true }
@@ -335,7 +454,7 @@ export async function cleanupOrphanedProfiles(): Promise<{
       }
     }
 
-    // Log the cleanup action
+    // Log the action
     await logAdminAction("cleanup_orphaned_profiles", "system", `Deleted ${deletedCount} orphaned profiles`)
 
     console.log(`🎉 Cleanup complete: ${deletedCount}/${orphanedUsers.length} profiles deleted`)

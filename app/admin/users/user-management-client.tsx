@@ -22,14 +22,36 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
-import { Mail, Calendar, MoreHorizontal, Shield, UserX, RefreshCw, XCircle, Trash2, AlertTriangle } from "lucide-react"
+import {
+  Mail,
+  Calendar,
+  MoreHorizontal,
+  Shield,
+  UserX,
+  RefreshCw,
+  XCircle,
+  Trash2,
+  AlertTriangle,
+  RotateCcw,
+} from "lucide-react"
 import {
   deleteOrphanedProfile,
   updateUserRole,
   deleteUserCompletely,
   resetUserPassword,
   cleanupOrphanedProfiles,
+  restoreUserAccount,
   type UserProfile,
 } from "@/app/actions/user-management-actions"
 import { useRouter } from "next/navigation"
@@ -48,6 +70,16 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
     type?: "profile" | "complete"
   }>({
     open: false,
+  })
+  const [restoreDialog, setRestoreDialog] = useState<{
+    open: boolean
+    user?: UserProfile
+    email: string
+    password: string
+  }>({
+    open: false,
+    email: "",
+    password: "",
   })
   const { toast } = useToast()
   const router = useRouter()
@@ -98,10 +130,11 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
       const result = await deleteUserCompletely(user.id)
       if (result.success) {
         toast({
-          title: "User deleted",
-          description: `User ${user.username} has been completely deleted.`,
+          title: "User auth deleted",
+          description: `Auth for ${user.username} has been deleted. Profile kept as orphaned.`,
         })
-        setUsers(users.filter((u) => u.id !== user.id))
+        // Update the user's auth status in the local state
+        setUsers(users.map((u) => (u.id === user.id ? { ...u, auth_exists: false } : u)))
         refreshUsers()
       } else {
         toast({
@@ -119,6 +152,38 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
     } finally {
       setLoading(false)
       setDeleteDialog({ open: false })
+    }
+  }
+
+  const handleRestoreAccount = async (user: UserProfile) => {
+    setLoading(true)
+    try {
+      const result = await restoreUserAccount(user.id, restoreDialog.email, restoreDialog.password || undefined)
+
+      if (result.success) {
+        toast({
+          title: "Account restored",
+          description: result.error || `Account for ${user.username} has been restored.`,
+        })
+        // Update the user's auth status in the local state
+        setUsers(users.map((u) => (u.id === user.id ? { ...u, auth_exists: true, email: restoreDialog.email } : u)))
+        refreshUsers()
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to restore account",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+      setRestoreDialog({ open: false, email: "", password: "" })
     }
   }
 
@@ -207,6 +272,15 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
     }
   }
 
+  const openRestoreDialog = (user: UserProfile) => {
+    setRestoreDialog({
+      open: true,
+      user,
+      email: user.last_known_email || user.email || `${user.username}@example.com`,
+      password: "",
+    })
+  }
+
   const orphanedUsers = users.filter((user) => !user.auth_exists)
   const isLoading = loading || isPending
 
@@ -224,10 +298,12 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
                 </p>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={handleCleanupOrphaned} disabled={isLoading}>
-              <Trash2 className="h-4 w-4 mr-2" />
-              {isLoading ? "Cleaning..." : "Cleanup All"}
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleCleanupOrphaned} disabled={isLoading}>
+                <Trash2 className="h-4 w-4 mr-2" />
+                {isLoading ? "Cleaning..." : "Delete All"}
+              </Button>
+            </div>
           </div>
         </div>
       )}
@@ -257,9 +333,9 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />
                     {user.email}
-                    {isOrphaned && (
+                    {isOrphaned && user.last_known_email && (
                       <Badge variant="outline" className="text-xs">
-                        Orphaned
+                        Last known
                       </Badge>
                     )}
                   </div>
@@ -294,7 +370,22 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>User Actions</DropdownMenuLabel>
 
-                      {!isOrphaned && (
+                      {isOrphaned ? (
+                        <>
+                          <DropdownMenuItem onClick={() => openRestoreDialog(user)}>
+                            <RotateCcw className="h-4 w-4 mr-2" />
+                            Restore Account
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => setDeleteDialog({ open: true, user, type: "profile" })}
+                            className="text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete Profile
+                          </DropdownMenuItem>
+                        </>
+                      ) : (
                         <>
                           <DropdownMenuItem onClick={() => handleResetPassword(user.id)}>
                             <RefreshCw className="h-4 w-4 mr-2" />
@@ -313,25 +404,14 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => setDeleteDialog({ open: true, user, type: "complete" })}
+                            className="text-red-600"
+                          >
+                            <XCircle className="h-4 w-4 mr-2" />
+                            Delete Auth
+                          </DropdownMenuItem>
                         </>
-                      )}
-
-                      {isOrphaned ? (
-                        <DropdownMenuItem
-                          onClick={() => setDeleteDialog({ open: true, user, type: "profile" })}
-                          className="text-red-600"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete Profile
-                        </DropdownMenuItem>
-                      ) : (
-                        <DropdownMenuItem
-                          onClick={() => setDeleteDialog({ open: true, user, type: "complete" })}
-                          className="text-red-600"
-                        >
-                          <XCircle className="h-4 w-4 mr-2" />
-                          Delete User
-                        </DropdownMenuItem>
                       )}
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -342,11 +422,12 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
         </TableBody>
       </Table>
 
+      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialog.open} onOpenChange={(open) => setDeleteDialog({ open })}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {deleteDialog.type === "profile" ? "Delete Orphaned Profile" : "Delete User Completely"}
+              {deleteDialog.type === "profile" ? "Delete Orphaned Profile" : "Delete User Auth"}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {deleteDialog.type === "profile" ? (
@@ -356,8 +437,8 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
                 </>
               ) : (
                 <>
-                  This will permanently delete <strong>{deleteDialog.user?.username}</strong> and all their data. This
-                  action cannot be undone.
+                  This will delete the auth account for <strong>{deleteDialog.user?.username}</strong> but keep their
+                  profile as orphaned for possible restoration. The user will no longer be able to log in.
                 </>
               )}
             </AlertDialogDescription>
@@ -381,6 +462,65 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Restore Account Dialog */}
+      <Dialog
+        open={restoreDialog.open}
+        onOpenChange={(open) => !isLoading && setRestoreDialog({ ...restoreDialog, open })}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Restore User Account</DialogTitle>
+            <DialogDescription>
+              Restore access for <strong>{restoreDialog.user?.username}</strong> by creating a new auth account.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                value={restoreDialog.email}
+                onChange={(e) => setRestoreDialog({ ...restoreDialog, email: e.target.value })}
+                placeholder="user@example.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Password (Optional)</Label>
+              <Input
+                id="password"
+                type="password"
+                value={restoreDialog.password}
+                onChange={(e) => setRestoreDialog({ ...restoreDialog, password: e.target.value })}
+                placeholder="Leave blank for auto-generated password"
+              />
+              <p className="text-xs text-muted-foreground">
+                If left blank, a secure temporary password will be generated.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setRestoreDialog({ ...restoreDialog, open: false })}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => restoreDialog.user && handleRestoreAccount(restoreDialog.user)}
+              disabled={isLoading || !restoreDialog.email}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              {isLoading ? "Restoring..." : "Restore Account"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
