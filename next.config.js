@@ -11,6 +11,18 @@ const nextConfig = {
     domains: ["placeholder.com", "via.placeholder.com"],
     unoptimized: true,
   },
+  async rewrites() {
+    return [
+      {
+        source: "/social-preview",
+        destination: "/static-meta.html",
+      },
+      {
+        source: "/cms-admin/:path*",
+        destination: "/api/payload/:path*",
+      },
+    ]
+  },
   async headers() {
     return [
       // Security headers for all pages
@@ -74,14 +86,6 @@ const nextConfig = {
             value: "no-cache, no-store, must-revalidate",
           },
         ],
-      },
-    ]
-  },
-  async rewrites() {
-    return [
-      {
-        source: "/social-preview",
-        destination: "/static-meta.html",
       },
     ]
   },

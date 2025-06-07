@@ -1,74 +1,55 @@
 import type React from "react"
-import { createClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Home } from "lucide-react"
 import Link from "next/link"
+import { FileEdit } from "lucide-react"
 
-export default async function AdminLayout({
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const supabase = createClient()
-
-  try {
-    // Use getUser() instead of getSession() for better security
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser()
-
-    if (userError || !user) {
-      console.log("❌ No authenticated user found, redirecting to sign-in")
-      redirect("/auth/sign-in?redirect=/admin")
-    }
-
-    // Get the user's profile
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("id, username, role")
-      .eq("id", user.id)
-      .single()
-
-    if (profileError || !profile) {
-      console.log("❌ Profile not found:", profileError)
-      redirect("/auth/sign-in?redirect=/admin")
-    }
-
-    // Check if user has admin role
-    if (profile.role !== "admin" && user.email !== process.env.ADMIN_EMAIL) {
-      console.log("❌ User is not admin:", profile.role)
-      redirect("/?error=unauthorized")
-    }
-
-    console.log("✅ Admin access granted for:", profile.username)
-
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="border-b bg-card">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-4">
-              <div className="flex items-center gap-4">
-                <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
-              </div>
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-muted-foreground">Welcome, {profile.username}</span>
-                <Button variant="outline" size="sm" asChild>
-                  <Link href="/" className="text-foreground">
-                    <Home className="h-4 w-4 mr-2" />
-                    Back to Site
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
+  return (
+    <div className="flex h-screen bg-gray-50">
+      {/* Sidebar */}
+      <div className="w-64 bg-white border-r border-gray-200">
+        <div className="h-full px-3 py-4 overflow-y-auto bg-white">
+          <ul className="space-y-2">
+            <li>
+              <Link href="/admin" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
+                <span className="mr-2">
+                  {/* Add your dashboard icon here */}
+                  Dashboard
+                </span>
+              </Link>
+            </li>
+            <li>
+              {/* Add this link to your navigation menu */}
+              <Link
+                href="/cms-admin"
+                className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
+              >
+                <span className="mr-2">
+                  <FileEdit className="h-5 w-5" />
+                </span>
+                CMS Admin
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/admin/settings"
+                className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
+              >
+                <span className="mr-2">
+                  {/* Add your settings icon here */}
+                  Settings
+                </span>
+              </Link>
+            </li>
+          </ul>
         </div>
-        <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">{children}</main>
       </div>
-    )
-  } catch (error) {
-    console.error("❌ Admin layout error:", error)
-    redirect("/auth/sign-in?redirect=/admin")
-  }
+
+      {/* Main Content */}
+      <div className="flex-1 p-4">{children}</div>
+    </div>
+  )
 }
