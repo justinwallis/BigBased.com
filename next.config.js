@@ -8,7 +8,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ["placeholder.com", "via.placeholder.com"],
+    domains: ["localhost", "vercel.app"],
     unoptimized: true,
   },
   async rewrites() {
@@ -18,8 +18,12 @@ const nextConfig = {
         destination: "/static-meta.html",
       },
       {
+        source: "/cms-admin",
+        destination: "/api/payload/admin",
+      },
+      {
         source: "/cms-admin/:path*",
-        destination: "/api/payload/:path*",
+        destination: "/api/payload/admin/:path*",
       },
     ]
   },
@@ -89,6 +93,7 @@ const nextConfig = {
       },
     ]
   },
+  swcMinify: true,
 }
 
 module.exports = nextConfig

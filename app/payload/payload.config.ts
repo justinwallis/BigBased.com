@@ -3,19 +3,41 @@ import path from "path"
 import { webpackBundler } from "@payloadcms/bundler-webpack"
 import { postgresAdapter } from "@payloadcms/db-postgres"
 import { slateEditor } from "@payloadcms/richtext-slate"
-import { payloadCloud } from "@payloadcms/plugin-cloud"
-import { blobStoragePlugin } from "@payloadcms/plugin-cloud-storage"
-import { vercelBlobAdapter } from "@payloadcms/plugin-cloud-storage/vercel"
 
-// Collections
-import Pages from "./collections/Pages"
-import Media from "./collections/Media"
+// Define a simple Pages collection
+const Pages = {
+  slug: "pages",
+  admin: {
+    useAsTitle: "title",
+  },
+  fields: [
+    {
+      name: "title",
+      type: "text",
+      required: true,
+    },
+    {
+      name: "slug",
+      type: "text",
+      required: true,
+    },
+    {
+      name: "content",
+      type: "richText",
+      required: true,
+    },
+    {
+      name: "publishedAt",
+      type: "date",
+    },
+  ],
+}
 
 export default buildConfig({
+  serverURL: process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000",
   admin: {
     user: "users",
     bundler: webpackBundler(),
-    // Route admin to /cms-admin instead of /admin
     root: "/cms-admin",
     meta: {
       titleSuffix: "- Big Based CMS",
@@ -31,22 +53,9 @@ export default buildConfig({
   }),
   collections: [
     Pages,
-    Media,
-    // We'll add more collections in Phase 2
+    // We'll add more collections later
   ],
   typescript: {
     outputFile: path.resolve(__dirname, "payload-types.ts"),
   },
-  graphQL: {
-    schemaOutputFile: path.resolve(__dirname, "generated-schema.graphql"),
-  },
-  plugins: [
-    payloadCloud(),
-    blobStoragePlugin({
-      adapter: vercelBlobAdapter({
-        token: process.env.BLOB_READ_WRITE_TOKEN,
-      }),
-      enabled: true,
-    }),
-  ],
 })
