@@ -11,7 +11,10 @@ import TableCell from "@tiptap/extension-table-cell"
 import TableHeader from "@tiptap/extension-table-header"
 import Underline from "@tiptap/extension-underline"
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight"
-import { lowlight } from "lowlight"
+import { createLowlight } from "lowlight"
+
+// Create lowlight instance
+const lowlight = createLowlight()
 
 // Custom extension for handling media embeds
 export const MediaEmbed = Extension.create({
@@ -106,3 +109,6 @@ export function jsonToHtml(json: any) {
   if (typeof json === "string") return json
   return json.html || ""
 }
+
+// Export lowlight for use in other modules
+export { lowlight }
