@@ -126,3 +126,13 @@ export function formatErrorForDisplay(error: Error | string): string {
   if (typeof error === "string") return error
   return `${error.name}: ${error.message}`
 }
+
+// Simple logging functions without any external dependencies
+export const logError = (error: any, errorInfo: any = {}) => {
+  console.error("Logging error:", error, errorInfo)
+  errorLogger.logError(error, errorInfo)
+}
+
+export const logMessage = (message: string, extraInfo: any = {}) => {
+  console.log("Logging message:", message, extraInfo)
+}
