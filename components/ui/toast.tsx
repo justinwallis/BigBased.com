@@ -6,7 +6,6 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { Toaster as SonnerToaster } from "sonner"
 
 const ToastProvider = ToastPrimitives.Provider
 
@@ -97,17 +96,18 @@ const ToastDescription = React.forwardRef<
 ))
 ToastDescription.displayName = ToastPrimitives.Description.displayName
 
-// Add this export
-export const Toaster = SonnerToaster
-
-// Or if using a different toast library, create a basic Toaster component:
-export function Toaster() {
-  return <SonnerToaster />
-}
-
 type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
 
 type ToastActionElement = React.ReactElement<typeof ToastAction>
+
+// Fixed Toaster component - properly client-side only
+function Toaster() {
+  return (
+    <ToastProvider>
+      <ToastViewport />
+    </ToastProvider>
+  )
+}
 
 export {
   type ToastProps,
@@ -119,4 +119,5 @@ export {
   ToastDescription,
   ToastClose,
   ToastAction,
+  Toaster,
 }
