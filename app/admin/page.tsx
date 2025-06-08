@@ -201,24 +201,6 @@ export default function AdminDashboard() {
             </Button>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Monitoring & Analytics
-              <Badge className="bg-purple-100 text-purple-800">Control Center</Badge>
-            </CardTitle>
-            <CardDescription>
-              Control Sentry error tracking, analytics bot protection, and performance monitoring
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link href="/admin/monitoring">Monitoring Dashboard</Link>
-            </Button>
-          </CardContent>
-        </Card>
       </div>
 
       {/* ORIGINAL QUICK ACTIONS - PRESERVED */}
@@ -254,9 +236,6 @@ export default function AdminDashboard() {
             </Button>
             <Button variant="outline" asChild>
               <Link href="/sentry-debug">Test Sentry Integration</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/admin/monitoring">Configure Monitoring</Link>
             </Button>
           </div>
         </CardContent>
@@ -371,16 +350,6 @@ export default function AdminDashboard() {
               <div className="text-left">
                 <div className="font-medium">Shop System</div>
                 <div className="text-xs text-muted-foreground">Multi-vendor E-commerce</div>
-              </div>
-            </Link>
-          </Button>
-
-          <Button asChild variant="outline" className="h-auto p-4 justify-start">
-            <Link href="/admin/monitoring" className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-purple-600" />
-              <div className="text-left">
-                <div className="font-medium">Monitoring Hub</div>
-                <div className="text-xs text-muted-foreground">Error Tracking & Analytics</div>
               </div>
             </Link>
           </Button>

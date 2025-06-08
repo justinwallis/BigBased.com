@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { parseDomain, isEnhancedDomainsEnabled } from "./lib/domain-utils"
-import { shouldTrackVisit } from "./utils/bot-detection"
 
 // Domains that should always be allowed
 const ALWAYS_ALLOWED_DOMAINS = ["bigbased.com", "bigbased.us", "basedbook.com", "localhost", "vercel.app"]
@@ -28,30 +27,14 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-    // Get request info for bot detection
-    const userAgent = request.headers.get("user-agent")
-    const referrer = request.headers.get("referer")
-    const ip = request.ip || request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip")
-
-    // Only track visits from real users, not bots
-    if (shouldTrackVisit(userAgent, referrer, ip)) {
-      // Track domain visit (non-blocking) - but only for real users
-      fetch(`${request.nextUrl.origin}/api/analytics/track-visit`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "User-Agent": userAgent || "unknown",
-        },
-        body: JSON.stringify({
-          domain,
-          userAgent,
-          referrer,
-          ip: ip?.split(",")[0]?.trim(), // Get first IP if multiple
-        }),
-      }).catch(() => {
-        // Silently fail - analytics shouldn't break the app
-      })
-    }
+    // Track domain visit (non-blocking)
+    fetch(`${request.nextUrl.origin}/api/analytics/track-visit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ domain }),
+    }).catch(() => {
+      // Silently fail - analytics shouldn't break the app
+    })
 
     // Set domain context headers for server components
     const response = NextResponse.next()

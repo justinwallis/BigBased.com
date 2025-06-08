@@ -1,25 +1,18 @@
-// Conditional Sentry integration with toggle capability
-let sentryInitialized = false
+import * as Sentry from "@sentry/nextjs"
 
-// Check if Sentry should be enabled
-function isSentryEnabled(): boolean {
-  return process.env.NEXT_PUBLIC_SENTRY_ENABLED === "true" && !!process.env.NEXT_PUBLIC_SENTRY_DSN
-}
-
-// Safe Sentry initialization
-export async function initSentry() {
-  if (!isSentryEnabled() || sentryInitialized) {
-    return
-  }
-
-  try {
-    const Sentry = await import("@sentry/nextjs")
-
+// Initialize Sentry
+export function initSentry() {
+  if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
     Sentry.init({
       dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
       environment: process.env.NODE_ENV,
       tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
       debug: process.env.NODE_ENV === "development",
+      integrations: [
+        new Sentry.BrowserTracing({
+          tracePropagationTargets: ["localhost", /^https:\/\/yoursite\.com\/api/],
+        }),
+      ],
       beforeSend(event, hint) {
         // Filter out known non-critical errors
         if (event.exception) {
@@ -34,90 +27,33 @@ export async function initSentry() {
         return event
       },
     })
-
-    sentryInitialized = true
-    console.log("Sentry initialized successfully")
-  } catch (error) {
-    console.warn("Failed to initialize Sentry:", error)
   }
 }
 
-// Safe Sentry operations
-export const SafeSentry = {
-  captureException: async (error: Error, context?: Record<string, any>) => {
-    if (!isSentryEnabled()) return null
-
-    try {
-      const Sentry = await import("@sentry/nextjs")
-      return Sentry.captureException(error, context)
-    } catch (e) {
-      console.warn("Failed to capture exception:", e)
-      return null
-    }
-  },
-
-  captureMessage: async (message: string, level: "info" | "warning" | "error" = "info") => {
-    if (!isSentryEnabled()) return null
-
-    try {
-      const Sentry = await import("@sentry/nextjs")
-      return Sentry.captureMessage(message, { level })
-    } catch (e) {
-      console.warn("Failed to capture message:", e)
-      return null
-    }
-  },
-
-  addBreadcrumb: async (breadcrumb: any) => {
-    if (!isSentryEnabled()) return
-
-    try {
-      const Sentry = await import("@sentry/nextjs")
-      Sentry.addBreadcrumb(breadcrumb)
-    } catch (e) {
-      console.warn("Failed to add breadcrumb:", e)
-    }
-  },
-}
-
-// CMS-specific error tracking with safe operations
+// CMS-specific error tracking
 export class CMSErrorTracker {
-  static async trackContentError(operation: string, contentId: string, error: Error, context?: Record<string, any>) {
-    if (!isSentryEnabled()) return
-
-    try {
-      const Sentry = await import("@sentry/nextjs")
-      Sentry.withScope((scope) => {
-        scope.setTag("cms.operation", operation)
-        scope.setTag("cms.content_id", contentId)
-        scope.setContext("cms_context", context || {})
-        scope.setLevel("error")
-        Sentry.captureException(error)
-      })
-    } catch (e) {
-      console.warn("Failed to track content error:", e)
-    }
+  static trackContentError(operation: string, contentId: string, error: Error, context?: Record<string, any>) {
+    Sentry.withScope((scope) => {
+      scope.setTag("cms.operation", operation)
+      scope.setTag("cms.content_id", contentId)
+      scope.setContext("cms_context", context || {})
+      scope.setLevel("error")
+      Sentry.captureException(error)
+    })
   }
 
-  static async trackMediaError(operation: string, mediaId: string, error: Error, context?: Record<string, any>) {
-    if (!isSentryEnabled()) return
-
-    try {
-      const Sentry = await import("@sentry/nextjs")
-      Sentry.withScope((scope) => {
-        scope.setTag("cms.operation", operation)
-        scope.setTag("cms.media_id", mediaId)
-        scope.setContext("media_context", context || {})
-        scope.setLevel("error")
-        Sentry.captureException(error)
-      })
-    } catch (e) {
-      console.warn("Failed to track media error:", e)
-    }
+  static trackMediaError(operation: string, mediaId: string, error: Error, context?: Record<string, any>) {
+    Sentry.withScope((scope) => {
+      scope.setTag("cms.operation", operation)
+      scope.setTag("cms.media_id", mediaId)
+      scope.setContext("media_context", context || {})
+      scope.setLevel("error")
+      Sentry.captureException(error)
+    })
   }
 
-  static async trackUserAction(action: string, userId: string, metadata?: Record<string, any>) {
-    SafeSentry.addBreadcrumb({
+  static trackUserAction(action: string, userId: string, metadata?: Record<string, any>) {
+    Sentry.addBreadcrumb({
       category: "cms.user_action",
       message: action,
       data: {
@@ -128,30 +64,23 @@ export class CMSErrorTracker {
     })
   }
 
-  static async trackPerformance(operation: string, duration: number, metadata?: Record<string, any>) {
-    if (!isSentryEnabled()) return
-
-    try {
-      const Sentry = await import("@sentry/nextjs")
-      Sentry.withScope((scope) => {
-        scope.setTag("cms.performance", operation)
-        scope.setContext("performance_context", {
-          duration_ms: duration,
-          ...metadata,
-        })
-
-        if (duration > 5000) {
-          scope.setLevel("warning")
-          Sentry.captureMessage(`Slow CMS operation: ${operation} took ${duration}ms`)
-        }
+  static trackPerformance(operation: string, duration: number, metadata?: Record<string, any>) {
+    Sentry.withScope((scope) => {
+      scope.setTag("cms.performance", operation)
+      scope.setContext("performance_context", {
+        duration_ms: duration,
+        ...metadata,
       })
-    } catch (e) {
-      console.warn("Failed to track performance:", e)
-    }
+
+      if (duration > 5000) {
+        scope.setLevel("warning")
+        Sentry.captureMessage(`Slow CMS operation: ${operation} took ${duration}ms`)
+      }
+    })
   }
 
-  static async trackAPIUsage(endpoint: string, method: string, statusCode: number, duration: number) {
-    SafeSentry.addBreadcrumb({
+  static trackAPIUsage(endpoint: string, method: string, statusCode: number, duration: number) {
+    Sentry.addBreadcrumb({
       category: "cms.api",
       message: `${method} ${endpoint}`,
       data: {
@@ -163,7 +92,7 @@ export class CMSErrorTracker {
   }
 }
 
-// Performance monitoring wrapper with safe operations
+// Performance monitoring wrapper
 export function withPerformanceTracking<T extends (...args: any[]) => Promise<any>>(operation: string, fn: T): T {
   return (async (...args: Parameters<T>) => {
     const startTime = Date.now()
@@ -179,5 +108,3 @@ export function withPerformanceTracking<T extends (...args: any[]) => Promise<an
     }
   }) as T
 }
-
-export { isSentryEnabled }
