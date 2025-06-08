@@ -30,7 +30,7 @@ const toastVariants = cva(
     variants: {
       variant: {
         default: "border bg-background text-foreground",
-        destructive: "destructive border-destructive bg-destructive text-destructive-foreground",
+        destructive: "destructive group border-destructive bg-destructive text-destructive-foreground",
       },
     },
     defaultVariants: {
@@ -112,10 +112,4 @@ export {
   ToastAction,
 }
 
-export function Toaster() {
-  return (
-    <ToastProvider>
-      <ToastViewport />
-    </ToastProvider>
-  )
-}
+export { Toaster } from "./toaster"

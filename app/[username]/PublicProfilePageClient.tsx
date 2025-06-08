@@ -366,11 +366,33 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
         <div className="max-w-[1220px] w-full">
           {/* Profile Info - Responsive Layout */}
           <div className="relative">
-            {/* Large screens: Profile picture on right side of cover, text on left */}
+            {/* Large screens: Horizontal layout with 15% overlap - Facebook style */}
             <div className="hidden lg:block">
               <div className="pt-4 pb-3 px-4 flex items-end justify-between">
                 <div className="flex items-end space-x-6">
-                  {/* Name and Info - positioned on the left where profile picture used to be */}
+                  {/* Profile Picture - 15% overlap on large screens */}
+                  <div className="relative -mt-[50px]">
+                    <div className="relative">
+                      <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
+                        <AvatarImage
+                          src={profile?.avatar_url || "/placeholder.svg"}
+                          alt={profile?.full_name || profile?.username}
+                        />
+                        <AvatarFallback className="text-5xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                          {getInitials(profile?.full_name || profile?.username || "U")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <button
+                        onClick={() => setIsAvatarDialogOpen(true)}
+                        disabled={isUploading}
+                        className="absolute bottom-3 right-3 bg-gray-200 dark:bg-[#0d0d0d] rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                      >
+                        <Image src="/camera.png" alt="Camera" width={16} height={16} className="dark:invert" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Name and Info - positioned to the right of profile picture */}
                   <div className="pb-2 -mt-[10px]">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                       {profile?.full_name || profile?.username}
@@ -460,6 +482,10 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         className={`transition-transform duration-200 ${showFriendsSection ? "rotate-180" : ""}`}
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className={`transition-transform duration-200 ${showFriendsSection ? "rotate-180" : ""}`}
                       >
                         <path d="m6 9 6 6 6-6" />
                       </svg>
@@ -467,35 +493,35 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   </div>
                 </div>
               </div>
-
-              {/* Profile Picture - Positioned on right side of cover photo */}
-              <div className="absolute top-0 right-8 flex justify-end" style={{ top: "calc(50% - 85px)" }}>
-                <div className="relative">
-                  <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
-                    <AvatarImage
-                      src={profile?.avatar_url || "/placeholder.svg"}
-                      alt={profile?.full_name || profile?.username}
-                    />
-                    <AvatarFallback className="text-5xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                      {getInitials(profile?.full_name || profile?.username || "U")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <button
-                    onClick={() => setIsAvatarDialogOpen(true)}
-                    disabled={isUploading}
-                    className="absolute bottom-3 right-3 bg-gray-200 dark:bg-[#0d0d0d] rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
-                  >
-                    <Image src="/camera.png" alt="Camera" width={16} height={16} className="dark:invert" />
-                  </button>
-                </div>
-              </div>
             </div>
 
-            {/* Medium screens: Profile picture on right side of cover, text on left */}
+            {/* Medium screens: Horizontal layout with 0% overlap */}
             <div className="hidden md:block lg:hidden">
               <div className="pt-[5px] pb-[3px] px-6 flex items-start justify-between">
                 <div className="flex items-start space-x-4">
-                  {/* Name and Info - positioned on the left */}
+                  {/* Profile Picture - 0% overlap on medium screens, 5px under cover */}
+                  <div className="relative">
+                    <div className="relative">
+                      <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
+                        <AvatarImage
+                          src={profile?.avatar_url || "/placeholder.svg"}
+                          alt={profile?.full_name || profile?.username}
+                        />
+                        <AvatarFallback className="text-5xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                          {getInitials(profile?.full_name || profile?.username || "U")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <button
+                        onClick={() => setIsAvatarDialogOpen(true)}
+                        disabled={isUploading}
+                        className="absolute bottom-3 right-3 bg-gray-200 dark:bg-[#0d0d0d] rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                      >
+                        <Image src="/camera.png" alt="Camera" width={16} height={16} className="dark:invert" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Name and Info */}
                   <div className="pt-[5px]">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                       {profile?.full_name || profile?.username}
@@ -529,13 +555,30 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Action Buttons - Right aligned */}
-                <div className="flex items-center justify-end self-center">
-                  <div className="flex items-center space-x-2">
-                    <Link href="/profile">
-                      <button className="bg-gray-200 hover:bg-gray-300 dark:bg-[#0d0d0d] dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center gap-1.5">
+                  {/* Action Buttons - Right aligned */}
+                  <div className="flex items-center justify-end self-center">
+                    <div className="flex items-center space-x-2">
+                      <Link href="/profile">
+                        <button className="bg-gray-200 hover:bg-gray-300 dark:bg-[#0d0d0d] dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center gap-1.5">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                            <path d="m15 5 4 4" />
+                          </svg>
+                          Edit
+                        </button>
+                      </Link>
+                      <button className="bg-gray-200 hover:bg-gray-300 dark:bg-[#0d0d0d] dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center gap-1.5 whitespace-nowrap">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           width="14"
@@ -547,71 +590,32 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         >
-                          <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                          <path d="m15 5 4 4" />
+                          <path d="M12 5v14" />
+                          <path d="M5 12h14" />
                         </svg>
-                        Edit
+                        Add to story
                       </button>
-                    </Link>
-                    <button className="bg-gray-200 hover:bg-gray-300 dark:bg-[#0d0d0d] dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center gap-1.5 whitespace-nowrap">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+                      <button
+                        onClick={() => setShowFriendsSection(!showFriendsSection)}
+                        className="bg-gray-200 hover:bg-gray-300 dark:bg-[#0d0d0d] dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md w-[45px] h-[35px] flex items-center justify-center p-2"
                       >
-                        <path d="M12 5v14" />
-                        <path d="M5 12h14" />
-                      </svg>
-                      Add to story
-                    </button>
-                    <button
-                      onClick={() => setShowFriendsSection(!showFriendsSection)}
-                      className="bg-gray-200 hover:bg-gray-300 dark:bg-[#0d0d0d] dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md w-[45px] h-[35px] flex items-center justify-center p-2"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className={`transition-transform duration-200 ${showFriendsSection ? "rotate-180" : ""}`}
-                      >
-                        <path d="m6 9 6 6 6-6" />
-                      </svg>
-                    </button>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className={`transition-transform duration-200 ${showFriendsSection ? "rotate-180" : ""}`}
+                        >
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </div>
-
-              {/* Profile Picture - Positioned on right side of cover photo */}
-              <div className="absolute top-0 right-8 flex justify-end" style={{ top: "calc(50% - 85px)" }}>
-                <div className="relative">
-                  <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
-                    <AvatarImage
-                      src={profile?.avatar_url || "/placeholder.svg"}
-                      alt={profile?.full_name || profile?.username}
-                    />
-                    <AvatarFallback className="text-5xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                      {getInitials(profile?.full_name || profile?.username || "U")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <button
-                    onClick={() => setIsAvatarDialogOpen(true)}
-                    disabled={isUploading}
-                    className="absolute bottom-3 right-3 bg-gray-200 dark:bg-[#0d0d0d] rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
-                  >
-                    <Image src="/camera.png" alt="Camera" width={16} height={16} className="dark:invert" />
-                  </button>
                 </div>
               </div>
             </div>
