@@ -149,6 +149,58 @@ export default function AdminDashboard() {
             </Button>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Affiliate System
+              <Badge className="bg-blue-100 text-blue-800">Enterprise</Badge>
+            </CardTitle>
+            <CardDescription>
+              Complete affiliate management with MLM, tracking, payouts, and fraud detection
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/admin/affiliate">Manage Affiliates</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              Shop Management
+              <Badge className="bg-green-100 text-green-800">E-commerce</Badge>
+            </CardTitle>
+            <CardDescription>
+              Multi-vendor e-commerce platform with advanced inventory and order management
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/admin/shops">Manage Shops</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Debug & Monitoring
+              <Badge className="bg-red-100 text-red-800">System</Badge>
+            </CardTitle>
+            <CardDescription>System debugging, Sentry integration, and performance monitoring tools</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/debug">Debug Tools</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
 
       {/* ORIGINAL QUICK ACTIONS - PRESERVED */}
@@ -176,6 +228,15 @@ export default function AdminDashboard() {
             <Button variant="outline" asChild>
               <Link href="/admin/community/moderate">Moderate Community</Link>
             </Button>
+            <Button asChild>
+              <Link href="/admin/affiliate/programs/new">Create Affiliate Program</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/admin/shops/new">Create New Shop</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/sentry-debug">Test Sentry Integration</Link>
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -188,7 +249,7 @@ export default function AdminDashboard() {
             Enterprise Features
           </h2>
           <Badge variant="secondary" className="bg-green-100 text-green-800">
-            All 7 Features Active
+            All 9 Features Active
           </Badge>
         </div>
 
@@ -269,6 +330,26 @@ export default function AdminDashboard() {
               <div className="text-left">
                 <div className="font-medium">Personalization</div>
                 <div className="text-xs text-muted-foreground">User Experience</div>
+              </div>
+            </Link>
+          </Button>
+
+          <Button asChild variant="outline" className="h-auto p-4 justify-start">
+            <Link href="/admin/affiliate" className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-pink-500" />
+              <div className="text-left">
+                <div className="font-medium">Affiliate System</div>
+                <div className="text-xs text-muted-foreground">MLM & Tracking</div>
+              </div>
+            </Link>
+          </Button>
+
+          <Button asChild variant="outline" className="h-auto p-4 justify-start">
+            <Link href="/admin/shops" className="flex items-center gap-2">
+              <Settings className="h-5 w-5 text-emerald-500" />
+              <div className="text-left">
+                <div className="font-medium">Shop System</div>
+                <div className="text-xs text-muted-foreground">Multi-vendor E-commerce</div>
               </div>
             </Link>
           </Button>

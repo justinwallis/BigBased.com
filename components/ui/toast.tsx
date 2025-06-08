@@ -30,7 +30,7 @@ const toastVariants = cva(
     variants: {
       variant: {
         default: "border bg-background text-foreground",
-        destructive: "destructive group border-destructive bg-destructive text-destructive-foreground",
+        destructive: "destructive border-destructive bg-destructive text-destructive-foreground",
       },
     },
     defaultVariants: {
@@ -100,7 +100,7 @@ type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
 
 type ToastActionElement = React.ReactElement<typeof ToastAction>
 
-// Fixed Toaster component - properly client-side only
+// Add the missing Toaster component
 function Toaster() {
   return (
     <ToastProvider>
@@ -119,5 +119,5 @@ export {
   ToastDescription,
   ToastClose,
   ToastAction,
-  Toaster,
+  Toaster, // Export the missing Toaster component
 }
