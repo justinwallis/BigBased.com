@@ -363,7 +363,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
         </div>
 
         {/* Profile Picture - Positioned absolutely over cover photo for lg/md screens */}
-        <div className="absolute top-1/2 right-6 transform -translate-y-1/2 z-20 hidden md:block">
+        <div className="absolute top-1/2 right-6 transform -translate-y-1/2 -translate-y-1 z-20 hidden md:block">
           <div className="relative">
             <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
               <AvatarImage
@@ -390,8 +390,8 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
         <div className="max-w-[1220px] w-full">
           {/* Profile Info - Responsive Layout */}
           <div className="relative">
-            {/* Large screens: Content below cover photo, no profile picture here */}
-            <div className="hidden lg:block">
+            {/* Large and Medium screens: Content below cover photo, no profile picture here */}
+            <div className="hidden md:block">
               <div className="pt-4 pb-3 px-4 flex items-end justify-between">
                 <div className="flex items-end space-x-6">
                   {/* Name and Info - positioned normally, no profile picture here */}
@@ -493,108 +493,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               </div>
             </div>
 
-            {/* Medium screens: Content below cover photo, no profile picture here */}
-            <div className="hidden md:block lg:hidden">
-              <div className="pt-[5px] pb-[3px] px-6 flex items-start justify-between">
-                <div className="flex items-start space-x-4">
-                  {/* Name and Info */}
-                  <div className="pt-[5px]">
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                      {profile?.full_name || profile?.username}
-                      {profile?.personal_info?.nickname && (
-                        <span className="text-2xl text-gray-600 dark:text-gray-400 ml-2 font-normal">
-                          ({profile.personal_info.nickname})
-                        </span>
-                      )}
-                    </h1>
-                    <div className="flex items-center mt-1">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">@{profile?.username}</p>
-                      <span className="mx-2 text-gray-400">•</span>
-                      <Badge className="bg-green-500/80 text-white border-0">Active Member</Badge>
-                    </div>
-                    <div className="flex items-center mt-2 text-sm text-gray-600 dark:text-gray-400">
-                      <span className="mr-4 font-medium">0 followers</span>
-                      <span className="font-medium">0 following</span>
-                    </div>
-
-                    {/* Friend avatars */}
-                    <div className="flex items-center mt-3">
-                      <div className="flex -space-x-2 mr-2">
-                        {[1, 2, 3, 4, 5].map((i) => (
-                          <div
-                            key={i}
-                            className="w-7 h-7 rounded-full border-2 border-white dark:border-gray-900 bg-gray-200 dark:bg-gray-600 overflow-hidden"
-                          >
-                            <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-500"></div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons - Right aligned */}
-                  <div className="flex items-center justify-end self-center">
-                    <div className="flex items-center space-x-2">
-                      <Link href="/profile">
-                        <button className="bg-gray-200 hover:bg-gray-300 dark:bg-[#0d0d0d] dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center gap-1.5">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                            <path d="m15 5 4 4" />
-                          </svg>
-                          Edit
-                        </button>
-                      </Link>
-                      <button className="bg-gray-200 hover:bg-gray-300 dark:bg-[#0d0d0d] dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center gap-1.5 whitespace-nowrap">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M12 5v14" />
-                          <path d="M5 12h14" />
-                        </svg>
-                        Add to story
-                      </button>
-                      <button
-                        onClick={() => setShowFriendsSection(!showFriendsSection)}
-                        className="bg-gray-200 hover:bg-gray-300 dark:bg-[#0d0d0d] dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md w-[45px] h-[35px] flex items-center justify-center p-2"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className={`transition-transform duration-200 ${showFriendsSection ? "rotate-180" : ""}`}
-                        >
-                          <path d="m6 9 6 6 6-6" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* Medium screens: Use same layout as large screens */}
 
             {/* Small screens: Keep the existing mobile layout with profile picture */}
             <div className="block md:hidden">
@@ -697,7 +596,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                       </button>
                       <button
                         onClick={() => setShowFriendsSection(!showFriendsSection)}
-                        className="bg-gray-200 hover:bg-gray-300 dark:bg-[#0d0d0d] dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md w-[45px] h-[35px] flex items-center justify-center p-2"
+                        className="bg-gray-200 hover:bg-gray-300 dark:bg-[#0d0d0d] dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center justify-center gap-1.5"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
