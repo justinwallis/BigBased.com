@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { Search } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ThemeToggle } from "@/components/theme-toggle"
 import { useTheme } from "@/components/theme-provider"
 import MegaMenu from "@/components/mega-menu"
 import { MenuIcons } from "@/components/menu-icons"
@@ -336,15 +335,16 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           </div>
         </Link>
 
-        {/* Theme toggle and search moved here */}
+        {/* Remove ThemeToggle and only keep search */}
         <div className="flex items-center ml-4 mr-6">
-          <ThemeToggle />
+          {/* ThemeToggle removed */}
           <button className="ml-3" onClick={handleSearchClick}>
             <Search className="h-5 w-5 text-black dark:text-white" />
           </button>
         </div>
 
-        <div className="hidden md:flex items-center space-x-6">
+        {/* Make About/Features disappear at 850px */}
+        <div className="hidden md:flex items-center space-x-6 max-[850px]:hidden">
           <Link
             href="/about"
             className="font-medium text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
@@ -364,26 +364,31 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       <div className="flex items-center">
         {!user && (
           <form onSubmit={handleLogin} className="flex items-center">
-            <Input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-40 h-[35px] mr-2 text-sm bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-gray-400 dark:border-gray-300 text-black dark:text-white placeholder:text-gray-600 dark:placeholder:text-gray-400 pl-3 pr-2"
-              disabled={isLoggingIn}
-              autoComplete="email"
-              required
-            />
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-40 h-[35px] mr-1 text-sm bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-gray-400 dark:border-gray-300 text-black dark:text-white placeholder:text-gray-600 dark:placeholder:text-gray-400 px-2"
-              disabled={isLoggingIn}
-              autoComplete="current-password"
-              required
-            />
+            {/* Make login fields disappear at 650px */}
+            <div className="min-[651px]:flex hidden items-center">
+              <Input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-40 h-[35px] mr-2 text-sm bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-gray-400 dark:border-gray-300 text-black dark:text-white placeholder:text-gray-600 dark:placeholder:text-gray-400 pl-3 pr-2"
+                disabled={isLoggingIn}
+                autoComplete="email"
+                required
+              />
+              {/* Add 3px more padding between login and password fields */}
+              <Input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-40 h-[35px] mr-1 text-sm bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-gray-400 dark:border-gray-300 text-black dark:text-white placeholder:text-gray-600 dark:placeholder:text-gray-400 px-2 ml-3"
+                disabled={isLoggingIn}
+                autoComplete="current-password"
+                required
+              />
+            </div>
+            {/* Always show the auth button */}
             <AuthButton onLogin={handleLogin} isLoggingIn={isLoggingIn} />
           </form>
         )}
