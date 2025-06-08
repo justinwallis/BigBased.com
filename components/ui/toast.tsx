@@ -6,6 +6,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { Toaster as SonnerToaster } from "sonner"
 
 const ToastProvider = ToastPrimitives.Provider
 
@@ -30,7 +31,7 @@ const toastVariants = cva(
     variants: {
       variant: {
         default: "border bg-background text-foreground",
-        destructive: "destructive border-destructive bg-destructive text-destructive-foreground",
+        destructive: "destructive group border-destructive bg-destructive text-destructive-foreground",
       },
     },
     defaultVariants: {
@@ -96,18 +97,17 @@ const ToastDescription = React.forwardRef<
 ))
 ToastDescription.displayName = ToastPrimitives.Description.displayName
 
+// Add this export
+export const Toaster = SonnerToaster
+
+// Or if using a different toast library, create a basic Toaster component:
+export function Toaster() {
+  return <SonnerToaster />
+}
+
 type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
 
 type ToastActionElement = React.ReactElement<typeof ToastAction>
-
-// Add the missing Toaster component
-function Toaster() {
-  return (
-    <ToastProvider>
-      <ToastViewport />
-    </ToastProvider>
-  )
-}
 
 export {
   type ToastProps,
@@ -119,5 +119,4 @@ export {
   ToastDescription,
   ToastClose,
   ToastAction,
-  Toaster, // Export the missing Toaster component
 }

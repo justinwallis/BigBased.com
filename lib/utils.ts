@@ -1,12 +1,13 @@
-import { type ClassValue, clsx } from "clsx"
+import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-// Add the missing generateRandomString function
-export function generateRandomString(length = 32): string {
+// Add these utility functions to the existing utils file
+
+export function generateRandomString(length = 10): string {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
   let result = ""
   for (let i = 0; i < length; i++) {
@@ -15,40 +16,11 @@ export function generateRandomString(length = 32): string {
   return result
 }
 
-// Additional utility functions that might be needed
-export function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }).format(date)
-}
-
-export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(amount)
-}
-
-export function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_-]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-}
-
-export function truncate(text: string, length: number): string {
-  if (text.length <= length) return text
-  return text.slice(0, length) + "..."
-}
-
 export function generateSlug(text: string): string {
   return text
     .toLowerCase()
     .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_-]+/g, "-")
-    .replace(/^-+|-+$/g, "")
+    .replace(/[^\w\s-]/g, "") // Remove special characters
+    .replace(/[\s_-]+/g, "-") // Replace spaces and underscores with hyphens
+    .replace(/^-+|-+$/g, "") // Remove leading/trailing hyphens
 }
