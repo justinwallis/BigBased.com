@@ -1,9 +1,31 @@
-// Simple error tracking without Sentry
+// Simple error tracking without external dependencies
+export function trackError(error: Error | string, context?: Record<string, any>) {
+  console.error("Error tracked:", error, context)
+}
+
+export function trackEvent(eventName: string, properties?: Record<string, any>) {
+  console.log("Event tracked:", eventName, properties)
+}
+
+export function setUserContext(user: { id: string; email?: string; username?: string }) {
+  console.log("User context set:", user)
+}
+
+export function addBreadcrumb(message: string, category?: string, level?: string) {
+  console.log("Breadcrumb:", { message, category, level })
+}
+
+// No-op functions to maintain compatibility
+export const init = () => {}
+export const captureException = (error: any) => console.error("Exception:", error)
+export const captureMessage = (message: string) => console.log("Message:", message)
+
+// Initialize function (no-op without Sentry)
 export function initSentry() {
   console.log("Error tracking initialized (Sentry removed)")
 }
 
-// Simple error tracking class
+// CMS Error Tracker class - replaced Sentry with console logging
 export class CMSErrorTracker {
   static trackContentError(operation: string, contentId: string, error: Error, context?: Record<string, any>) {
     console.error(`CMS Content Error [${operation}] for ${contentId}:`, error, context)

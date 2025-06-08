@@ -1,17 +1,15 @@
 interface PerformanceMetric {
   name: string
-  startTime: number
-  duration?: number
+  value: number
+  timestamp: number
   metadata?: Record<string, any>
 }
 
 class PerformanceMonitor {
   private metrics: PerformanceMetric[] = []
-  private marks: Record<string, number> = {}
-  private enabled = true
+  private maxMetrics = 1000
 
   constructor() {
-    // Initialize performance monitoring
     if (typeof window !== "undefined") {
       this.setupPerformanceObserver()
     }
@@ -19,185 +17,104 @@ class PerformanceMonitor {
 
   private setupPerformanceObserver() {
     try {
-      // Use the Performance Observer API if available
-      if (typeof PerformanceObserver === "function") {
+      // Observe Core Web Vitals
+      if ("PerformanceObserver" in window) {
         const observer = new PerformanceObserver((list) => {
-          list.getEntries().forEach((entry) => {
-            this.recordPerformanceEntry(entry)
-          })
+          for (const entry of list.getEntries()) {
+            this.recordMetric(entry.name, entry.value || 0, {
+              entryType: entry.entryType,
+              startTime: entry.startTime,
+            })
+          }
         })
 
-        // Observe various performance entry types
-        observer.observe({ entryTypes: ["resource", "navigation", "paint", "largest-contentful-paint"] })
+        observer.observe({ entryTypes: ["measure", "navigation", "paint"] })
       }
-
-      // Record initial page load metrics
-      window.addEventListener("load", () => {
-        if (performance.timing) {
-          const timing = performance.timing
-          this.recordMetric("page-load", timing.loadEventEnd - timing.navigationStart, {
-            domContentLoaded: timing.domContentLoadedEventEnd - timing.navigationStart,
-            firstPaint: timing.responseEnd - timing.navigationStart,
-            networkLatency: timing.responseEnd - timing.requestStart,
-          })
-        }
-      })
     } catch (error) {
-      console.error("Error setting up performance observer:", error)
+      console.warn("Performance observer setup failed:", error)
     }
   }
 
-  private recordPerformanceEntry(entry: PerformanceEntry) {
-    if (!this.enabled) return
-
-    // Record different types of performance entries
-    switch (entry.entryType) {
-      case "resource":
-        const resourceEntry = entry as PerformanceResourceTiming
-        this.recordMetric(`resource-${resourceEntry.name}`, resourceEntry.duration, {
-          initiatorType: resourceEntry.initiatorType,
-          size: resourceEntry.transferSize,
-          startTime: resourceEntry.startTime,
-        })
-        break
-
-      case "paint":
-        const paintEntry = entry as PerformancePaintTiming
-        this.recordMetric(`paint-${paintEntry.name}`, 0, {
-          startTime: paintEntry.startTime,
-        })
-        break
-
-      case "largest-contentful-paint":
-        const lcpEntry = entry as any // LCP is not in standard TS types yet
-        this.recordMetric("largest-contentful-paint", 0, {
-          startTime: lcpEntry.startTime,
-          size: lcpEntry.size,
-          element: lcpEntry.element ? lcpEntry.element.tagName : "unknown",
-        })
-        break
-    }
-  }
-
-  /**
-   * Start timing a metric
-   */
-  public startMark(name: string): void {
-    if (!this.enabled) return
-    this.marks[name] = performance.now()
-  }
-
-  /**
-   * End timing a metric and record the duration
-   */
-  public endMark(name: string, metadata?: Record<string, any>): number | undefined {
-    if (!this.enabled || !(name in this.marks)) return
-
-    const startTime = this.marks[name]
-    const endTime = performance.now()
-    const duration = endTime - startTime
-
-    this.recordMetric(name, duration, metadata)
-    delete this.marks[name]
-
-    return duration
-  }
-
-  /**
-   * Record a performance metric
-   */
-  public recordMetric(name: string, duration: number, metadata?: Record<string, any>): void {
-    if (!this.enabled) return
-
+  recordMetric(name: string, value: number, metadata?: Record<string, any>) {
     const metric: PerformanceMetric = {
       name,
-      startTime: performance.now(),
-      duration,
+      value,
+      timestamp: Date.now(),
       metadata,
     }
 
     this.metrics.push(metric)
 
-    // Log in development
-    if (process.env.NODE_ENV !== "production") {
-      console.debug(`Performance: ${name} - ${duration.toFixed(2)}ms`, metadata)
+    // Keep only the most recent metrics
+    if (this.metrics.length > this.maxMetrics) {
+      this.metrics = this.metrics.slice(-this.maxMetrics)
     }
 
-    // In a real app, you might want to send this to your analytics service
-    this.sendMetricToAnalytics(metric)
+    // Log in development
+    if (process.env.NODE_ENV === "development") {
+      console.log(`Performance metric: ${name} = ${value}`, metadata)
+    }
   }
 
-  /**
-   * Send a metric to an analytics service
-   */
-  private sendMetricToAnalytics(metric: PerformanceMetric): void {
-    // This is a placeholder for sending metrics to an analytics service
-    // In a real app, you would implement this to send data to your analytics provider
-    // Example:
-    // if (window.gtag) {
-    //   window.gtag('event', 'performance', {
-    //     event_category: 'performance',
-    //     event_label: metric.name,
-    //     value: Math.round(metric.duration || 0),
-    //     ...metric.metadata
-    //   });
-    // }
-  }
-
-  /**
-   * Get all recorded metrics
-   */
-  public getMetrics(): PerformanceMetric[] {
+  getMetrics() {
     return [...this.metrics]
   }
 
-  /**
-   * Clear all recorded metrics
-   */
-  public clearMetrics(): void {
+  getMetricsByName(name: string) {
+    return this.metrics.filter((metric) => metric.name === name)
+  }
+
+  clearMetrics() {
     this.metrics = []
   }
 
-  /**
-   * Enable or disable performance monitoring
-   */
-  public setEnabled(enabled: boolean): void {
-    this.enabled = enabled
+  // Core Web Vitals helpers
+  recordCLS(value: number) {
+    this.recordMetric("CLS", value, { type: "core-web-vital" })
   }
 
-  /**
-   * Get a summary of performance metrics
-   */
-  public getSummary(): Record<string, any> {
-    const summary: Record<string, any> = {
-      totalMetrics: this.metrics.length,
-      averageDurations: {},
-      maxDurations: {},
-    }
+  recordFID(value: number) {
+    this.recordMetric("FID", value, { type: "core-web-vital" })
+  }
 
-    // Group metrics by name
-    const metricsByName: Record<string, PerformanceMetric[]> = {}
-    this.metrics.forEach((metric) => {
-      if (!metricsByName[metric.name]) {
-        metricsByName[metric.name] = []
-      }
-      metricsByName[metric.name].push(metric)
-    })
+  recordLCP(value: number) {
+    this.recordMetric("LCP", value, { type: "core-web-vital" })
+  }
 
-    // Calculate averages and maximums
-    Object.entries(metricsByName).forEach(([name, metrics]) => {
-      const durations = metrics.map((m) => m.duration).filter((d): d is number => d !== undefined)
+  recordTTFB(value: number) {
+    this.recordMetric("TTFB", value, { type: "core-web-vital" })
+  }
 
-      if (durations.length > 0) {
-        const sum = durations.reduce((a, b) => a + b, 0)
-        summary.averageDurations[name] = sum / durations.length
-        summary.maxDurations[name] = Math.max(...durations)
-      }
-    })
-
-    return summary
+  recordFCP(value: number) {
+    this.recordMetric("FCP", value, { type: "core-web-vital" })
   }
 }
 
-// Create and export a singleton instance
 export const performanceMonitor = new PerformanceMonitor()
+
+// Helper function to measure function execution time
+export function measureExecutionTime<T>(name: string, fn: () => T | Promise<T>): T | Promise<T> {
+  const start = performance.now()
+
+  try {
+    const result = fn()
+
+    if (result instanceof Promise) {
+      return result.finally(() => {
+        const duration = performance.now() - start
+        performanceMonitor.recordMetric(name, duration, { type: "execution-time" })
+      })
+    } else {
+      const duration = performance.now() - start
+      performanceMonitor.recordMetric(name, duration, { type: "execution-time" })
+      return result
+    }
+  } catch (error) {
+    const duration = performance.now() - start
+    performanceMonitor.recordMetric(name, duration, {
+      type: "execution-time",
+      error: true,
+    })
+    throw error
+  }
+}
