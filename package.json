@@ -11,7 +11,6 @@
   "dependencies": {
     "@ai-sdk/openai": "latest",
     "@auth/core": "latest",
-    "@clerk/nextjs": "latest",
     "@emotion/is-prop-valid": "latest",
     "@hookform/resolvers": "^3.9.1",
     "@neondatabase/serverless": "latest",
