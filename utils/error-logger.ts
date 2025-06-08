@@ -1,5 +1,3 @@
-import * as Sentry from "@sentry/nextjs"
-
 // Types for error logging
 interface ErrorLogEntry {
   message: string
@@ -129,28 +127,12 @@ export function formatErrorForDisplay(error: Error | string): string {
   return `${error.name}: ${error.message}`
 }
 
-// Add these functions to maintain compatibility with the new implementation
+// Simple logging functions without Sentry
 export const logError = (error: any, errorInfo: any = {}) => {
   console.error("Logging error:", error, errorInfo)
   errorLogger.logError(error, errorInfo)
-
-  Sentry.captureException(error, {
-    contexts: {
-      errorInfo: {
-        ...errorInfo,
-      },
-    },
-  })
 }
 
 export const logMessage = (message: string, extraInfo: any = {}) => {
   console.log("Logging message:", message, extraInfo)
-
-  Sentry.captureMessage(message, {
-    contexts: {
-      extraInfo: {
-        ...extraInfo,
-      },
-    },
-  })
 }
