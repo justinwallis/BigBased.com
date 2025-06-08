@@ -366,34 +366,35 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
         <div className="max-w-[1220px] w-full">
           {/* Profile Info - Responsive Layout */}
           <div className="relative">
-            {/* Large screens: Horizontal layout with 15% overlap - Facebook style */}
+            {/* Large screens: Profile picture positioned in top-right of cover photo */}
             <div className="hidden lg:block">
+              {/* Profile Picture - positioned absolutely in cover photo */}
+              <div className="absolute top-1/2 right-6 transform -translate-y-1/2 z-10">
+                <div className="relative">
+                  <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
+                    <AvatarImage
+                      src={profile?.avatar_url || "/placeholder.svg"}
+                      alt={profile?.full_name || profile?.username}
+                    />
+                    <AvatarFallback className="text-5xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                      {getInitials(profile?.full_name || profile?.username || "U")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <button
+                    onClick={() => setIsAvatarDialogOpen(true)}
+                    disabled={isUploading}
+                    className="absolute bottom-3 right-3 bg-gray-200 dark:bg-[#0d0d0d] rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                  >
+                    <Image src="/camera.png" alt="Camera" width={16} height={16} className="dark:invert" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Content below cover photo */}
               <div className="pt-4 pb-3 px-4 flex items-end justify-between">
                 <div className="flex items-end space-x-6">
-                  {/* Profile Picture - 15% overlap on large screens */}
-                  <div className="relative -mt-[50px]">
-                    <div className="relative">
-                      <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
-                        <AvatarImage
-                          src={profile?.avatar_url || "/placeholder.svg"}
-                          alt={profile?.full_name || profile?.username}
-                        />
-                        <AvatarFallback className="text-5xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                          {getInitials(profile?.full_name || profile?.username || "U")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <button
-                        onClick={() => setIsAvatarDialogOpen(true)}
-                        disabled={isUploading}
-                        className="absolute bottom-3 right-3 bg-gray-200 dark:bg-[#0d0d0d] rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
-                      >
-                        <Image src="/camera.png" alt="Camera" width={16} height={16} className="dark:invert" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Name and Info - positioned to the right of profile picture */}
-                  <div className="pb-2 -mt-[10px]">
+                  {/* Name and Info - positioned normally */}
+                  <div className="pb-2">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                       {profile?.full_name || profile?.username}
                       {profile?.personal_info?.nickname && (
@@ -482,10 +483,6 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         className={`transition-transform duration-200 ${showFriendsSection ? "rotate-180" : ""}`}
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className={`transition-transform duration-200 ${showFriendsSection ? "rotate-180" : ""}`}
                       >
                         <path d="m6 9 6 6 6-6" />
                       </svg>
@@ -495,32 +492,33 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               </div>
             </div>
 
-            {/* Medium screens: Horizontal layout with 0% overlap */}
+            {/* Medium screens: Profile picture positioned in top-right of cover photo */}
             <div className="hidden md:block lg:hidden">
+              {/* Profile Picture - positioned absolutely in cover photo */}
+              <div className="absolute top-1/2 right-6 transform -translate-y-1/2 z-10">
+                <div className="relative">
+                  <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
+                    <AvatarImage
+                      src={profile?.avatar_url || "/placeholder.svg"}
+                      alt={profile?.full_name || profile?.username}
+                    />
+                    <AvatarFallback className="text-5xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                      {getInitials(profile?.full_name || profile?.username || "U")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <button
+                    onClick={() => setIsAvatarDialogOpen(true)}
+                    disabled={isUploading}
+                    className="absolute bottom-3 right-3 bg-gray-200 dark:bg-[#0d0d0d] rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                  >
+                    <Image src="/camera.png" alt="Camera" width={16} height={16} className="dark:invert" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Content below cover photo */}
               <div className="pt-[5px] pb-[3px] px-6 flex items-start justify-between">
                 <div className="flex items-start space-x-4">
-                  {/* Profile Picture - 0% overlap on medium screens, 5px under cover */}
-                  <div className="relative">
-                    <div className="relative">
-                      <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
-                        <AvatarImage
-                          src={profile?.avatar_url || "/placeholder.svg"}
-                          alt={profile?.full_name || profile?.username}
-                        />
-                        <AvatarFallback className="text-5xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                          {getInitials(profile?.full_name || profile?.username || "U")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <button
-                        onClick={() => setIsAvatarDialogOpen(true)}
-                        disabled={isUploading}
-                        className="absolute bottom-3 right-3 bg-gray-200 dark:bg-[#0d0d0d] rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
-                      >
-                        <Image src="/camera.png" alt="Camera" width={16} height={16} className="dark:invert" />
-                      </button>
-                    </div>
-                  </div>
-
                   {/* Name and Info */}
                   <div className="pt-[5px]">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
