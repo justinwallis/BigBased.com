@@ -1,95 +1,74 @@
-interface DebugInfo {
-  timestamp: string
-  level: "info" | "warn" | "error" | "debug"
-  message: string
-  data?: any
-}
+/**
+ * Debug utility functions for troubleshooting rendering and loading issues
+ */
 
-class DebugLogger {
-  private logs: DebugInfo[] = []
-  private maxLogs = 500
-  private isEnabled = process.env.NODE_ENV === "development"
+// Enable or disable debug mode
+const DEBUG_MODE = process.env.NODE_ENV === "development"
 
-  log(level: DebugInfo["level"], message: string, data?: any) {
-    if (!this.isEnabled) return
+/**
+ * Log a debug message to the console if debug mode is enabled
+ */
+export function debugLog(message: string, data?: any): void {
+  if (!DEBUG_MODE) return
 
-    const debugInfo: DebugInfo = {
-      timestamp: new Date().toISOString(),
-      level,
-      message,
-      data,
-    }
-
-    this.logs.push(debugInfo)
-
-    // Keep only recent logs
-    if (this.logs.length > this.maxLogs) {
-      this.logs = this.logs.slice(-this.maxLogs)
-    }
-
-    // Console output
-    const consoleMethod = console[level] || console.log
-    consoleMethod(`[${level.toUpperCase()}] ${message}`, data || "")
-  }
-
-  info(message: string, data?: any) {
-    this.log("info", message, data)
-  }
-
-  warn(message: string, data?: any) {
-    this.log("warn", message, data)
-  }
-
-  error(message: string, data?: any) {
-    this.log("error", message, data)
-  }
-
-  debug(message: string, data?: any) {
-    this.log("debug", message, data)
-  }
-
-  getLogs() {
-    return [...this.logs]
-  }
-
-  clearLogs() {
-    this.logs = []
-  }
-
-  enable() {
-    this.isEnabled = true
-  }
-
-  disable() {
-    this.isEnabled = false
+  if (data) {
+    console.log(`[DEBUG] ${message}`, data)
+  } else {
+    console.log(`[DEBUG] ${message}`)
   }
 }
 
-export const debugLogger = new DebugLogger()
+/**
+ * Log a component lifecycle event
+ */
+export function logComponentLifecycle(componentName: string, event: string, data?: any): void {
+  if (!DEBUG_MODE) return
 
-// Helper functions for common debug scenarios
-export function debugApiCall(url: string, method: string, data?: any) {
-  debugLogger.debug(`API Call: ${method} ${url}`, data)
+  debugLog(`${componentName} - ${event}`, data)
 }
 
-export function debugComponentRender(componentName: string, props?: any) {
-  debugLogger.debug(`Component Render: ${componentName}`, props)
+/**
+ * Create a component render tracker
+ * Usage: const tracker = createRenderTracker('MyComponent')
+ * Then call tracker() in your component to log renders
+ */
+export function createRenderTracker(componentName: string) {
+  let renderCount = 0
+
+  return (props?: any) => {
+    renderCount++
+    debugLog(`${componentName} rendered (${renderCount})`, props)
+  }
 }
 
-export function debugStateChange(stateName: string, oldValue: any, newValue: any) {
-  debugLogger.debug(`State Change: ${stateName}`, { oldValue, newValue })
+/**
+ * Log DOM structure for debugging layout issues
+ */
+export function logDOMStructure(selector = "body"): void {
+  if (!DEBUG_MODE || typeof document === "undefined") return
+
+  const element = document.querySelector(selector)
+  if (!element) {
+    debugLog(`Element not found: ${selector}`)
+    return
+  }
+
+  const structure = getDOMStructure(element)
+  debugLog(`DOM Structure for ${selector}:`, structure)
 }
 
-export function debugPerformance(operation: string, duration: number) {
-  debugLogger.debug(`Performance: ${operation} took ${duration}ms`)
-}
+/**
+ * Helper function to get DOM structure
+ */
+function getDOMStructure(element: Element, depth = 0, maxDepth = 3): any {
+  if (depth > maxDepth) return "..."
 
-// Environment info helper
-export function getEnvironmentInfo() {
+  const children = Array.from(element.children).map((child) => getDOMStructure(child, depth + 1, maxDepth))
+
   return {
-    nodeEnv: process.env.NODE_ENV,
-    userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "server",
-    url: typeof window !== "undefined" ? window.location.href : "server",
-    timestamp: new Date().toISOString(),
+    tag: element.tagName.toLowerCase(),
+    id: element.id || undefined,
+    classes: element.className ? element.className.split(" ").filter(Boolean) : undefined,
+    children: children.length ? children : undefined,
   }
 }

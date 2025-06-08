@@ -7,10 +7,9 @@ import { useState, useEffect } from "react"
 interface ThemeToggleProps {
   variant?: "icon" | "button"
   className?: string
-  hideInHeader?: boolean
 }
 
-export function ThemeToggle({ variant = "icon", className = "", hideInHeader = false }: ThemeToggleProps) {
+export function ThemeToggle({ variant = "icon", className = "" }: ThemeToggleProps) {
   const { theme, setTheme, systemTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
@@ -38,11 +37,6 @@ export function ThemeToggle({ variant = "icon", className = "", hideInHeader = f
   }
 
   const isDark = getEffectiveTheme() === "dark"
-
-  // Don't render if hideInHeader is true
-  if (hideInHeader) {
-    return null
-  }
 
   return (
     <button
