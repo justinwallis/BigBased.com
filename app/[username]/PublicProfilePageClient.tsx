@@ -351,7 +351,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
             overflow: "visible", // Allow profile picture to extend beyond
           }}
         >
-          {/* Edit cover photo button - positioned to avoid overlap with profile picture */}
+          {/* Edit cover photo button */}
           <button
             onClick={() => setIsCoverDialogOpen(true)}
             disabled={isUploading}
@@ -362,7 +362,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
           </button>
         </div>
 
-        {/* Profile Picture - Positioned absolutely within cover photo bounds for lg/md screens */}
+        {/* Profile Picture - Positioned absolutely over cover photo for lg/md screens */}
         <div className="absolute bottom-4 right-4 z-20 hidden md:block" style={{ position: "absolute" }}>
           <div className="relative">
             <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
