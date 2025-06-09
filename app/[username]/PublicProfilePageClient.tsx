@@ -360,27 +360,27 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
             <Image src="/camera.png" alt="Camera" width={16} height={16} className="invert dark:invert-0" />
             <span className="hidden md:inline">Edit cover photo</span>
           </button>
-        </div>
 
-        {/* Profile Picture - Positioned absolutely over cover photo for lg/md screens */}
-        <div className="absolute top-1/2 right-6 transform -translate-y-1/2 z-20 hidden md:block">
-          <div className="relative">
-            <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
-              <AvatarImage
-                src={profile?.avatar_url || "/placeholder.svg"}
-                alt={profile?.full_name || profile?.username}
-              />
-              <AvatarFallback className="text-5xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                {getInitials(profile?.full_name || profile?.username || "U")}
-              </AvatarFallback>
-            </Avatar>
-            <button
-              onClick={() => setIsAvatarDialogOpen(true)}
-              disabled={isUploading}
-              className="absolute bottom-3 right-3 bg-gray-200 dark:bg-[#0d0d0d] rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
-            >
-              <Image src="/camera.png" alt="Camera" width={16} height={16} className="dark:invert" />
-            </button>
+          {/* Profile Picture - Centered in cover photo for all screen sizes */}
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
+            <div className="relative">
+              <Avatar className="h-[196px] w-[196px] border-4 border-white dark:border-gray-900 shadow-lg">
+                <AvatarImage
+                  src={profile?.avatar_url || "/placeholder.svg"}
+                  alt={profile?.full_name || profile?.username}
+                />
+                <AvatarFallback className="text-6xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                  {getInitials(profile?.full_name || profile?.username || "U")}
+                </AvatarFallback>
+              </Avatar>
+              <button
+                onClick={() => setIsAvatarDialogOpen(true)}
+                disabled={isUploading}
+                className="absolute bottom-3 right-3 bg-gray-200 dark:bg-[#0d0d0d] rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+              >
+                <Image src="/camera.png" alt="Camera" width={16} height={16} className="dark:invert" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -498,31 +498,9 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
             {/* Small screens: Keep the existing mobile layout with profile picture */}
             <div className="block md:hidden">
               <div className="pt-4 pb-4 px-4">
-                {/* Profile Picture - 50% overlap on small screens, centered, larger size */}
-                <div className="flex justify-center -mt-[105px] mb-[3px]">
-                  <div className="relative">
-                    <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
-                      <AvatarImage
-                        src={profile?.avatar_url || "/placeholder.svg"}
-                        alt={profile?.full_name || profile?.username}
-                      />
-                      <AvatarFallback className="text-5xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                        {getInitials(profile?.full_name || profile?.username || "U")}
-                      </AvatarFallback>
-                    </Avatar>
-                    <button
-                      onClick={() => setIsAvatarDialogOpen(true)}
-                      disabled={isUploading}
-                      className="absolute bottom-3 right-3 bg-gray-200 dark:bg-[#0d0d0d] rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
-                    >
-                      <Image src="/camera.png" alt="Camera" width={16} height={16} className="dark:invert" />
-                    </button>
-                  </div>
-                </div>
-
                 {/* Rest of mobile layout remains the same... */}
                 {/* Name and Info - Centered */}
-                <div className="text-center">
+                <div className="text-center mt-4">
                   <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                     {profile?.full_name || profile?.username}
                     {profile?.personal_info?.nickname && (
@@ -1263,7 +1241,7 @@ The Real World is Andrew Tate's exclusive community platform for entrepreneurs a
                           src={profile?.avatar_url || "/placeholder.svg"}
                           alt={profile?.full_name || profile?.username}
                         />
-                        <AvatarFallback className="text-lg font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                        <AvatarFallback className="text-xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
                           {getInitials(profile?.full_name || profile?.username || "U")}
                         </AvatarFallback>
                       </Avatar>
