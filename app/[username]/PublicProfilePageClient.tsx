@@ -555,7 +555,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                           Edit
                         </button>
                       </Link>
-                      <button className="flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-[#0d0d0d] dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center justify-center gap-1.5">
+                      <button className="flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-[#131313] dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center justify-center gap-1.5">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           width="14"
@@ -574,7 +574,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                       </button>
                       <button
                         onClick={() => setShowFriendsSection(!showFriendsSection)}
-                        className="bg-gray-200 hover:bg-gray-300 dark:bg-[#0d0d0d] dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center justify-center gap-1.5"
+                        className="bg-gray-200 hover:bg-gray-300 dark:bg-[#131313] dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 h-[35px] rounded-md text-sm font-medium flex items-center justify-center gap-1.5"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
