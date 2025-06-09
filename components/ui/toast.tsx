@@ -31,6 +31,7 @@ const toastVariants = cva(
       variant: {
         default: "border bg-background text-foreground",
         destructive: "destructive group border-destructive bg-destructive text-destructive-foreground",
+        success: "success group border-green-500 bg-green-500 text-white",
       },
     },
     defaultVariants: {
@@ -100,6 +101,8 @@ type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
 
 type ToastActionElement = React.ReactElement<typeof ToastAction>
 
+const Toaster = ToastPrimitives.Toaster
+
 export {
   type ToastProps,
   type ToastActionElement,
@@ -110,13 +113,5 @@ export {
   ToastDescription,
   ToastClose,
   ToastAction,
-}
-
-// Add the Toaster component as a named export
-export function Toaster() {
-  return (
-    <ToastProvider>
-      <ToastViewport />
-    </ToastProvider>
-  )
+  Toaster,
 }

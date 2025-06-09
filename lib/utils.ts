@@ -5,7 +5,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-// Function to generate a random string
 export function generateRandomString(length: number): string {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0987654321"
   let result = ""
@@ -16,7 +15,6 @@ export function generateRandomString(length: number): string {
   return result
 }
 
-// Function to generate a URL-friendly slug
 export function generateSlug(text: string): string {
   return text
     .toString()
