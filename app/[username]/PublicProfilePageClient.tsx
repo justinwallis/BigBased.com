@@ -392,7 +392,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
           <div className="relative">
             {/* Large and Medium screens: Content below cover photo, no profile picture here */}
             <div className="hidden md:block">
-              <div className="pt-4 pb-3 px-4 flex items-end justify-between">
+              <div className="pt-2 pb-3 px-4 flex items-end justify-between">
                 <div className="flex items-end space-x-6">
                   {/* Name and Info - positioned normally, no profile picture here */}
                   <div className="pb-2">
@@ -497,10 +497,10 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
 
             {/* Small screens: Keep the existing mobile layout with profile picture */}
             <div className="block md:hidden">
-              <div className="pt-4 pb-4 px-4">
+              <div className="pt-2 pb-4 px-4">
                 {/* Rest of mobile layout remains the same... */}
                 {/* Name and Info - Centered */}
-                <div className="text-center mt-1">
+                <div className="text-center mt-2">
                   <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                     {profile?.full_name || profile?.username}
                     {profile?.personal_info?.nickname && (
