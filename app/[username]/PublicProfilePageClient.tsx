@@ -500,7 +500,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
               <div className="pt-4 pb-4 px-4">
                 {/* Rest of mobile layout remains the same... */}
                 {/* Name and Info - Centered */}
-                <div className="text-center mt-4">
+                <div className="text-center mt-2">
                   <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                     {profile?.full_name || profile?.username}
                     {profile?.personal_info?.nickname && (
