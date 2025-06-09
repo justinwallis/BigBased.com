@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useState, useRef } from "react"
 import type { User, Session } from "@supabase/supabase-js"
 import { createClient } from "@/lib/supabase/client"
 import { cleanupSession, trackSession } from "@/app/actions/session-actions"
@@ -28,9 +28,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const supabase = createClient()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null) // Add this line
 
   useEffect(() => {
+    // Initialize Supabase client only on the client side
+    if (!supabaseRef.current) {
+      supabaseRef.current = createClient()
+    }
+
+    const supabase = supabaseRef.current
+
+    if (!supabase) {
+      console.warn(
+        "Supabase client not available on client side. This might indicate an issue with environment variables or client-side rendering.",
+      )
+      setIsLoading(false)
+      return // Exit if client is not available
+    }
+
     // Get initial session
     const getInitialSession = async () => {
       try {
@@ -84,9 +99,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe()
     }
-  }, [supabase.auth])
+  }, [session?.access_token]) // Added session.access_token to dependency array for cleanupSession
 
   const signIn = async (email: string, password: string, mfaCode?: string) => {
+    const supabase = supabaseRef.current // Get the current Supabase client from the ref
+    if (!supabase) {
+      return { error: { message: "Supabase client not initialized for sign-in." } }
+    }
+
     try {
       console.log("=== Auth Context SignIn ===")
       console.log("Email:", email)
@@ -152,6 +172,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
+    const supabase = supabaseRef.current // Get the current Supabase client from the ref
+    if (!supabase) {
+      console.error("Supabase client not initialized for sign-out.")
+      return
+    }
+
     try {
       // Clean up session before signing out
       if (session?.access_token) {
