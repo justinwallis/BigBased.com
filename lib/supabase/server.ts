@@ -29,8 +29,8 @@ export function createClient(useServiceRole = false) {
 
   return _createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
-      async get(name: string) {
-        return (await cookieStore.get(name))?.value
+      get(name: string) {
+        return cookieStore.get(name)?.value
       },
       set(name: string, value: string, options: CookieOptions) {
         try {
