@@ -839,37 +839,37 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
                   <TabsList className="h-12 bg-transparent border-0 p-0 space-x-0 justify-start">
                     <TabsTrigger
                       value="posts"
-                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-amber-500 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-amber-500 dark:data-[state=active]:text-amber-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
                     >
                       Posts
                     </TabsTrigger>
                     <TabsTrigger
                       value="about"
-                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-amber-500 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-amber-500 dark:data-[state=active]:text-amber-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
                     >
                       About
                     </TabsTrigger>
                     <TabsTrigger
                       value="reels"
-                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-amber-500 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-amber-500 dark:data-[state=active]:text-amber-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200"
                     >
                       Reels
                     </TabsTrigger>
                     <TabsTrigger
                       value="photos"
-                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden min-[450px]:flex"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-amber-500 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-amber-500 dark:data-[state=active]:text-amber-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden min-[450px]:flex"
                     >
                       Photos
                     </TabsTrigger>
                     <TabsTrigger
                       value="videos"
-                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden min-[625px]:flex"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-amber-500 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-amber-500 dark:data-[state=active]:text-amber-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden min-[625px]:flex"
                     >
                       Videos
                     </TabsTrigger>
                     <TabsTrigger
                       value="groups"
-                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden min-[575px]:flex"
+                      className="bg-transparent border-0 border-b-[3px] border-transparent data-[state=active]:border-amber-500 data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-amber-500 dark:data-[state=active]:text-amber-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:rounded-md transition-all duration-200 hidden min-[575px]:flex"
                     >
                       Groups
                     </TabsTrigger>
