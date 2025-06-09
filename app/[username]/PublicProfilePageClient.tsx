@@ -363,27 +363,28 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
         </div>
 
         {/* Profile Picture - Positioned absolutely over cover photo for lg/md screens */}
-        <div
-          className="absolute top-[40%] right-6 transform -translate-y-1/2 z-20 hidden md:block"
-          style={{ position: "absolute" }}
-        >
-          <div className="relative">
-            <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
-              <AvatarImage
-                src={profile?.avatar_url || "/placeholder.svg"}
-                alt={profile?.full_name || profile?.username}
-              />
-              <AvatarFallback className="text-5xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                {getInitials(profile?.full_name || profile?.username || "U")}
-              </AvatarFallback>
-            </Avatar>
-            <button
-              onClick={() => setIsAvatarDialogOpen(true)}
-              disabled={isUploading}
-              className="absolute bottom-3 right-3 bg-gray-200 dark:bg-[#0d0d0d] rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
-            >
-              <Image src="/camera.png" alt="Camera" width={16} height={16} className="dark:invert" />
-            </button>
+        <div className="absolute top-[40%] right-6 transform -translate-y-1/2 z-20 hidden md:block max-w-[1250px] w-full mx-auto">
+          <div className="relative w-full h-0">
+            <div className="absolute top-0 right-6 transform">
+              <div className="relative">
+                <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
+                  <AvatarImage
+                    src={profile?.avatar_url || "/placeholder.svg"}
+                    alt={profile?.full_name || profile?.username}
+                  />
+                  <AvatarFallback className="text-5xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                    {getInitials(profile?.full_name || profile?.username || "U")}
+                  </AvatarFallback>
+                </Avatar>
+                <button
+                  onClick={() => setIsAvatarDialogOpen(true)}
+                  disabled={isUploading}
+                  className="absolute bottom-3 right-3 bg-gray-200 dark:bg-[#0d0d0d] rounded-full p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                >
+                  <Image src="/camera.png" alt="Camera" width={16} height={16} className="dark:invert" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
