@@ -363,7 +363,7 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
         </div>
 
         {/* Profile Picture - Positioned absolutely over cover photo for lg/md screens */}
-        <div className="absolute bottom-4 right-4 z-20 hidden md:block" style={{ position: "absolute" }}>
+        <div className="absolute top-1/2 right-6 transform -translate-y-1/2 z-20 hidden md:block">
           <div className="relative">
             <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
               <AvatarImage
