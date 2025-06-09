@@ -351,19 +351,19 @@ export function PublicProfilePageClient({ profile }: PublicProfilePageClientProp
             overflow: "visible", // Allow profile picture to extend beyond
           }}
         >
-          {/* Edit cover photo button */}
+          {/* Edit cover photo button - positioned to avoid overlap with profile picture */}
           <button
             onClick={() => setIsCoverDialogOpen(true)}
             disabled={isUploading}
-            className="absolute bottom-4 right-4 bg-gray-800/90 dark:bg-white/90 text-white dark:text-gray-800 px-3 h-[35px] rounded-md text-sm font-medium flex items-center gap-1.5 hover:bg-gray-900 dark:hover:bg-white transition-colors disabled:opacity-50 z-50"
+            className="absolute bottom-4 left-4 bg-gray-800/90 dark:bg-white/90 text-white dark:text-gray-800 px-3 h-[35px] rounded-md text-sm font-medium flex items-center gap-1.5 hover:bg-gray-900 dark:hover:bg-white transition-colors disabled:opacity-50 z-50"
           >
             <Image src="/camera.png" alt="Camera" width={16} height={16} className="invert dark:invert-0" />
             <span className="hidden md:inline">Edit cover photo</span>
           </button>
         </div>
 
-        {/* Profile Picture - Positioned above the edit cover photo button for lg/md screens */}
-        <div className="absolute bottom-16 right-6 z-20 hidden md:block" style={{ position: "absolute" }}>
+        {/* Profile Picture - Positioned absolutely within cover photo bounds for lg/md screens */}
+        <div className="absolute bottom-4 right-4 z-20 hidden md:block" style={{ position: "absolute" }}>
           <div className="relative">
             <Avatar className="h-[170px] w-[170px] border-4 border-white dark:border-gray-900 shadow-lg">
               <AvatarImage
