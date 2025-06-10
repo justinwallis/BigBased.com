@@ -435,3 +435,36 @@ Guidelines:
 
 // Export singleton instance
 export const ragSystem = new BigBasedRAGSystem()
+
+// Export functions for API routes
+export async function initializeAI() {
+  await ragSystem.initializeCollections()
+  return { success: true, message: "AI collections initialized." }
+}
+
+export async function indexDocument(document: RAGDocument) {
+  await ragSystem.addDocument(document)
+  return { success: true, message: `Document ${document.id} indexed.` }
+}
+
+export async function searchAI(query: string, options: any) {
+  const results = await ragSystem.searchDocuments(query, options)
+  return { success: true, results }
+}
+
+export async function uploadDocument(fileContent: string, metadata: any) {
+  // This is a simplified example. In a real app, you'd parse fileContent
+  // and extract relevant text and metadata.
+  const document: RAGDocument = {
+    id: `doc-${Date.now()}`, // Generate a unique ID
+    content: fileContent,
+    metadata: {
+      type: metadata.type || "content",
+      title: metadata.title || `Uploaded Document ${Date.now()}`,
+      created_at: new Date().toISOString(),
+      ...metadata,
+    },
+  }
+  await ragSystem.addDocument(document)
+  return { success: true, message: `Document uploaded and indexed: ${document.id}` }
+}

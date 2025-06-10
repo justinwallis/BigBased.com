@@ -65,3 +65,15 @@ export class BusinessAI {
     return text
   }
 }
+
+// Export functions for API routes
+export async function generateSmartDomains(keywords: string[], count: number) {
+  const { text } = await generateText({
+    model: openai("gpt-4o-mini"),
+    prompt: `Generate ${count} unique, brandable domain names based on these keywords: ${keywords.join(", ")}.
+    Focus on conservative, patriotic, and freedom-oriented themes.
+    Return as a JSON array of strings.`,
+    temperature: 0.7,
+  })
+  return JSON.parse(text)
+}

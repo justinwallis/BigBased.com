@@ -69,3 +69,18 @@ export class ContentAI {
     return JSON.parse(text)
   }
 }
+
+// Export function for API routes
+export async function generateContent(prompt: string, length: string, tone: string) {
+  const { text } = await generateText({
+    model: openai("gpt-4o-mini"),
+    prompt: `Generate content based on the following:
+    Prompt: ${prompt}
+    Length: ${length}
+    Tone: ${tone}
+    
+    Ensure the content is aligned with conservative values and principles.`,
+    temperature: 0.8,
+  })
+  return text
+}
