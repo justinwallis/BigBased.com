@@ -250,10 +250,14 @@ export default function ChatPage() {
       {/* Sidebar */}
       <div
         className={cn(
-          "flex flex-col transition-all duration-300 ease-in-out flex-shrink-0 bg-card no-border",
-          sidebarOpen ? "w-80" : "w-0 overflow-hidden",
-          isMobile ? "fixed inset-y-0 left-0 z-50" : "relative", // Fixed for mobile, relative for desktop
-          isMobile && sidebarOpen ? "translate-x-0" : isMobile ? "-translate-x-full" : "", // Slide in/out for mobile
+          "flex flex-col transition-all duration-300 ease-in-out flex-shrink-0 bg-card no-border h-full",
+          // Mobile specific classes (fixed position, slide in/out)
+          isMobile && "fixed inset-y-0 z-50",
+          isMobile && (sidebarOpen ? "left-0" : "-left-80"), // Control visibility with left property
+          // Desktop specific classes (relative position, width control)
+          !isMobile && "relative",
+          !isMobile && (sidebarOpen ? "w-80" : "w-0 overflow-hidden"), // Desktop width control
+          "w-80", // Always maintain a width of 80, but hide it if needed
         )}
       >
         {/* Sidebar Header */}
@@ -341,7 +345,7 @@ export default function ChatPage() {
       <div
         className={cn(
           "flex-1 flex flex-col bg-background transition-all duration-300 ease-in-out",
-          sidebarOpen ? "ml-80" : "ml-0", // Always push content
+          sidebarOpen && !isMobile ? "ml-80" : "ml-0", // Only push content on desktop when sidebar is open
         )}
       >
         {/* Header */}
@@ -357,9 +361,7 @@ export default function ChatPage() {
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <div className="lg:hidden">
-              <BBLogo size="sm" inverted={theme === "dark"} /> {/* Use inverted prop for mobile logo */}
-            </div>
+            {/* Removed BBLogo here as per user request */}
           </div>
         </div>
 

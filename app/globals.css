@@ -93,47 +93,8 @@ body {
   border-bottom: 2px solid #0284c7;
 }
 
-/* FORCE EXACT #080808 BACKGROUND */
-/* Removed the problematic html { background-color: #080808 !important; } */
-
-.dark {
-  background-color: #080808 !important;
-}
-
-.dark body {
-  background-color: #080808 !important;
-}
-
-.dark html {
-  background-color: #080808 !important;
-}
-
-/* Main page containers */
-.dark .min-h-screen {
-  background-color: #080808 !important;
-}
-
-/* REMOVE BLUE BACKGROUNDS - Replace with #080808 */
-.dark .bg-white {
-  background-color: #0d0d0d !important;
-}
-
-.dark .bg-gray-100 {
-  background-color: #080808 !important;
-}
-
-.dark .bg-gray-50 {
-  background-color: #080808 !important;
-}
-
-/* Navigation and tabs - remove blue backgrounds */
-.dark .bg-white.dark\:bg-gray-900 {
-  background-color: #080808 !important;
-}
-
-.dark .sticky {
-  background-color: #080808 !important;
-}
+/* REMOVED problematic !important overrides for background colors */
+/* The theme variables should now correctly handle background colors */
 
 /* VERY SPECIFIC TARGETING - ONLY PROFILE PAGE ELEMENTS */
 
