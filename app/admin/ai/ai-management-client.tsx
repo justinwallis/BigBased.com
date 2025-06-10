@@ -162,40 +162,32 @@ export default function AIManagementClient() {
     if (!sampleContent.trim()) return
 
     try {
-      // Simulate API call to writing assistant
-      // In production, this would call the actual API endpoint
-      setWritingResults({
-        clarity: {
-          score: 8.2,
-          suggestions: [
-            "Consider breaking the second paragraph into shorter sentences",
-            "Add a clear thesis statement at the beginning",
-          ],
+      const response = await fetch("/api/ai/writing-assistant", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        messaging: {
-          score: 9.1,
-          suggestions: [
-            "Strengthen the connection to traditional values",
-            "Include a historical reference to founding principles",
-          ],
-        },
-        examples: {
-          suggestions: ["Add statistics on religious freedom", "Reference a founding father quote on liberty"],
-        },
-        cta: {
-          score: 7.5,
-          suggestions: ["Make the call-to-action more specific", "Add urgency to the final paragraph"],
-        },
+        body: JSON.stringify({
+          content: sampleContent,
+          context: contentContext,
+        }),
       })
 
-      toast({
-        title: "Analysis Complete",
-        description: "Writing assistance generated successfully",
-      })
+      const data = await response.json()
+
+      if (response.ok) {
+        setWritingResults(data.suggestions)
+        toast({
+          title: "Analysis Complete",
+          description: "Writing assistance generated successfully",
+        })
+      } else {
+        throw new Error(data.error || "Failed to analyze content")
+      }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to analyze content",
+        description: `Failed to analyze content: ${error instanceof Error ? error.message : String(error)}`,
         variant: "destructive",
       })
     }

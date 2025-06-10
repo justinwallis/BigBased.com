@@ -1,6 +1,7 @@
 import { openai } from "@ai-sdk/openai"
 import { generateText, streamText } from "ai"
 import { QdrantClient } from "@qdrant/js-client-rest"
+import { createClient } from "@/lib/supabase/server" // Import Supabase server client
 
 // Initialize Qdrant client
 const qdrant = new QdrantClient({
@@ -363,13 +364,49 @@ Guidelines:
    */
   async indexCMSContent(): Promise<void> {
     try {
-      // This will integrate with your existing CMS actions
       console.log("Starting CMS content indexing...")
+      const supabase = createClient(true) // Use service role client
 
-      // We'll implement this to pull from your cms_content table
-      // and index all published content
+      const { data: content, error } = await supabase
+        .from("cms_content")
+        .select("id, title, content, slug, domain, tenant_id, created_at, tags, author_id, content_type_id")
+        .eq("status", "published")
 
-      console.log("CMS content indexing completed")
+      if (error) {
+        console.error("Error fetching CMS content:", error)
+        throw error
+      }
+
+      if (!content || content.length === 0) {
+        console.log("No published CMS content found to index.")
+        return
+      }
+
+      const indexedCount = 0
+      for (const item of content) {
+        try {
+          await this.addDocument({
+            id: item.id,
+            content: `${item.title}\n\n${item.content?.text || ""}`, // Assuming content.text holds the main text
+            metadata: {
+              type: "content", // Default type for CMS content
+              title: item.title,
+              url: `/content/${item.slug}`,
+              domain: item.domain || "bigbased.com",
+              tenant_id: item.tenant_id,
+              created_at: item.created_at,
+              tags: item.tags || [],
+              author: item.author_id,
+              category: item.content_type_id,
+            },
+          })
+          indexedCount + 1
+        } catch (docError) {
+          console.error(`Failed to index document ${item.id}:`, docError)
+        }
+      }
+
+      console.log(`CMS content indexing completed. Indexed ${indexedCount} documents.`)
     } catch (error) {
       console.error("Error indexing CMS content:", error)
       throw error
