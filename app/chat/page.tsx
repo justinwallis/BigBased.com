@@ -236,15 +236,16 @@ export default function ChatPage() {
       {/* Sidebar */}
       <div
         className={cn(
-          "flex flex-col transition-all duration-300 ease-in-out",
+          "flex flex-col transition-all duration-300 ease-in-out flex-shrink-0 bg-card no-border",
           sidebarOpen ? "w-80" : "w-0 overflow-hidden",
-          "flex-shrink-0 bg-card no-border", // Use bg-card for sidebar, no-border class
+          "fixed inset-y-0 left-0 z-50 lg:relative lg:translate-x-0", // Fixed for mobile, relative for desktop
+          sidebarOpen ? "translate-x-0" : "-translate-x-full", // Slide in/out for mobile
         )}
       >
         {/* Sidebar Header */}
         <div className="flex items-center justify-between p-4 no-border">
           <Link href="/chat" className="flex items-center space-x-2 group" onClick={startNewChat}>
-            <BBLogo size="sm" color={theme === "dark" ? "white" : "black"} /> {/* Dynamic logo color */}
+            {/* Removed BBLogo here */}
             <span className="font-semibold text-lg group-hover:text-purple-400 transition-colors">BigBased AI</span>
           </Link>
           <Button
@@ -261,7 +262,7 @@ export default function ChatPage() {
         <div className="p-4">
           <Button
             onClick={startNewChat}
-            className="w-full bg-muted hover:bg-custom-chat-elements text-foreground no-border" // Apply #222222 on hover, no-border class
+            className="w-full bg-muted hover:bg-custom-chat-elements text-foreground no-border"
           >
             <Plus className="h-4 w-4 mr-2" />
             New Chat
@@ -279,10 +280,10 @@ export default function ChatPage() {
                 <Button
                   variant="ghost"
                   className={cn(
-                    "flex-1 justify-start mb-1 text-left h-auto p-3 pr-10 no-border", // no-border class
+                    "flex-1 justify-start mb-1 text-left h-auto p-3 pr-10 no-border",
                     currentSessionId === session.id
-                      ? "bg-custom-chat-elements text-accent-foreground" // Active chat color #222222
-                      : "text-muted-foreground hover:text-primary hover:bg-custom-chat-elements", // Apply #222222 on hover
+                      ? "bg-custom-chat-elements text-accent-foreground"
+                      : "text-muted-foreground hover:text-primary hover:bg-custom-chat-elements",
                   )}
                   onClick={() => loadChatSession(session.id)}
                 >
@@ -294,7 +295,7 @@ export default function ChatPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="ml-2 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity no-border" // no-border class
+                  className="ml-2 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity no-border"
                   onClick={() => deleteChatSession(session.id)}
                   aria-label={`Delete chat session ${session.title}`}
                 >
@@ -307,16 +308,13 @@ export default function ChatPage() {
 
         {/* Account Section and Theme Toggle */}
         <div className="p-4 space-y-2 no-border">
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-muted-foreground hover:text-primary no-border" // no-border class
-          >
+          <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-primary no-border">
             <User className="h-4 w-4 mr-2" />
             Account
           </Button>
           <Button
             variant="ghost"
-            className="w-full justify-start text-muted-foreground hover:text-primary no-border" // no-border class
+            className="w-full justify-start text-muted-foreground hover:text-primary no-border"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           >
             {theme === "dark" ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />}
@@ -326,7 +324,12 @@ export default function ChatPage() {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col bg-background">
+      <div
+        className={cn(
+          "flex-1 flex flex-col bg-background transition-all duration-300 ease-in-out",
+          sidebarOpen ? "lg:ml-80" : "lg:ml-0", // Push content on desktop
+        )}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 bg-card no-border">
           <div className="flex items-center space-x-3">
@@ -335,13 +338,13 @@ export default function ChatPage() {
               variant="ghost"
               size="icon"
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="text-muted-foreground hover:text-primary no-border" // no-border class
+              className="text-muted-foreground hover:text-primary no-border"
               aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
             >
               <Menu className="h-5 w-5" />
             </Button>
             <div className="lg:hidden">
-              <BBLogo size="sm" color={theme === "dark" ? "white" : "black"} /> {/* Dynamic logo color */}
+              <BBLogo size="sm" inverted={theme === "dark"} /> {/* Use inverted prop for mobile logo */}
             </div>
           </div>
         </div>
@@ -350,7 +353,7 @@ export default function ChatPage() {
         {showWelcomeScreen ? (
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
             <div className="mb-8">
-              <BBLogo size="lg" color={theme === "dark" ? "white" : "black"} /> {/* Dynamic logo color */}
+              <BBLogo size="lg" inverted={theme === "dark"} /> {/* Use inverted prop for welcome logo */}
             </div>
 
             <h1 className="text-4xl lg:text-5xl font-bold mb-4">
@@ -371,13 +374,13 @@ export default function ChatPage() {
                   onChange={handleInputChange}
                   placeholder="Type anything to BigBased..."
                   disabled={isLoading}
-                  className="w-full bg-custom-chat-elements text-foreground placeholder-muted-foreground pr-12 py-6 text-lg focus-visible:ring-purple-500 focus-visible:ring-2 focus-visible:outline-none no-border" // Apply #222222, no-border class
+                  className="w-full bg-custom-chat-elements text-foreground placeholder-muted-foreground pr-12 py-6 text-lg focus-visible:ring-purple-500 focus-visible:ring-2 focus-visible:outline-none no-border"
                 />
                 <Button
                   type="submit"
                   disabled={isLoading || !input.trim()}
                   size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-purple-600 hover:bg-purple-700 disabled:bg-muted no-border" // no-border class
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-purple-600 hover:bg-purple-700 disabled:bg-muted no-border"
                 >
                   <Send className="h-4 w-4" />
                 </Button>
@@ -388,7 +391,7 @@ export default function ChatPage() {
             <div className="grid grid-cols-2 gap-4 w-full max-w-2xl">
               <Button
                 variant="outline"
-                className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-custom-chat-elements text-foreground hover:text-primary no-border" // Apply #222222 on hover, no-border class
+                className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-custom-chat-elements text-foreground hover:text-primary no-border"
                 onClick={() =>
                   handleQuickAction(
                     "What are the current trending topics in conservative politics and digital sovereignty?",
@@ -401,7 +404,7 @@ export default function ChatPage() {
 
               <Button
                 variant="outline"
-                className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-custom-chat-elements text-foreground hover:text-primary no-border" // Apply #222222 on hover, no-border class
+                className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-custom-chat-elements text-foreground hover:text-primary no-border"
                 onClick={() => handleQuickAction("What are the best practices for digital privacy and security?")}
               >
                 <Shield className="h-6 w-6" />
@@ -410,7 +413,7 @@ export default function ChatPage() {
 
               <Button
                 variant="outline"
-                className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-custom-chat-elements text-foreground hover:text-primary no-border" // Apply #222222 on hover, no-border class
+                className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-custom-chat-elements text-foreground hover:text-primary no-border"
                 onClick={() => handleQuickAction("Tell me about BigBased's mission and conservative values.")}
               >
                 <BookOpen className="h-6 w-6" />
@@ -419,7 +422,7 @@ export default function ChatPage() {
 
               <Button
                 variant="outline"
-                className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-custom-chat-elements text-foreground hover:text-primary no-border" // Apply #222222 on hover, no-border class
+                className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-custom-chat-elements text-foreground hover:text-primary no-border"
                 onClick={() => handleQuickAction("How can I get involved in the BigBased community?")}
               >
                 <Users className="h-6 w-6" />
@@ -449,7 +452,7 @@ export default function ChatPage() {
                           "max-w-[80%] rounded-lg px-4 py-3",
                           message.role === "user"
                             ? "bg-purple-600 text-white"
-                            : "bg-custom-chat-elements text-foreground", // Use custom-chat-elements for assistant bubble
+                            : "bg-custom-chat-elements text-foreground",
                         )}
                       >
                         <div className="whitespace-pre-wrap">{message.content}</div>
@@ -497,13 +500,13 @@ export default function ChatPage() {
                     onChange={handleInputChange}
                     placeholder="Type anything to BigBased..."
                     disabled={isLoading}
-                    className="w-full bg-custom-chat-elements text-foreground placeholder-muted-foreground pr-12 py-6 text-lg focus-visible:ring-purple-500 focus-visible:ring-2 focus-visible:outline-none no-border" // Apply #222222, no-border class
+                    className="w-full bg-custom-chat-elements text-foreground placeholder-muted-foreground pr-12 py-6 text-lg focus-visible:ring-purple-500 focus-visible:ring-2 focus-visible:outline-none no-border"
                   />
                   <Button
                     type="submit"
                     disabled={isLoading || !input.trim()}
                     size="icon"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-purple-600 hover:bg-purple-700 disabled:bg-muted no-border" // no-border class
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-purple-600 hover:bg-purple-700 disabled:bg-muted no-border"
                   >
                     <Send className="h-4 w-4" />
                   </Button>

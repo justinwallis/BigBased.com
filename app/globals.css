@@ -94,7 +94,7 @@ body {
 }
 
 /* FORCE EXACT #080808 BACKGROUND */
-/* REMOVED: html { background-color: #080808 !important; } */
+/* Removed the problematic html { background-color: #080808 !important; } */
 
 .dark {
   background-color: #080808 !important;
