@@ -45,8 +45,8 @@ export default function ChatPage() {
   const { theme, setTheme } = useTheme()
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     if (typeof window !== "undefined") {
-      const savedState = localStorage.getItem("bigbased-sidebar-open")
-      return savedState ? JSON.parse(savedState) : false // Default to closed on small screens
+      // Default to open on large screens, closed on small screens
+      return window.innerWidth >= 1024 ? true : false
     }
     return false
   })
@@ -93,12 +93,6 @@ export default function ChatPage() {
       }
     }
 
-    // Load sidebar state
-    const savedSidebarState = localStorage.getItem("bigbased-sidebar-open")
-    if (savedSidebarState !== null) {
-      setSidebarOpen(JSON.parse(savedSidebarState))
-    }
-
     // If there are saved sessions, load the most recent one
     if (sessions.length > 0) {
       loadChatSession(sessions[0].id, sessions)
@@ -108,14 +102,10 @@ export default function ChatPage() {
     }
   }, [])
 
-  // Save chat sessions and sidebar state to localStorage whenever they change
+  // Save chat sessions to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("bigbased-chat-sessions", JSON.stringify(chatSessions))
   }, [chatSessions])
-
-  useEffect(() => {
-    localStorage.setItem("bigbased-sidebar-open", JSON.stringify(sidebarOpen))
-  }, [sidebarOpen])
 
   // Save message to current session
   const saveMessageToHistory = useCallback(
@@ -248,7 +238,7 @@ export default function ChatPage() {
         className={cn(
           "flex flex-col transition-all duration-300 ease-in-out",
           sidebarOpen ? "w-80" : "w-0 overflow-hidden",
-          "lg:relative absolute z-50 h-full bg-card no-border", // Use bg-card for sidebar, no-border class
+          "flex-shrink-0 bg-card no-border", // Use bg-card for sidebar, no-border class
         )}
       >
         {/* Sidebar Header */}
@@ -523,11 +513,6 @@ export default function ChatPage() {
           </>
         )}
       </div>
-
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
-      )}
     </div>
   )
 }
