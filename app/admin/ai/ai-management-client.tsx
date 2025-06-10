@@ -2,13 +2,13 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
 import {
   Bot,
@@ -22,15 +22,16 @@ import {
   Edit,
   Zap,
   FileText,
-  FileUp,
+  Loader2,
+  UploadCloud,
 } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { cn } from "@/lib/utils" // Import cn for conditional class names
 
 export default function AIManagementClient() {
+  const { toast } = useToast()
   const [isInitializing, setIsInitializing] = useState(false)
   const [isIndexing, setIsIndexing] = useState(false)
   const [isUploadingDocument, setIsUploadingDocument] = useState(false)
@@ -45,7 +46,12 @@ export default function AIManagementClient() {
   )
   const [contentContext, setContentContext] = useState("Conservative political article")
   const [writingResults, setWritingResults] = useState<any>(null)
-  const { toast } = useToast()
+  const [indexingStatus, setIndexingStatus] = useState("idle")
+  const [writingAssistantContent, setWritingAssistantContent] = useState("")
+  const [writingAssistantSuggestions, setWritingAssistantSuggestions] = useState<string[]>([])
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const [dragActive, setDragActive] = useState(false)
 
   const handleInitialize = async () => {
     setIsInitializing(true)
@@ -74,34 +80,34 @@ export default function AIManagementClient() {
   }
 
   const handleIndexContent = async () => {
-    setIsIndexing(true)
+    setIndexingStatus("indexing")
     try {
       const response = await fetch("/api/ai/index-content", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({}),
       })
-
       const data = await response.json()
-
       if (response.ok) {
         toast({
-          title: "Success",
-          description: `Indexed ${data.indexed_count} content items`,
+          title: "Indexing Successful",
+          description: data.message,
         })
+        setIndexingStatus("success")
       } else {
-        throw new Error(data.error || "Failed to index content")
+        toast({
+          title: "Indexing Failed",
+          description: data.error || "An unknown error occurred during indexing.",
+          variant: "destructive",
+        })
+        setIndexingStatus("error")
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Error indexing content:", error)
       toast({
-        title: "Error",
-        description: "Failed to index content",
+        title: "Indexing Error",
+        description: error.message || "Could not connect to the indexing service.",
         variant: "destructive",
       })
-    } finally {
-      setIsIndexing(false)
+      setIndexingStatus("error")
     }
   }
 
@@ -178,106 +184,119 @@ export default function AIManagementClient() {
   }
 
   const handleWritingAssistance = async () => {
-    if (!sampleContent.trim()) return
-
+    setIsAnalyzing(true)
+    setWritingAssistantSuggestions([])
     try {
       const response = await fetch("/api/ai/writing-assistant", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          content: sampleContent,
-          context: contentContext,
-        }),
+        body: JSON.stringify({ content: writingAssistantContent }),
       })
-
       const data = await response.json()
-
       if (response.ok) {
-        setWritingResults(data.suggestions)
+        setWritingAssistantSuggestions(data.suggestions)
         toast({
           title: "Analysis Complete",
-          description: "Writing assistance generated successfully",
+          description: "Writing suggestions generated.",
         })
       } else {
-        throw new Error(data.error || "Failed to analyze content")
+        toast({
+          title: "Analysis Failed",
+          description: data.error || "An unknown error occurred during analysis.",
+        })
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Error getting writing assistance:", error)
       toast({
-        title: "Error",
-        description: `Failed to analyze content: ${error instanceof Error ? error.message : String(error)}`,
+        title: "Analysis Error",
+        description: error.message || "Could not connect to the AI writing assistant.",
         variant: "destructive",
       })
+    } finally {
+      setIsAnalyzing(false)
     }
   }
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files.length > 0) {
+    if (event.target.files && event.target.files[0]) {
       setSelectedFile(event.target.files[0])
-    } else {
-      setSelectedFile(null)
     }
   }
 
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+  const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
-    setIsDragging(true)
-  }
+    event.stopPropagation()
+    setDragActive(true)
+  }, [])
 
-  const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+  const handleDragLeave = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
-    setIsDragging(false)
-  }
+    event.stopPropagation()
+    setDragActive(false)
+  }, [])
 
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
-    setIsDragging(false)
-    if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+    event.stopPropagation()
+    setDragActive(false)
+    if (event.dataTransfer.files && event.dataTransfer.files[0]) {
       setSelectedFile(event.dataTransfer.files[0])
-      event.dataTransfer.clearData()
     }
-  }
+  }, [])
 
   const handleDocumentUpload = async () => {
     if (!selectedFile) {
       toast({
         title: "No file selected",
-        description: "Please select a document to upload.",
+        description: "Please select a file to upload.",
         variant: "destructive",
       })
       return
     }
 
-    setIsUploadingDocument(true)
-    try {
-      const formData = new FormData()
-      formData.append("document", selectedFile)
+    // Restrict file types to plain text in this environment
+    if (!selectedFile.type.startsWith("text/")) {
+      toast({
+        title: "Unsupported File Type",
+        description: "Only plain text files (.txt) are supported for upload in this environment.",
+        variant: "destructive",
+      })
+      return
+    }
 
+    setIsUploading(true)
+    const formData = new FormData()
+    formData.append("file", selectedFile)
+
+    try {
       const response = await fetch("/api/ai/upload-document", {
         method: "POST",
         body: formData,
       })
-
       const data = await response.json()
-
       if (response.ok) {
         toast({
-          title: "Success",
+          title: "Document Uploaded",
           description: data.message,
         })
-        setSelectedFile(null) // Clear selected file after successful upload
+        setSelectedFile(null)
       } else {
-        throw new Error(data.error || "Failed to upload document")
+        toast({
+          title: "Upload Failed",
+          description: data.error || "An unknown error occurred during upload.",
+        })
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Error uploading document:", error)
       toast({
-        title: "Error",
-        description: `Failed to upload document: ${error instanceof Error ? error.message : String(error)}`,
+        title: "Upload Error",
+        description: error.message || "Could not connect to the upload service.",
         variant: "destructive",
       })
     } finally {
-      setIsUploadingDocument(false)
+      setIsUploading(false)
     }
   }
 
@@ -505,49 +524,40 @@ export default function AIManagementClient() {
         <TabsContent value="document-upload" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Upload Documents for AI Indexing</CardTitle>
-              <CardDescription>Upload PDF, DOCX, or plain text files to be indexed by the AI system.</CardDescription>
+              <CardTitle>Document Upload for AI</CardTitle>
+              <CardDescription>
+                Upload plain text documents (.txt) to be indexed by the AI for search and analysis.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div
-                className={cn(
-                  "flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg text-center",
-                  isDragging ? "border-primary bg-primary/10" : "border-gray-300 dark:border-gray-700",
-                )}
+                className={`flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-md transition-colors ${
+                  dragActive ? "border-blue-500 bg-blue-50" : "border-gray-300 dark:border-gray-700"
+                }`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
               >
-                <FileUp className="h-12 w-12 text-muted-foreground mb-3" />
-                <p className="text-muted-foreground mb-2">
-                  {selectedFile ? selectedFile.name : "Drag & drop your document here, or click to select"}
-                </p>
-                <Label htmlFor="document-upload" className="cursor-pointer">
-                  <Button variant="outline" asChild>
-                    <Input
-                      id="document-upload"
-                      type="file"
-                      accept=".pdf, .txt, .docx, application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                      onChange={handleFileChange}
-                      className="sr-only" // Hide the default input
-                    />
-                    <span>Select File</span>
-                  </Button>
-                </Label>
-              </div>
-
-              <Button onClick={handleDocumentUpload} disabled={!selectedFile || isUploadingDocument} className="w-full">
-                {isUploadingDocument ? (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                    Uploading & Indexing...
-                  </>
-                ) : (
-                  <>
-                    <FileText className="mr-2 h-4 w-4" />
-                    Upload Document
-                  </>
+                <UploadCloud className="h-12 w-12 text-gray-400 mb-3" />
+                <p className="text-gray-600 dark:text-gray-400 mb-2">Drag & drop your plain text file here, or</p>
+                <Input
+                  id="file-upload"
+                  type="file"
+                  accept=".txt" // Only accept plain text files in this environment
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <Button onClick={() => document.getElementById("file-upload")?.click()}>Select File</Button>
+                {selectedFile && (
+                  <div className="mt-3 flex items-center text-sm text-gray-700 dark:text-gray-300">
+                    <FileText className="h-4 w-4 mr-2" />
+                    <span>{selectedFile.name}</span>
+                  </div>
                 )}
+              </div>
+              <Button onClick={handleDocumentUpload} disabled={isUploading || !selectedFile}>
+                {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isUploading ? "Uploading..." : "Upload Document"}
               </Button>
             </CardContent>
           </Card>
