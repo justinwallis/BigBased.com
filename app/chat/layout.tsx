@@ -2,7 +2,6 @@
 
 import type * as React from "react"
 import { useState } from "react"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { MenuIcon } from "lucide-react"
 import { ChatSidebar } from "@/components/chat/chat-sidebar"
@@ -23,7 +22,7 @@ export default function ChatLayout({
       {/* Desktop Sidebar */}
       <div
         className={cn(
-          "hidden md:flex h-full flex-col transition-all duration-300 ease-in-out",
+          "hidden md:flex h-full flex-col transition-all duration-300 ease-in-out shrink-0", // Added shrink-0
           isSidebarOpen ? "w-64" : "w-0 overflow-hidden",
         )}
       >
@@ -33,29 +32,20 @@ export default function ChatLayout({
       {/* Main Content Area */}
       <main
         className={cn(
-          "flex-1 overflow-auto relative", // Added relative for absolute positioning of toggle
+          "flex-1 overflow-auto relative transition-all duration-300 ease-in-out",
+          isSidebarOpen ? "md:ml-0" : "md:ml-0", // Sidebar pushes, no need for margin here
         )}
       >
         {/* Universal Sidebar Toggle Button */}
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)} // Toggle for desktop
-              className="absolute top-4 left-4 z-20 border-none text-gray-900 dark:text-white" // Ensure visibility
-            >
-              <MenuIcon className="h-6 w-6" />
-              <span className="sr-only">Toggle sidebar</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent
-            side="left"
-            className={cn("p-0 w-64 border-none", isDark ? "bg-darkbg-DEFAULT text-white" : "bg-white text-black")}
-          >
-            <ChatSidebar />
-          </SheetContent>
-        </Sheet>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="absolute top-4 left-4 z-20 border-none text-gray-900 dark:text-white"
+        >
+          <MenuIcon className="h-6 w-6" />
+          <span className="sr-only">Toggle sidebar</span>
+        </Button>
         <div className="pt-16 h-full">{children}</div> {/* Add padding for the button */}
       </main>
     </div>

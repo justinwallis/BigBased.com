@@ -17,7 +17,7 @@ export function ChatInterface() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { theme } = useTheme()
   const isDark = theme === "dark"
-  const logoSrc = isDark ? "/BigBasedIconInvert.png" : "/bb-logo.png"
+  const logoSrc = isDark ? "/BigBasedIconInvert.png" : "/bb-logo.png" // Assuming these are correct paths
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -42,9 +42,9 @@ export function ChatInterface() {
           <Image
             src={logoSrc || "/placeholder.svg"}
             alt="BigBased Logo"
-            width={128}
-            height={128}
-            className="h-32 w-32 mb-6"
+            width={128} // Set intrinsic width
+            height={128} // Set intrinsic height
+            className="h-32 w-32 object-contain mb-6" // Use object-contain to prevent distortion
           />
           <h1 className="text-3xl font-bold mb-2">
             How can <span className="text-primary">We</span> help you?
