@@ -90,6 +90,13 @@ body {
   html:not(.dark) body {
     background-color: white !important;
   }
+
+  /* Ensure dark mode overrides are still applied correctly */
+  .dark html,
+  .dark body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
 }
 
 /* Add these styles at the end of the file */
@@ -101,41 +108,53 @@ body {
   border-bottom: 2px solid #0284c7;
 }
 
-/* Removed all specific !important background-color overrides for .dark mode
-   These should now be handled by the theme variables or component-specific classes. */
+/* REMOVE BLUE BACKGROUNDS - Replace with #080808 */
+.dark .bg-white {
+  background-color: #0d0d0d !important;
+}
 
-/* Removed all specific !important color overrides for text in .dark mode
-   These should now be handled by the theme variables or component-specific classes. */
+.dark .bg-gray-100 {
+  background-color: #080808 !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: #080808 !important;
+}
+
+/* Navigation and tabs - remove blue backgrounds */
+.dark .bg-white.dark\:bg-gray-900 {
+  background-color: #080808 !important;
+}
+
+.dark .sticky {
+  background-color: #080808 !important;
+}
 
 /* VERY SPECIFIC TARGETING - ONLY PROFILE PAGE ELEMENTS */
-/* These specific overrides are kept as they target very specific elements
-   and might not be easily handled by general theme variables.
-   However, I'm removing !important from color properties where possible
-   to allow theme variables to take precedence if they are more specific. */
 
 /* 1. HEADER NAVIGATION - Only on profile pages */
 /* Light mode: Header nav text black */
 :not(.dark) .site-header nav a,
 :not(.dark) .site-header .text-sm.font-medium.transition-colors {
-  color: #000000; /* Removed !important */
+  color: #000000 !important;
 }
 
 /* Light mode: Search icon black */
 :not(.dark) .site-header button[aria-label*="search"] svg,
 :not(.dark) .site-header .search-button svg {
-  color: #000000; /* Removed !important */
+  color: #000000 !important;
 }
 
 /* Dark mode: Header nav text white */
 .dark .site-header nav a,
 .dark .site-header .text-sm.font-medium.transition-colors {
-  color: #ffffff; /* Removed !important */
+  color: #ffffff !important;
 }
 
 /* Dark mode: Search icon white */
 .dark .site-header button[aria-label*="search"] svg,
 .dark .site-header .search-button svg {
-  color: #ffffff; /* Removed !important */
+  color: #ffffff !important;
 }
 
 /* 2. LEFT SIDEBAR - Only sidebar elements */
@@ -143,14 +162,14 @@ body {
 :not(.dark) .side-menu nav a,
 :not(.dark) .sidebar-nav a,
 :not(.dark) [data-sidebar] a {
-  color: #000000; /* Removed !important */
+  color: #000000 !important;
 }
 
 /* Dark mode: Sidebar text white */
 .dark .side-menu nav a,
 .dark .sidebar-nav a,
 .dark [data-sidebar] a {
-  color: #ffffff; /* Removed !important */
+  color: #ffffff !important;
 }
 
 /* 3. EDIT COVER PHOTO BUTTON - Always white in both modes */
@@ -277,21 +296,20 @@ body {
 
 /* PRESERVE EXISTING STYLES - Don't affect call-to-action or other sections */
 /* These selectors ensure we don't break existing working sections */
-/* Removed !important from these as well, relying on theme variables */
 .dark .text-gray-900.dark\:text-white {
-  color: hsl(var(--foreground));
+  color: #ffffff !important;
 }
 
 .dark .text-gray-700.dark\:text-gray-300 {
-  color: hsl(var(--muted-foreground));
+  color: #e5e7eb !important;
 }
 
 .dark .text-gray-600.dark\:text-gray-400 {
-  color: hsl(var(--muted-foreground));
+  color: #d1d5db !important;
 }
 
 .dark .text-gray-500.dark\:text-gray-400 {
-  color: hsl(var(--muted-foreground));
+  color: #9ca3af !important;
 }
 
 /* Custom styles for no borders */
