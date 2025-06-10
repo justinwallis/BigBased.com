@@ -2,13 +2,13 @@
 
 import Image from "next/image"
 import { cn } from "@/lib/utils"
-import { useTheme } from "next-themes"
-import { useEffect, useState } from "react" // Import useState and useEffect
+import { useTheme } from "@/components/theme-provider"
+import { useEffect, useState } from "react"
 
 interface BBLogoProps {
-  size?: "sm" | "md" | "lg" | "xl" // Re-added 'xl' size
+  size?: "sm" | "md" | "lg" | "xl"
   className?: string
-  inverted?: boolean // Re-added 'inverted' prop
+  inverted?: boolean
 }
 
 export default function BBLogo({ size = "md", className, inverted = false }: BBLogoProps) {
@@ -21,9 +21,9 @@ export default function BBLogo({ size = "md", className, inverted = false }: BBL
 
   const sizeClasses = {
     sm: "w-8 h-8",
-    md: "w-12 h-12", // Reverted to original md size
-    lg: "w-16 h-16", // Reverted to original lg size
-    xl: "w-24 h-24", // Re-added xl size
+    md: "w-12 h-12",
+    lg: "w-16 h-16",
+    xl: "w-24 h-24",
   }
 
   // Determine the effective theme (handle system theme detection)
@@ -33,10 +33,10 @@ export default function BBLogo({ size = "md", className, inverted = false }: BBL
   const logoSrc = mounted
     ? inverted || effectiveTheme === "dark"
       ? "/BigBasedIconInvert.png"
-      : "/bb-logo.png" // Corrected light mode logo path
+      : "/bb-logo.png"
     : typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
       ? "/BigBasedIconInvert.png"
-      : "/bb-logo.png" // Corrected light mode logo path for initial render
+      : "/bb-logo.png"
 
   return (
     <div className={cn(sizeClasses[size], "relative", className)}>

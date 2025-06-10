@@ -14,25 +14,30 @@ body {
 
 @layer base {
   :root {
-    --background: 0 0% 100%; /* White */
-    --foreground: 0 0% 3.1%; /* Black */
-    --card: 0 0% 100%; /* White */
-    --card-foreground: 0 0% 3.1%; /* Black */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.1%;
-    --primary: 263.4 70% 50.4%; /* Purple */
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9.1%;
+    --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
     --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9.1%;
+    --accent-foreground: 0 0% 9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.1%;
-    --input: 0 0% 96.1%;
-    --ring: 263.4 70% 50.4%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
     --radius: 0.5rem;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -43,16 +48,15 @@ body {
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
-
   .dark {
-    --background: 0 0% 3.1%; /* #080808 */
-    --foreground: 0 0% 98%; /* White */
-    --card: 0 0% 3.1%; /* #080808 */
-    --card-foreground: 0 0% 98%; /* White */
-    --popover: 0 0% 3.1%; /* #080808 */
+    --background: 0 0% 3.1%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 5.1%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 5.1%;
     --popover-foreground: 0 0% 98%;
-    --primary: 263.4 70% 50.4%; /* Purple */
-    --primary-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
     --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 14.9%;
@@ -62,9 +66,13 @@ body {
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 14.9%;
-    --input: 0 0% 3.1%; /* #080808 */
-    --ring: 263.4 70% 50.4%;
-    --radius: 0.5rem;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -80,16 +88,8 @@ body {
   * {
     @apply border-border;
   }
-  /* Apply theme background and foreground colors to html and body */
-  html,
   body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-  }
-
-  /* Explicit fallback for light mode background to ensure it's white */
-  html:not(.dark) body {
-    background-color: white !important;
+    @apply bg-background text-foreground;
   }
 }
 
@@ -99,7 +99,51 @@ body {
 }
 
 .tabs-list-hover-effect [data-state="active"] {
-  border-bottom: 2px solid #080808; /* Changed from blue to #080808 */
+  border-bottom: 2px solid #0284c7;
+}
+
+/* FORCE EXACT #080808 BACKGROUND */
+html {
+  background-color: #080808 !important;
+}
+
+.dark {
+  background-color: #080808 !important;
+}
+
+.dark body {
+  background-color: #080808 !important;
+}
+
+.dark html {
+  background-color: #080808 !important;
+}
+
+/* Main page containers */
+.dark .min-h-screen {
+  background-color: #080808 !important;
+}
+
+/* REMOVE BLUE BACKGROUNDS - Replace with #080808 */
+.dark .bg-white {
+  background-color: #0d0d0d !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: #080808 !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: #080808 !important;
+}
+
+/* Navigation and tabs - remove blue backgrounds */
+.dark .bg-white.dark\:bg-gray-900 {
+  background-color: #080808 !important;
+}
+
+.dark .sticky {
+  background-color: #080808 !important;
 }
 
 /* VERY SPECIFIC TARGETING - ONLY PROFILE PAGE ELEMENTS */
@@ -243,7 +287,7 @@ body {
 
 /* Social media icon circles - match background in dark mode */
 .dark .w-10.h-10.rounded-full.bg-gray-100.hover\:bg-gray-200.dark\:bg-gray-700 {
-  background-color: #080808 !important; /* Changed to #080808 */
+  background-color: #080808 !important;
 }
 
 .dark .w-10.h-10.rounded-full.bg-gray-100.hover\:bg-gray-200.dark\:bg-gray-700:hover {
@@ -263,7 +307,7 @@ body {
 
 /* Fix avatar border color */
 .dark .border-white.dark\:border-gray-900 {
-  border-color: #080808 !important; /* Changed to #080808 */
+  border-color: #080808 !important;
 }
 
 /* PRESERVE EXISTING STYLES - Don't affect call-to-action or other sections */
@@ -282,9 +326,4 @@ body {
 
 .dark .text-gray-500.dark\:text-gray-400 {
   color: #9ca3af !important;
-}
-
-/* Custom styles for no borders */
-.no-border {
-  border: none !important;
 }
