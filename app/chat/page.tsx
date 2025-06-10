@@ -1,17 +1,16 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useRef, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Menu, Send, Plus, User, Bot, ChevronLeft, Trash2 } from "lucide-react"
+import { Menu, Send, Plus, User, Bot, ChevronLeft, Trash2, TrendingUp, BookOpen, Users, Shield } from "lucide-react"
 import { useChat } from "ai/react"
 import BBLogo from "@/components/bb-logo"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
-import { useRouter } from "next/navigation" // Import useRouter
+import { useRouter } from "next/navigation"
 
 interface ChatMessage {
   id: string
@@ -28,15 +27,11 @@ interface ChatSession {
   updatedAt: Date
 }
 
-interface AIChatInterfaceProps {
-  initialSessionId?: string // Optional prop for loading a specific session
-}
-
-export default function AIChatInterface({ initialSessionId }: AIChatInterfaceProps) {
+export default function ChatPage() {
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([])
-  const [currentSessionId, setCurrentSessionId] = useState<string | null>(initialSessionId || null)
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -63,24 +58,29 @@ export default function AIChatInterface({ initialSessionId }: AIChatInterfacePro
   // Load chat sessions from localStorage on mount
   useEffect(() => {
     const savedSessions = localStorage.getItem("bigbased-chat-sessions")
+    let sessions: ChatSession[] = []
     if (savedSessions) {
       try {
-        const sessions = JSON.parse(savedSessions)
+        sessions = JSON.parse(savedSessions).map((s: any) => ({
+          ...s,
+          createdAt: new Date(s.createdAt),
+          updatedAt: new Date(s.updatedAt),
+          messages: s.messages.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) })),
+        }))
         setChatSessions(sessions)
-        if (initialSessionId) {
-          loadChatSession(initialSessionId, sessions)
-        } else if (sessions.length > 0) {
-          // If no initialSessionId, load the most recent one
-          loadChatSession(sessions[0].id, sessions)
-        }
       } catch (error) {
-        console.error("Error loading chat sessions:", error)
+        console.error("Error parsing chat sessions from localStorage:", error)
       }
-    } else if (!initialSessionId) {
-      // If no sessions and no initialSessionId, start a new one
+    }
+
+    // If there are saved sessions, load the most recent one
+    if (sessions.length > 0) {
+      loadChatSession(sessions[0].id, sessions)
+    } else {
+      // If no sessions, start a new one
       startNewChat()
     }
-  }, [initialSessionId]) // Depend on initialSessionId
+  }, []) // Empty dependency array means this runs once on mount
 
   // Save chat sessions to localStorage whenever they change
   useEffect(() => {
@@ -139,7 +139,6 @@ export default function AIChatInterface({ initialSessionId }: AIChatInterfacePro
     setChatSessions(updatedSessions)
     setCurrentSessionId(newSession.id)
     setMessages([]) // Clear messages for the new chat
-    router.push(`/ai/chat/${newSessionId}`) // Navigate to the new chat URL
   }
 
   // Load existing chat session
@@ -155,13 +154,12 @@ export default function AIChatInterface({ initialSessionId }: AIChatInterfacePro
             content: msg.content,
           })),
         )
-        router.push(`/ai/chat/${sessionId}`) // Navigate to the loaded chat URL
       } else {
-        // If session not found (e.g., deleted from another tab), start new chat
+        // If session not found (e.g., deleted from another tab or invalid ID), start new chat
         startNewChat()
       }
     },
-    [chatSessions, setMessages, router],
+    [chatSessions, setMessages],
   )
 
   // Delete chat session
@@ -202,6 +200,8 @@ export default function AIChatInterface({ initialSessionId }: AIChatInterfacePro
     handleSubmit(e) // Call the original handleSubmit from useChat
   }
 
+  const showWelcomeScreen = messages.length === 0 && !isLoading
+
   return (
     <div className="flex h-screen bg-[#080808] text-white">
       {/* Sidebar */}
@@ -211,11 +211,11 @@ export default function AIChatInterface({ initialSessionId }: AIChatInterfacePro
           sidebarOpen ? "w-80" : "w-0 overflow-hidden",
           "lg:relative absolute z-50 h-full bg-[#080808]",
         )}
-        style={{ borderRight: "none" }} // Remove border
+        style={{ borderRight: "none" }}
       >
         {/* Sidebar Header */}
         <div className="flex items-center justify-between p-4" style={{ borderBottom: "none" }}>
-          <Link href="/ai" className="flex items-center space-x-2 group">
+          <Link href="/chat" className="flex items-center space-x-2 group" onClick={startNewChat}>
             <BBLogo size="sm" />
             <span className="font-semibold text-lg group-hover:text-purple-400 transition-colors">BigBased AI</span>
           </Link>
@@ -234,7 +234,7 @@ export default function AIChatInterface({ initialSessionId }: AIChatInterfacePro
           <Button
             onClick={startNewChat}
             className="w-full bg-gray-800 hover:bg-gray-700 text-white"
-            style={{ border: "none" }} // Remove border
+            style={{ border: "none" }}
           >
             <Plus className="h-4 w-4 mr-2" />
             New Chat
@@ -252,12 +252,13 @@ export default function AIChatInterface({ initialSessionId }: AIChatInterfacePro
                 <Button
                   variant="ghost"
                   className={cn(
-                    "flex-1 justify-start mb-1 text-left h-auto p-3 pr-10", // Added pr-10 for delete button space
+                    "flex-1 justify-start mb-1 text-left h-auto p-3 pr-10",
                     currentSessionId === session.id
                       ? "bg-gray-800 text-white"
                       : "text-gray-400 hover:text-white hover:bg-gray-800/50",
                   )}
                   onClick={() => loadChatSession(session.id)}
+                  style={{ border: "none" }}
                 >
                   <div className="truncate">
                     <div className="font-medium truncate">{session.title}</div>
@@ -280,25 +281,30 @@ export default function AIChatInterface({ initialSessionId }: AIChatInterfacePro
 
         {/* Account Section */}
         <div className="p-4" style={{ borderTop: "none" }}>
-          <Button variant="ghost" className="w-full justify-start text-gray-400 hover:text-white">
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-gray-400 hover:text-white"
+            style={{ border: "none" }}
+          >
             <User className="h-4 w-4 mr-2" />
             Account
           </Button>
         </div>
       </div>
 
-      {/* Main Chat Area */}
+      {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4" style={{ borderBottom: "none" }}>
           <div className="flex items-center space-x-3">
-            {/* New Sidebar Toggle Button */}
+            {/* Sidebar Toggle Button */}
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="text-gray-400 hover:text-white"
               aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+              style={{ border: "none" }}
             >
               <Menu className="h-5 w-5" />
             </Button>
@@ -308,73 +314,24 @@ export default function AIChatInterface({ initialSessionId }: AIChatInterfacePro
           </div>
         </div>
 
-        {/* Chat Messages */}
-        <div className="flex-1 flex flex-col">
-          {messages.length === 0 && !isLoading ? (
-            // This section is now only for the welcome page, but this component is for chat sessions
-            // This block should ideally not be reached if initialSessionId is provided and valid
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-              <p className="text-gray-400 text-lg">Loading chat or starting a new one...</p>
+        {/* Conditional Rendering: Welcome Screen vs. Chat Interface */}
+        {showWelcomeScreen ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+            <div className="mb-8">
+              <BBLogo size="lg" />
             </div>
-          ) : (
-            // Chat Messages
-            <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
-              <div className="space-y-6 max-w-4xl mx-auto">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={cn("flex gap-4", message.role === "user" ? "justify-end" : "justify-start")}
-                  >
-                    {message.role === "assistant" && (
-                      <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
-                        <Bot className="h-4 w-4 text-white" />
-                      </div>
-                    )}
 
-                    <div
-                      className={cn(
-                        "max-w-[80%] rounded-lg px-4 py-3",
-                        message.role === "user" ? "bg-purple-600 text-white" : "bg-gray-800 text-gray-100",
-                      )}
-                    >
-                      <div className="whitespace-pre-wrap">{message.content}</div>
-                    </div>
+            <h1 className="text-4xl lg:text-5xl font-bold mb-4">
+              How can <span className="text-purple-400">We</span> help you?
+            </h1>
 
-                    {message.role === "user" && (
-                      <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0">
-                        <User className="h-4 w-4 text-white" />
-                      </div>
-                    )}
-                  </div>
-                ))}
+            <p className="text-gray-400 text-lg mb-12 max-w-2xl">
+              Start a conversation with BigBased AI to explore conservative values, digital sovereignty, and community
+              building.
+            </p>
 
-                {isLoading && (
-                  <div className="flex gap-4 justify-start">
-                    <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
-                      <Bot className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="bg-gray-800 rounded-lg px-4 py-3">
-                      <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                        <div
-                          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                          style={{ animationDelay: "0.1s" }}
-                        />
-                        <div
-                          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                          style={{ animationDelay: "0.2s" }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
-          )}
-
-          {/* Input Area at bottom for chat sessions */}
-          <div className="p-4" style={{ borderTop: "none" }}>
-            <form onSubmit={handleChatSubmit} className="max-w-4xl mx-auto">
+            {/* Centered Input Area for Welcome Screen */}
+            <form onSubmit={handleChatSubmit} className="w-full max-w-2xl mb-12">
               <div className="relative">
                 <Input
                   ref={inputRef}
@@ -383,20 +340,181 @@ export default function AIChatInterface({ initialSessionId }: AIChatInterfacePro
                   placeholder="Type anything to BigBased..."
                   disabled={isLoading}
                   className="w-full bg-gray-900 text-white placeholder-gray-400 pr-12 py-6 text-lg focus:ring-purple-500 focus:ring-2 focus:outline-none"
-                  style={{ border: "none" }} // Remove border
+                  style={{ border: "none" }}
                 />
                 <Button
                   type="submit"
                   disabled={isLoading || !input.trim()}
                   size="icon"
                   className="absolute right-2 top-1/2 -translate-y-1/2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700"
+                  style={{ border: "none" }}
                 >
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
             </form>
+
+            {/* Quick Action Buttons */}
+            <div className="grid grid-cols-2 gap-4 w-full max-w-2xl">
+              <Button
+                variant="outline"
+                className="h-20 flex flex-col items-center justify-center space-y-2 bg-transparent hover:bg-gray-800 text-gray-300 hover:text-white"
+                onClick={() => {
+                  const prompt =
+                    "What are the current trending topics in conservative politics and digital sovereignty?"
+                  handleInputChange({ target: { value: prompt } } as any)
+                  setTimeout(() => {
+                    if (inputRef.current) {
+                      inputRef.current.form?.requestSubmit()
+                    }
+                  }, 100)
+                }}
+                style={{ border: "none" }}
+              >
+                <TrendingUp className="h-6 w-6" />
+                <span>Trending Topics</span>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="h-20 flex flex-col items-center justify-center space-y-2 bg-transparent hover:bg-gray-800 text-gray-300 hover:text-white"
+                onClick={() => {
+                  const prompt = "What are the best practices for digital privacy and security?"
+                  handleInputChange({ target: { value: prompt } } as any)
+                  setTimeout(() => {
+                    if (inputRef.current) {
+                      inputRef.current.form?.requestSubmit()
+                    }
+                  }, 100)
+                }}
+                style={{ border: "none" }}
+              >
+                <Shield className="h-6 w-6" />
+                <span>Digital Security</span>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="h-20 flex flex-col items-center justify-center space-y-2 bg-transparent hover:bg-gray-800 text-gray-300 hover:text-white"
+                onClick={() => {
+                  const prompt = "Tell me about BigBased's mission and conservative values."
+                  handleInputChange({ target: { value: prompt } } as any)
+                  setTimeout(() => {
+                    if (inputRef.current) {
+                      inputRef.current.form?.requestSubmit()
+                    }
+                  }, 100)
+                }}
+                style={{ border: "none" }}
+              >
+                <BookOpen className="h-6 w-6" />
+                <span>Knowledge Base</span>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="h-20 flex flex-col items-center justify-center space-y-2 bg-transparent hover:bg-gray-800 text-gray-300 hover:text-white"
+                onClick={() => {
+                  const prompt = "How can I get involved in the BigBased community?"
+                  handleInputChange({ target: { value: prompt } } as any)
+                  setTimeout(() => {
+                    if (inputRef.current) {
+                      inputRef.current.form?.requestSubmit()
+                    }
+                  }, 100)
+                }}
+                style={{ border: "none" }}
+              >
+                <Users className="h-6 w-6" />
+                <span>Community</span>
+              </Button>
+            </div>
           </div>
-        </div>
+        ) : (
+          <>
+            {/* Chat Messages */}
+            <div className="flex-1 flex flex-col">
+              <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+                <div className="space-y-6 max-w-4xl mx-auto">
+                  {messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={cn("flex gap-4", message.role === "user" ? "justify-end" : "justify-start")}
+                    >
+                      {message.role === "assistant" && (
+                        <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
+                          <Bot className="h-4 w-4 text-white" />
+                        </div>
+                      )}
+
+                      <div
+                        className={cn(
+                          "max-w-[80%] rounded-lg px-4 py-3",
+                          message.role === "user" ? "bg-purple-600 text-white" : "bg-gray-800 text-gray-100",
+                        )}
+                      >
+                        <div className="whitespace-pre-wrap">{message.content}</div>
+                      </div>
+
+                      {message.role === "user" && (
+                        <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0">
+                          <User className="h-4 w-4 text-white" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {isLoading && (
+                    <div className="flex gap-4 justify-start">
+                      <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
+                        <Bot className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="bg-gray-800 rounded-lg px-4 py-3">
+                        <div className="flex space-x-1">
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                          <div
+                            className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                            style={{ animationDelay: "0.1s" }}
+                          />
+                          <div
+                            className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                            style={{ animationDelay: "0.2s" }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
+
+            {/* Input Area at bottom for chat sessions */}
+            <div className="p-4" style={{ borderTop: "none" }}>
+              <form onSubmit={handleChatSubmit} className="max-w-4xl mx-auto">
+                <div className="relative">
+                  <Input
+                    ref={inputRef}
+                    value={input}
+                    onChange={handleInputChange}
+                    placeholder="Type anything to BigBased..."
+                    disabled={isLoading}
+                    className="w-full bg-gray-900 text-white placeholder-gray-400 pr-12 py-6 text-lg focus:ring-purple-500 focus:ring-2 focus:outline-none"
+                    style={{ border: "none" }}
+                  />
+                  <Button
+                    type="submit"
+                    disabled={isLoading || !input.trim()}
+                    size="icon"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700"
+                    style={{ border: "none" }}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Mobile Sidebar Overlay */}

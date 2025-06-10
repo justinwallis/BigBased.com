@@ -21,7 +21,12 @@ export async function POST(request: NextRequest) {
     // We need to extract the actual conversation history (excluding the current user's message)
     // and the current user's message to pass to ragSystem.
     const latestUserMessage = input // This is the current message being sent
-    const conversationHistory: CoreMessage[] = messages.slice(0, -1) // All messages except the very last one (which is the current user input)
+
+    // Filter out the current user's message from the history if it's duplicated by 'input'
+    // This ensures the history passed to RAG is only previous turns.
+    const conversationHistory: CoreMessage[] = messages.filter(
+      (msg: CoreMessage) => msg.role !== "user" || msg.content !== input,
+    )
 
     console.log("Processed latestUserMessage for RAG:", latestUserMessage)
     console.log("Processed conversationHistory for RAG:", conversationHistory)

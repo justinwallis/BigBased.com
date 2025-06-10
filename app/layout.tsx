@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/contexts/auth-context"
 import { DomainProvider } from "@/contexts/domain-context"
 import ClientLayout from "./client-layout"
+// import "./ai/ai-styles.css" // Removed old AI CSS import
 
 const inter = Inter({ subsets: ["latin"] })
 
