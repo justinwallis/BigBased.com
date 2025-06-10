@@ -107,12 +107,12 @@ export default function ChatPage() {
     // Initialize mobile state and add resize listener
     const handleResize = () => {
       setIsMobile(window.innerWidth < 1024)
-      // If resizing to desktop from mobile, and sidebar was closed, open it
-      if (window.innerWidth >= 1024 && !sidebarOpen) {
+      // On desktop, sidebar should always be open.
+      // On mobile, sidebar should be closed by default.
+      // This ensures consistent behavior without auto-collapsing/opening on resize.
+      if (window.innerWidth >= 1024) {
         setSidebarOpen(true)
-      }
-      // If resizing to mobile from desktop, and sidebar was open, close it
-      if (window.innerWidth < 1024 && sidebarOpen) {
+      } else {
         setSidebarOpen(false)
       }
     }
@@ -120,7 +120,7 @@ export default function ChatPage() {
     handleResize() // Set initial state
     window.addEventListener("resize", handleResize)
     return () => window.removeEventListener("resize", handleResize)
-  }, [sidebarOpen]) // Added sidebarOpen to dependency array to react to its changes
+  }, []) // Removed sidebarOpen from dependency array to prevent re-running on sidebar state change
 
   // Save chat sessions to localStorage whenever they change
   useEffect(() => {
@@ -259,12 +259,10 @@ export default function ChatPage() {
       <div
         className={cn(
           "flex flex-col transition-all duration-300 ease-in-out flex-shrink-0 bg-card no-border h-full",
-          // Mobile specific positioning
+          // Mobile specific positioning: fixed overlay, controlled by left-0 or -left-80
           isMobile && "fixed inset-y-0 z-50",
           isMobile && (sidebarOpen ? "left-0" : "-left-80"),
-          // Desktop specific positioning
-          !isMobile && "relative",
-          // Width control: w-0 (hidden) by default, w-80 (open) when sidebarOpen is true
+          // Width control: w-80 when sidebarOpen is true, w-0 when closed (for desktop)
           sidebarOpen ? "w-80" : "w-0 overflow-hidden",
         )}
       >
@@ -273,11 +271,13 @@ export default function ChatPage() {
           <Link href="/chat" className="flex items-center space-x-2 group" onClick={startNewChat}>
             <span className="font-semibold text-lg group-hover:text-purple-400 transition-colors">BigBased AI</span>
           </Link>
+          {/* This button is now always visible on mobile to close the sidebar */}
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-muted-foreground hover:text-primary no-border"
+            className="text-muted-foreground hover:text-primary no-border"
+            aria-label="Close sidebar"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
