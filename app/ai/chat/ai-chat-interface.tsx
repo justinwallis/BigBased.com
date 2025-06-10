@@ -1,14 +1,17 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import type React from "react"
+
+import { useState, useRef, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Menu, Send, Plus, User, Bot, ChevronLeft, TrendingUp, BookOpen, Users, Shield, Trash2 } from "lucide-react"
+import { Menu, Send, Plus, User, Bot, ChevronLeft, Trash2 } from "lucide-react"
 import { useChat } from "ai/react"
 import BBLogo from "@/components/bb-logo"
 import { cn } from "@/lib/utils"
-import Link from "next/link" // Import Link for navigation
+import Link from "next/link"
+import { useRouter } from "next/navigation" // Import useRouter
 
 interface ChatMessage {
   id: string
@@ -25,10 +28,15 @@ interface ChatSession {
   updatedAt: Date
 }
 
-export default function AIChatInterface() {
+interface AIChatInterfaceProps {
+  initialSessionId?: string // Optional prop for loading a specific session
+}
+
+export default function AIChatInterface({ initialSessionId }: AIChatInterfaceProps) {
+  const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([])
-  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(initialSessionId || null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -38,7 +46,6 @@ export default function AIChatInterface() {
       domain: "bigbased.com",
     },
     onFinish: (message) => {
-      // Save conversation to chat history
       saveMessageToHistory(message)
     },
   })
@@ -60,18 +67,20 @@ export default function AIChatInterface() {
       try {
         const sessions = JSON.parse(savedSessions)
         setChatSessions(sessions)
-        // If there are saved sessions, load the most recent one by default
-        if (sessions.length > 0 && !currentSessionId) {
-          loadChatSession(sessions[0].id)
+        if (initialSessionId) {
+          loadChatSession(initialSessionId, sessions)
+        } else if (sessions.length > 0) {
+          // If no initialSessionId, load the most recent one
+          loadChatSession(sessions[0].id, sessions)
         }
       } catch (error) {
         console.error("Error loading chat sessions:", error)
       }
-    } else {
-      // If no sessions, start a new one automatically
+    } else if (!initialSessionId) {
+      // If no sessions and no initialSessionId, start a new one
       startNewChat()
     }
-  }, [])
+  }, [initialSessionId]) // Depend on initialSessionId
 
   // Save chat sessions to localStorage whenever they change
   useEffect(() => {
@@ -79,14 +88,13 @@ export default function AIChatInterface() {
   }, [chatSessions])
 
   // Save message to current session
-  const saveMessageToHistory = (message: any) => {
-    if (!currentSessionId) return
+  const saveMessageToHistory = useCallback(
+    (message: any) => {
+      if (!currentSessionId) return
 
-    const updatedSessions = chatSessions.map((session) => {
-      if (session.id === currentSessionId) {
-        return {
-          ...session,
-          messages: [
+      const updatedSessions = chatSessions.map((session) => {
+        if (session.id === currentSessionId) {
+          const updatedMessages = [
             ...session.messages,
             {
               id: message.id,
@@ -94,46 +102,67 @@ export default function AIChatInterface() {
               content: message.content,
               timestamp: new Date(),
             },
-          ],
-          updatedAt: new Date(),
-        }
-      }
-      return session
-    })
+          ]
+          // If it's the first message in a new chat, set its title
+          const title =
+            session.title === "New Chat" && updatedMessages.length > 0
+              ? updatedMessages[0].content.substring(0, 30) + (updatedMessages[0].content.length > 30 ? "..." : "")
+              : session.title
 
-    setChatSessions(updatedSessions) // Use setChatSessions to trigger useEffect for localStorage
-  }
+          return {
+            ...session,
+            title: title,
+            messages: updatedMessages,
+            updatedAt: new Date(),
+          }
+        }
+        return session
+      })
+
+      setChatSessions(updatedSessions)
+    },
+    [currentSessionId, chatSessions],
+  )
 
   // Start new chat session
   const startNewChat = () => {
+    const newSessionId = Date.now().toString()
     const newSession: ChatSession = {
-      id: Date.now().toString(),
-      title: "New Chat", // Default title, could be updated later
+      id: newSessionId,
+      title: "New Chat",
       messages: [],
       createdAt: new Date(),
       updatedAt: new Date(),
     }
 
     const updatedSessions = [newSession, ...chatSessions]
-    setChatSessions(updatedSessions) // Update state
+    setChatSessions(updatedSessions)
     setCurrentSessionId(newSession.id)
     setMessages([]) // Clear messages for the new chat
+    router.push(`/ai/chat/${newSessionId}`) // Navigate to the new chat URL
   }
 
   // Load existing chat session
-  const loadChatSession = (sessionId: string) => {
-    const session = chatSessions.find((s) => s.id === sessionId)
-    if (session) {
-      setCurrentSessionId(sessionId)
-      setMessages(
-        session.messages.map((msg) => ({
-          id: msg.id,
-          role: msg.role,
-          content: msg.content,
-        })),
-      )
-    }
-  }
+  const loadChatSession = useCallback(
+    (sessionId: string, sessionsToSearch: ChatSession[] = chatSessions) => {
+      const session = sessionsToSearch.find((s) => s.id === sessionId)
+      if (session) {
+        setCurrentSessionId(sessionId)
+        setMessages(
+          session.messages.map((msg) => ({
+            id: msg.id,
+            role: msg.role,
+            content: msg.content,
+          })),
+        )
+        router.push(`/ai/chat/${sessionId}`) // Navigate to the loaded chat URL
+      } else {
+        // If session not found (e.g., deleted from another tab), start new chat
+        startNewChat()
+      }
+    },
+    [chatSessions, setMessages, router],
+  )
 
   // Delete chat session
   const deleteChatSession = (sessionId: string) => {
@@ -141,33 +170,12 @@ export default function AIChatInterface() {
     setChatSessions(updatedSessions)
 
     if (currentSessionId === sessionId) {
-      // If the deleted session was the current one, start a new chat
+      // If the deleted session was the current one, start a new chat or load the first available
       if (updatedSessions.length > 0) {
-        loadChatSession(updatedSessions[0].id)
+        loadChatSession(updatedSessions[0].id, updatedSessions)
       } else {
         startNewChat()
       }
-    }
-  }
-
-  // Handle quick action buttons
-  const handleQuickAction = (action: string) => {
-    const prompts = {
-      trending: "What are the current trending topics in conservative politics and digital sovereignty?",
-      knowledge: "Tell me about BigBased's mission and conservative values.",
-      community: "How can I get involved in the BigBased community?",
-      security: "What are the best practices for digital privacy and security?",
-    }
-
-    const prompt = prompts[action as keyof typeof prompts]
-    if (prompt) {
-      handleInputChange({ target: { value: prompt } } as any)
-      // Auto-submit after a brief delay
-      setTimeout(() => {
-        if (inputRef.current) {
-          inputRef.current.form?.requestSubmit()
-        }
-      }, 100)
     }
   }
 
@@ -179,18 +187,34 @@ export default function AIChatInterface() {
     }).format(date)
   }
 
+  // Handle form submission for the chat interface
+  const handleChatSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    // If it's a new chat and the first message, save the user's message to history immediately
+    if (currentSessionId && messages.length === 0 && input.trim()) {
+      saveMessageToHistory({
+        id: "user-" + Date.now(),
+        role: "user",
+        content: input,
+        timestamp: new Date(),
+      })
+    }
+    handleSubmit(e) // Call the original handleSubmit from useChat
+  }
+
   return (
     <div className="flex h-screen bg-[#080808] text-white">
       {/* Sidebar */}
       <div
         className={cn(
-          "flex flex-col border-r border-gray-800 transition-all duration-300 ease-in-out",
+          "flex flex-col transition-all duration-300 ease-in-out",
           sidebarOpen ? "w-80" : "w-0 overflow-hidden",
           "lg:relative absolute z-50 h-full bg-[#080808]",
         )}
+        style={{ borderRight: "none" }} // Remove border
       >
         {/* Sidebar Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-800">
+        <div className="flex items-center justify-between p-4" style={{ borderBottom: "none" }}>
           <Link href="/ai" className="flex items-center space-x-2 group">
             <BBLogo size="sm" />
             <span className="font-semibold text-lg group-hover:text-purple-400 transition-colors">BigBased AI</span>
@@ -209,7 +233,8 @@ export default function AIChatInterface() {
         <div className="p-4">
           <Button
             onClick={startNewChat}
-            className="w-full bg-gray-800 hover:bg-gray-700 text-white border border-gray-700"
+            className="w-full bg-gray-800 hover:bg-gray-700 text-white"
+            style={{ border: "none" }} // Remove border
           >
             <Plus className="h-4 w-4 mr-2" />
             New Chat
@@ -254,7 +279,7 @@ export default function AIChatInterface() {
         </div>
 
         {/* Account Section */}
-        <div className="border-t border-gray-800 p-4">
+        <div className="p-4" style={{ borderTop: "none" }}>
           <Button variant="ghost" className="w-full justify-start text-gray-400 hover:text-white">
             <User className="h-4 w-4 mr-2" />
             Account
@@ -265,7 +290,7 @@ export default function AIChatInterface() {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-800">
+        <div className="flex items-center justify-between p-4" style={{ borderBottom: "none" }}>
           <div className="flex items-center space-x-3">
             {/* New Sidebar Toggle Button */}
             <Button
@@ -285,60 +310,11 @@ export default function AIChatInterface() {
 
         {/* Chat Messages */}
         <div className="flex-1 flex flex-col">
-          {messages.length === 0 ? (
-            // Welcome Screen
+          {messages.length === 0 && !isLoading ? (
+            // This section is now only for the welcome page, but this component is for chat sessions
+            // This block should ideally not be reached if initialSessionId is provided and valid
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-              <div className="mb-8">
-                <BBLogo size="lg" />
-              </div>
-
-              <h1 className="text-4xl lg:text-5xl font-bold mb-4">
-                How can <span className="text-purple-400">We</span> help you?
-              </h1>
-
-              <p className="text-gray-400 text-lg mb-12 max-w-2xl">
-                Start a conversation with BigBased AI to explore conservative values, digital sovereignty, and community
-                building.
-              </p>
-
-              {/* Quick Action Buttons */}
-              <div className="grid grid-cols-2 gap-4 w-full max-w-2xl">
-                <Button
-                  variant="outline"
-                  className="h-20 flex flex-col items-center justify-center space-y-2 bg-transparent border-gray-700 hover:bg-gray-800 text-gray-300 hover:text-white"
-                  onClick={() => handleQuickAction("trending")}
-                >
-                  <TrendingUp className="h-6 w-6" />
-                  <span>Trending Topics</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="h-20 flex flex-col items-center justify-center space-y-2 bg-transparent border-gray-700 hover:bg-gray-800 text-gray-300 hover:text-white"
-                  onClick={() => handleQuickAction("security")}
-                >
-                  <Shield className="h-6 w-6" />
-                  <span>Digital Security</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="h-20 flex flex-col items-center justify-center space-y-2 bg-transparent border-gray-700 hover:bg-gray-800 text-gray-300 hover:text-white"
-                  onClick={() => handleQuickAction("knowledge")}
-                >
-                  <BookOpen className="h-6 w-6" />
-                  <span>Knowledge Base</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="h-20 flex flex-col items-center justify-center space-y-2 bg-transparent border-gray-700 hover:bg-gray-800 text-gray-300 hover:text-white"
-                  onClick={() => handleQuickAction("community")}
-                >
-                  <Users className="h-6 w-6" />
-                  <span>Community</span>
-                </Button>
-              </div>
+              <p className="text-gray-400 text-lg">Loading chat or starting a new one...</p>
             </div>
           ) : (
             // Chat Messages
@@ -396,9 +372,9 @@ export default function AIChatInterface() {
             </ScrollArea>
           )}
 
-          {/* Input Area */}
-          <div className="border-t border-gray-800 p-4">
-            <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
+          {/* Input Area at bottom for chat sessions */}
+          <div className="p-4" style={{ borderTop: "none" }}>
+            <form onSubmit={handleChatSubmit} className="max-w-4xl mx-auto">
               <div className="relative">
                 <Input
                   ref={inputRef}
@@ -406,7 +382,8 @@ export default function AIChatInterface() {
                   onChange={handleInputChange}
                   placeholder="Type anything to BigBased..."
                   disabled={isLoading}
-                  className="w-full bg-gray-900 border-gray-700 text-white placeholder-gray-400 pr-12 py-6 text-lg focus:border-purple-500 focus:ring-purple-500"
+                  className="w-full bg-gray-900 text-white placeholder-gray-400 pr-12 py-6 text-lg focus:ring-purple-500 focus:ring-2 focus:outline-none"
+                  style={{ border: "none" }} // Remove border
                 />
                 <Button
                   type="submit"
