@@ -3,9 +3,23 @@ import { ragSystem } from "@/lib/ai-rag-system"
 import { createClient } from "@/lib/supabase/server"
 
 export async function POST(request: NextRequest) {
-  try {
-    const { content_id, type = "content" } = await request.json()
+  let content_id: string | undefined
+  let type: "content" | "documentation" | "community" | "profile" = "content"
 
+  try {
+    // Attempt to parse JSON, but handle cases where body might be empty or not JSON
+    const requestText = await request.text()
+    if (requestText) {
+      const requestBody = JSON.parse(requestText)
+      content_id = requestBody.content_id
+      type = requestBody.type || "content"
+    }
+  } catch (parseError) {
+    console.warn("Could not parse request body as JSON, proceeding with default values:", parseError)
+    // If parsing fails, content_id remains undefined and type defaults to "content"
+  }
+
+  try {
     // Get content from database
     const supabase = createClient(true) // Use service role
 
@@ -33,7 +47,7 @@ export async function POST(request: NextRequest) {
           id: item.id,
           content: `${item.title}\n\n${item.content?.text || ""}`,
           metadata: {
-            type: type as any,
+            type: type as any, // Use the type from request or default
             title: item.title,
             url: `/content/${item.slug}`,
             domain: item.domain || "bigbased.com",
