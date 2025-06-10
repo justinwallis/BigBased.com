@@ -2,85 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-}
-
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --background: 0 0% 100%; /* White */
+    --foreground: 0 0% 9%; /* Near black */
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 0 0% 9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+    --popover-foreground: 0 0% 9%;
+    --primary: 240 5.9% 90%; /* Light gray */
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 4.8% 95.9%; /* Lighter gray */
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
     --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
   .dark {
-    --background: 0 0% 3.1%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 5.1%;
+    --background: 0 0% 3.1%; /* #080808 */
+    --foreground: 0 0% 98%; /* Near white */
+    --card: 0 0% 3.1%; /* #080808 */
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 5.1%;
+    --popover: 0 0% 3.1%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
+    --primary: 240 5.9% 10%; /* Darker gray */
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 3.7% 15.9%; /* Darker gray */
     --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
   }
 }
 
@@ -93,237 +58,59 @@ body {
   }
 }
 
-/* Add these styles at the end of the file */
-.tabs-list-hover-effect [data-state="inactive"]:hover {
-  border-bottom: 2px solid #e5e7eb;
+/* Custom overrides for specific elements to ensure #222222 */
+.bg-custom-chat-elements {
+  background-color: #222222 !important;
 }
 
-.tabs-list-hover-effect [data-state="active"] {
-  border-bottom: 2px solid #0284c7;
+.hover\:bg-custom-chat-elements:hover {
+  background-color: #222222 !important;
 }
 
-/* FORCE EXACT #080808 BACKGROUND */
-html {
-  background-color: #080808 !important;
+/* Remove all borders */
+.border,
+.border-t,
+.border-b,
+.border-l,
+.border-r,
+.border-gray-200,
+.border-gray-800,
+.border-gray-700,
+.border-gray-600,
+.border-gray-500,
+.border-gray-400,
+.border-gray-300,
+.border-gray-100,
+.border-white {
+  border: none !important;
 }
 
-.dark {
-  background-color: #080808 !important;
+/* Ensure no ring colors */
+.focus-visible\:ring-2:focus-visible,
+.focus-visible\:ring-offset-2:focus-visible {
+  --tw-ring-width: 0px !important;
+  --tw-ring-offset-width: 0px !important;
 }
 
-.dark body {
-  background-color: #080808 !important;
+/* Remove shadows */
+.shadow-sm,
+.shadow,
+.shadow-md,
+.shadow-lg,
+.shadow-xl,
+.shadow-2xl,
+.shadow-inner,
+.shadow-none {
+  box-shadow: none !important;
 }
 
-.dark html {
-  background-color: #080808 !important;
+/* Ensure no default focus outlines */
+*:focus {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
-/* Main page containers */
-.dark .min-h-screen {
-  background-color: #080808 !important;
-}
-
-/* REMOVE BLUE BACKGROUNDS - Replace with #080808 */
-.dark .bg-white {
-  background-color: #0d0d0d !important;
-}
-
-.dark .bg-gray-100 {
-  background-color: #080808 !important;
-}
-
-.dark .bg-gray-50 {
-  background-color: #080808 !important;
-}
-
-/* Navigation and tabs - remove blue backgrounds */
-.dark .bg-white.dark\:bg-gray-900 {
-  background-color: #080808 !important;
-}
-
-.dark .sticky {
-  background-color: #080808 !important;
-}
-
-/* VERY SPECIFIC TARGETING - ONLY PROFILE PAGE ELEMENTS */
-
-/* 1. HEADER NAVIGATION - Only on profile pages */
-/* Light mode: Header nav text black */
-:not(.dark) .site-header nav a,
-:not(.dark) .site-header .text-sm.font-medium.transition-colors {
-  color: #000000 !important;
-}
-
-/* Light mode: Search icon black */
-:not(.dark) .site-header button[aria-label*="search"] svg,
-:not(.dark) .site-header .search-button svg {
-  color: #000000 !important;
-}
-
-/* Dark mode: Header nav text white */
-.dark .site-header nav a,
-.dark .site-header .text-sm.font-medium.transition-colors {
-  color: #ffffff !important;
-}
-
-/* Dark mode: Search icon white */
-.dark .site-header button[aria-label*="search"] svg,
-.dark .site-header .search-button svg {
-  color: #ffffff !important;
-}
-
-/* 2. LEFT SIDEBAR - Only sidebar elements */
-/* Light mode: Sidebar text black */
-:not(.dark) .side-menu nav a,
-:not(.dark) .sidebar-nav a,
-:not(.dark) [data-sidebar] a {
-  color: #000000 !important;
-}
-
-/* Dark mode: Sidebar text white */
-.dark .side-menu nav a,
-.dark .sidebar-nav a,
-.dark [data-sidebar] a {
-  color: #ffffff !important;
-}
-
-/* 3. EDIT COVER PHOTO BUTTON - Always white in both modes */
-.absolute.bottom-4.right-4 {
-  background-color: rgba(255, 255, 255, 0.9) !important;
-  color: #000000 !important;
-}
-
-.absolute.bottom-4.right-4:hover {
-  background-color: rgba(255, 255, 255, 1) !important;
-  color: #000000 !important;
-}
-
-/* Edit cover photo icon - always black (no invert) */
-.absolute.bottom-4.right-4 img[src*="camera"] {
-  filter: none !important;
-}
-
-/* Ensure edit cover photo button text stays black in both modes */
-:not(.dark) .absolute.bottom-4.right-4,
-.dark .absolute.bottom-4.right-4 {
-  background-color: rgba(255, 255, 255, 0.9) !important;
-  color: #000000 !important;
-}
-
-:not(.dark) .absolute.bottom-4.right-4:hover,
-.dark .absolute.bottom-4.right-4:hover {
-  background-color: rgba(255, 255, 255, 1) !important;
-  color: #000000 !important;
-}
-
-/* 4. PROFILE PICTURE CAMERA ICON - Black in light, white in dark */
-/* Light mode: Camera icon black */
-:not(.dark) .avatar .absolute.bottom-3.right-3 img[src*="camera"] {
-  filter: none !important;
-}
-
-/* Dark mode: Camera icon white (inverted) */
-.dark .avatar .absolute.bottom-3.right-3 img[src*="camera"],
-.dark .relative .absolute.bottom-3.right-3 img[src*="camera"] {
-  filter: invert(1) !important;
-}
-
-/* 5. PROFILE PAGE BUTTONS - #131313 in dark mode */
-/* Profile section buttons: Edit, Add to story */
-.dark .flex.items-center.space-x-2 button.bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\] {
-  background-color: #131313 !important;
-}
-
-.dark .flex.items-center.space-x-2 button.bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\]:hover {
-  background-color: #1f1f1f !important;
-}
-
-/* 3-dot button */
-.dark .flex.items-center.justify-end button.bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\] {
-  background-color: #131313 !important;
-}
-
-.dark .flex.items-center.justify-end button.bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\]:hover {
-  background-color: #1f1f1f !important;
-}
-
-/* Edit bio button */
-.dark .w-full.h-\[35px\].bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\] {
-  background-color: #131313 !important;
-}
-
-.dark .w-full.h-\[35px\].bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\]:hover {
-  background-color: #1f1f1f !important;
-}
-
-/* Filters and Manage posts buttons */
-.dark .flex.justify-between.items-center button.bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\] {
-  background-color: #131313 !important;
-}
-
-.dark .flex.justify-between.items-center button.bg-gray-200.hover\:bg-gray-300.dark\:bg-\[\#0d0d0d\]:hover {
-  background-color: #1f1f1f !important;
-}
-
-/* 6. SIDEBAR HANDLE - #131313 in dark mode */
-.dark .absolute.right-0.top-1\/2.-translate-y-1\/2.w-6.h-24.bg-gray-200.dark\:bg-gray-700 {
-  background-color: #131313 !important;
-}
-
-.dark .absolute.right-0.top-1\/2.-translate-y-1\/2.w-6.h-24.bg-gray-200.dark\:bg-gray-700:hover {
-  background-color: #1f1f1f !important;
-}
-
-/* FRIEND AVATARS - Make them visible */
-.dark .bg-gray-200.dark\:bg-\[\#0d0d0d\] {
-  background-color: #374151 !important;
-}
-
-.dark .w-8.h-8.rounded-full,
-.dark .w-7.h-7.rounded-full {
-  background-color: #374151 !important;
-}
-
-/* Social media icon circles - match background in dark mode */
-.dark .w-10.h-10.rounded-full.bg-gray-100.hover\:bg-gray-200.dark\:bg-gray-700 {
-  background-color: #080808 !important;
-}
-
-.dark .w-10.h-10.rounded-full.bg-gray-100.hover\:bg-gray-200.dark\:bg-gray-700:hover {
-  background-color: #131313 !important;
-}
-
-/* Add friend buttons in People You May Know - white background, black text in dark mode */
-.dark .w-full.bg-gray-800.hover\:bg-gray-700.text-white {
-  background-color: #ffffff !important;
-  color: #000000 !important;
-}
-
-.dark .w-full.bg-gray-800.hover\:bg-gray-700.text-white:hover {
-  background-color: #f3f4f6 !important;
-  color: #000000 !important;
-}
-
-/* Fix avatar border color */
-.dark .border-white.dark\:border-gray-900 {
-  border-color: #080808 !important;
-}
-
-/* PRESERVE EXISTING STYLES - Don't affect call-to-action or other sections */
-/* These selectors ensure we don't break existing working sections */
-.dark .text-gray-900.dark\:text-white {
-  color: #ffffff !important;
-}
-
-.dark .text-gray-700.dark\:text-gray-300 {
-  color: #e5e7eb !important;
-}
-
-.dark .text-gray-600.dark\:text-gray-400 {
-  color: #d1d5db !important;
-}
-
-.dark .text-gray-500.dark\:text-gray-400 {
-  color: #9ca3af !important;
+*:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }

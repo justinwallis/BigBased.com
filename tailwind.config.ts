@@ -64,6 +64,9 @@ const config: Config = {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Custom colors for specific elements
+        "custom-dark-bg": "#080808",
+        "custom-chat-elements": "#222222",
       },
       borderRadius: {
         lg: "var(--radius)",

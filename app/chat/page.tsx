@@ -24,7 +24,7 @@ import { useChat } from "ai/react"
 import BBLogo from "@/components/bb-logo"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
-import { useTheme } from "next-themes" // Import useTheme
+import { useTheme } from "next-themes"
 
 interface ChatMessage {
   id: string
@@ -42,7 +42,7 @@ interface ChatSession {
 }
 
 export default function ChatPage() {
-  const { theme, setTheme } = useTheme() // Use theme hook
+  const { theme, setTheme } = useTheme()
   const [sidebarOpen, setSidebarOpen] = useState(false) // Default to closed
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([])
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
@@ -233,15 +233,14 @@ export default function ChatPage() {
         className={cn(
           "flex flex-col transition-all duration-300 ease-in-out",
           sidebarOpen ? "w-80" : "w-0 overflow-hidden",
-          "lg:relative absolute z-50 h-full bg-card", // Use bg-card for sidebar
+          "lg:relative absolute z-50 h-full bg-card",
         )}
-        style={{ borderRight: "none" }}
       >
         {/* Sidebar Header */}
-        <div className="flex items-center justify-between p-4" style={{ borderBottom: "none" }}>
+        <div className="flex items-center justify-between p-4">
           <Link href="/chat" className="flex items-center space-x-2 group" onClick={startNewChat}>
-            <BBLogo size="sm" />
-            <span className="font-semibold text-lg group-hover:text-primary transition-colors">BigBased AI</span>
+            <BBLogo size="sm" color={theme === "dark" ? "white" : "black"} /> {/* Dynamic logo color */}
+            <span className="font-semibold text-lg group-hover:text-purple-400 transition-colors">BigBased AI</span>
           </Link>
           <Button
             variant="ghost"
@@ -257,8 +256,7 @@ export default function ChatPage() {
         <div className="p-4">
           <Button
             onClick={startNewChat}
-            className="w-full bg-muted hover:bg-muted/80 text-foreground"
-            style={{ border: "none" }}
+            className="w-full bg-muted hover:bg-custom-chat-elements text-foreground" // Apply #222222 on hover
           >
             <Plus className="h-4 w-4 mr-2" />
             New Chat
@@ -278,11 +276,10 @@ export default function ChatPage() {
                   className={cn(
                     "flex-1 justify-start mb-1 text-left h-auto p-3 pr-10",
                     currentSessionId === session.id
-                      ? "bg-accent text-accent-foreground" // Active chat color
-                      : "text-muted-foreground hover:text-primary hover:bg-muted",
+                      ? "bg-custom-chat-elements text-accent-foreground" // Active chat color #222222
+                      : "text-muted-foreground hover:text-primary hover:bg-custom-chat-elements", // Apply #222222 on hover
                   )}
                   onClick={() => loadChatSession(session.id)}
-                  style={{ border: "none" }}
                 >
                   <div className="truncate">
                     <div className="font-medium truncate">{session.title}</div>
@@ -304,12 +301,8 @@ export default function ChatPage() {
         </div>
 
         {/* Account Section and Theme Toggle */}
-        <div className="p-4 space-y-2" style={{ borderTop: "none" }}>
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-muted-foreground hover:text-primary"
-            style={{ border: "none" }}
-          >
+        <div className="p-4 space-y-2">
+          <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-primary">
             <User className="h-4 w-4 mr-2" />
             Account
           </Button>
@@ -317,7 +310,6 @@ export default function ChatPage() {
             variant="ghost"
             className="w-full justify-start text-muted-foreground hover:text-primary"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            style={{ border: "none" }}
           >
             {theme === "dark" ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />}
             Toggle Theme
@@ -328,7 +320,7 @@ export default function ChatPage() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col bg-background">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 bg-card" style={{ borderBottom: "none" }}>
+        <div className="flex items-center justify-between p-4 bg-card">
           <div className="flex items-center space-x-3">
             {/* Sidebar Toggle Button */}
             <Button
@@ -337,12 +329,11 @@ export default function ChatPage() {
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="text-muted-foreground hover:text-primary"
               aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
-              style={{ border: "none" }}
             >
               <Menu className="h-5 w-5" />
             </Button>
             <div className="lg:hidden">
-              <BBLogo size="sm" />
+              <BBLogo size="sm" color={theme === "dark" ? "white" : "black"} /> {/* Dynamic logo color */}
             </div>
           </div>
         </div>
@@ -351,7 +342,7 @@ export default function ChatPage() {
         {showWelcomeScreen ? (
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
             <div className="mb-8">
-              <BBLogo size="lg" />
+              <BBLogo size="lg" color={theme === "dark" ? "white" : "black"} /> {/* Dynamic logo color */}
             </div>
 
             <h1 className="text-4xl lg:text-5xl font-bold mb-4">
@@ -372,15 +363,13 @@ export default function ChatPage() {
                   onChange={handleInputChange}
                   placeholder="Type anything to BigBased..."
                   disabled={isLoading}
-                  className="w-full bg-input text-foreground placeholder-muted-foreground pr-12 py-6 text-lg focus-visible:ring-purple-500 focus-visible:ring-2 focus-visible:outline-none"
-                  style={{ border: "none" }}
+                  className="w-full bg-custom-chat-elements text-foreground placeholder-muted-foreground pr-12 py-6 text-lg focus-visible:ring-purple-500 focus-visible:ring-2 focus-visible:outline-none" // Apply #222222
                 />
                 <Button
                   type="submit"
                   disabled={isLoading || !input.trim()}
                   size="icon"
                   className="absolute right-2 top-1/2 -translate-y-1/2 bg-purple-600 hover:bg-purple-700 disabled:bg-muted"
-                  style={{ border: "none" }}
                 >
                   <Send className="h-4 w-4" />
                 </Button>
@@ -391,7 +380,7 @@ export default function ChatPage() {
             <div className="grid grid-cols-2 gap-4 w-full max-w-2xl">
               <Button
                 variant="outline"
-                className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-muted text-foreground hover:text-primary"
+                className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-custom-chat-elements text-foreground hover:text-primary" // Apply #222222 on hover
                 onClick={() => {
                   const prompt =
                     "What are the current trending topics in conservative politics and digital sovereignty?"
@@ -402,7 +391,6 @@ export default function ChatPage() {
                     }
                   }, 100)
                 }}
-                style={{ border: "none" }}
               >
                 <TrendingUp className="h-6 w-6" />
                 <span>Trending Topics</span>
@@ -410,7 +398,7 @@ export default function ChatPage() {
 
               <Button
                 variant="outline"
-                className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-muted text-foreground hover:text-primary"
+                className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-custom-chat-elements text-foreground hover:text-primary" // Apply #222222 on hover
                 onClick={() => {
                   const prompt = "What are the best practices for digital privacy and security?"
                   handleInputChange({ target: { value: prompt } } as any)
@@ -420,7 +408,6 @@ export default function ChatPage() {
                     }
                   }, 100)
                 }}
-                style={{ border: "none" }}
               >
                 <Shield className="h-6 w-6" />
                 <span>Digital Security</span>
@@ -428,7 +415,7 @@ export default function ChatPage() {
 
               <Button
                 variant="outline"
-                className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-muted text-foreground hover:text-primary"
+                className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-custom-chat-elements text-foreground hover:text-primary" // Apply #222222 on hover
                 onClick={() => {
                   const prompt = "Tell me about BigBased's mission and conservative values."
                   handleInputChange({ target: { value: prompt } } as any)
@@ -438,7 +425,6 @@ export default function ChatPage() {
                     }
                   }, 100)
                 }}
-                style={{ border: "none" }}
               >
                 <BookOpen className="h-6 w-6" />
                 <span>Knowledge Base</span>
@@ -446,7 +432,7 @@ export default function ChatPage() {
 
               <Button
                 variant="outline"
-                className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-muted text-foreground hover:text-primary"
+                className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-custom-chat-elements text-foreground hover:text-primary" // Apply #222222 on hover
                 onClick={() => {
                   const prompt = "How can I get involved in the BigBased community?"
                   handleInputChange({ target: { value: prompt } } as any)
@@ -456,7 +442,6 @@ export default function ChatPage() {
                     }
                   }, 100)
                 }}
-                style={{ border: "none" }}
               >
                 <Users className="h-6 w-6" />
                 <span>Community</span>
@@ -483,7 +468,9 @@ export default function ChatPage() {
                       <div
                         className={cn(
                           "max-w-[80%] rounded-lg px-4 py-3",
-                          message.role === "user" ? "bg-purple-600 text-white" : "bg-accent text-accent-foreground", // Use accent for assistant
+                          message.role === "user"
+                            ? "bg-purple-600 text-white"
+                            : "bg-custom-chat-elements text-foreground", // Apply #222222 for AI message bubble
                         )}
                       >
                         <div className="whitespace-pre-wrap">{message.content}</div>
@@ -502,7 +489,7 @@ export default function ChatPage() {
                       <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
                         <Bot className="h-4 w-4 text-white" />
                       </div>
-                      <div className="bg-accent rounded-lg px-4 py-3">
+                      <div className="bg-custom-chat-elements rounded-lg px-4 py-3">
                         <div className="flex space-x-1">
                           <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
                           <div
@@ -522,7 +509,7 @@ export default function ChatPage() {
             </div>
 
             {/* Input Area at bottom for chat sessions */}
-            <div className="p-4 bg-card" style={{ borderTop: "none" }}>
+            <div className="p-4 bg-card">
               <form onSubmit={handleChatSubmit} className="max-w-4xl mx-auto">
                 <div className="relative">
                   <Input
@@ -531,15 +518,13 @@ export default function ChatPage() {
                     onChange={handleInputChange}
                     placeholder="Type anything to BigBased..."
                     disabled={isLoading}
-                    className="w-full bg-input text-foreground placeholder-muted-foreground pr-12 py-6 text-lg focus-visible:ring-purple-500 focus-visible:ring-2 focus-visible:outline-none"
-                    style={{ border: "none" }}
+                    className="w-full bg-custom-chat-elements text-foreground placeholder-muted-foreground pr-12 py-6 text-lg focus-visible:ring-purple-500 focus-visible:ring-2 focus-visible:outline-none" // Apply #222222
                   />
                   <Button
                     type="submit"
                     disabled={isLoading || !input.trim()}
                     size="icon"
                     className="absolute right-2 top-1/2 -translate-y-1/2 bg-purple-600 hover:bg-purple-700 disabled:bg-muted"
-                    style={{ border: "none" }}
                   >
                     <Send className="h-4 w-4" />
                   </Button>
