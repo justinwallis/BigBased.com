@@ -1,46 +1,39 @@
 "use client"
 
-import Image from "next/image"
 import { cn } from "@/lib/utils"
-import { useTheme } from "@/components/theme-provider"
-import { useEffect, useState } from "react"
+import Image from "next/image"
+import { useTheme } from "next-themes"
 
 interface BBLogoProps {
-  size?: "sm" | "md" | "lg" | "xl"
-  className?: string
-  inverted?: boolean
+  size?: "sm" | "md" | "lg"
+  color?: "black" | "white" // Add color prop
 }
 
-export default function BBLogo({ size = "md", className, inverted = false }: BBLogoProps) {
-  const [mounted, setMounted] = useState(false)
-  const { theme, systemTheme } = useTheme()
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+export default function BBLogo({ size = "md", color }: BBLogoProps) {
+  const { theme } = useTheme()
+  const logoSrc =
+    color === "black"
+      ? "/bb-logo.png"
+      : color === "white"
+        ? "/BigBasedIconInvert.png"
+        : theme === "dark"
+          ? "/BigBasedIconInvert.png"
+          : "/bb-logo.png"
 
   const sizeClasses = {
-    sm: "w-8 h-8",
-    md: "w-12 h-12",
-    lg: "w-16 h-16",
-    xl: "w-24 h-24",
+    sm: "h-6 w-6",
+    md: "h-8 w-8",
+    lg: "h-16 w-16",
   }
 
-  // Determine the effective theme (handle system theme detection)
-  const effectiveTheme = theme === "system" ? systemTheme : theme
-
-  // Use the inverted logo in dark mode, unless explicitly overridden by the inverted prop
-  const logoSrc = mounted
-    ? inverted || effectiveTheme === "dark"
-      ? "/BigBasedIconInvert.png"
-      : "/bb-logo.png"
-    : typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "/BigBasedIconInvert.png"
-      : "/bb-logo.png"
-
   return (
-    <div className={cn(sizeClasses[size], "relative", className)}>
-      <Image src={logoSrc || "/placeholder.svg"} alt="BigBased Logo" fill className="object-contain" priority />
-    </div>
+    <Image
+      src={logoSrc || "/placeholder.svg"}
+      alt="BigBased Logo"
+      width={size === "sm" ? 24 : size === "md" ? 32 : 64}
+      height={size === "sm" ? 24 : size === "md" ? 32 : 64}
+      className={cn("object-contain", sizeClasses[size])}
+      priority
+    />
   )
 }
