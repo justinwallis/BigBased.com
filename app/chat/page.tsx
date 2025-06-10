@@ -89,6 +89,7 @@ export default function ChatPage() {
           updatedAt: new Date(s.updatedAt),
           messages: s.messages.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) })),
         }))
+        sessions.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()) // Sort by most recent
         setChatSessions(sessions)
       } catch (error) {
         console.error("Error parsing chat sessions from localStorage:", error)
@@ -126,32 +127,34 @@ export default function ChatPage() {
     (message: any) => {
       if (!currentSessionId) return
 
-      const updatedSessions = chatSessions.map((session) => {
-        if (session.id === currentSessionId) {
-          const updatedMessages = [
-            ...session.messages,
-            {
-              id: message.id,
-              role: message.role,
-              content: message.content,
-              timestamp: new Date(),
-            },
-          ]
-          // If it's the first message in a new chat, set its title
-          const title =
-            session.title === "New Chat" && updatedMessages.length > 0
-              ? updatedMessages[0].content.substring(0, 30) + (updatedMessages[0].content.length > 30 ? "..." : "")
-              : session.title
+      const updatedSessions = chatSessions
+        .map((session) => {
+          if (session.id === currentSessionId) {
+            const updatedMessages = [
+              ...session.messages,
+              {
+                id: message.id,
+                role: message.role,
+                content: message.content,
+                timestamp: new Date(),
+              },
+            ]
+            // If it's the first message in a new chat, set its title
+            const title =
+              session.title === "New Chat" && updatedMessages.length > 0
+                ? updatedMessages[0].content.substring(0, 30) + (updatedMessages[0].content.length > 30 ? "..." : "")
+                : session.title
 
-          return {
-            ...session,
-            title: title,
-            messages: updatedMessages,
-            updatedAt: new Date(),
+            return {
+              ...session,
+              title: title,
+              messages: updatedMessages,
+              updatedAt: new Date(),
+            }
           }
-        }
-        return session
-      })
+          return session
+        })
+        .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()) // Sort after update
 
       setChatSessions(updatedSessions)
     },
@@ -169,7 +172,7 @@ export default function ChatPage() {
       updatedAt: new Date(),
     }
 
-    const updatedSessions = [newSession, ...chatSessions]
+    const updatedSessions = [newSession, ...chatSessions].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
     setChatSessions(updatedSessions)
     setCurrentSessionId(newSession.id)
     setMessages([]) // Clear messages for the new chat
@@ -253,17 +256,15 @@ export default function ChatPage() {
           "flex flex-col transition-all duration-300 ease-in-out flex-shrink-0 bg-card no-border h-full",
           // Mobile specific classes (fixed position, slide in/out)
           isMobile && "fixed inset-y-0 z-50",
-          isMobile && (sidebarOpen ? "left-0" : "-left-80"), // Control visibility with left property
+          isMobile && (sidebarOpen ? "left-0 w-80" : "-left-80 w-80"), // Control visibility with left property and ensure width
           // Desktop specific classes (relative position, width control)
           !isMobile && "relative",
           !isMobile && (sidebarOpen ? "w-80" : "w-0 overflow-hidden"), // Desktop width control
-          "w-80", // Always maintain a width of 80, but hide it if needed
         )}
       >
         {/* Sidebar Header */}
         <div className="flex items-center justify-between p-4 no-border">
           <Link href="/chat" className="flex items-center space-x-2 group" onClick={startNewChat}>
-            {/* Removed BBLogo here */}
             <span className="font-semibold text-lg group-hover:text-purple-400 transition-colors">BigBased AI</span>
           </Link>
           <Button

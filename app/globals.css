@@ -95,6 +95,44 @@ body {
 
 /* REMOVED problematic !important overrides for background colors */
 /* The theme variables should now correctly handle background colors */
+.dark {
+  /* Removed background-color: #080808 !important; */
+}
+
+.dark body {
+  /* Removed background-color: #080808 !important; */
+}
+
+.dark html {
+  /* Removed background-color: #080808 !important; */
+}
+
+/* Main page containers */
+.dark .min-h-screen {
+  background-color: #080808 !important; /* Keep this for specific containers if needed */
+}
+
+/* REMOVE BLUE BACKGROUNDS - Replace with #080808 */
+.dark .bg-white {
+  background-color: #0d0d0d !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: #080808 !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: #080808 !important;
+}
+
+/* Navigation and tabs - remove blue backgrounds */
+.dark .bg-white.dark\:bg-gray-900 {
+  background-color: #080808 !important;
+}
+
+.dark .sticky {
+  background-color: #080808 !important;
+}
 
 /* VERY SPECIFIC TARGETING - ONLY PROFILE PAGE ELEMENTS */
 
