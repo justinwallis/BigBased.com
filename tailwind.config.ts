@@ -55,6 +55,8 @@ const config = {
         },
         // Custom color for chat elements
         "custom-chat-elements": "#222222",
+        // Explicitly define black to be #0c0c0c
+        black: "#0c0c0c",
       },
       borderRadius: {
         lg: "var(--radius)",

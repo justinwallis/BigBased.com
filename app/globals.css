@@ -45,11 +45,11 @@ body {
   }
 
   .dark {
-    --background: 0 0% 3.1%; /* #080808 */
+    --background: 0 0% 4.7%; /* #0c0c0c */
     --foreground: 0 0% 98%; /* White */
-    --card: 0 0% 3.1%; /* #080808 */
+    --card: 0 0% 4.7%; /* #0c0c0c */
     --card-foreground: 0 0% 98%; /* White */
-    --popover: 0 0% 3.1%;
+    --popover: 0 0% 4.7%; /* #0c0c0c */
     --popover-foreground: 0 0% 98%;
     --primary: 263.4 70% 50.4%; /* Purple */
     --primary-foreground: 0 0% 98%;
@@ -62,8 +62,9 @@ body {
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
+    --input: 0 0% 4.7%; /* #0c0c0c */
     --ring: 263.4 70% 50.4%;
+    --radius: 0.5rem;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -90,13 +91,6 @@ body {
   html:not(.dark) body {
     background-color: white !important;
   }
-
-  /* Ensure dark mode overrides are still applied correctly */
-  .dark html,
-  .dark body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-  }
 }
 
 /* Add these styles at the end of the file */
@@ -105,29 +99,39 @@ body {
 }
 
 .tabs-list-hover-effect [data-state="active"] {
-  border-bottom: 2px solid #0284c7;
+  border-bottom: 2px solid #0c0c0c; /* Changed from blue to #0c0c0c */
 }
 
-/* REMOVE BLUE BACKGROUNDS - Replace with #080808 */
-.dark .bg-white {
-  background-color: #0d0d0d !important;
+/* Aggressive overrides for common Tailwind dark background classes */
+.dark .bg-black,
+.dark .bg-gray-900,
+.dark .bg-gray-800,
+.dark .bg-gray-700,
+.dark .bg-gray-600,
+.dark .bg-gray-500,
+.dark .bg-gray-400,
+.dark .bg-gray-300,
+.dark .bg-gray-200,
+.dark .bg-gray-100,
+.dark .bg-white,
+.dark .bg-\[\#0d0d0d\] /* Specific hex from previous attempts */,
+.dark .bg-\[\#080808\] /* Specific hex from previous attempts */,
+.dark .bg-\[\#1a1a1a\] /* Specific hex from previous attempts */ {
+  background-color: #0c0c0c !important;
 }
 
-.dark .bg-gray-100 {
-  background-color: #080808 !important;
-}
-
-.dark .bg-gray-50 {
-  background-color: #080808 !important;
-}
-
-/* Navigation and tabs - remove blue backgrounds */
-.dark .bg-white.dark\:bg-gray-900 {
-  background-color: #080808 !important;
-}
-
-.dark .sticky {
-  background-color: #080808 !important;
+/* Ensure the main content area takes the full dark background */
+.dark html,
+.dark body,
+.dark #__next,
+.dark .h-screen,
+.dark .min-h-screen,
+.dark .flex-1,
+.dark .bg-background,
+.dark .bg-card,
+.dark .bg-popover,
+.dark .bg-input {
+  background-color: #0c0c0c !important;
 }
 
 /* VERY SPECIFIC TARGETING - ONLY PROFILE PAGE ELEMENTS */
@@ -271,7 +275,7 @@ body {
 
 /* Social media icon circles - match background in dark mode */
 .dark .w-10.h-10.rounded-full.bg-gray-100.hover\:bg-gray-200.dark\:bg-gray-700 {
-  background-color: #080808 !important;
+  background-color: #0c0c0c !important; /* Changed from #080808 */
 }
 
 .dark .w-10.h-10.rounded-full.bg-gray-100.hover\:bg-gray-200.dark\:bg-gray-700:hover {
@@ -291,7 +295,7 @@ body {
 
 /* Fix avatar border color */
 .dark .border-white.dark\:border-gray-900 {
-  border-color: #080808 !important;
+  border-color: #0c0c0c !important; /* Changed from #080808 */
 }
 
 /* PRESERVE EXISTING STYLES - Don't affect call-to-action or other sections */

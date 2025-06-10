@@ -24,11 +24,11 @@
 
 /* Dark Mode Overrides */
 .dark-theme {
-  --background: #080808; /* Overall dark background */
+  --background: #0c0c0c; /* Overall dark background */
   --foreground: #f0f0f0; /* Light text for contrast */
-  --card: #1a1a1a; /* Darker card backgrounds */
+  --card: #0c0c0c; /* Darker card backgrounds */
   --card-foreground: #f0f0f0;
-  --popover: #1a1a1a;
+  --popover: #0c0c0c;
   --popover-foreground: #f0f0f0;
   --primary: #2a2a2a; /* Darker primary buttons/elements */
   --primary-foreground: #f0f0f0;
@@ -41,12 +41,12 @@
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --border: transparent; /* No borders by default */
-  --input: #1a1a1a; /* Dark input background */
+  --input: #0c0c0c; /* Dark input background */
   --ring: transparent; /* No rings by default */
 }
 
 .dark-theme {
-  background-color: #080808;
+  background-color: #0c0c0c; /* Changed from #080808 */
   color: #f0f0f0;
 }
 
@@ -55,7 +55,7 @@
 }
 
 .dark-theme .bg-gray-900 {
-  background-color: #1a1a1a;
+  background-color: #0c0c0c; /* Changed from #1a1a1a */
 }
 
 .dark-theme .bg-gray-800 {
@@ -67,7 +67,7 @@
 }
 
 .dark-theme .ring-offset-gray-900 {
-  --tw-ring-offset-color: #1a1a1a;
+  --tw-ring-offset-color: #0c0c0c; /* Changed from #1a1a1a */
 }
 
 .dark-theme .focus-visible\:ring-gray-500:focus-visible {
@@ -136,11 +136,11 @@
 
 /* Specific overrides for the chat interface */
 .dark-theme .chat-background {
-  background-color: #080808; /* Ensure the main chat background is this specific dark color */
+  background-color: #0c0c0c; /* Changed from #080808 */
 }
 
 .dark-theme .chat-input-area {
-  background-color: #1a1a1a; /* Slightly lighter for input */
+  background-color: #0c0c0c; /* Changed from #1a1a1a */
 }
 
 .dark-theme .chat-message-bubble-user {
@@ -154,11 +154,11 @@
 }
 
 .dark-theme .sidebar-background {
-  background-color: #080808; /* Sidebar background */
+  background-color: #0c0c0c; /* Changed from #080808 */
 }
 
 .dark-theme .sidebar-item-hover:hover {
-  background-color: #1a1a1a; /* Sidebar item hover */
+  background-color: #0c0c0c; /* Changed from #1a1a1a */
 }
 
 .dark-theme .sidebar-item-active {
@@ -223,7 +223,7 @@
 }
 
 .dark-theme .input-field {
-  background-color: #1a1a1a;
+  background-color: #0c0c0c; /* Changed from #1a1a1a */
   color: #f0f0f0;
 }
 
@@ -308,11 +308,11 @@
 }
 
 .dark-theme .text-primary-foreground {
-  color: #080808;
+  color: #0c0c0c; /* Changed from #080808 */
 }
 
 .dark-theme .text-secondary-foreground {
-  color: #080808;
+  color: #0c0c0c; /* Changed from #080808 */
 }
 
 .dark-theme .text-muted {
@@ -332,7 +332,7 @@
 }
 
 .dark-theme .text-black {
-  color: #080808;
+  color: #0c0c0c; /* Changed from #080808 */
 }
 
 /* Ensure no default focus outlines */
@@ -348,7 +348,7 @@
 
 /* Specific for the chat input area */
 .dark-theme .chat-input-wrapper {
-  background-color: #1a1a1a;
+  background-color: #0c0c0c; /* Changed from #1a1a1a */
   border-radius: 0.5rem; /* Rounded corners for the input box */
   padding: 0.75rem 1rem;
 }
@@ -377,7 +377,7 @@ html,
 body,
 #__next {
   height: 100%;
-  background-color: #080808;
+  background-color: #0c0c0c; /* Changed from #080808 */
 }
 
 .dark-theme .h-screen {
@@ -390,19 +390,19 @@ body,
 
 /* Ensure the main content area is dark */
 .dark-theme .flex-1 {
-  background-color: #080808;
+  background-color: #0c0c0c; /* Changed from #080808 */
 }
 
 .dark-theme .bg-background {
-  background-color: #080808;
+  background-color: #0c0c0c; /* Changed from #080808 */
 }
 
 .dark-theme .bg-card {
-  background-color: #1a1a1a;
+  background-color: #0c0c0c; /* Changed from #1a1a1a */
 }
 
 .dark-theme .bg-popover {
-  background-color: #1a1a1a;
+  background-color: #0c0c0c; /* Changed from #1a1a1a */
 }
 
 .dark-theme .bg-primary {
@@ -430,7 +430,7 @@ body,
 }
 
 .dark-theme .bg-input {
-  background-color: #1a1a1a;
+  background-color: #0c0c0c; /* Changed from #1a1a1a */
 }
 
 .dark-theme .bg-ring {
@@ -444,22 +444,22 @@ body,
 
 /* Ensure the main content area is dark */
 .dark-theme .flex-1 {
-  background-color: #080808;
+  background-color: #0c0c0c; /* Changed from #080808 */
 }
 
 /* Ensure the main content area is dark */
 .dark-theme .bg-background {
-  background-color: #080808;
+  background-color: #0c0c0c; /* Changed from #080808 */
 }
 
 /* Ensure the main content area is dark */
 .dark-theme .bg-card {
-  background-color: #1a1a1a;
+  background-color: #0c0c0c; /* Changed from #1a1a1a */
 }
 
 /* Ensure the main content area is dark */
 .dark-theme .bg-popover {
-  background-color: #1a1a1a;
+  background-color: #0c0c0c; /* Changed from #1a1a1a */
 }
 
 /* Ensure the main content area is dark */
@@ -494,7 +494,7 @@ body,
 
 /* Ensure the main content area is dark */
 .dark-theme .bg-input {
-  background-color: #1a1a1a;
+  background-color: #0c0c0c; /* Changed from #1a1a1a */
 }
 
 /* Ensure the main content area is dark */
