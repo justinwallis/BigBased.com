@@ -1,0 +1,67 @@
+/* AI Chat Interface Styles */
+.ai-chat-container {
+  background-color: #080808 !important;
+  min-height: 100vh;
+}
+
+.ai-chat-container * {
+  scrollbar-width: thin;
+  scrollbar-color: #374151 #080808;
+}
+
+.ai-chat-container *::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ai-chat-container *::-webkit-scrollbar-track {
+  background: #080808;
+}
+
+.ai-chat-container *::-webkit-scrollbar-thumb {
+  background-color: #374151;
+  border-radius: 3px;
+}
+
+.ai-chat-container *::-webkit-scrollbar-thumb:hover {
+  background-color: #4b5563;
+}
+
+/* Ensure dark theme consistency */
+.ai-chat-container .bg-background {
+  background-color: #080808 !important;
+}
+
+.ai-chat-container .bg-card {
+  background-color: #0d0d0d !important;
+}
+
+.ai-chat-container .bg-muted {
+  background-color: #131313 !important;
+}
+
+/* Message animations */
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-enter {
+  animation: messageSlideIn 0.3s ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .ai-chat-container .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 50;
+  }
+}
