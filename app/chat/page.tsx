@@ -50,6 +50,8 @@ export default function ChatPage() {
     }
     return false
   })
+  const [isMobile, setIsMobile] = useState(false) // State to track mobile viewport
+
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([])
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
@@ -100,7 +102,19 @@ export default function ChatPage() {
       // If no sessions, start a new one
       startNewChat()
     }
-  }, [])
+
+    // Initialize mobile state and add resize listener
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024)
+      if (window.innerWidth < 1024 && sidebarOpen) {
+        setSidebarOpen(false) // Close sidebar on small screens if it's open
+      }
+    }
+
+    handleResize() // Set initial state
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [sidebarOpen]) // Added sidebarOpen to dependency array to react to its changes
 
   // Save chat sessions to localStorage whenever they change
   useEffect(() => {
@@ -238,8 +252,8 @@ export default function ChatPage() {
         className={cn(
           "flex flex-col transition-all duration-300 ease-in-out flex-shrink-0 bg-card no-border",
           sidebarOpen ? "w-80" : "w-0 overflow-hidden",
-          "fixed inset-y-0 left-0 z-50 lg:relative lg:translate-x-0", // Fixed for mobile, relative for desktop
-          sidebarOpen ? "translate-x-0" : "-translate-x-full", // Slide in/out for mobile
+          isMobile ? "fixed inset-y-0 left-0 z-50" : "relative", // Fixed for mobile, relative for desktop
+          isMobile && sidebarOpen ? "translate-x-0" : isMobile ? "-translate-x-full" : "", // Slide in/out for mobile
         )}
       >
         {/* Sidebar Header */}
@@ -327,7 +341,7 @@ export default function ChatPage() {
       <div
         className={cn(
           "flex-1 flex flex-col bg-background transition-all duration-300 ease-in-out",
-          sidebarOpen ? "lg:ml-80" : "lg:ml-0", // Push content on desktop
+          sidebarOpen ? "ml-80" : "ml-0", // Always push content
         )}
       >
         {/* Header */}
