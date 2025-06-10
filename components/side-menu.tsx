@@ -5,11 +5,11 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { X, Search, Bell, ChevronRight } from "lucide-react"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { X, Search, Bell, ChevronRight, Sun, Moon } from "lucide-react" // Added Sun, Moon
 import BBLogo from "@/components/bb-logo"
 import SearchPopup from "@/components/search-popup"
 import { usePathname } from "next/navigation"
+import { useTheme } from "next-themes" // Import useTheme
 
 const logos = [
   { name: "Organization 1", path: "/logos/org1.png" },
@@ -106,6 +106,7 @@ export default function SideMenu({
   onNotificationBellClick = () => {},
   isSubscribed = false,
 }: SideMenuProps) {
+  const { theme, setTheme } = useTheme() // Use useTheme hook
   const [scrollY, setScrollY] = useState(0)
   const [menuPosition, setMenuPosition] = useState({ top: 0, startX: 0, isDragging: false })
   const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false)
@@ -224,10 +225,10 @@ export default function SideMenu({
     }
   }, [isOpen, openWithSearch])
 
-  const handleDragStart = (e) => {
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
     try {
       // Safely access clientX from either touch or mouse event
-      const clientX = e?.touches?.[0]?.clientX || e?.clientX || 0
+      const clientX = (e as React.TouchEvent)?.touches?.[0]?.clientX || (e as React.MouseEvent)?.clientX || 0
 
       setMenuPosition({
         ...menuPosition,
@@ -244,12 +245,12 @@ export default function SideMenu({
     }
   }
 
-  const handleDragMove = (e) => {
+  const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
     try {
       if (!menuPosition.isDragging) return
 
       // Safely access clientX from either touch or mouse event
-      const clientX = e?.touches?.[0]?.clientX || e?.clientX || 0
+      const clientX = (e as React.TouchEvent)?.touches?.[0]?.clientX || (e as React.MouseEvent)?.clientX || 0
 
       if (isNaN(clientX)) {
         console.warn("Invalid clientX value in handleDragMove")
@@ -269,7 +270,7 @@ export default function SideMenu({
       }
 
       // Apply drag effect to the menu (slight movement following finger)
-      const sideMenu = e?.currentTarget?.parentElement
+      const sideMenu = (e.currentTarget as HTMLElement)?.parentElement
       if (sideMenu) {
         // Only allow dragging to the left (negative values)
         const dragOffset = Math.min(0, deltaX)
@@ -284,7 +285,7 @@ export default function SideMenu({
     // Reset any drag transformation
     const sideMenu = document.querySelector('[data-side-menu="true"]')
     if (sideMenu) {
-      sideMenu.style.transform = ""
+      ;(sideMenu as HTMLElement).style.transform = ""
     }
 
     setMenuPosition({
@@ -295,7 +296,7 @@ export default function SideMenu({
 
   // Add event listener for mouse move and mouse up (for desktop dragging)
   useEffect(() => {
-    const handleMouseMove = (e) => {
+    const handleMouseMove = (e: MouseEvent) => {
       if (menuPosition.isDragging) {
         handleDragMove(e)
       }
@@ -340,7 +341,7 @@ export default function SideMenu({
   }, [])
 
   // Handle search icon click
-  const handleSearchClick = (e) => {
+  const handleSearchClick = (e: React.MouseEvent) => {
     e.stopPropagation() // Prevent the click from closing the sidebar
     setIsSearchPopupOpen(true)
   }
@@ -364,7 +365,7 @@ export default function SideMenu({
 
       {/* Hamburger Button - Fixed positioning with improved stickiness */}
       <button
-        className="fixed left-0 z-50 bg-black dark:bg-white text-white dark:text-black p-3 rounded-r-lg group hover:bg-gray-900 dark:hover:bg-gray-100"
+        className="fixed left-0 z-50 bg-black dark:bg-black text-white dark:text-white p-3 rounded-r-lg group hover:bg-gray-900 dark:hover:bg-gray-900"
         style={{
           top: scrollY > 100 ? "5rem" : "10rem",
           transition: "top 0.3s ease",
@@ -375,16 +376,16 @@ export default function SideMenu({
         aria-label="Open menu"
       >
         <div className="w-3 h-5 flex flex-col justify-between transition-all duration-300 ease-in-out">
-          <span className="w-full h-0.5 bg-white dark:bg-black rounded-full block transition-all duration-300 ease-in-out group-hover:w-5/6 group-hover:translate-y-0.5"></span>
-          <span className="w-5/6 h-0.5 bg-white dark:bg-black rounded-full block transition-all duration-300 ease-in-out group-hover:w-full"></span>
-          <span className="w-full h-0.5 bg-white dark:bg-black rounded-full block transition-all duration-300 ease-in-out group-hover:w-5/6 group-hover:-translate-y-0.5"></span>
+          <span className="w-full h-0.5 bg-white dark:bg-white rounded-full block transition-all duration-300 ease-in-out group-hover:w-5/6 group-hover:translate-y-0.5"></span>
+          <span className="w-5/6 h-0.5 bg-white dark:bg-white rounded-full block transition-all duration-300 ease-in-out group-hover:w-full"></span>
+          <span className="w-full h-0.5 bg-white dark:bg-white rounded-full block transition-all duration-300 ease-in-out group-hover:w-5/6 group-hover:-translate-y-0.5"></span>
         </div>
       </button>
 
       {/* Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black dark:bg-white bg-opacity-50 dark:bg-opacity-20 z-[150] transition-opacity duration-300"
+          className="fixed inset-0 bg-black dark:bg-black bg-opacity-50 dark:bg-opacity-50 z-[150] transition-opacity duration-300"
           onClick={() => setIsOpen(false)}
         ></div>
       )}
@@ -392,7 +393,7 @@ export default function SideMenu({
       {/* Side Menu */}
       <div
         data-side-menu="true"
-        className={`fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-900 shadow-xl z-[200] transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 h-full w-64 bg-card shadow-xl z-[200] transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0"
         } flex flex-col`}
       >
@@ -439,8 +440,14 @@ export default function SideMenu({
                 </div>
               </button>
 
-              {/* Theme Toggle */}
-              <ThemeToggle variant="icon" />
+              {/* Theme Toggle - Integrated directly here */}
+              <button
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="p-1 hover:opacity-80 transition-opacity"
+                aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+              >
+                {theme === "dark" ? <Sun className="h-4 w-4 text-white" /> : <Moon className="h-5 w-5 text-gray-800" />}
+              </button>
 
               {/* Close Button */}
               <button

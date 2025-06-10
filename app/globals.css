@@ -64,7 +64,6 @@ body {
     --border: 0 0% 14.9%;
     --input: 0 0% 4.7%; /* #0c0c0c */
     --ring: 263.4 70% 50.4%;
-    --radius: 0.5rem;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -102,36 +101,27 @@ body {
   border-bottom: 2px solid #0c0c0c; /* Changed from blue to #0c0c0c */
 }
 
-/* Aggressive overrides for common Tailwind dark background classes */
-.dark .bg-black,
-.dark .bg-gray-900,
-.dark .bg-gray-800,
-.dark .bg-gray-700,
-.dark .bg-gray-600,
-.dark .bg-gray-500,
-.dark .bg-gray-400,
-.dark .bg-gray-300,
-.dark .bg-gray-200,
-.dark .bg-gray-100,
-.dark .bg-white,
-.dark .bg-\[\#0d0d0d\] /* Specific hex from previous attempts */,
-.dark .bg-\[\#080808\] /* Specific hex from previous attempts */,
-.dark .bg-\[\#1a1a1a\] /* Specific hex from previous attempts */ {
-  background-color: #0c0c0c !important;
+/* REMOVE BLUE BACKGROUNDS - Replace with #0c0c0c */
+/* These specific overrides target elements that might not pick up --background or --card */
+.dark .bg-white {
+  background-color: #0c0c0c !important; /* Changed from #0d0d0d */
 }
 
-/* Ensure the main content area takes the full dark background */
-.dark html,
-.dark body,
-.dark #__next,
-.dark .h-screen,
-.dark .min-h-screen,
-.dark .flex-1,
-.dark .bg-background,
-.dark .bg-card,
-.dark .bg-popover,
-.dark .bg-input {
-  background-color: #0c0c0c !important;
+.dark .bg-gray-100 {
+  background-color: #0c0c0c !important; /* Changed from #080808 */
+}
+
+.dark .bg-gray-50 {
+  background-color: #0c0c0c !important; /* Changed from #080808 */
+}
+
+/* Navigation and tabs - remove blue backgrounds */
+.dark .bg-white.dark\:bg-gray-900 {
+  background-color: #0c0c0c !important; /* Changed from #080808 */
+}
+
+.dark .sticky {
+  background-color: #0c0c0c !important; /* Changed from #080808 */
 }
 
 /* VERY SPECIFIC TARGETING - ONLY PROFILE PAGE ELEMENTS */

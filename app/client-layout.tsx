@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Search } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { useTheme } from "@/components/theme-provider"
 import MegaMenu from "@/components/mega-menu"
 import { MenuIcons } from "@/components/menu-icons"
@@ -145,6 +145,8 @@ const featuresMegaMenu = {
 }
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false)
   const [openWithSearch, setOpenWithSearch] = useState(false)
   const [logoHovered, setLogoHovered] = useState(false)
@@ -395,44 +397,64 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     </>
   )
 
+  // Determine if the current path is the chat page
+  const isChatPage = pathname === "/chat"
+
   return (
-    <>
-      {/* Side Menu */}
-      <ErrorBoundary>
-        <SideMenu isOpen={isSideMenuOpen} setIsOpen={setIsSideMenuOpen} openWithSearch={openWithSearch} />
-      </ErrorBoundary>
+    <div className="flex min-h-screen">
+      {/* Side Menu - Always rendered, controls its own visibility */}
+      <SideMenu isOpen={sidebarOpen} setIsOpen={setSidebarOpen} openWithSearch={openWithSearch} />
 
-      {/* Search Popup */}
-      <SearchPopup isOpen={isSearchPopupOpen} onClose={() => setIsSearchPopupOpen(false)} />
+      {/* Main content area, pushed by the sidebar */}
+      <main
+        className={cn(
+          "flex-1 transition-all duration-300 ease-in-out",
+          sidebarOpen ? "ml-64" : "ml-0", // Apply margin when sidebar is open
+          "flex flex-col", // Ensure main content takes full height and allows flex column layout
+        )}
+      >
+        {/* Global Header (if applicable, not part of chat page itself) */}
+        {/* The screenshot implies a global header is present, but the chat page itself doesn't define it.
+            This space is for other pages that might have a header.
+            For the chat page, the hamburger menu is fixed on the left. */}
+        {/* If you have a global header component, it would go here, outside the chat page's direct control */}
+        {/* Side Menu */}
+        <ErrorBoundary>
+          {/*<SideMenu isOpen={isSideMenuOpen} setIsOpen={setIsSideMenuOpen} openWithSearch={openWithSearch} />*/}
+        </ErrorBoundary>
 
-      {/* Consistent spacer to prevent layout shifts */}
-      <div className="h-14 bg-white dark:bg-gray-900"></div>
+        {/* Search Popup */}
+        <SearchPopup isOpen={isSearchPopupOpen} onClose={() => setIsSearchPopupOpen(false)} />
 
-      {/* Regular header at the top of the page */}
-      {scrollState.isAtTop && (
-        <nav className="absolute top-0 left-0 right-0 z-50 w-full flex items-center justify-between px-3 py-1 md:px-6 dark:text-white bg-transparent">
-          {renderNavContent()}
-        </nav>
-      )}
+        {/* Consistent spacer to prevent layout shifts */}
+        <div className="h-14 bg-white dark:bg-gray-900"></div>
 
-      {/* Sticky header that appears when scrolling up */}
-      {shouldBeFixed && (
-        <nav
-          className={cn(
-            "fixed top-0 left-0 right-0 z-50 w-full",
-            "flex items-center justify-between px-3 py-1 md:px-6 dark:text-white",
-            "bg-white/5 dark:bg-black/5 backdrop-blur-sm border-b border-gray-200/20 dark:border-gray-700/20",
-            "transition-opacity duration-300",
-            scrollState.isScrollingUp ? "opacity-100" : "opacity-0 pointer-events-none",
-          )}
-        >
-          {renderNavContent()}
-        </nav>
-      )}
+        {/* Regular header at the top of the page */}
+        {scrollState.isAtTop && (
+          <nav className="absolute top-0 left-0 right-0 z-50 w-full flex items-center justify-between px-3 py-1 md:px-6 dark:text-white bg-transparent">
+            {renderNavContent()}
+          </nav>
+        )}
 
-      {/* Page Content */}
-      {children}
-      {!user && <SignupPopup />}
-    </>
+        {/* Sticky header that appears when scrolling up */}
+        {shouldBeFixed && (
+          <nav
+            className={cn(
+              "fixed top-0 left-0 right-0 z-50 w-full",
+              "flex items-center justify-between px-3 py-1 md:px-6 dark:text-white",
+              "bg-white/5 dark:bg-black/5 backdrop-blur-sm border-b border-gray-200/20 dark:border-gray-700/20",
+              "transition-opacity duration-300",
+              scrollState.isScrollingUp ? "opacity-100" : "opacity-0 pointer-events-none",
+            )}
+          >
+            {renderNavContent()}
+          </nav>
+        )}
+
+        {/* Page Content */}
+        {children}
+        {!user && <SignupPopup />}
+      </main>
+    </div>
   )
 }

@@ -372,7 +372,7 @@ export default function ChatPage() {
 
         {/* Conditional Rendering: Welcome Screen vs. Chat Interface */}
         {showWelcomeScreen ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-background text-foreground">
             <div className="mb-8">
               <BBLogo size="lg" inverted={theme === "dark"} /> {/* Use inverted prop for welcome logo */}
             </div>
@@ -387,7 +387,7 @@ export default function ChatPage() {
             </p>
 
             {/* Centered Input Area for Welcome Screen */}
-            <form onSubmit={handleChatSubmit} className="w-full max-w-2xl mb-12">
+            <form onSubmit={handleSubmit} className="w-full max-w-2xl mb-12">
               <div className="relative">
                 <Input
                   ref={inputRef}
@@ -395,7 +395,7 @@ export default function ChatPage() {
                   onChange={handleInputChange}
                   placeholder="Type anything to BigBased..."
                   disabled={isLoading}
-                  className="w-full bg-custom-chat-elements text-foreground placeholder-muted-foreground pr-12 py-6 text-lg focus-visible:ring-purple-500 focus-visible:ring-2 focus-visible:outline-none no-border"
+                  className="w-full bg-input text-foreground placeholder-muted-foreground pr-12 py-6 text-lg focus-visible:ring-purple-500 focus-visible:ring-2 focus-visible:outline-none no-border"
                 />
                 <Button
                   type="submit"
