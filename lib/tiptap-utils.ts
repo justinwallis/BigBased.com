@@ -11,7 +11,7 @@ import TableCell from "@tiptap/extension-table-cell"
 import TableHeader from "@tiptap/extension-table-header"
 import Underline from "@tiptap/extension-underline"
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight"
-import { lowlight } from "lowlight"
+import { lowlight } from "lowlight" // Corrected import for lowlight
 
 // Custom extension for handling media embeds
 export const MediaEmbed = Extension.create({

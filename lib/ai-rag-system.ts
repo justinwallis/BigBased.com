@@ -382,7 +382,7 @@ Guidelines:
         return
       }
 
-      const indexedCount = 0
+      let indexedCount = 0 // Initialize indexedCount
       for (const item of content) {
         try {
           await this.addDocument({
@@ -400,7 +400,7 @@ Guidelines:
               category: item.content_type_id,
             },
           })
-          indexedCount + 1
+          indexedCount++ // Increment indexedCount
         } catch (docError) {
           console.error(`Failed to index document ${item.id}:`, docError)
         }
