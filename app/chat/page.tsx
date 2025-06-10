@@ -19,12 +19,15 @@ import {
   Shield,
   Sun,
   Moon,
+  Search,
 } from "lucide-react"
 import { useChat } from "ai/react"
 import BBLogo from "@/components/bb-logo"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { useTheme } from "next-themes" // Import useTheme
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu" // For Features dropdown
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar" // For user avatar
 
 interface ChatMessage {
   id: string
@@ -45,12 +48,11 @@ export default function ChatPage() {
   const { theme, setTheme } = useTheme()
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     if (typeof window !== "undefined") {
-      // Default to open on large screens, closed on small screens
-      return window.innerWidth >= 1024 ? true : false
+      return window.innerWidth >= 1024 ? true : false // Open by default on desktop
     }
     return false
   })
-  const [isMobile, setIsMobile] = useState(false) // State to track mobile viewport
+  const [isMobile, setIsMobile] = useState(false)
 
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([])
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
@@ -67,7 +69,6 @@ export default function ChatPage() {
     },
   })
 
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (scrollAreaRef.current) {
       const scrollElement = scrollAreaRef.current.querySelector("[data-radix-scroll-area-viewport]")
@@ -77,7 +78,6 @@ export default function ChatPage() {
     }
   }, [messages])
 
-  // Load chat sessions and sidebar state from localStorage on mount
   useEffect(() => {
     const savedSessions = localStorage.getItem("bigbased-chat-sessions")
     let sessions: ChatSession[] = []
@@ -89,45 +89,37 @@ export default function ChatPage() {
           updatedAt: new Date(s.updatedAt),
           messages: s.messages.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) })),
         }))
-        sessions.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()) // Sort by most recent
+        sessions.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
         setChatSessions(sessions)
       } catch (error) {
         console.error("Error parsing chat sessions from localStorage:", error)
       }
     }
 
-    // If there are saved sessions, load the most recent one
     if (sessions.length > 0) {
       loadChatSession(sessions[0].id, sessions)
     } else {
-      // If no sessions, start a new one
       startNewChat()
     }
 
-    // Initialize mobile state and add resize listener
     const handleResize = () => {
       setIsMobile(window.innerWidth < 1024)
-      // On desktop, sidebar should always be open.
-      // On mobile, sidebar should be closed by default.
-      // This ensures consistent behavior without auto-collapsing/opening on resize.
       if (window.innerWidth >= 1024) {
-        setSidebarOpen(true)
+        setSidebarOpen(true) // Always open on desktop
       } else {
-        setSidebarOpen(false)
+        setSidebarOpen(false) // Always closed on mobile initially
       }
     }
 
-    handleResize() // Set initial state
+    handleResize()
     window.addEventListener("resize", handleResize)
     return () => window.removeEventListener("resize", handleResize)
-  }, []) // Removed sidebarOpen from dependency array to prevent re-running on sidebar state change
+  }, [])
 
-  // Save chat sessions to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("bigbased-chat-sessions", JSON.stringify(chatSessions))
   }, [chatSessions])
 
-  // Save message to current session
   const saveMessageToHistory = useCallback(
     (message: any) => {
       if (!currentSessionId) return
@@ -144,7 +136,6 @@ export default function ChatPage() {
                 timestamp: new Date(),
               },
             ]
-            // If it's the first message in a new chat, set its title
             const title =
               session.title === "New Chat" && updatedMessages.length > 0
                 ? updatedMessages[0].content.substring(0, 30) + (updatedMessages[0].content.length > 30 ? "..." : "")
@@ -159,14 +150,13 @@ export default function ChatPage() {
           }
           return session
         })
-        .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()) // Sort after update
+        .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
 
       setChatSessions(updatedSessions)
     },
     [currentSessionId, chatSessions],
   )
 
-  // Start new chat session
   const startNewChat = () => {
     const newSessionId = Date.now().toString()
     const newSession: ChatSession = {
@@ -180,10 +170,9 @@ export default function ChatPage() {
     const updatedSessions = [newSession, ...chatSessions].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
     setChatSessions(updatedSessions)
     setCurrentSessionId(newSession.id)
-    setMessages([]) // Clear messages for the new chat
+    setMessages([])
   }
 
-  // Load existing chat session
   const loadChatSession = useCallback(
     (sessionId: string, sessionsToSearch: ChatSession[] = chatSessions) => {
       const session = sessionsToSearch.find((s) => s.id === sessionId)
@@ -197,20 +186,17 @@ export default function ChatPage() {
           })),
         )
       } else {
-        // If session not found (e.g., deleted from another tab or invalid ID), start new chat
         startNewChat()
       }
     },
     [chatSessions, setMessages],
   )
 
-  // Delete chat session
   const deleteChatSession = (sessionId: string) => {
     const updatedSessions = chatSessions.filter((session) => session.id !== sessionId)
     setChatSessions(updatedSessions)
 
     if (currentSessionId === sessionId) {
-      // If the deleted session was the current one, start a new chat or load the first available
       if (updatedSessions.length > 0) {
         loadChatSession(updatedSessions[0].id, updatedSessions)
       } else {
@@ -219,7 +205,6 @@ export default function ChatPage() {
     }
   }
 
-  // Format timestamp
   const formatTime = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
       hour: "2-digit",
@@ -227,10 +212,8 @@ export default function ChatPage() {
     }).format(date)
   }
 
-  // Handle form submission for the chat interface
   const handleChatSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    // If it's a new chat and the first message, save the user's message to history immediately
     if (currentSessionId && messages.length === 0 && input.trim()) {
       saveMessageToHistory({
         id: "user-" + Date.now(),
@@ -239,7 +222,7 @@ export default function ChatPage() {
         timestamp: new Date(),
       })
     }
-    handleSubmit(e) // Call the original handleSubmit from useChat
+    handleSubmit(e)
   }
 
   const handleQuickAction = (prompt: string) => {
@@ -254,266 +237,181 @@ export default function ChatPage() {
   const showWelcomeScreen = messages.length === 0 && !isLoading
 
   return (
-    <div className="flex h-screen bg-background text-foreground">
-      {/* Sidebar */}
-      <div
-        className={cn(
-          "flex flex-col transition-all duration-300 ease-in-out flex-shrink-0 bg-card no-border h-full",
-          // Mobile specific positioning
-          isMobile && "fixed inset-y-0 z-50",
-          isMobile && (sidebarOpen ? "left-0" : "-left-80"),
-          // Width control: w-80 when sidebarOpen is true, w-0 when closed (for desktop)
-          sidebarOpen ? "w-80" : "w-0 overflow-hidden",
-        )}
-      >
-        {/* Sidebar Header */}
-        <div className="flex items-center justify-between p-4 no-border">
-          <Link href="/chat" className="flex items-center space-x-2 group" onClick={startNewChat}>
-            <span className="font-semibold text-lg group-hover:text-purple-400 transition-colors">BigBased AI</span>
+    <div className="flex h-screen bg-background text-foreground overflow-hidden">
+      {/* Main Header (always visible) */}
+      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between h-14 px-4 bg-white dark:bg-background border-b border-gray-200 dark:border-gray-800">
+        <div className="flex items-center space-x-4">
+          <Link href="/" className="flex items-center">
+            <BBLogo size="sm" />
           </Link>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-muted-foreground hover:text-primary no-border"
+          <Button variant="ghost" size="icon" className="text-black dark:text-white">
+            <Search className="h-5 w-5" />
+          </Button>
+          <Link
+            href="/about"
+            className="text-sm font-medium text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300"
           >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
+            About
+          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="text-sm font-medium text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                Features
+                <ChevronLeft className="ml-1 h-4 w-4 rotate-[-90deg]" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-48 bg-white dark:bg-gray-900 text-black dark:text-white">
+              <DropdownMenuItem>Framer Templates</DropdownMenuItem>
+              <DropdownMenuItem>Web UI Kits</DropdownMenuItem>
+              <DropdownMenuItem>Mobile UI Kits</DropdownMenuItem>
+              <DropdownMenuItem>Coded Templates</DropdownMenuItem>
+              <DropdownMenuItem>Notion Templates</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
+        <div className="flex items-center">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src="/placeholder.svg" alt="@user" />
+            <AvatarFallback>U</AvatarFallback>
+          </Avatar>
+        </div>
+      </header>
 
-        {/* New Chat Button */}
-        <div className="p-4">
-          <Button
-            onClick={startNewChat}
-            className="w-full bg-muted hover:bg-custom-chat-elements text-foreground no-border"
+      {/* Content Wrapper (to account for fixed header) */}
+      <div className="flex flex-1 pt-14">
+        {" "}
+        {/* pt-14 matches header height */}
+        {/* Sidebar */}
+        <div
+          className={cn(
+            "flex flex-col transition-all duration-300 ease-in-out flex-shrink-0 bg-card no-border h-full",
+            // Mobile specific positioning
+            isMobile && "fixed inset-y-0 z-50",
+            isMobile && (sidebarOpen ? "left-0" : "-left-80"),
+            // Width control: w-16 (closed) or w-80 (open)
+            sidebarOpen ? "w-80" : "w-16",
+            "overflow-hidden", // Hide content when collapsed
+            "border-r border-gray-200 dark:border-gray-800", // Add a subtle border
+          )}
+        >
+          {/* Sidebar Toggle Button (visible when sidebar is collapsed or on mobile) */}
+          <div
+            className={cn(
+              "flex items-center justify-center h-14 flex-shrink-0",
+              sidebarOpen ? "justify-between p-4" : "p-4",
+            )}
           >
-            <Plus className="h-4 w-4 mr-2" />
-            New Chat
-          </Button>
-        </div>
-
-        {/* Chat History */}
-        <div className="flex-1 overflow-hidden">
-          <div className="px-4 py-2">
-            <h3 className="text-sm font-medium text-muted-foreground mb-2">Recent Chats</h3>
-          </div>
-          <ScrollArea className="flex-1 px-2">
-            {chatSessions.map((session) => (
-              <div key={session.id} className="flex items-center justify-between group">
-                <Button
-                  variant="ghost"
-                  className={cn(
-                    "flex-1 justify-start mb-1 text-left h-auto p-3 pr-10 no-border",
-                    currentSessionId === session.id
-                      ? "bg-custom-chat-elements text-accent-foreground"
-                      : "text-muted-foreground hover:text-primary hover:bg-custom-chat-elements",
-                  )}
-                  onClick={() => loadChatSession(session.id)}
-                >
-                  <div className="truncate">
-                    <div className="font-medium truncate">{session.title}</div>
-                    <div className="text-xs text-muted-foreground">{formatTime(new Date(session.updatedAt))}</div>
-                  </div>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="ml-2 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity no-border"
-                  onClick={() => deleteChatSession(session.id)}
-                  aria-label={`Delete chat session ${session.title}`}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-          </ScrollArea>
-        </div>
-
-        {/* Account Section and Theme Toggle */}
-        <div className="p-4 space-y-2 no-border">
-          <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-primary no-border">
-            <User className="h-4 w-4 mr-2" />
-            Account
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-muted-foreground hover:text-primary no-border"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          >
-            {theme === "dark" ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />}
-            Toggle Theme
-          </Button>
-        </div>
-      </div>
-
-      {/* Main Content Area */}
-      <div
-        className={cn(
-          "flex-1 flex flex-col bg-background transition-all duration-300 ease-in-out",
-          sidebarOpen && !isMobile ? "ml-80" : "ml-0", // Only push content on desktop when sidebar is open
-        )}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 bg-card no-border">
-          <div className="flex items-center space-x-3">
-            {/* Sidebar Toggle Button */}
+            {sidebarOpen && (
+              <Link href="/chat" className="flex items-center space-x-2 group" onClick={startNewChat}>
+                <span className="font-semibold text-lg group-hover:text-purple-400 transition-colors">BigBased AI</span>
+              </Link>
+            )}
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="text-muted-foreground hover:text-primary no-border"
+              className={cn(
+                "text-muted-foreground hover:text-primary no-border",
+                sidebarOpen ? "ml-auto" : "mx-auto", // Center when collapsed
+              )}
               aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
             >
-              <Menu className="h-5 w-5" />
+              {sidebarOpen ? <ChevronLeft className="h-4 w-4" /> : <Menu className="h-5 w-5" />}
             </Button>
-            {/* Removed BBLogo here as per user request */}
           </div>
-        </div>
 
-        {/* Conditional Rendering: Welcome Screen vs. Chat Interface */}
-        {showWelcomeScreen ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-background text-foreground">
-            <div className="mb-8">
-              <BBLogo size="lg" inverted={theme === "dark"} /> {/* Use inverted prop for welcome logo */}
-            </div>
-
-            <h1 className="text-4xl lg:text-5xl font-bold mb-4">
-              How can <span className="text-purple-400">We</span> help you?
-            </h1>
-
-            <p className="text-muted-foreground text-lg mb-12 max-w-2xl">
-              Start a conversation with BigBased AI to explore conservative values, digital sovereignty, and community
-              building.
-            </p>
-
-            {/* Centered Input Area for Welcome Screen */}
-            <form onSubmit={handleSubmit} className="w-full max-w-2xl mb-12">
-              <div className="relative">
-                <Input
-                  ref={inputRef}
-                  value={input}
-                  onChange={handleInputChange}
-                  placeholder="Type anything to BigBased..."
-                  disabled={isLoading}
-                  className="w-full bg-input text-foreground placeholder-muted-foreground pr-12 py-6 text-lg focus-visible:ring-purple-500 focus-visible:ring-2 focus-visible:outline-none no-border"
-                />
+          {sidebarOpen && (
+            <>
+              {/* New Chat Button */}
+              <div className="p-4">
                 <Button
-                  type="submit"
-                  disabled={isLoading || !input.trim()}
-                  size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-purple-600 hover:bg-purple-700 disabled:bg-muted no-border"
+                  onClick={startNewChat}
+                  className="w-full bg-muted hover:bg-custom-chat-elements text-foreground no-border"
                 >
-                  <Send className="h-4 w-4" />
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Chat
                 </Button>
               </div>
-            </form>
 
-            {/* Quick Action Buttons */}
-            <div className="grid grid-cols-2 gap-4 w-full max-w-2xl">
-              <Button
-                variant="outline"
-                className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-custom-chat-elements text-foreground hover:text-primary no-border"
-                onClick={() =>
-                  handleQuickAction(
-                    "What are the current trending topics in conservative politics and digital sovereignty?",
-                  )
-                }
-              >
-                <TrendingUp className="h-6 w-6" />
-                <span>Trending Topics</span>
-              </Button>
-
-              <Button
-                variant="outline"
-                className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-custom-chat-elements text-foreground hover:text-primary no-border"
-                onClick={() => handleQuickAction("What are the best practices for digital privacy and security?")}
-              >
-                <Shield className="h-6 w-6" />
-                <span>Digital Security</span>
-              </Button>
-
-              <Button
-                variant="outline"
-                className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-custom-chat-elements text-foreground hover:text-primary no-border"
-                onClick={() => handleQuickAction("Tell me about BigBased's mission and conservative values.")}
-              >
-                <BookOpen className="h-6 w-6" />
-                <span>Knowledge Base</span>
-              </Button>
-
-              <Button
-                variant="outline"
-                className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-custom-chat-elements text-foreground hover:text-primary no-border"
-                onClick={() => handleQuickAction("How can I get involved in the BigBased community?")}
-              >
-                <Users className="h-6 w-6" />
-                <span>Community</span>
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* Chat Messages */}
-            <div className="flex-1 flex flex-col">
-              <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
-                <div className="space-y-6 max-w-4xl mx-auto">
-                  {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={cn("flex gap-4", message.role === "user" ? "justify-end" : "justify-start")}
-                    >
-                      {message.role === "assistant" && (
-                        <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
-                          <Bot className="h-4 w-4 text-white" />
-                        </div>
-                      )}
-
-                      <div
+              {/* Chat History */}
+              <div className="flex-1 overflow-hidden">
+                <div className="px-4 py-2">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Recent Chats</h3>
+                </div>
+                <ScrollArea className="flex-1 px-2">
+                  {chatSessions.map((session) => (
+                    <div key={session.id} className="flex items-center justify-between group">
+                      <Button
+                        variant="ghost"
                         className={cn(
-                          "max-w-[80%] rounded-lg px-4 py-3",
-                          message.role === "user"
-                            ? "bg-purple-600 text-white"
-                            : "bg-custom-chat-elements text-foreground",
+                          "flex-1 justify-start mb-1 text-left h-auto p-3 pr-10 no-border",
+                          currentSessionId === session.id
+                            ? "bg-custom-chat-elements text-accent-foreground"
+                            : "text-muted-foreground hover:text-primary hover:bg-custom-chat-elements",
                         )}
+                        onClick={() => loadChatSession(session.id)}
                       >
-                        <div className="whitespace-pre-wrap">{message.content}</div>
-                      </div>
-
-                      {message.role === "user" && (
-                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                          <User className="h-4 w-4 text-muted-foreground" />
+                        <div className="truncate">
+                          <div className="font-medium truncate">{session.title}</div>
+                          <div className="text-xs text-muted-foreground">{formatTime(new Date(session.updatedAt))}</div>
                         </div>
-                      )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="ml-2 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity no-border"
+                        onClick={() => deleteChatSession(session.id)}
+                        aria-label={`Delete chat session ${session.title}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   ))}
+                </ScrollArea>
+              </div>
 
-                  {isLoading && (
-                    <div className="flex gap-4 justify-start">
-                      <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
-                        <Bot className="h-4 w-4 text-white" />
-                      </div>
-                      <div className="bg-custom-chat-elements rounded-lg px-4 py-3">
-                        <div className="flex space-x-1">
-                          <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
-                          <div
-                            className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
-                            style={{ animationDelay: "0.1s" }}
-                          />
-                          <div
-                            className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
-                            style={{ animationDelay: "0.2s" }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-            </div>
+              {/* Theme Toggle */}
+              <div className="p-4 space-y-2 no-border">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-muted-foreground hover:text-primary no-border"
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                >
+                  {theme === "dark" ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />}
+                  Toggle Theme
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+        {/* Main Content Area */}
+        <div
+          className={cn(
+            "flex-1 flex flex-col bg-background transition-all duration-300 ease-in-out",
+            // No margin-left needed here, as the sidebar is fixed and pushes content
+          )}
+        >
+          {/* Conditional Rendering: Welcome Screen vs. Chat Interface */}
+          {showWelcomeScreen ? (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+              <div className="mb-8">
+                <BBLogo size="lg" inverted={theme === "dark"} />
+              </div>
 
-            {/* Input Area at bottom for chat sessions */}
-            <div className="p-4 bg-card no-border">
-              <form onSubmit={handleChatSubmit} className="max-w-4xl mx-auto">
+              <h1 className="text-4xl lg:text-5xl font-bold mb-4">
+                How can <span className="text-purple-400">We</span> help you?
+              </h1>
+
+              <p className="text-muted-foreground text-lg mb-12 max-w-2xl">
+                Start a conversation with BigBased AI to explore conservative values, digital sovereignty, and community
+                building.
+              </p>
+
+              {/* Centered Input Area for Welcome Screen */}
+              <form onSubmit={handleChatSubmit} className="w-full max-w-2xl mb-12">
                 <div className="relative">
                   <Input
                     ref={inputRef}
@@ -521,7 +419,7 @@ export default function ChatPage() {
                     onChange={handleInputChange}
                     placeholder="Type anything to BigBased..."
                     disabled={isLoading}
-                    className="w-full bg-custom-chat-elements text-foreground placeholder-muted-foreground pr-12 py-6 text-lg focus-visible:ring-purple-500 focus-visible:ring-2 focus-visible:outline-none no-border"
+                    className="w-full bg-gray-200 dark:bg-gray-900 text-foreground placeholder-muted-foreground pr-12 py-6 text-lg focus-visible:ring-purple-500 focus-visible:ring-2 focus-visible:outline-none no-border"
                   />
                   <Button
                     type="submit"
@@ -533,9 +431,136 @@ export default function ChatPage() {
                   </Button>
                 </div>
               </form>
+
+              {/* Quick Action Buttons */}
+              <div className="grid grid-cols-2 gap-4 w-full max-w-2xl">
+                <Button
+                  variant="outline"
+                  className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-custom-chat-elements text-foreground hover:text-primary no-border"
+                  onClick={() =>
+                    handleQuickAction(
+                      "What are the current trending topics in conservative politics and digital sovereignty?",
+                    )
+                  }
+                >
+                  <TrendingUp className="h-6 w-6" />
+                  <span>Trending Topics</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-custom-chat-elements text-foreground hover:text-primary no-border"
+                  onClick={() => handleQuickAction("What are the best practices for digital privacy and security?")}
+                >
+                  <Shield className="h-6 w-6" />
+                  <span>Digital Security</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-custom-chat-elements text-foreground hover:text-primary no-border"
+                  onClick={() => handleQuickAction("Tell me about BigBased's mission and conservative values.")}
+                >
+                  <BookOpen className="h-6 w-6" />
+                  <span>Knowledge Base</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="h-20 flex flex-col items-center justify-center space-y-2 bg-card hover:bg-custom-chat-elements text-foreground hover:text-primary no-border"
+                  onClick={() => handleQuickAction("How can I get involved in the BigBased community?")}
+                >
+                  <Users className="h-6 w-6" />
+                  <span>Community</span>
+                </Button>
+              </div>
             </div>
-          </>
-        )}
+          ) : (
+            <>
+              {/* Chat Messages */}
+              <div className="flex-1 flex flex-col">
+                <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+                  <div className="space-y-6 max-w-4xl mx-auto">
+                    {messages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={cn("flex gap-4", message.role === "user" ? "justify-end" : "justify-start")}
+                      >
+                        {message.role === "assistant" && (
+                          <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
+                            <Bot className="h-4 w-4 text-white" />
+                          </div>
+                        )}
+
+                        <div
+                          className={cn(
+                            "max-w-[80%] rounded-lg px-4 py-3",
+                            message.role === "user"
+                              ? "bg-purple-600 text-white"
+                              : "bg-custom-chat-elements text-foreground",
+                          )}
+                        >
+                          <div className="whitespace-pre-wrap">{message.content}</div>
+                        </div>
+
+                        {message.role === "user" && (
+                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                            <User className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+
+                    {isLoading && (
+                      <div className="flex gap-4 justify-start">
+                        <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
+                          <Bot className="h-4 w-4 text-white" />
+                        </div>
+                        <div className="bg-custom-chat-elements rounded-lg px-4 py-3">
+                          <div className="flex space-x-1">
+                            <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
+                            <div
+                              className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
+                              style={{ animationDelay: "0.1s" }}
+                            />
+                            <div
+                              className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
+                              style={{ animationDelay: "0.2s" }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+              </div>
+
+              {/* Input Area at bottom for chat sessions */}
+              <div className="p-4 bg-card no-border">
+                <form onSubmit={handleChatSubmit} className="max-w-4xl mx-auto">
+                  <div className="relative">
+                    <Input
+                      ref={inputRef}
+                      value={input}
+                      onChange={handleInputChange}
+                      placeholder="Type anything to BigBased..."
+                      disabled={isLoading}
+                      className="w-full bg-gray-200 dark:bg-gray-900 text-foreground placeholder-muted-foreground pr-12 py-6 text-lg focus-visible:ring-purple-500 focus-visible:ring-2 focus-visible:outline-none no-border"
+                    />
+                    <Button
+                      type="submit"
+                      disabled={isLoading || !input.trim()}
+                      size="icon"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-purple-600 hover:bg-purple-700 disabled:bg-muted no-border"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   )
