@@ -79,8 +79,23 @@ body {
   * {
     @apply border-border;
   }
+  /* Apply theme background and foreground colors to html and body */
+  html,
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+
+  /* Explicit fallback for light mode background to ensure it's white */
+  html:not(.dark) body {
+    background-color: white !important;
+  }
+
+  /* Ensure dark mode overrides are still applied correctly */
+  .dark html,
+  .dark body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 }
 
@@ -91,25 +106,6 @@ body {
 
 .tabs-list-hover-effect [data-state="active"] {
   border-bottom: 2px solid #0284c7;
-}
-
-/* REMOVED problematic !important overrides for background colors */
-/* The theme variables should now correctly handle background colors */
-.dark {
-  /* Removed background-color: #080808 !important; */
-}
-
-.dark body {
-  /* Removed background-color: #080808 !important; */
-}
-
-.dark html {
-  /* Removed background-color: #080808 !important; */
-}
-
-/* Main page containers */
-.dark .min-h-screen {
-  background-color: #080808 !important; /* Keep this for specific containers if needed */
 }
 
 /* REMOVE BLUE BACKGROUNDS - Replace with #080808 */

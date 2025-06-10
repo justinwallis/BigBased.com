@@ -107,8 +107,13 @@ export default function ChatPage() {
     // Initialize mobile state and add resize listener
     const handleResize = () => {
       setIsMobile(window.innerWidth < 1024)
+      // If resizing to desktop from mobile, and sidebar was closed, open it
+      if (window.innerWidth >= 1024 && !sidebarOpen) {
+        setSidebarOpen(true)
+      }
+      // If resizing to mobile from desktop, and sidebar was open, close it
       if (window.innerWidth < 1024 && sidebarOpen) {
-        setSidebarOpen(false) // Close sidebar on small screens if it's open
+        setSidebarOpen(false)
       }
     }
 
@@ -254,12 +259,13 @@ export default function ChatPage() {
       <div
         className={cn(
           "flex flex-col transition-all duration-300 ease-in-out flex-shrink-0 bg-card no-border h-full",
-          // Mobile specific classes (fixed position, slide in/out)
+          // Mobile specific positioning
           isMobile && "fixed inset-y-0 z-50",
-          isMobile && (sidebarOpen ? "left-0 w-80" : "-left-80 w-80"), // Control visibility with left property and ensure width
-          // Desktop specific classes (relative position, width control)
+          isMobile && (sidebarOpen ? "left-0" : "-left-80"),
+          // Desktop specific positioning
           !isMobile && "relative",
-          !isMobile && (sidebarOpen ? "w-80" : "w-0 overflow-hidden"), // Desktop width control
+          // Width control: w-0 (hidden) by default, w-80 (open) when sidebarOpen is true
+          sidebarOpen ? "w-80" : "w-0 overflow-hidden",
         )}
       >
         {/* Sidebar Header */}
