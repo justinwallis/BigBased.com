@@ -6,14 +6,14 @@ import { Toaster } from "@/components/ui/toast"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/contexts/auth-context"
 import { DomainProvider } from "@/contexts/domain-context"
-import ClientLayout from "./client-layout" // Ensure this is imported correctly
+import ClientLayout from "./client-layout"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Big Based",
-  description: "The Big Based Website",
-    generator: 'v0.dev'
+  description: "Connect with friends and join our community",
+  generator: "v0.dev",
 }
 
 export default function RootLayout({
