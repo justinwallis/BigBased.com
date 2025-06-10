@@ -2,10 +2,10 @@
 
 import type React from "react"
 
-import { useState, useRef, useEffect } from "react"
+import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
 import { SendIcon, ChevronDownIcon } from "lucide-react"
+import { useState } from "react"
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void
@@ -13,65 +13,32 @@ interface ChatInputProps {
 }
 
 export function ChatInput({ onSendMessage, isLoading }: ChatInputProps) {
-  const [message, setMessage] = useState("")
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const [currentInput, setCurrentInput] = useState("")
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(e.target.value)
-  }
-
-  const handleSendMessage = () => {
-    if (message.trim()) {
-      onSendMessage(message.trim())
-      setMessage("")
-      if (textareaRef.current) {
-        textareaRef.current.style.height = "auto" // Reset height
-      }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (currentInput.trim() && !isLoading) {
+      onSendMessage(currentInput)
+      setCurrentInput("")
     }
   }
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleSendMessage()
-    }
-  }
-
-  // Auto-resize textarea
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto"
-      textareaRef.current.style.height = textareaRef.current.scrollHeight + "px"
-    }
-  }, [message])
 
   return (
-    <div className="relative flex items-center p-4 border-t border-gray-200 dark:border-gray-800">
-      <Button variant="ghost" size="icon" className="absolute left-6 top-1/2 -translate-y-1/2">
+    <form onSubmit={handleSubmit} className="relative flex items-center w-full mt-4">
+      <Button variant="ghost" size="icon" className="absolute left-2 border-none">
         <ChevronDownIcon className="h-4 w-4" />
-        <span className="sr-only">Options</span>
       </Button>
-      <Textarea
-        ref={textareaRef}
+      <Input
+        className="w-full rounded-lg py-2 pl-10 pr-12 text-sm focus-visible:ring-0 focus-visible:ring-offset-0 border-none bg-gray-100 dark:bg-gray-800"
         placeholder="Type anything to BigBased..."
-        value={message}
-        onChange={handleInputChange}
-        onKeyDown={handleKeyDown}
-        rows={1}
-        maxRows={6}
-        className="min-h-[48px] resize-none overflow-hidden rounded-2xl border border-gray-300 bg-white pl-14 pr-16 shadow-sm focus:border-primary focus:ring-primary dark:border-gray-700 dark:bg-gray-950 dark:text-white"
+        value={currentInput}
+        onChange={(e) => setCurrentInput(e.target.value)}
         disabled={isLoading}
       />
-      <Button
-        type="submit"
-        size="icon"
-        className="absolute right-6 top-1/2 -translate-y-1/2 rounded-full"
-        onClick={handleSendMessage}
-        disabled={!message.trim() || isLoading}
-      >
+      <Button type="submit" size="icon" className="absolute right-2 border-none" disabled={isLoading}>
         <SendIcon className="h-4 w-4" />
         <span className="sr-only">Send message</span>
       </Button>
-    </div>
+    </form>
   )
 }

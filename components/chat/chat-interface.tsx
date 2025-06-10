@@ -49,24 +49,31 @@ export function ChatInterface() {
           <h1 className="text-3xl font-bold mb-2">
             How can <span className="text-primary">We</span> help you?
           </h1>
-          <p className="text-lg text-gray-500 dark:text-gray-400 max-w-md">
+          <p className="text-lg text-gray-500 dark:text-gray-400 max-w-md mb-8">
             Start a conversation with a based herd of agents to traverse the Big Based information universe.
           </p>
+          <div className="w-full max-w-2xl px-4">
+            <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
+            <ChatSuggestions onSelectSuggestion={handleSuggestionClick} />
+          </div>
         </div>
       ) : (
-        <ScrollArea className="flex-1 p-4">
-          {messages.map((m) => (
-            <ChatMessage key={m.id} role={m.role as "user" | "assistant"} content={m.content} />
-          ))}
-          {isLoading && messages[messages.length - 1]?.role === "user" && (
-            <ChatMessage role="assistant" content="Thinking..." />
-          )}
-          <div ref={messagesEndRef} />
-        </ScrollArea>
+        <>
+          <ScrollArea className="flex-1 p-4">
+            {messages.map((m) => (
+              <ChatMessage key={m.id} role={m.role as "user" | "assistant"} content={m.content} />
+            ))}
+            {isLoading && messages[messages.length - 1]?.role === "user" && (
+              <ChatMessage role="assistant" content="Thinking..." />
+            )}
+            <div ref={messagesEndRef} />
+          </ScrollArea>
+          <div className="w-full max-w-2xl mx-auto px-4 pb-4">
+            <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
+            <ChatSuggestions onSelectSuggestion={handleSuggestionClick} />
+          </div>
+        </>
       )}
-
-      <ChatSuggestions onSelectSuggestion={handleSuggestionClick} />
-      <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
     </div>
   )
 }
