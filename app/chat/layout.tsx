@@ -7,14 +7,14 @@ import { Button } from "@/components/ui/button"
 import { MenuIcon } from "lucide-react"
 import { ChatSidebar } from "@/components/chat/chat-sidebar"
 import { useTheme } from "next-themes"
-import { cn } from "@/lib/utils" // Assuming cn utility is available
+import { cn } from "@/lib/utils"
 
 export default function ChatLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true) // Start open on desktop
   const { theme } = useTheme()
   const isDark = theme === "dark"
 
@@ -30,37 +30,33 @@ export default function ChatLayout({
         <ChatSidebar />
       </div>
 
-      {/* Mobile Sidebar (Sheet) */}
-      <Sheet>
-        <SheetTrigger asChild className="md:hidden absolute top-4 left-4 z-10">
-          <Button variant="ghost" size="icon" className="border-none">
-            <MenuIcon className="h-6 w-6" />
-            <span className="sr-only">Toggle sidebar</span>
-          </Button>
-        </SheetTrigger>
-        <SheetContent
-          side="left"
-          className={cn("p-0 w-64 border-none", isDark ? "bg-darkbg-DEFAULT text-white" : "bg-white text-black")}
-        >
-          <ChatSidebar />
-        </SheetContent>
-      </Sheet>
-
       {/* Main Content Area */}
       <main
         className={cn(
-          "flex-1 overflow-auto transition-all duration-300 ease-in-out",
-          isSidebarOpen ? "md:ml-0" : "md:ml-0", // No margin needed, sidebar pushes
+          "flex-1 overflow-auto relative", // Added relative for absolute positioning of toggle
         )}
       >
-        {/* Desktop Sidebar Toggle Button */}
-        <div className="hidden md:block absolute top-4 left-4 z-10">
-          <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="border-none">
-            <MenuIcon className="h-6 w-6" />
-            <span className="sr-only">Toggle sidebar</span>
-          </Button>
-        </div>
-        {children}
+        {/* Universal Sidebar Toggle Button */}
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)} // Toggle for desktop
+              className="absolute top-4 left-4 z-20 border-none text-gray-900 dark:text-white" // Ensure visibility
+            >
+              <MenuIcon className="h-6 w-6" />
+              <span className="sr-only">Toggle sidebar</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent
+            side="left"
+            className={cn("p-0 w-64 border-none", isDark ? "bg-darkbg-DEFAULT text-white" : "bg-white text-black")}
+          >
+            <ChatSidebar />
+          </SheetContent>
+        </Sheet>
+        <div className="pt-16 h-full">{children}</div> {/* Add padding for the button */}
       </main>
     </div>
   )

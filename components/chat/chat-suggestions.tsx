@@ -16,12 +16,16 @@ export function ChatSuggestions({ onSelectSuggestion }: ChatSuggestionsProps) {
   ]
 
   return (
-    <div className="grid grid-cols-2 gap-2 mt-4">
+    <div className="flex flex-wrap justify-center gap-2 mt-4">
+      {" "}
+      {/* Changed to flex for horizontal layout */}
       {suggestions.map((s, index) => (
         <Button
           key={index}
           variant="outline"
-          className="flex items-center gap-2 border-none bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50 hover:bg-gray-200 dark:hover:bg-gray-700"
+          className="flex items-center gap-2 border-none
+                     bg-gray-100 text-gray-900 hover:bg-gray-200
+                     dark:bg-gray-900 dark:text-gray-50 dark:hover:bg-gray-700" // Adjusted dark mode colors
           onClick={() => onSelectSuggestion(s.prompt)}
         >
           <s.icon className="h-4 w-4" />
