@@ -4,10 +4,11 @@ import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Menu, Send, Plus, User, Bot, ChevronLeft, TrendingUp, BookOpen, Users, Shield } from "lucide-react"
+import { Menu, Send, Plus, User, Bot, ChevronLeft, TrendingUp, BookOpen, Users, Shield, Trash2 } from "lucide-react"
 import { useChat } from "ai/react"
 import BBLogo from "@/components/bb-logo"
 import { cn } from "@/lib/utils"
+import Link from "next/link" // Import Link for navigation
 
 interface ChatMessage {
   id: string
@@ -59,17 +60,23 @@ export default function AIChatInterface() {
       try {
         const sessions = JSON.parse(savedSessions)
         setChatSessions(sessions)
+        // If there are saved sessions, load the most recent one by default
+        if (sessions.length > 0 && !currentSessionId) {
+          loadChatSession(sessions[0].id)
+        }
       } catch (error) {
         console.error("Error loading chat sessions:", error)
       }
+    } else {
+      // If no sessions, start a new one automatically
+      startNewChat()
     }
   }, [])
 
-  // Save chat sessions to localStorage
-  const saveChatSessions = (sessions: ChatSession[]) => {
-    localStorage.setItem("bigbased-chat-sessions", JSON.stringify(sessions))
-    setChatSessions(sessions)
-  }
+  // Save chat sessions to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem("bigbased-chat-sessions", JSON.stringify(chatSessions))
+  }, [chatSessions])
 
   // Save message to current session
   const saveMessageToHistory = (message: any) => {
@@ -94,23 +101,23 @@ export default function AIChatInterface() {
       return session
     })
 
-    saveChatSessions(updatedSessions)
+    setChatSessions(updatedSessions) // Use setChatSessions to trigger useEffect for localStorage
   }
 
   // Start new chat session
   const startNewChat = () => {
     const newSession: ChatSession = {
       id: Date.now().toString(),
-      title: "New Chat",
+      title: "New Chat", // Default title, could be updated later
       messages: [],
       createdAt: new Date(),
       updatedAt: new Date(),
     }
 
     const updatedSessions = [newSession, ...chatSessions]
-    saveChatSessions(updatedSessions)
+    setChatSessions(updatedSessions) // Update state
     setCurrentSessionId(newSession.id)
-    setMessages([])
+    setMessages([]) // Clear messages for the new chat
   }
 
   // Load existing chat session
@@ -125,6 +132,21 @@ export default function AIChatInterface() {
           content: msg.content,
         })),
       )
+    }
+  }
+
+  // Delete chat session
+  const deleteChatSession = (sessionId: string) => {
+    const updatedSessions = chatSessions.filter((session) => session.id !== sessionId)
+    setChatSessions(updatedSessions)
+
+    if (currentSessionId === sessionId) {
+      // If the deleted session was the current one, start a new chat
+      if (updatedSessions.length > 0) {
+        loadChatSession(updatedSessions[0].id)
+      } else {
+        startNewChat()
+      }
     }
   }
 
@@ -169,10 +191,10 @@ export default function AIChatInterface() {
       >
         {/* Sidebar Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-800">
-          <div className="flex items-center space-x-2">
+          <Link href="/ai" className="flex items-center space-x-2 group">
             <BBLogo size="sm" />
-            <span className="font-semibold text-lg">BigBased AI</span>
-          </div>
+            <span className="font-semibold text-lg group-hover:text-purple-400 transition-colors">BigBased AI</span>
+          </Link>
           <Button
             variant="ghost"
             size="icon"
@@ -201,22 +223,32 @@ export default function AIChatInterface() {
           </div>
           <ScrollArea className="flex-1 px-2">
             {chatSessions.map((session) => (
-              <Button
-                key={session.id}
-                variant="ghost"
-                className={cn(
-                  "w-full justify-start mb-1 text-left h-auto p-3",
-                  currentSessionId === session.id
-                    ? "bg-gray-800 text-white"
-                    : "text-gray-400 hover:text-white hover:bg-gray-800/50",
-                )}
-                onClick={() => loadChatSession(session.id)}
-              >
-                <div className="truncate">
-                  <div className="font-medium truncate">{session.title}</div>
-                  <div className="text-xs text-gray-500">{formatTime(new Date(session.updatedAt))}</div>
-                </div>
-              </Button>
+              <div key={session.id} className="flex items-center justify-between group">
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "flex-1 justify-start mb-1 text-left h-auto p-3 pr-10", // Added pr-10 for delete button space
+                    currentSessionId === session.id
+                      ? "bg-gray-800 text-white"
+                      : "text-gray-400 hover:text-white hover:bg-gray-800/50",
+                  )}
+                  onClick={() => loadChatSession(session.id)}
+                >
+                  <div className="truncate">
+                    <div className="font-medium truncate">{session.title}</div>
+                    <div className="text-xs text-gray-500">{formatTime(new Date(session.updatedAt))}</div>
+                  </div>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="ml-2 text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => deleteChatSession(session.id)}
+                  aria-label={`Delete chat session ${session.title}`}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             ))}
           </ScrollArea>
         </div>
@@ -235,11 +267,13 @@ export default function AIChatInterface() {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-800">
           <div className="flex items-center space-x-3">
+            {/* New Sidebar Toggle Button */}
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setSidebarOpen(true)}
-              className={cn("text-gray-400 hover:text-white", sidebarOpen && "lg:hidden")}
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="text-gray-400 hover:text-white"
+              aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
             >
               <Menu className="h-5 w-5" />
             </Button>
