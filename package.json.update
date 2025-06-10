@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "@sentry/nextjs": "^7.64.0"
+    "pdf-parse": "^1.1.1",
+    "mammoth": "^1.6.0"
   }
 }

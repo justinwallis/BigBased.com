@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -8,15 +10,32 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
-import { Bot, Database, Search, Upload, Settings, Play, RefreshCw, CheckCircle, Edit, Zap } from "lucide-react"
+import {
+  Bot,
+  Database,
+  Search,
+  Upload,
+  Settings,
+  Play,
+  RefreshCw,
+  CheckCircle,
+  Edit,
+  Zap,
+  FileText,
+  FileUp,
+} from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { cn } from "@/lib/utils" // Import cn for conditional class names
 
 export default function AIManagementClient() {
   const [isInitializing, setIsInitializing] = useState(false)
   const [isIndexing, setIsIndexing] = useState(false)
+  const [isUploadingDocument, setIsUploadingDocument] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isDragging, setIsDragging] = useState(false) // New state for drag-drop
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [testQuery, setTestQuery] = useState("")
@@ -193,6 +212,75 @@ export default function AIManagementClient() {
     }
   }
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      setSelectedFile(event.target.files[0])
+    } else {
+      setSelectedFile(null)
+    }
+  }
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    setIsDragging(false)
+  }
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    setIsDragging(false)
+    if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+      setSelectedFile(event.dataTransfer.files[0])
+      event.dataTransfer.clearData()
+    }
+  }
+
+  const handleDocumentUpload = async () => {
+    if (!selectedFile) {
+      toast({
+        title: "No file selected",
+        description: "Please select a document to upload.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsUploadingDocument(true)
+    try {
+      const formData = new FormData()
+      formData.append("document", selectedFile)
+
+      const response = await fetch("/api/ai/upload-document", {
+        method: "POST",
+        body: formData,
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: data.message,
+        })
+        setSelectedFile(null) // Clear selected file after successful upload
+      } else {
+        throw new Error(data.error || "Failed to upload document")
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to upload document: ${error instanceof Error ? error.message : String(error)}`,
+        variant: "destructive",
+      })
+    } finally {
+      setIsUploadingDocument(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Status Cards */}
@@ -255,6 +343,7 @@ export default function AIManagementClient() {
         <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
           <TabsTrigger value="setup">Setup</TabsTrigger>
           <TabsTrigger value="indexing">Content Indexing</TabsTrigger>
+          <TabsTrigger value="document-upload">Document Upload</TabsTrigger>
           <TabsTrigger value="search">Search Testing</TabsTrigger>
           <TabsTrigger value="chat">Chat Testing</TabsTrigger>
           <TabsTrigger value="writing">Writing Assistant</TabsTrigger>
@@ -408,6 +497,58 @@ export default function AIManagementClient() {
                   <Progress value={100} className="h-2" />
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Updated Tab for Document Upload with Drag & Drop */}
+        <TabsContent value="document-upload" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Upload Documents for AI Indexing</CardTitle>
+              <CardDescription>Upload PDF, DOCX, or plain text files to be indexed by the AI system.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div
+                className={cn(
+                  "flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg text-center",
+                  isDragging ? "border-primary bg-primary/10" : "border-gray-300 dark:border-gray-700",
+                )}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
+                <FileUp className="h-12 w-12 text-muted-foreground mb-3" />
+                <p className="text-muted-foreground mb-2">
+                  {selectedFile ? selectedFile.name : "Drag & drop your document here, or click to select"}
+                </p>
+                <Label htmlFor="document-upload" className="cursor-pointer">
+                  <Button variant="outline" asChild>
+                    <Input
+                      id="document-upload"
+                      type="file"
+                      accept=".pdf, .txt, .docx, application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                      onChange={handleFileChange}
+                      className="sr-only" // Hide the default input
+                    />
+                    <span>Select File</span>
+                  </Button>
+                </Label>
+              </div>
+
+              <Button onClick={handleDocumentUpload} disabled={!selectedFile || isUploadingDocument} className="w-full">
+                {isUploadingDocument ? (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    Uploading & Indexing...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="mr-2 h-4 w-4" />
+                    Upload Document
+                  </>
+                )}
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>

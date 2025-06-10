@@ -368,7 +368,7 @@ Guidelines:
       const supabase = createClient(true) // Use service role client
 
       const { data: content, error } = await supabase
-        .from("cms_content")
+        .from("content_items")
         .select("id, title, content, slug, domain, tenant_id, created_at, tags, author_id, content_type_id")
         .eq("status", "published")
 

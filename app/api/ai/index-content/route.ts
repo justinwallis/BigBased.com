@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     // Get content from database
     const supabase = createClient(true) // Use service role
 
-    let query = supabase.from("cms_content").select("*").eq("status", "published")
+    let query = supabase.from("content_items").select("*").eq("status", "published")
 
     if (content_id) {
       query = query.eq("id", content_id)
