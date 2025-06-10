@@ -1,12 +1,13 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import "./ai-styles.css" // Ensure this path is correct
+import "../globals.css" // Use global CSS for theme variables
+import "./ai-styles.css" // Specific AI styles
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "BigBased AI Chat", // Updated title
+  title: "BigBased AI Chat",
   description: "Chat with BigBased AI - Your conservative values and digital sovereignty assistant.",
 }
 

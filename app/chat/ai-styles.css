@@ -1,3 +1,50 @@
+/* Light Mode Defaults (close to white) */
+:root {
+  --background: #f8f8f8; /* Very light gray/off-white */
+  --foreground: #1a1a1a; /* Dark text for contrast */
+  --card: #ffffff; /* White card backgrounds */
+  --card-foreground: #1a1a1a;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1a;
+  --primary: #e0e0e0; /* Light gray for primary buttons/elements */
+  --primary-foreground: #1a1a1a;
+  --secondary: #f0f0f0; /* Even lighter gray for secondary elements */
+  --secondary-foreground: #1a1a1a;
+  --muted: #f0f0f0; /* Muted backgrounds */
+  --muted-foreground: #6b7280; /* Gray for muted text */
+  --accent: #f0f0f0; /* Accent backgrounds */
+  --accent-foreground: #1a1a1a;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: transparent; /* No borders by default */
+  --input: #f0f0f0; /* Light input background */
+  --ring: transparent; /* No rings by default */
+  --radius: 0.5rem;
+}
+
+/* Dark Mode Overrides */
+.dark-theme {
+  --background: #080808; /* Overall dark background */
+  --foreground: #f0f0f0; /* Light text for contrast */
+  --card: #1a1a1a; /* Darker card backgrounds */
+  --card-foreground: #f0f0f0;
+  --popover: #1a1a1a;
+  --popover-foreground: #f0f0f0;
+  --primary: #2a2a2a; /* Darker primary buttons/elements */
+  --primary-foreground: #f0f0f0;
+  --secondary: #2a2a2a; /* Darker secondary elements */
+  --secondary-foreground: #f0f0f0;
+  --muted: #2a2a2a; /* Muted backgrounds */
+  --muted-foreground: #a0a0a0; /* Lighter gray for muted text */
+  --accent: #2a2a2a; /* Accent backgrounds */
+  --accent-foreground: #f0f0f0;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: transparent; /* No borders by default */
+  --input: #1a1a1a; /* Dark input background */
+  --ring: transparent; /* No rings by default */
+}
+
 .dark-theme {
   background-color: #080808;
   color: #f0f0f0;
@@ -102,7 +149,7 @@
 }
 
 .dark-theme .chat-message-bubble-ai {
-  background-color: #1a1a1a; /* AI message bubble */
+  background-color: #222222; /* Specific color for AI chat bubbles in dark mode */
   color: #f0f0f0;
 }
 
@@ -115,64 +162,25 @@
 }
 
 .dark-theme .sidebar-item-active {
-  background-color: #2a2a2a; /* Active sidebar item */
+  background-color: #222222; /* Specific color for active sidebar item in dark mode */
 }
 
-/* Remove borders */
-.dark-theme .border {
-  border: none !important;
-}
-
-.dark-theme .border-t {
-  border-top: none !important;
-}
-
-.dark-theme .border-b {
-  border-bottom: none !important;
-}
-
-.dark-theme .border-l {
-  border-left: none !important;
-}
-
-.dark-theme .border-r {
-  border-right: none !important;
-}
-
-.dark-theme .border-gray-200 {
-  border-color: transparent !important;
-}
-
-.dark-theme .border-gray-800 {
-  border-color: transparent !important;
-}
-
-.dark-theme .border-gray-700 {
-  border-color: transparent !important;
-}
-
-.dark-theme .border-gray-600 {
-  border-color: transparent !important;
-}
-
-.dark-theme .border-gray-500 {
-  border-color: transparent !important;
-}
-
-.dark-theme .border-gray-400 {
-  border-color: transparent !important;
-}
-
-.dark-theme .border-gray-300 {
-  border-color: transparent !important;
-}
-
-.dark-theme .border-gray-100 {
-  border-color: transparent !important;
-}
-
+/* Remove all borders */
+.dark-theme .border,
+.dark-theme .border-t,
+.dark-theme .border-b,
+.dark-theme .border-l,
+.dark-theme .border-r,
+.dark-theme .border-gray-200,
+.dark-theme .border-gray-800,
+.dark-theme .border-gray-700,
+.dark-theme .border-gray-600,
+.dark-theme .border-gray-500,
+.dark-theme .border-gray-400,
+.dark-theme .border-gray-300,
+.dark-theme .border-gray-100,
 .dark-theme .border-white {
-  border-color: transparent !important;
+  border: none !important;
 }
 
 /* Ensure no ring colors */
@@ -180,11 +188,9 @@
   --tw-ring-color: transparent !important;
 }
 
-.dark-theme .focus-visible\:ring-2:focus-visible {
-  --tw-ring-width: 0px !important;
-}
-
+.dark-theme .focus-visible\:ring-2:focus-visible,
 .dark-theme .focus-visible\:ring-offset-2:focus-visible {
+  --tw-ring-width: 0px !important;
   --tw-ring-offset-width: 0px !important;
 }
 
@@ -499,4 +505,52 @@ body,
 /* Specific for the chat message area */
 .dark-theme .chat-messages-container {
   padding-bottom: 8rem; /* Space for the fixed input */
+}
+
+/* Remove all borders */
+.border,
+.border-t,
+.border-b,
+.border-l,
+.border-r,
+.border-gray-200,
+.border-gray-800,
+.border-gray-700,
+.border-gray-600,
+.border-gray-500,
+.border-gray-400,
+.border-gray-300,
+.border-gray-100,
+.border-white {
+  border: none !important;
+}
+
+/* Ensure no ring colors */
+.focus-visible\:ring-2:focus-visible,
+.focus-visible\:ring-offset-2:focus-visible {
+  --tw-ring-width: 0px !important;
+  --tw-ring-offset-width: 0px !important;
+}
+
+/* Remove shadows */
+.shadow-sm,
+.shadow,
+.shadow-md,
+.shadow-lg,
+.shadow-xl,
+.shadow-2xl,
+.shadow-inner,
+.shadow-none {
+  box-shadow: none !important;
+}
+
+/* Ensure no default focus outlines */
+*:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+*:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
