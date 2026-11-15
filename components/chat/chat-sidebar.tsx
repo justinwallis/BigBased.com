@@ -6,76 +6,114 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { useTheme } from "next-themes"
-// import Image from "next/image" // Removed as per request
+import { useChatWorkspace } from "./chat-workspace"
 
-export function ChatSidebar() {
-  const { theme } = useTheme()
-  const isDark = theme === "dark"
+// These are the original 2025 visual examples, not fabricated chat history.
+// Selecting one creates a real, local draft that can be revisited in this tab.
+const originalTopics = [
+  "BigBased Principles",
+  "AI Integration Guide",
+  "Community Guidelines",
+  "Future of Decentralization",
+  "Content Indexing Deep Dive",
+  "User Management Best Practices",
+  "Affiliate Program Details",
+  "Shop System Overview",
+  "Documentation Structure",
+  "Security Features Explained",
+]
 
-  // Placeholder for chat history
-  const chatHistory = [
-    { id: "1", title: "BigBased Principles" },
-    { id: "2", title: "AI Integration Guide" },
-    { id: "3", title: "Community Guidelines" },
-    { id: "4", title: "Future of Decentralization" },
-    { id: "5", title: "Content Indexing Deep Dive" },
-    { id: "6", title: "User Management Best Practices" },
-    { id: "7", title: "Affiliate Program Details" },
-    { id: "8", title: "Shop System Overview" },
-    { id: "9", title: "Documentation Structure" },
-    { id: "10", title: "Security Features Explained" },
-  ]
+type ChatSidebarProps = {
+  onNavigate?: () => void
+}
+
+export function ChatSidebar({ onNavigate }: ChatSidebarProps) {
+  const { threads, activeId, newChat, openChat, removeChat, beginTopic } = useChatWorkspace()
+
+  const startNewChat = () => {
+    newChat()
+    onNavigate?.()
+  }
 
   return (
-    <div className="flex h-full max-h-screen flex-col">
-      <div className="flex h-16 items-center justify-between px-4">
-        <Link className="flex items-center gap-2 font-semibold" href="/chat">
-          {/* Removed Image component */}
+    <div className="flex h-full max-h-full min-w-0 flex-col">
+      <div className="flex h-16 shrink-0 items-center justify-between px-4">
+        <button type="button" onClick={startNewChat} className="flex items-center gap-2 font-semibold">
           <span className="text-lg">BigBased GPT</span>
-        </Link>
-        <Button className="rounded-full border-none" size="icon" variant="ghost">
+        </button>
+        <Button
+          type="button"
+          className="rounded-full border-none"
+          size="icon"
+          variant="ghost"
+          onClick={startNewChat}
+          aria-label="New chat"
+        >
           <PlusIcon className="h-4 w-4" />
-          <span className="sr-only">New chat</span>
         </Button>
       </div>
       <Separator className="my-2" />
-      <ScrollArea className="flex-1 py-2">
+      <ScrollArea className="min-h-0 flex-1 py-2">
         <div className="grid gap-1 px-4">
-          <Link
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-900 transition-all hover:bg-gray-100 dark:text-gray-50 dark:hover:bg-gray-800"
-            href="/chat"
+          <button
+            type="button"
+            onClick={startNewChat}
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-left text-gray-900 transition-all hover:bg-gray-100 dark:text-gray-50 dark:hover:bg-gray-800"
           >
             <MessageSquareIcon className="h-4 w-4" />
             Chats
-          </Link>
-          {chatHistory.map((chat) => (
+          </button>
+
+          {threads.map((chat) => (
             <div
               key={chat.id}
-              className="flex items-center justify-between rounded-lg px-3 py-2 text-gray-900 transition-all hover:bg-gray-100 dark:text-gray-50 dark:hover:bg-gray-800"
+              className={"flex items-center justify-between rounded-lg px-3 py-2 text-gray-900 transition-all hover:bg-gray-100 dark:text-gray-50 dark:hover:bg-gray-800 " +
+                (activeId === chat.id ? "bg-gray-100 dark:bg-gray-800" : "")}
             >
-              <Link href={`/chat/${chat.id}`} className="flex-1 truncate">
+              <button
+                type="button"
+                className="min-w-0 flex-1 truncate text-left"
+                onClick={() => { openChat(chat.id); onNavigate?.() }}
+                aria-current={activeId === chat.id ? "page" : undefined}
+              >
                 {chat.title}
-              </Link>
+              </button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 border-none">
+                  <Button variant="ghost" size="icon" className="h-6 w-6 border-none" aria-label={"Options for " + chat.title}>
                     <MoreHorizontalIcon className="h-4 w-4" />
-                    <span className="sr-only">Chat options</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    <Link href={`/chat/${chat.id}`}>Go to Chat</Link>
+                  <DropdownMenuItem onClick={() => { openChat(chat.id); onNavigate?.() }}>
+                    Open chat
                   </DropdownMenuItem>
-                  {/* Add more options here like Rename, Delete etc. */}
+                  <DropdownMenuItem onClick={() => removeChat(chat.id)}>
+                    Delete local draft
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           ))}
+
+          <p className="px-3 pt-4 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+            Original example topics
+          </p>
+          {originalTopics.map((topic) => (
+            <button
+              type="button"
+              key={topic}
+              onClick={() => { beginTopic(topic); onNavigate?.() }}
+              className="flex items-center justify-between rounded-lg px-3 py-2 text-left text-gray-900 transition-all hover:bg-gray-100 dark:text-gray-50 dark:hover:bg-gray-800"
+            >
+              <span className="truncate">{topic}</span>
+            </button>
+          ))}
+
           <Link
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-900 transition-all hover:bg-gray-100 dark:text-gray-50 dark:hover:bg-gray-800"
+            className="mt-2 flex items-center gap-3 rounded-lg px-3 py-2 text-gray-900 transition-all hover:bg-gray-100 dark:text-gray-50 dark:hover:bg-gray-800"
             href="/profile"
+            onClick={onNavigate}
           >
             <UserIcon className="h-4 w-4" />
             Account
