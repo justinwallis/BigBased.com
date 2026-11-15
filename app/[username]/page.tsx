@@ -3,87 +3,82 @@ import { notFound } from "next/navigation"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { PublicProfilePageClient } from "./PublicProfilePageClient"
 
-interface ProfilePageProps {
-  params: {
-    username: string
+type ProfilePageProps = {
+  params: Promise<{ username: string }>
+}
+
+// Only fields intended for public-facing presentation are ever selected.
+// The historical table also stores private/contact data in social_links._extended.
+// Never pass a whole database record to a client component.
+const PROFILE_PRESENTATION_COLUMNS =
+  "id,username,full_name,bio,avatar_url,banner_url,website,created_at,updated_at"
+
+const RESERVED_USERNAMES = new Set(["admin", "api", "auth"])
+
+async function getVisibleProfile(username: string) {
+  if (!username || RESERVED_USERNAMES.has(username)) return null
+
+  // Respect the caller's session and the database RLS policy.
+  // Do not use a service-role client for an untrusted username lookup.
+  const supabase = createServerSupabaseClient()
+  const { data, error } = await supabase
+    .from("profiles")
+    .select(PROFILE_PRESENTATION_COLUMNS)
+    .eq("username", username)
+    .maybeSingle()
+
+  if (error) {
+    console.error("Profile lookup failed:", { code: error.code })
+    return null
   }
+
+  return data
 }
 
 export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
-  const { username } = params
+  const { username } = await params
+  const profile = await getVisibleProfile(username)
 
-  // Exclude reserved routes from metadata generation
-  if (username === "admin" || username === "api" || username === "auth") {
+  if (!profile) {
     return {
-      title: "Page Not Found | Big Based",
-      description: "This page could not be found.",
+      title: "Profile Unavailable | BigBased",
+      description: "This profile is not available for public viewing.",
+      robots: { index: false, follow: false },
     }
   }
 
-  try {
-    const supabase = createServerSupabaseClient(true)
-    const { data: profile } = await supabase.from("profiles").select("*").eq("username", username).single()
-
-    if (!profile) {
-      return {
-        title: "User Not Found | Big Based",
-        description: "This user profile could not be found.",
-      }
-    }
-
-    return {
-      title: `${profile.full_name || profile.username} | Big Based`,
-      description: profile.bio || `${profile.username}'s profile on Big Based`,
-    }
-  } catch (error) {
-    console.error("Error generating metadata:", error)
-    return {
-      title: "Profile | Big Based",
-      description: "View user profile on Big Based",
-    }
+  return {
+    title: `${profile.full_name || profile.username} | BigBased`,
+    description: profile.bio || "BigBased creator profile",
+    // The historical profiles are not publicly published until a
+    // separate opt-in public-profile contract is implemented and reviewed.
+    robots: { index: false, follow: false },
   }
 }
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
-  const { username } = params
+  const { username } = await params
+  const profile = await getVisibleProfile(username)
+  if (!profile) notFound()
 
-  // Exclude reserved routes
-  if (username === "admin" || username === "api" || username === "auth") {
-    notFound()
-  }
-
-  try {
-    const supabase = createServerSupabaseClient(true)
-    const { data: profile, error } = await supabase.from("profiles").select("*").eq("username", username).single()
-
-    if (error || !profile) {
-      console.error("Profile not found:", username, error)
-      notFound()
-    }
-
-    // Extract extended data from social_links if it exists
-    if (profile && profile.social_links && profile.social_links._extended) {
-      const extended = profile.social_links._extended
-      profile.personal_info = extended.personal_info || {}
-      profile.location_info = extended.location_info || {}
-      profile.contact_info = extended.contact_info || {}
-      profile.personal_details = extended.personal_details || {}
-
-      // Remove _extended from social_links for clean data
-      const { _extended, ...cleanSocialLinks } = profile.social_links
-      profile.social_links = cleanSocialLinks
-    } else {
-      // Set default empty objects if no extended data exists
-      profile.personal_info = {}
-      profile.location_info = {}
-      profile.contact_info = {}
-      profile.personal_details = {}
-    }
-
-    console.log("Profile data extracted:", profile)
-    return <PublicProfilePageClient profile={profile} />
-  } catch (error) {
-    console.error("Error loading profile:", error)
-    notFound()
-  }
+  // Explicit projection: no contact details, birthdays, personal details,
+  // social_links._extended, roles, emails or private database columns.
+  // Keep the original profile JSX/CSS unchanged for visual review.
+  return (
+    <PublicProfilePageClient
+      profile={{
+        id: profile.id,
+        username: profile.username,
+        full_name: profile.full_name || "",
+        bio: profile.bio || "",
+        avatar_url: profile.avatar_url || "",
+        banner_url: profile.banner_url || "",
+        banner_position: "center",
+        website: profile.website || "",
+        created_at: profile.created_at || "",
+        updated_at: profile.updated_at || "",
+        social_links: {},
+      }}
+    />
+  )
 }
