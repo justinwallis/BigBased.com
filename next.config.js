@@ -7,6 +7,8 @@ const nextConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
       "ai/react$": require("path").resolve(__dirname, "lib/visual-review-legacy-chat.ts"),
+      // Review-only adapter for removed createClientComponentClient in auth-helpers 0.15.
+      "@supabase/auth-helpers-nextjs$": require("path").resolve(__dirname, "lib/visual-review-legacy-supabase.ts"),
     }
     return config
   },
