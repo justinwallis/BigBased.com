@@ -1,43 +1,41 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
 
-export async function GET(request: Request, { params }: { params: { username: string } }) {
+type RouteContext = {
+  params: Promise<{ username: string }>
+}
+
+const PROFILE_API_COLUMNS = "username,full_name,bio,avatar_url,website"
+
+const NO_STORE = { "Cache-Control": "private, no-store, max-age=0" }
+
+export async function GET(_request: Request, { params }: RouteContext) {
+  const { username } = await params
+  if (!username) {
+    return NextResponse.json({ error: "Username is required" }, { status: 400, headers: NO_STORE })
+  }
+
   try {
-    const username = params.username
-
-    if (!username) {
-      return NextResponse.json({ error: "Username is required" }, { status: 400 })
-    }
-
-    const supabase = createServerSupabaseClient(true) // Use service role
-
-    // Query the profiles table for the username
-    const { data: profile, error } = await supabase.from("profiles").select("*").eq("username", username).single()
+    // Session-aware RLS read: never bypass row permissions for a public URL.
+    const supabase = createServerSupabaseClient()
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select(PROFILE_API_COLUMNS)
+      .eq("username", username)
+      .maybeSingle()
 
     if (error) {
-      console.error("Error fetching profile:", error)
-      return NextResponse.json({ error: "Error fetching profile" }, { status: 500 })
+      console.error("Profile API lookup failed:", { code: error.code })
+      return NextResponse.json({ error: "Profile unavailable" }, { status: 500, headers: NO_STORE })
     }
 
     if (!profile) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 })
+      return NextResponse.json({ error: "User not found" }, { status: 404, headers: NO_STORE })
     }
 
-    // Return sanitized profile data (remove sensitive fields)
-    const safeProfile = {
-      id: profile.id,
-      username: profile.username,
-      full_name: profile.full_name,
-      avatar_url: profile.avatar_url,
-      website: profile.website,
-      bio: profile.bio,
-      created_at: profile.created_at,
-      updated_at: profile.updated_at,
-    }
-
-    return NextResponse.json(safeProfile)
-  } catch (error) {
-    console.error("Unexpected error in user API:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    // No email, id, role, contact fields, or social_links._extended.
+    return NextResponse.json(profile, { headers: NO_STORE })
+  } catch {
+    return NextResponse.json({ error: "Internal server error" }, { status: 500, headers: NO_STORE })
   }
 }
