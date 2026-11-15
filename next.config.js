@@ -1,6 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Visual-review only: keep the 2025 chat JSX unchanged despite AI SDK 7.
+  // The alias maps the retired ai/react entrypoint to a local-only hook.
+  webpack(config) {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "ai/react$": require("path").resolve(__dirname, "lib/visual-review-legacy-chat.ts"),
+    }
+    return config
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
