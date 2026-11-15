@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, useState } from "react"
 import { ChatMessage } from "./chat-message"
 import { ChatInput } from "./chat-input"
 import { ChatSuggestions } from "./chat-suggestions"
@@ -11,6 +11,7 @@ import Image from "next/image"
 
 export function ChatInterface() {
   const { messages, sendMessage } = useChatWorkspace()
+  const [suggestionsOpen, setSuggestionsOpen] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { theme } = useTheme()
   const isDark = theme === "dark"
@@ -53,8 +54,8 @@ export function ChatInterface() {
             Start a conversation with a based herd of agents to traverse the Big Based information universe.
           </p>
           <div className="w-full max-w-2xl px-4">
-            <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
-            <ChatSuggestions onSelectSuggestion={handleSuggestionClick} />
+            <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} suggestionsOpen={suggestionsOpen} onToggleSuggestions={() => setSuggestionsOpen((open) => !open)} />
+            {suggestionsOpen && <ChatSuggestions onSelectSuggestion={handleSuggestionClick} />}
             {previewNotice}
           </div>
         </div>
@@ -67,8 +68,8 @@ export function ChatInterface() {
             <div ref={messagesEndRef} />
           </ScrollArea>
           <div className="mx-auto w-full max-w-2xl px-4 pb-4">
-            <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
-            <ChatSuggestions onSelectSuggestion={handleSuggestionClick} />
+            <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} suggestionsOpen={suggestionsOpen} onToggleSuggestions={() => setSuggestionsOpen((open) => !open)} />
+            {suggestionsOpen && <ChatSuggestions onSelectSuggestion={handleSuggestionClick} />}
             {previewNotice}
           </div>
         </>
