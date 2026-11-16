@@ -15,17 +15,9 @@ export function createClient(useServiceRole = false) {
       hasUrl: !!supabaseUrl,
       hasKey: !!supabaseKey,
       useServiceRole,
-      urlPreview: supabaseUrl?.substring(0, 30) + "...",
     })
     throw new Error("Missing Supabase environment variables")
   }
-
-  // Log what we're connecting to
-  console.log("Supabase client config:", {
-    url: supabaseUrl.substring(0, 50) + "...",
-    keyType: useServiceRole ? "service_role" : "anon",
-    keyPrefix: supabaseKey.substring(0, 20) + "...",
-  })
 
   return _createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
