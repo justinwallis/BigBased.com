@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, BookOpen, Compass, Heart, ImageIcon, LockKeyhole, MessageCircle, ShieldCheck, UserPlus } from "lucide-react"
+import { ArrowLeft, BookOpen, Compass, Heart, LockKeyhole, MessageCircle, ShieldCheck, UserPlus } from "lucide-react"
 import { getFictionalReviewCreator } from "@/lib/social-v1/preview.mjs"
 import { isReviewEnvironment } from "@/lib/social-v1/core.mjs"
 
@@ -34,8 +34,8 @@ export default async function SocialCreatorVisualReviewPage({ params }: Props) {
         </div>
       </div>
 
-      <main className="bb-2025-container px-3 pt-3 sm:px-5">
-        <section className="bb-2025-panel overflow-hidden">
+      <main className="w-full">
+        <section aria-label="Fictional creator cover and public profile" className="relative mx-auto w-full max-w-[1250px]">
           <div className="bb-2025-cover relative h-[clamp(200px,25vw+75px,455px)] w-full">
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none" aria-hidden="true">
               <div className="bb-2025-avatar flex h-[196px] w-[196px] items-center justify-center text-6xl font-bold text-white">
@@ -44,14 +44,14 @@ export default async function SocialCreatorVisualReviewPage({ params }: Props) {
             </div>
           </div>
 
-          <div className="px-5 pb-6 sm:px-8">
-            <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">{creator.display_name}</h1>
+          <div className="bb-2025-container px-4 pb-3">
+            <div className="mt-3 flex flex-col items-center gap-3 text-center md:flex-row md:items-end md:justify-between md:text-left">
+              <div className="min-w-0">
+                <h1 className="text-2xl font-bold tracking-tight">{creator.display_name}</h1>
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">@{creator.username} · Fictional creator</p>
-                <p className="mt-3 max-w-xl text-sm leading-relaxed">{creator.bio}</p>
+                <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed md:mx-0">{creator.bio}</p>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex w-full flex-wrap justify-center gap-2 md:w-auto md:justify-end">
                 <button disabled type="button" title="Account follows are not connected" className="bb-2025-action inline-flex cursor-not-allowed items-center gap-2 px-4 text-sm opacity-60">
                   <UserPlus className="h-4 w-4" /> Follow · unavailable
                 </button>
@@ -60,7 +60,7 @@ export default async function SocialCreatorVisualReviewPage({ params }: Props) {
                 </button>
               </div>
             </div>
-            <nav aria-label="Creator review sections" className="bb-2025-tabs mt-6 flex items-center gap-0 pt-4 text-sm font-semibold">
+            <nav aria-label="Creator review sections" className="bb-2025-tabs mt-3 flex items-center gap-0 text-sm font-semibold">
               <span className="bb-2025-tab" aria-current="page">Posts</span>
               <span className="bb-2025-tab">About</span>
               <span className="bb-2025-tab">Projects · future</span>
@@ -68,7 +68,7 @@ export default async function SocialCreatorVisualReviewPage({ params }: Props) {
           </div>
         </section>
 
-        <div className="mt-4 grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
+        <div className="bb-2025-container mt-4 grid gap-4 px-3 sm:px-5 lg:grid-cols-[280px_minmax(0,1fr)]">
           <aside className="space-y-4">
             <div className="bb-2025-panel rounded-2xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-[#141316]">
               <h2 className="text-base font-bold">Intro</h2>
