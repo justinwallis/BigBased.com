@@ -1,0 +1,82 @@
+name: BigBased Local Visual Review (fictional)
+on:
+  pull_request:
+    paths:
+      - "styles/bigbased-2025.css"
+      - "components/social-preview/**"
+      - "app/visual-review/social/**"
+      - "app/client-layout.tsx"
+      - "app/layout.tsx"
+      - "components/faq-section.tsx"
+      - ".github/workflows/bigbased-local-visual-qa.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture-local-previews:
+    name: Screenshot fictional preview on isolated localhost
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      CI: "true"
+      # Intentionally no real Supabase/AI/Stripe credentials or provider URLs.
+    steps:
+      - name: Checkout without persisting credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+      - name: Install locked dependencies (no package scripts)
+        run: |
+          npm install --global pnpm@9.15.9
+          pnpm install --frozen-lockfile --ignore-scripts
+      - name: Install isolated Chromium for local-only screenshots
+        run: npm exec --yes --package=playwright@1.56.1 -- playwright install --with-deps chromium
+      - name: Start Next.js dev on loopback only and require fictional review content
+        run: |
+          mkdir -p screenshots
+          (pnpm exec next dev --hostname 127.0.0.1 --port 3000 > screenshots/next-dev.log 2>&1) &
+          echo $! > screenshots/next-dev.pid
+          ok=0
+          for i in $(seq 1 90); do
+            if curl -fsS --max-time 10 http://127.0.0.1:3000/visual-review/social -o screenshots/preview-response.html; then
+              ok=1
+              break
+            fi
+            sleep 2
+          done
+          if [ "$ok" != 1 ]; then
+            cat screenshots/next-dev.log
+            exit 1
+          fi
+          if ! grep -qF 'Your feed' screenshots/preview-response.html; then
+            echo "Required fictional review feed did not render."
+            tail -n 100 screenshots/next-dev.log
+            exit 1
+          fi
+          curl -fsS --max-time 45 http://127.0.0.1:3000/visual-review/social/creator/samplecreator -o screenshots/creator-response.html
+          grep -qF 'Sample Creator' screenshots/creator-response.html
+      - name: Capture dark and light mobile / desktop reviews
+        run: |
+          npm exec --yes --package=playwright@1.56.1 -- playwright screenshot --browser chromium --viewport-size="390,844" --color-scheme=dark --full-page --wait-for-timeout=2000 http://127.0.0.1:3000/visual-review/social screenshots/social-mobile-dark.png
+          npm exec --yes --package=playwright@1.56.1 -- playwright screenshot --browser chromium --viewport-size="390,844" --color-scheme=light --full-page --wait-for-timeout=2000 http://127.0.0.1:3000/visual-review/social screenshots/social-mobile-light.png
+          npm exec --yes --package=playwright@1.56.1 -- playwright screenshot --browser chromium --viewport-size="1440,900" --color-scheme=dark --full-page --wait-for-timeout=2000 http://127.0.0.1:3000/visual-review/social screenshots/social-desktop-dark.png
+          npm exec --yes --package=playwright@1.56.1 -- playwright screenshot --browser chromium --viewport-size="390,844" --color-scheme=dark --full-page --wait-for-timeout=2000 http://127.0.0.1:3000/visual-review/social/creator/samplecreator screenshots/creator-mobile-dark.png
+          npm exec --yes --package=playwright@1.56.1 -- playwright screenshot --browser chromium --viewport-size="1440,900" --color-scheme=light --full-page --wait-for-timeout=2000 http://127.0.0.1:3000/visual-review/social/creator/samplecreator screenshots/creator-desktop-light.png
+          npm exec --yes --package=playwright@1.56.1 -- playwright screenshot --browser chromium --viewport-size="390,844" --color-scheme=dark --full-page --wait-for-timeout=2000 http://127.0.0.1:3000/faq screenshots/faq-mobile-dark.png
+      - name: Upload fictional review screenshots and sanitized local logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: bigbased-local-visual-review
+          path: |
+            screenshots/*.png
+            screenshots/next-dev.log
+          if-no-files-found: warn
+          retention-days: 7
