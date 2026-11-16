@@ -64,6 +64,7 @@
 .bb-2025-page .bb-2025-tab:hover {
   background-color: var(--bb-2025-action);
 }
+.bb-2025-page .bb-2025-tab[aria-pressed="true"],
 .bb-2025-page .bb-2025-tab[aria-current="page"],
 .bb-2025-page .bb-2025-tab[aria-selected="true"],
 .bb-2025-page .bb-2025-tab[data-state="active"] {
@@ -97,3 +98,19 @@
 }
 /* The user's original site header is rendered by app/client-layout.tsx.
  * Do not insert another site-wide brand header into individual pages. */
+
+/* Accessible interaction behavior for the original compact 2025 controls. */
+.bb-2025-page .bb-2025-action:focus-visible,
+.bb-2025-page .bb-2025-tab:focus-visible {
+  outline: 2px solid var(--bb-2025-selected);
+  outline-offset: 2px;
+}
+.bb-2025-page .bb-2025-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bb-2025-page .bb-2025-action {
+    transition: none;
+  }
+}
