@@ -6,8 +6,8 @@ import type { FAQItem } from "@/data/faq-data"
 
 interface FAQSectionProps {
   faqs: FAQItem[]
-  title?: string
-  description?: string
+  title?: string | null
+  description?: string | null
   categories?: string[]
 }
 
@@ -17,6 +17,7 @@ export default function FAQSection({
   description,
   categories,
 }: FAQSectionProps) {
+  const showIntro = Boolean(title || description)
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const answerIdPrefix = useId()
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
@@ -33,11 +34,13 @@ export default function FAQSection({
   }
 
   return (
-    <div className="bb-2025-container w-full max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-      <div className="text-center mb-12">
-        <h2 className="text-2xl font-bold mb-4">{title}</h2>
-        {description && <p className="bb-2025-dim text-base">{description}</p>}
-      </div>
+    <div className={"bb-2025-container w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 " + (showIntro ? "py-12" : "pb-8")}>
+      {showIntro && (
+        <div className="mb-8 text-center">
+          {title && <h2 className="mb-4 text-2xl font-bold">{title}</h2>}
+          {description && <p className="bb-2025-dim text-base">{description}</p>}
+        </div>
+      )}
 
       {categories && categories.length > 0 && (
         <div className="bb-2025-tabs flex flex-wrap justify-center gap-2 mb-8">
@@ -57,7 +60,7 @@ export default function FAQSection({
               key={category}
               onClick={() => chooseCategory(category)}
               aria-pressed={activeCategory === category}
-              className={`px-4 py-2 rounded-full text-sm font-medium capitalize transition-colors ${
+              className={`bb-2025-tab text-sm capitalize transition-colors ${
                 activeCategory === category
                   ? "text-amber-600 dark:text-amber-400"
                   : "bb-2025-dim"
