@@ -1,0 +1,25 @@
+import test from "node:test"
+import assert from "node:assert/strict"
+import { readFileSync } from "node:fs"
+
+const layout = readFileSync(
+  new URL("../../app/community/CommunityClientLayout.tsx", import.meta.url), "utf8",
+)
+
+test("community desktop sidebar does not consume the mobile viewport", () => {
+  assert.match(layout, /hidden h-\[calc\(100dvh-3\.5rem\)\] w-64 shrink-0 overflow-y-auto lg:block/)
+  assert.match(layout, /className="min-w-0 flex-1"/)
+})
+
+test("community mobile navigation keeps original amber tabs and shares the desktop routes", () => {
+  assert.match(layout, /aria-label="Community mobile navigation"/)
+  assert.match(layout, /bb-2025-tabs flex max-w-full gap-1 overflow-x-auto/)
+  assert.match(layout, /lg:hidden/)
+  assert.match(layout, /\[\.\.\.sidebarItems, \.\.\.communityAreaItems\]\.map/)
+  assert.match(layout, /aria-current=\{pathname === item\.href \? "page" : undefined\}/)
+  assert.match(layout, /bb-2025-tab flex shrink-0/)
+})
+
+test("community chat is not wired to AI providers or new API endpoints by this styling change", () => {
+  assert.doesNotMatch(layout, /\/api\/ai\/chat|OPENAI_API_KEY|fetch\(/)
+})
