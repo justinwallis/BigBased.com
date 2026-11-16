@@ -114,3 +114,9 @@
     transition: none;
   }
 }
+
+/* Source-matched amber selection for the feed sidebar actions. */
+.bb-2025-page .bb-2025-action[aria-current="page"] {
+  box-shadow: inset 3px 0 0 var(--bb-2025-selected);
+  color: var(--bb-2025-selected) !important;
+}
