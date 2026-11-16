@@ -272,6 +272,16 @@ export function SocialFeedPreviewClient() {
                 <h2 className="mt-2 text-lg font-bold">Sample Creator</h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400">@samplecreator · fictional profile</p>
                 <p className="mt-3 text-sm">Your creator portfolio, public posts, private drafts and approved publishing destinations would live here.</p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <button type="button" onClick={() => selectTab("Saved")}
+                    className="flex items-center gap-2 rounded-xl border border-violet-200 px-3 py-2 text-sm font-semibold text-violet-700 hover:bg-violet-50 dark:border-violet-400/30 dark:text-violet-300 dark:hover:bg-violet-500/10">
+                    <Bookmark className="h-4 w-4" /> Saved examples ({saved.size})
+                  </button>
+                  <button type="button" onClick={() => setComposerOpen(true)}
+                    className="flex items-center gap-2 rounded-xl bg-violet-700 px-3 py-2 text-sm font-semibold text-white hover:bg-violet-800">
+                    <PenLine className="h-4 w-4" /> New local draft
+                  </button>
+                </div>
                 <h3 className="mb-2 mt-6 text-sm font-bold">Private local drafts ({drafts.length})</h3>
                 {drafts.length === 0 ? <p className="text-sm text-slate-500">No local drafts. Try the Create button below.</p> : (
                   <div className="space-y-2">
