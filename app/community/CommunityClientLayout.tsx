@@ -116,9 +116,9 @@ export function CommunityClientLayout({ children }: CommunityClientLayoutProps) 
   return (
     <div className="bb-2025-page min-h-screen">
       {/* Main Layout */}
-      <div className="flex">
-        {/* Left Sidebar */}
-        <div className="bb-2025-panel w-64 h-screen overflow-y-auto">
+      <div className="flex min-w-0">
+        {/* Left Sidebar: desktop only, otherwise it consumes most of the phone viewport. */}
+        <aside aria-label="Community desktop navigation" className="bb-2025-panel hidden h-[calc(100dvh-3.5rem)] w-64 shrink-0 overflow-y-auto lg:block">
           <div className="p-4 space-y-6">
             {/* Main Navigation */}
             <nav className="space-y-1">
@@ -254,10 +254,27 @@ export function CommunityClientLayout({ children }: CommunityClientLayoutProps) 
               )}
             </div>
           </div>
-        </div>
+        </aside>
 
         {/* Main Content */}
-        <div className="flex-1">{children}</div>
+        <div className="min-w-0 flex-1">
+          {/* Reuse the same routes and 2025 amber active-tab treatment on phones. */}
+          <nav aria-label="Community mobile navigation"
+            className="bb-2025-tabs flex max-w-full gap-1 overflow-x-auto px-3 py-2 lg:hidden">
+            {[...sidebarItems, ...communityAreaItems].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={pathname === item.href ? "page" : undefined}
+                className="bb-2025-tab flex shrink-0 items-center gap-2 whitespace-nowrap text-xs"
+              >
+                <item.icon className="h-4 w-4" aria-hidden="true" />
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          {children}
+        </div>
       </div>
 
       {/* Chat Popup */}
