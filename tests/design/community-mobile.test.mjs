@@ -16,7 +16,7 @@ test("community mobile navigation keeps original amber tabs and shares the deskt
   assert.match(layout, /bb-2025-tabs flex max-w-full gap-1 overflow-x-auto/)
   assert.match(layout, /lg:hidden/)
   assert.match(layout, /\[\.\.\.sidebarItems, \.\.\.communityAreaItems\]\.map/)
-  assert.match(layout, /aria-current=\{pathname === item\.href \? "page" : undefined\}/)
+  assert.match(layout, /aria-current=\{pathname === item\.href \|\| \(isVisualReview && item\.href === "\/community"\)/)
   assert.match(layout, /bb-2025-tab flex shrink-0/)
 })
 
@@ -38,4 +38,12 @@ test("credential-free community layout QA uses synthetic server data and is prev
   assert.match(workflow, /visual-review\/community/)
   assert.match(workflow, /grep -qF 'Fictional layout review'/)
   assert.doesNotMatch(workflow, /for route in about features community partners/)
+})
+
+test("fictional community visual QA does not surface the legacy invented chat or tag counts", () => {
+  assert.match(layout, /const isVisualReview = pathname === "\/visual-review\/community"/)
+  for (const section of ["Chat Section", "Tags", "Channels"]) {
+    assert.ok(layout.includes(section), section)
+  }
+  assert.ok((layout.match(/className=\{isVisualReview \? "hidden" : undefined\}/g) ?? []).length >= 3)
 })
