@@ -21,9 +21,7 @@ export function ChatSuggestions({ onSelectSuggestion }: ChatSuggestionsProps) {
         <Button
           key={index}
           variant="outline"
-          className="flex items-center gap-2 border-none
-                     bg-gray-100 text-gray-900 hover:bg-gray-200
-                     dark:bg-[#0f0f0f] dark:text-gray-50 dark:hover:bg-gray-800" // Updated dark mode colors
+          className="bb-2025-action flex items-center gap-2 border-none" // Updated dark mode colors
           onClick={() => onSelectSuggestion(s.prompt)}
         >
           <s.icon className="h-4 w-4" />
