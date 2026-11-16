@@ -45,7 +45,7 @@ export default function RevolutionPage() {
   return (
     <>
       <div
-        className="min-h-screen w-full text-white flex flex-col items-center justify-center px-4 py-16 revolution-page"
+        className="bb-2025-page min-h-screen w-full text-white flex flex-col items-center justify-center px-4 py-16 revolution-page"
         style={{
           backgroundColor: "#000000",
           backgroundImage: `
