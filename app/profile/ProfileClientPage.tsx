@@ -494,7 +494,7 @@ export default function ProfileClientPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="bb-2025-page min-h-screen">
       <div className="container mx-auto py-4 space-y-8">
         {/* Debug Info */}
         {process.env.NODE_ENV === "development" && (

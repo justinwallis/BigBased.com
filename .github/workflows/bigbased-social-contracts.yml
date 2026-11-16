@@ -7,6 +7,19 @@ on:
       - "tests/contracts/bigbased-social-openapi.test.mjs"
       - "tests/contracts/bigbased-social-integration.test.mjs"
       - "contracts/**"
+      - "styles/bigbased-2025.css"
+      - "app/layout.tsx"
+      - "app/about/page.tsx"
+      - "app/community/page.tsx"
+      - "app/chat/layout.tsx"
+      - "app/profile/page.tsx"
+      - "app/features/page.tsx"
+      - "app/partners/page.tsx"
+      - "app/contact/page.tsx"
+      - "app/revolution/page.tsx"
+      - "app/visual-review/social/**"
+      - "components/social-preview/**"
+      - "tests/design/**"
       - ".github/workflows/bigbased-social-contracts.yml"
   workflow_dispatch:
 
@@ -27,6 +40,7 @@ jobs:
         run: node --version
       - name: Verify local fixture, privacy and REST contract policies
         run: |
-          node --test tests/social-v1/*.test.mjs \
+          node --test tests/design/*.test.mjs \
+            tests/social-v1/*.test.mjs \
             tests/contracts/bigbased-social-integration.test.mjs \
             tests/contracts/bigbased-social-openapi.test.mjs

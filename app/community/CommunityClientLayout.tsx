@@ -114,11 +114,11 @@ export function CommunityClientLayout({ children }: CommunityClientLayoutProps) 
   ]
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white">
+    <div className="bb-2025-page min-h-screen">
       {/* Main Layout */}
       <div className="flex">
         {/* Left Sidebar */}
-        <div className="w-64 bg-gray-50 dark:bg-black border-r border-gray-200 dark:border-gray-800 h-screen overflow-y-auto">
+        <div className="bb-2025-panel w-64 h-screen overflow-y-auto">
           <div className="p-4 space-y-6">
             {/* Main Navigation */}
             <nav className="space-y-1">

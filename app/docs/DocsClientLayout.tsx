@@ -85,7 +85,7 @@ export default function DocsClientLayout({
   categories: any[]
 }) {
   return (
-    <div className="flex min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white">
+    <div className="bb-2025-page flex min-h-screen">
       {/* Left Sidebar */}
       <aside className="hidden md:flex w-64 flex-col border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-black">
         <div className="p-6">

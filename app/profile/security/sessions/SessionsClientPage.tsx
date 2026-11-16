@@ -186,7 +186,7 @@ export default function SessionsClientPage() {
 
   if (isLoading || !user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+      <div className="bb-2025-page min-h-screen">
         <div className="container mx-auto py-10">
           <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
             <CardHeader>
@@ -222,7 +222,7 @@ export default function SessionsClientPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="bb-2025-page min-h-screen">
       <div className="container mx-auto py-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

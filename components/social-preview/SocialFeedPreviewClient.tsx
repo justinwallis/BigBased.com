@@ -3,10 +3,9 @@
 import { useMemo, useState } from "react"
 import { useTheme } from "next-themes"
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import Image from "next/image"
 import Link from "next/link"
 import {
-  Bell, Bookmark, Check, Compass, FileText, Heart, Home, ImageIcon,
+  Bookmark, Check, Compass, FileText, Heart, Home, ImageIcon,
   MessageCircle, PenLine, Search, Send, Share2, ShieldCheck, Users, X, Moon, Sun,
 } from "lucide-react"
 
@@ -116,64 +115,11 @@ export function SocialFeedPreviewClient({ seedPosts }: { seedPosts: DemoPost[] }
       : "No fictional posts match that search."
 
   return (
-    <div className="min-h-[calc(100dvh-3.5rem)] bg-[#f7f6fa] pb-20 text-[#24202c] dark:bg-[#080808] dark:text-[#f7f5fa] lg:pb-4">
-      <div className="border-b border-violet-100 bg-white/95 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-[#101014]/95">
-        <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <Image src="/bb-logo.png" alt="BigBased" width={38} height={38} className="h-9 w-9 rounded-xl object-contain dark:bg-white" />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-extrabold tracking-tight sm:text-base">BigBased <span className="text-violet-600">Social</span></p>
-              <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">Creator-first community · design study</p>
-            </div>
-          </div>
-          <label className="hidden w-full max-w-sm items-center gap-2 rounded-full border border-slate-200 bg-[#f5f4f8] px-4 py-2 focus-within:border-violet-400 dark:border-white/10 dark:bg-white/5 md:flex">
-            <Search className="h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
-            <span className="sr-only">Search fictional posts</span>
-            <input
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search creators, posts, communities"
-              className="w-full bg-transparent text-sm outline-none placeholder:text-slate-500"
-            />
-          </label>
-          <div className="flex items-center gap-2">
-            <button type="button" onClick={() => setShowSearch((value) => !value)} className="rounded-full p-2 hover:bg-violet-50 dark:hover:bg-white/10 md:hidden" aria-label="Toggle sample search">
-              <Search className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-              className="rounded-full p-2 hover:bg-violet-50 dark:hover:bg-white/10"
-              aria-label={resolvedTheme === "dark" ? "Switch to light appearance" : "Switch to dark appearance"}
-            >
-              {resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </button>
-            <button
-              type="button"
-              onClick={() => setNotice("Notifications will appear here after the social backend and permissions are approved.")}
-              className="rounded-full p-2 hover:bg-violet-50 dark:hover:bg-white/10"
-              aria-label="Review notification status"
-            >
-              <Bell className="h-5 w-5" />
-            </button>
-            <span className="rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-800 dark:border-violet-400/30 dark:bg-violet-500/10 dark:text-violet-200">
-              Fictional preview
-            </span>
-          </div>
-        </div>
-        {showSearch && (
-          <div className="mx-auto mt-3 max-w-[1440px] md:hidden">
-            <input type="search" aria-label="Search fictional posts" value={query} onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search sample content" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-violet-500 dark:border-white/20 dark:bg-white/5" />
-          </div>
-        )}
-      </div>
-
-      <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-4 px-3 pt-5 sm:px-4 lg:grid-cols-[220px_minmax(0,1fr)] xl:grid-cols-[220px_minmax(0,1fr)_260px]">
+    <div className="bb-2025-page min-h-[calc(100dvh-3.5rem)] pb-20 lg:pb-4">
+      <div className="bb-2025-container grid grid-cols-1 gap-4 px-3 pt-5 sm:px-4 lg:grid-cols-[220px_minmax(0,1fr)] xl:grid-cols-[220px_minmax(0,1fr)_260px]">
         <aside className="hidden lg:block">
           <div className="sticky top-20 space-y-3">
-            <div className="rounded-2xl border border-slate-200/70 bg-white p-3 shadow-sm dark:border-white/10 dark:bg-[#141316]">
+            <div className="bb-2025-panel rounded-2xl border border-slate-200/70 bg-white p-3 shadow-sm dark:border-white/10 dark:bg-[#141316]">
               <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-widest text-slate-500">Your space</p>
               <nav aria-label="Social preview navigation" className="space-y-1">
                 {tabs.map(({ label, icon: Icon }) => (
@@ -181,7 +127,7 @@ export function SocialFeedPreviewClient({ seedPosts }: { seedPosts: DemoPost[] }
                     type="button"
                     key={label}
                     onClick={() => selectTab(label)}
-                    className={"flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium transition " +
+                    className={"bb-2025-action flex w-full items-center gap-3 px-3 py-3 text-left text-sm font-medium transition " +
                       (activeTab === label ? "bg-violet-100 text-violet-900 dark:bg-violet-500/20 dark:text-violet-200" : "hover:bg-slate-50 dark:hover:bg-white/5")}
                     aria-current={activeTab === label ? "page" : undefined}
                   >
@@ -191,7 +137,7 @@ export function SocialFeedPreviewClient({ seedPosts }: { seedPosts: DemoPost[] }
                 ))}
               </nav>
             </div>
-            <div className="rounded-2xl border border-slate-200/70 bg-white p-4 text-sm shadow-sm dark:border-white/10 dark:bg-[#141316]">
+            <div className="bb-2025-panel rounded-2xl border border-slate-200/70 bg-white p-4 text-sm shadow-sm dark:border-white/10 dark:bg-[#141316]">
               <p className="mb-2 font-semibold">Creator independence</p>
               <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">A place for communities, creator-owned work and publishing. No account or external service is connected in this review.</p>
             </div>
@@ -199,14 +145,34 @@ export function SocialFeedPreviewClient({ seedPosts }: { seedPosts: DemoPost[] }
         </aside>
 
         <main className="min-w-0 space-y-4" aria-label="BigBased social preview">
-          <div className="rounded-2xl border border-violet-200 bg-white p-4 shadow-sm dark:border-violet-400/20 dark:bg-[#141316]">
+          <div className="bb-2025-panel rounded-2xl border border-violet-200 bg-white p-4 shadow-sm dark:border-violet-400/20 dark:bg-[#141316]">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-violet-600 dark:text-violet-300">BigBased community</p>
                 <h1 className="mt-1 text-xl font-bold tracking-tight sm:text-2xl">{activeTab === "Home" ? "Your feed" : activeTab}</h1>
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">A familiar social experience built for creators—not a copy of Facebook.</p>
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <label className="flex min-w-[185px] flex-1 items-center gap-2 bb-2025-field px-3 py-2">
+                  <Search className="h-4 w-4 shrink-0 bb-2025-dim" aria-hidden="true" />
+                  <span className="sr-only">Search fictional community posts</span>
+                  <input
+                    type="search"
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Search posts and creators"
+                    className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+                  />
+                </label>
+                <button type="button" onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+                  className="bb-2025-action inline-flex items-center gap-2 px-3 text-xs"
+                  aria-label={resolvedTheme === "dark" ? "Switch to light appearance" : "Switch to dark appearance"}>
+                  {resolvedTheme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                  Theme
+                </button>
+                <span className="text-xs bb-2025-dim">Fictional visual review</span>
               </div>
-              <span className="hidden rounded-full bg-violet-50 px-3 py-1.5 text-xs font-semibold text-violet-700 dark:bg-violet-500/10 dark:text-violet-200 sm:block">Design v1</span>
+              </div>
+              
             </div>
           </div>
 
@@ -232,8 +198,8 @@ export function SocialFeedPreviewClient({ seedPosts }: { seedPosts: DemoPost[] }
           )}
 
           {activeTab === "Profile" ? (
-            <section className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-sm dark:border-white/10 dark:bg-[#141316]">
-              <div className="h-28 bg-gradient-to-r from-[#3d275e] via-[#7553a1] to-[#ab89ce] sm:h-36" />
+            <section className="bb-2025-panel overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-sm dark:border-white/10 dark:bg-[#141316]">
+              <div className="bb-2025-cover h-28 sm:h-36" />
               <div className="px-5 pb-6">
                 <div className="-mt-7 flex h-14 w-14 items-center justify-center rounded-full border-4 border-white bg-violet-700 text-base font-bold text-white dark:border-[#141316]">SC</div>
                 <h2 className="mt-2 text-lg font-bold">Sample Creator</h2>
@@ -264,7 +230,7 @@ export function SocialFeedPreviewClient({ seedPosts }: { seedPosts: DemoPost[] }
             </section>
           ) : (
             <>
-              <div className="rounded-2xl border border-slate-200/70 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#141316]">
+              <div className="bb-2025-panel rounded-2xl border border-slate-200/70 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#141316]">
                 <div className="flex items-center gap-3">
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-700 font-bold text-white">SC</span>
                   <button type="button" onClick={() => setComposerOpen(true)}
@@ -287,13 +253,13 @@ export function SocialFeedPreviewClient({ seedPosts }: { seedPosts: DemoPost[] }
               </div>
 
               {visiblePosts.length === 0 && (
-                <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center text-sm text-slate-500 dark:border-white/20 dark:bg-[#141316]">
+                <div className="bb-2025-panel rounded-md border border-dashed border-slate-300 bg-white px-6 py-12 text-center text-sm text-slate-500 dark:border-white/20 dark:bg-[#141316]">
                   {emptyCopy}
                 </div>
               )}
 
               {visiblePosts.map((post) => (
-                <article key={post.id} className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-sm dark:border-white/10 dark:bg-[#141316]">
+                <article key={post.id} className="bb-2025-panel overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-sm dark:border-white/10 dark:bg-[#141316]">
                   <div className="flex items-start gap-3 px-4 pt-4">
                     <span className={"flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white " + post.avatarClass}>{post.initials}</span>
                     <div className="min-w-0 flex-1">
@@ -362,7 +328,7 @@ export function SocialFeedPreviewClient({ seedPosts }: { seedPosts: DemoPost[] }
 
         <aside className="hidden xl:block">
           <div className="sticky top-20 space-y-4">
-            <div className="rounded-2xl border border-slate-200/70 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#141316]">
+            <div className="bb-2025-panel rounded-2xl border border-slate-200/70 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#141316]">
               <h2 className="mb-3 text-sm font-bold">Discover communities</h2>
               <div className="space-y-2">
                 {communities.map((name, index) => (
@@ -375,7 +341,7 @@ export function SocialFeedPreviewClient({ seedPosts }: { seedPosts: DemoPost[] }
                 ))}
               </div>
             </div>
-            <div className="rounded-2xl border border-slate-200/70 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#141316]">
+            <div className="bb-2025-panel rounded-2xl border border-slate-200/70 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#141316]">
               <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-violet-600" /><h2 className="text-sm font-bold">Made for creators</h2></div>
               <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">Audience control, independent publishing, community tools and transparent moderation are planned. This screen does not represent active accounts or engagement.</p>
             </div>
@@ -391,7 +357,7 @@ export function SocialFeedPreviewClient({ seedPosts }: { seedPosts: DemoPost[] }
             onClick={() => compose ? setComposerOpen(true) : tab && selectTab(tab)}
             aria-current={!compose && activeTab === tab ? "page" : undefined}
             aria-label={compose ? "Create a private example draft" : label}
-            className={"flex min-h-14 flex-col items-center justify-center gap-1 px-1 py-2 text-[10px] font-semibold " +
+            className={"bb-2025-tab flex min-h-14 flex-col items-center justify-center gap-1 px-1 py-2 text-[10px] font-semibold " +
               (compose ? "text-violet-700 dark:text-violet-300" :
                 activeTab === tab ? "text-violet-700 dark:text-violet-300" : "text-slate-500 dark:text-slate-400")}
           >
@@ -407,7 +373,7 @@ export function SocialFeedPreviewClient({ seedPosts }: { seedPosts: DemoPost[] }
       </button>
 
       <Dialog open={composerOpen} onOpenChange={setComposerOpen}>
-        <DialogContent className="w-[calc(100vw-1.5rem)] max-w-lg rounded-2xl border-violet-200 bg-white p-5 text-[#24202c] shadow-2xl dark:border-violet-400/20 dark:bg-[#1d1824] dark:text-white">
+        <DialogContent className="bb-2025-panel w-[calc(100vw-1.5rem)] max-w-lg rounded-2xl border-violet-200 bg-white p-5 text-[#24202c] shadow-2xl dark:border-violet-400/20 dark:bg-[#1d1824] dark:text-white">
           <DialogTitle className="pr-8 text-lg font-bold">Create a private draft</DialogTitle>
           <DialogDescription className="text-xs text-slate-500 dark:text-slate-400">
             Saved in memory in this browser tab only. No real account, upload, database or publishing action.

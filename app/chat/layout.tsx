@@ -18,11 +18,11 @@ export default function ChatLayout({
   const isDark = theme === "dark"
 
   return (
-    <div className={`flex h-screen w-full ${isDark ? "bg-darkbg-DEFAULT text-white" : "bg-white text-black"}`}>
+    <div className="bb-2025-page flex h-[calc(100dvh-3.5rem)] w-full">
       {/* Desktop Sidebar */}
       <div
         className={cn(
-          "hidden md:flex h-full flex-col transition-all duration-300 ease-in-out shrink-0", // Added shrink-0
+          "bb-2025-panel hidden md:flex h-full flex-col transition-all duration-300 ease-in-out shrink-0", // Added shrink-0
           isSidebarOpen ? "w-64" : "w-0 overflow-hidden",
         )}
       >
@@ -41,7 +41,7 @@ export default function ChatLayout({
           variant="ghost"
           size="icon"
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="absolute top-4 left-4 z-20 border-none text-gray-900 dark:text-white"
+          className="bb-2025-action absolute top-4 left-4 z-20 border-none"
         >
           <MenuIcon className="h-6 w-6" />
           <span className="sr-only">Toggle sidebar</span>

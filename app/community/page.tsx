@@ -28,10 +28,10 @@ export default async function CommunityPage() {
   const trendingTopics = await getTrendingTopics()
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white">
+    <div className="bb-2025-page min-h-screen">
       {/* Hero Section */}
-      <div className="text-center py-16 px-4">
-        <h1 className="text-4xl font-bold mb-6 text-gray-900 dark:text-white">Welcome to the Big Based Community</h1>
+      <div className="bb-2025-container text-center py-8 px-4">
+        <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Welcome to the Big Based Community</h1>
 
         {/* Search Bar */}
         <div className="max-w-md mx-auto mb-8">
@@ -40,7 +40,7 @@ export default async function CommunityPage() {
             <Input
               type="search"
               placeholder="Search"
-              className="pl-10 pr-12 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-gray-500 dark:focus:border-gray-600"
+              className="bb-2025-field pl-10 pr-12 placeholder-gray-500 dark:placeholder-gray-400"
             />
             <div className="absolute right-3 top-3 text-xs text-gray-500 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">
               ⌘K
@@ -60,11 +60,11 @@ export default async function CommunityPage() {
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex items-center justify-center gap-6 mb-8">
-          <button className="text-gray-900 dark:text-white border-b-2 border-gray-900 dark:border-white pb-1">
+        <div className="bb-2025-tabs flex items-center justify-center gap-2 mb-8">
+          <button className="bb-2025-tab" aria-current="page">
             Fresh
           </button>
-          <button className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+          <button className="bb-2025-tab transition-colors">
             Latest
           </button>
           <button className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
@@ -76,7 +76,7 @@ export default async function CommunityPage() {
         <div className="flex justify-end mb-8">
           <Button
             asChild
-            className="bg-gray-900 dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200"
+            className="bb-2025-action"
           >
             <Link href="/community/new">
               <Plus className="h-4 w-4 mr-2" />
@@ -87,17 +87,17 @@ export default async function CommunityPage() {
       </div>
 
       {/* Content Sections */}
-      <div className="max-w-7xl mx-auto px-4 pb-16">
+      <div className="bb-2025-container px-4 pb-16">
         {/* News Section */}
         <div className="mb-12">
           <div className="flex items-center gap-2 mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">News</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">News</h2>
             <ChevronDown className="h-5 w-5 text-gray-600 dark:text-gray-400" />
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-3 md:grid-cols-3">
             {/* Announcements */}
-            <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+            <Card className="bb-2025-panel transition-colors">
               <CardHeader>
                 <CardTitle className="text-gray-900 dark:text-white flex items-center gap-2">
                   <MessageCircle className="h-5 w-5" />
@@ -112,7 +112,7 @@ export default async function CommunityPage() {
             </Card>
 
             {/* Events */}
-            <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+            <Card className="bb-2025-panel transition-colors">
               <CardHeader>
                 <CardTitle className="text-gray-900 dark:text-white flex items-center gap-2">
                   <Calendar className="h-5 w-5" />
@@ -127,7 +127,7 @@ export default async function CommunityPage() {
             </Card>
 
             {/* Changelog */}
-            <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+            <Card className="bb-2025-panel transition-colors">
               <CardHeader>
                 <CardTitle className="text-gray-900 dark:text-white flex items-center gap-2">
                   <ExternalLink className="h-5 w-5" />
@@ -146,13 +146,13 @@ export default async function CommunityPage() {
         {/* Community Section */}
         <div className="mb-12">
           <div className="flex items-center gap-2 mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Community</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Community</h2>
             <ChevronDown className="h-5 w-5 text-gray-600 dark:text-gray-400" />
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-3 md:grid-cols-3">
             {/* Discussions */}
-            <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+            <Card className="bb-2025-panel transition-colors">
               <CardHeader>
                 <CardTitle className="text-gray-900 dark:text-white flex items-center gap-2">
                   <MessageCircle className="h-5 w-5" />
@@ -167,7 +167,7 @@ export default async function CommunityPage() {
             </Card>
 
             {/* Showcase */}
-            <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+            <Card className="bb-2025-panel transition-colors">
               <CardHeader>
                 <CardTitle className="text-gray-900 dark:text-white flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />
@@ -183,7 +183,7 @@ export default async function CommunityPage() {
             </Card>
 
             {/* General */}
-            <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+            <Card className="bb-2025-panel transition-colors">
               <CardHeader>
                 <CardTitle className="text-gray-900 dark:text-white flex items-center gap-2">
                   <Users className="h-5 w-5" />
@@ -203,13 +203,13 @@ export default async function CommunityPage() {
         {/* Support Section */}
         <div>
           <div className="flex items-center gap-2 mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Support</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Support</h2>
             <ChevronDown className="h-5 w-5 text-gray-600 dark:text-gray-400" />
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2">
             {/* Help */}
-            <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+            <Card className="bb-2025-panel transition-colors">
               <CardHeader>
                 <CardTitle className="text-gray-900 dark:text-white flex items-center gap-2">
                   <HelpCircle className="h-5 w-5" />
@@ -225,7 +225,7 @@ export default async function CommunityPage() {
             </Card>
 
             {/* Documentation */}
-            <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+            <Card className="bb-2025-panel transition-colors">
               <CardHeader>
                 <CardTitle className="text-gray-900 dark:text-white flex items-center gap-2">
                   <BookOpen className="h-5 w-5" />
