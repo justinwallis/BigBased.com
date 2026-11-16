@@ -5,6 +5,7 @@ on:
       - "styles/bigbased-2025.css"
       - "components/social-preview/**"
       - "app/visual-review/social/**"
+      - "app/visual-review/community/**"
       - "app/about/**"
       - "app/features/**"
       - "app/partners/**"
@@ -80,10 +81,20 @@ jobs:
         shell: bash
         run: |
           failures=0
-          for route in about features community partners contact auth/sign-in; do
+          for route in about features visual-review/community partners contact auth/sign-in; do
             slug="${route//\//-}"
             code="$(curl -sS --max-time 60 -o /dev/null -w '%{http_code}' "http://127.0.0.1:3000/$route" || true)"
             echo "$route -> HTTP $code" >> screenshots/route-status.txt
+            # Next.js can return HTTP 200 even when an async server component
+            # renders an error. Verify the synthetic layout marker as well.
+            if [ "$route" = "visual-review/community" ]; then
+              curl -fsS --max-time 60 "http://127.0.0.1:3000/$route" -o screenshots/community-review-response.html
+              if ! grep -qF 'Fictional layout review' screenshots/community-review-response.html; then
+                echo "::error::The fictional Community content failed to render."
+                failures=$((failures + 1))
+                continue
+              fi
+            fi
             if [ "$code" != "200" ]; then
               echo "::error::Route $route returned HTTP $code in credential-free QA"
               failures=$((failures + 1))
@@ -94,7 +105,7 @@ jobs:
               failures=$((failures + 1))
             fi
           done
-          for route in about community auth/sign-in; do
+          for route in about visual-review/community auth/sign-in; do
             slug="${route//\//-}"
             if ! npm exec --yes --package=playwright@1.56.1 -- playwright screenshot --browser chromium --viewport-size="1440,900" --color-scheme=light --full-page --wait-for-timeout=1200 "http://127.0.0.1:3000/$route" "screenshots/$slug-desktop-light.png"; then
               echo "::error::Desktop capture failed for $route"
