@@ -4,6 +4,7 @@ import { useMemo, useState } from "react"
 import { useTheme } from "next-themes"
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import Image from "next/image"
+import Link from "next/link"
 import {
   Bell, Bookmark, Check, Compass, FileText, Heart, Home, ImageIcon,
   MessageCircle, PenLine, Search, Send, Share2, ShieldCheck, Users, X, Moon, Sun,
@@ -12,6 +13,7 @@ import {
 type Tab = "Home" | "Communities" | "Explore" | "Saved" | "Profile"
 type DemoPost = {
   id: string
+  username: string
   author: string
   handle: string
   initials: string
@@ -22,41 +24,6 @@ type DemoPost = {
   avatarClass: string
 }
 
-const samplePosts: DemoPost[] = [
-  {
-    id: "fictional-post-1",
-    author: "Sample Creator",
-    handle: "@samplecreator",
-    initials: "SC",
-    community: "Creator Commons",
-    time: "Sample post",
-    text: "What if your work, audience, and publishing tools actually belonged to you? Here is a place to share an idea, start a discussion, and build something together.",
-    topic: "Creator independence",
-    avatarClass: "bg-violet-500",
-  },
-  {
-    id: "fictional-post-2",
-    author: "BigBased Demo Team",
-    handle: "@demo",
-    initials: "BB",
-    community: "Community Showcase",
-    time: "Sample post",
-    text: "Welcome to a social space made for creators. Explore community posts, bookmark ideas, and prepare your next project. Everything on this screen is fictional review data.",
-    topic: "Community showcase",
-    avatarClass: "bg-slate-800",
-  },
-  {
-    id: "fictional-post-3",
-    author: "Fictional Studio",
-    handle: "@fictionalstudio",
-    initials: "FS",
-    community: "Independent Publishing",
-    time: "Sample post",
-    text: "A better publishing workflow begins with control: write a draft, choose your audience, revise your work, and decide where to publish.",
-    topic: "Publishing",
-    avatarClass: "bg-amber-700",
-  },
-]
 
 const tabs: { label: Tab; icon: typeof Home }[] = [
   { label: "Home", icon: Home },
@@ -80,7 +47,7 @@ const communities = [
   "Community Showcase",
 ]
 
-export function SocialFeedPreviewClient() {
+export function SocialFeedPreviewClient({ seedPosts }: { seedPosts: DemoPost[] }) {
   const { resolvedTheme, setTheme } = useTheme()
   const [activeTab, setActiveTab] = useState<Tab>("Home")
   const [query, setQuery] = useState("")
@@ -97,7 +64,7 @@ export function SocialFeedPreviewClient() {
   const [selectedCommunity, setSelectedCommunity] = useState<string | null>(null)
 
   const visiblePosts = useMemo(() => {
-    return samplePosts.filter((post) => {
+    return seedPosts.filter((post) => {
       if (activeTab === "Saved" && !saved.has(post.id)) return false
       if (activeTab === "Communities" && selectedCommunity && post.community !== selectedCommunity) return false
       if (activeTab === "Profile") return false
@@ -106,7 +73,7 @@ export function SocialFeedPreviewClient() {
       return [post.author, post.community, post.text, post.topic]
         .some((value) => value.toLowerCase().includes(search))
     })
-  }, [activeTab, selectedCommunity, query, saved])
+  }, [activeTab, selectedCommunity, query, saved, seedPosts])
 
   function selectTab(tab: Tab) {
     setActiveTab(tab)
@@ -330,7 +297,9 @@ export function SocialFeedPreviewClient() {
                   <div className="flex items-start gap-3 px-4 pt-4">
                     <span className={"flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white " + post.avatarClass}>{post.initials}</span>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold">{post.author} <span className="font-normal text-slate-500">{post.handle}</span></p>
+                      <Link href={`/visual-review/social/creator/${post.username}`} className="block truncate text-sm font-bold hover:text-violet-700 dark:hover:text-violet-300">
+                        {post.author} <span className="font-normal text-slate-500">{post.handle}</span>
+                      </Link>
                       <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{post.community} · {post.time} · Public example</p>
                     </div>
                     <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-500 dark:bg-white/10">Demo</span>
