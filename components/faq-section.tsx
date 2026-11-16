@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useId, useState } from "react"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import type { FAQItem } from "@/data/faq-data"
 
@@ -18,6 +18,7 @@ export default function FAQSection({
   categories,
 }: FAQSectionProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
+  const answerIdPrefix = useId()
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
 
   const toggleQuestion = (index: number) => {
@@ -26,21 +27,27 @@ export default function FAQSection({
 
   const filteredFaqs = activeCategory ? faqs.filter((faq) => faq.category === activeCategory) : faqs
 
+  const chooseCategory = (category: string | null) => {
+    setActiveCategory(category)
+    setActiveIndex(null) // A filtered index cannot safely remain selected after switching categories.
+  }
+
   return (
-    <div className="w-full max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <div className="bb-2025-container w-full max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
       <div className="text-center mb-12">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{title}</h2>
-        {description && <p className="text-lg text-gray-600 dark:text-gray-300">{description}</p>}
+        <h2 className="text-2xl font-bold mb-4">{title}</h2>
+        {description && <p className="bb-2025-dim text-base">{description}</p>}
       </div>
 
       {categories && categories.length > 0 && (
-        <div className="flex flex-wrap justify-center gap-2 mb-8">
+        <div className="bb-2025-tabs flex flex-wrap justify-center gap-2 mb-8">
           <button
-            onClick={() => setActiveCategory(null)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            onClick={() => chooseCategory(null)}
+            aria-pressed={activeCategory === null}
+            className={`bb-2025-tab text-sm transition-colors ${
               activeCategory === null
-                ? "bg-black text-white dark:bg-white dark:text-black"
-                : "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
+                ? "text-amber-600 dark:text-amber-400"
+                : "bb-2025-dim"
             }`}
           >
             All
@@ -48,11 +55,12 @@ export default function FAQSection({
           {categories.map((category) => (
             <button
               key={category}
-              onClick={() => setActiveCategory(category)}
+              onClick={() => chooseCategory(category)}
+              aria-pressed={activeCategory === category}
               className={`px-4 py-2 rounded-full text-sm font-medium capitalize transition-colors ${
                 activeCategory === category
-                  ? "bg-black text-white dark:bg-white dark:text-black"
-                  : "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
+                  ? "text-amber-600 dark:text-amber-400"
+                  : "bb-2025-dim"
               }`}
             >
               {category}
@@ -61,18 +69,19 @@ export default function FAQSection({
         </div>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {filteredFaqs.map((faq, index) => (
           <div
             key={index}
-            className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-all duration-200"
+            className="bb-2025-panel overflow-hidden transition-colors duration-200"
           >
             <button
               onClick={() => toggleQuestion(index)}
-              className="flex justify-between items-center w-full px-6 py-4 text-left bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="flex justify-between items-center w-full px-5 py-4 text-left hover:bg-gray-100 dark:hover:bg-[#131313] transition-colors"
               aria-expanded={activeIndex === index}
+              aria-controls={`${answerIdPrefix}-${index}`}
             >
-              <span className="text-lg font-medium text-gray-900 dark:text-white">{faq.question}</span>
+              <span className="text-base font-medium">{faq.question}</span>
               <span className="ml-6 flex-shrink-0">
                 {activeIndex === index ? (
                   <ChevronUp className="h-5 w-5 text-gray-500 dark:text-gray-400" />
@@ -82,11 +91,11 @@ export default function FAQSection({
               </span>
             </button>
             <div
-              className={`px-6 overflow-hidden transition-all duration-300 ease-in-out ${
-                activeIndex === index ? "max-h-96 py-4" : "max-h-0"
-              }`}
+              id={`${answerIdPrefix}-${index}`}
+              hidden={activeIndex !== index}
+              className="px-5 pb-4"
             >
-              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">{faq.answer}</p>
+              <p className="bb-2025-dim whitespace-pre-line">{faq.answer}</p>
             </div>
           </div>
         ))}
