@@ -14,6 +14,7 @@ const sourcePaths = [
   "app/about/page.tsx",
   "app/auth/layout.tsx",
   "app/auth/sign-in/page.tsx",
+  "app/visual-review/sign-in/page.tsx",
   "components/auth/sign-in-form.tsx",
   "app/chat/layout.tsx",
   "app/checkout/layout.tsx",
