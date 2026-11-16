@@ -27,6 +27,6 @@ jobs:
         run: node --version
       - name: Verify local fixture, privacy and REST contract policies
         run: |
-          node --test tests/social-v1/core.test.mjs \
+          node --test tests/social-v1/*.test.mjs \
             tests/contracts/bigbased-social-integration.test.mjs \
             tests/contracts/bigbased-social-openapi.test.mjs
