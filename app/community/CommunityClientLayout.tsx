@@ -64,6 +64,7 @@ interface CommunityClientLayoutProps {
 
 export function CommunityClientLayout({ children }: CommunityClientLayoutProps) {
   const pathname = usePathname()
+  const isVisualReview = pathname === "/visual-review/community"
   const [searchQuery, setSearchQuery] = useState("")
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [isChatMinimized, setIsChatMinimized] = useState(false)
@@ -83,7 +84,7 @@ export function CommunityClientLayout({ children }: CommunityClientLayoutProps) 
   }
 
   const sidebarItems = [
-    { icon: MessageCircle, label: "Categories", href: "/community", active: pathname === "/community" },
+    { icon: MessageCircle, label: "Categories", href: "/community", active: pathname === "/community" || isVisualReview },
     { icon: Users, label: "My Posts", href: "/community/my-posts" },
     { icon: Trophy, label: "Leaderboard", href: "/community/leaderboard" },
     { icon: BookOpen, label: "Code of Conduct", href: "/community/code-of-conduct" },
@@ -169,7 +170,7 @@ export function CommunityClientLayout({ children }: CommunityClientLayoutProps) 
             </div>
 
             {/* Chat Section */}
-            <div>
+            <div className={isVisualReview ? "hidden" : undefined}>
               <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                 <Hash className="h-3 w-3" />
                 Chat
@@ -189,7 +190,7 @@ export function CommunityClientLayout({ children }: CommunityClientLayoutProps) 
             </div>
 
             {/* Tags */}
-            <div>
+            <div className={isVisualReview ? "hidden" : undefined}>
               <button
                 onClick={() => toggleSection("tags")}
                 className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
@@ -222,7 +223,7 @@ export function CommunityClientLayout({ children }: CommunityClientLayoutProps) 
             </div>
 
             {/* Channels */}
-            <div>
+            <div className={isVisualReview ? "hidden" : undefined}>
               <button
                 onClick={() => toggleSection("channels")}
                 className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
@@ -265,7 +266,7 @@ export function CommunityClientLayout({ children }: CommunityClientLayoutProps) 
               <Link
                 key={item.href}
                 href={item.href}
-                aria-current={pathname === item.href ? "page" : undefined}
+                aria-current={pathname === item.href || (isVisualReview && item.href === "/community") ? "page" : undefined}
                 className="bb-2025-tab flex shrink-0 items-center gap-2 whitespace-nowrap text-xs"
               >
                 <item.icon className="h-4 w-4" aria-hidden="true" />
