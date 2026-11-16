@@ -11,7 +11,7 @@ interface AuthLayoutProps {
 export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <div className="min-h-screen flex flex-col items-center bg-gray-50 dark:bg-gray-900 p-4">
+      <div className="bb-2025-page min-h-screen flex flex-col items-center p-4">
         <div className="w-full max-w-md space-y-6 mt-4">
           <div className="flex flex-col items-center justify-center">
             <Link href="/" className="mb-4">
