@@ -273,7 +273,7 @@ export default function TwoFactorClientPage({ user, currentMfaStatus }: TwoFacto
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors">
+    <div className="bb-2025-page min-h-screen transition-colors">
       <div className="container mx-auto px-4 pb-8 pt-4">
         {/* Navigation */}
         <div className="max-w-2xl mx-auto">
