@@ -79,6 +79,11 @@ jobs:
           npm exec --yes --package=playwright@1.56.1 -- playwright screenshot --browser chromium --viewport-size="390,844" --color-scheme=dark --full-page --wait-for-timeout=2000 http://127.0.0.1:3000/visual-review/social/creator/samplecreator screenshots/creator-mobile-dark.png
           npm exec --yes --package=playwright@1.56.1 -- playwright screenshot --browser chromium --viewport-size="1440,900" --color-scheme=light --full-page --wait-for-timeout=2000 http://127.0.0.1:3000/visual-review/social/creator/samplecreator screenshots/creator-desktop-light.png
           npm exec --yes --package=playwright@1.56.1 -- playwright screenshot --browser chromium --viewport-size="390,844" --color-scheme=dark --full-page --wait-for-timeout=2000 http://127.0.0.1:3000/faq screenshots/faq-mobile-dark.png
+      - name: Capture original iPhone-width sign-in, FAQ and creator reference views
+        run: |
+          npm exec --yes --package=playwright@1.56.1 -- playwright screenshot --browser chromium --viewport-size="375,812" --color-scheme=dark --full-page --wait-for-timeout=1800 http://127.0.0.1:3000/visual-review/sign-in screenshots/sign-in-iphone-375-dark.png
+          npm exec --yes --package=playwright@1.56.1 -- playwright screenshot --browser chromium --viewport-size="375,812" --color-scheme=dark --full-page --wait-for-timeout=1800 http://127.0.0.1:3000/faq screenshots/faq-iphone-375-dark.png
+          npm exec --yes --package=playwright@1.56.1 -- playwright screenshot --browser chromium --viewport-size="375,812" --color-scheme=dark --full-page --wait-for-timeout=1800 http://127.0.0.1:3000/visual-review/social/creator/samplecreator screenshots/creator-iphone-375-dark.png
       - name: Render six more original-style public pages on localhost
         shell: bash
         run: |

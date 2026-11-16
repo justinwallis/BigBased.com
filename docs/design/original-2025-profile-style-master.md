@@ -115,6 +115,20 @@ guards against document-width overflow, duplicated on-screen BB logos,
 duplicate FAQ headings and accidentally operable sign-in form controls.
 It is still not a pixel-difference or production auth/security assessment.
 
+### 375px original iPhone reference checks
+
+A stacked QA review now captures **375×812 dark** screenshots of the
+disabled sign-in shell, FAQ, and fictional creator profile. These are
+the most useful narrow-width comparisons for the original iPhone
+recording, alongside existing **390px dark/light** and **1440px desktop**
+review captures. The Chromium DOM smoke suite also checks those routes
+at 375px for document overflow, original computed dark surfaces, one
+page-owned FAQ heading and intentional centered sign-in branding.
+
+These tests still cannot prove literal pixel-by-pixel fidelity without
+reviewing the captures beside the recording. No real accounts or external
+social integrations are enabled.
+
 ## Acceptance before merging
 
 1. Original profile's complete JSX blob SHA remains unchanged; compare the original page at phone widths and desktop widths against the user's 2025 video/stills.
