@@ -23,3 +23,19 @@ test("community mobile navigation keeps original amber tabs and shares the deskt
 test("community chat is not wired to AI providers or new API endpoints by this styling change", () => {
   assert.doesNotMatch(layout, /\/api\/ai\/chat|OPENAI_API_KEY|fetch\(/)
 })
+
+test("credential-free community layout QA uses synthetic server data and is preview-only", () => {
+  const page = readFileSync(
+    new URL("../../app/visual-review/community/page.tsx", import.meta.url), "utf8",
+  )
+  const workflow = readFileSync(
+    new URL("../../.github/workflows/bigbased-local-visual-qa.yml", import.meta.url), "utf8",
+  )
+  assert.match(page, /isReviewEnvironment\(\)/)
+  assert.match(page, /<CommunityClientLayout>/)
+  assert.match(page, /Fictional layout review/)
+  assert.doesNotMatch(page, /getCommunityCategories|getRecentTopics|getTrendingTopics|createClient|fetch\(/)
+  assert.match(workflow, /visual-review\/community/)
+  assert.match(workflow, /grep -qF 'Fictional layout review'/)
+  assert.doesNotMatch(workflow, /for route in about features community partners/)
+})
