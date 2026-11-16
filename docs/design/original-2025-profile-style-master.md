@@ -60,6 +60,61 @@ Follow-up from the first six real localhost captures and the user-supplied origi
 - A publicly reachable, anonymous fictional review route now projects **only fictional posts marked `visibility: "public"`**. The earlier prototype's community-only and follower-only samples are kept in isolated fixtures for authorization testing, not exposed as unrestricted front-end examples.
 - These are adjustments to fictional preview routes and their presentation tests only; they do not enable real social accounts, users, posts or publish actions.
 
+## Mobile reading gutter and authentication log hygiene
+
+A rendered 390px screenshot audit revealed that the original fixed left menu handle
+can overlay information-page body copy. Only the five affected informational
+routes (About, Features, Partners, Contact, Transform) now opt in to
+`bb-2025-reading-page`. At viewport widths up to 639px, this reserves
+**3.5rem left padding** (or safe-area padding if greater) without changing
+the fixed menu, the user-authored public profile, or full-width creator covers.
+
+The legacy sign-in page and form also contained extensive browser-console
+diagnostics that could print supplied email addresses, MFA codes, and sign-in
+response details. Those console statements are removed in this review branch,
+while the sign-in submission and error-handling logic stays unchanged. This is
+a **log-hygiene improvement only**, not evidence that the legacy auth flow,
+RLS policies, production MFA, sessions or logging in other modules are secure.
+
+The independent screenshot workflow must still compare the mobile reading-page
+layout. The production sign-in needs separate authenticated verification; a
+credential-free static screenshot containing `Loading...` is not proof that
+the real sign-in experience renders correctly.
+
+### Isolated sign-in visual comparison
+
+The credential-free screenshot of the real `/auth/sign-in` route showed only
+a transient `Loading...` state. Rather than treating this as a verified
+sign-in UI or enabling credentials, `/visual-review/sign-in` now reuses the
+actual `app/auth/layout.tsx` shell with **disabled** email, password and
+Sign In controls. It is available in development/review only and marked noindex.
+The screenshot workflow checks for the actual `Sign-in layout review`
+marker before capturing. This is a **visual fixture**, not the functional
+sign-in route or authentication validation.
+
+### Actual screenshot findings and fixes (follow-on)
+
+The latest credential-free browser captures showed that the left-edge reading
+gutter separates the original floating menu handle from About and Contact copy
+at 390px. The disabled sign-in preview has both the site header logo **and**
+a second large centered BB mark. Rechecking the user's original 2025 iPhone
+recording confirms **this centered mark and BIG BASED title are intentional**
+on the auth screen, not a layout defect. Keep them; only the nested
+`ThemeProvider` is redundant because `app/layout.tsx` already owns
+theme state. Do not flatten original page-specific branding just to force
+every page into an identical layout.
+The FAQ screenshot also exposed a repeated large title and unnecessary
+vertical spacing. `app/faq/page.tsx` retains the single `<h1>`, FAQ
+structured data and exact FAQ records; `FAQSection` may suppress its own
+intro when an outer page owns the heading. Every category selector uses the
+same original amber tab class instead of one tab behaving differently.
+
+An independent localhost Chromium DOM audit now checks eight fixture/public
+routes at 390px dark and four representative routes at 1440px light, with
+guards against document-width overflow, duplicated on-screen BB logos,
+duplicate FAQ headings and accidentally operable sign-in form controls.
+It is still not a pixel-difference or production auth/security assessment.
+
 ## Acceptance before merging
 
 1. Original profile's complete JSX blob SHA remains unchanged; compare the original page at phone widths and desktop widths against the user's 2025 video/stills.

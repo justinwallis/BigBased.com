@@ -6,6 +6,7 @@ on:
       - "components/social-preview/**"
       - "app/visual-review/social/**"
       - "app/visual-review/community/**"
+      - "app/visual-review/sign-in/**"
       - "app/about/**"
       - "app/features/**"
       - "app/partners/**"
@@ -15,6 +16,7 @@ on:
       - "app/client-layout.tsx"
       - "app/layout.tsx"
       - "components/faq-section.tsx"
+      - "scripts/check-local-visual-browser.cjs"
       - ".github/workflows/bigbased-local-visual-qa.yml"
   workflow_dispatch:
 
@@ -81,7 +83,7 @@ jobs:
         shell: bash
         run: |
           failures=0
-          for route in about features visual-review/community partners contact auth/sign-in; do
+          for route in about features visual-review/community partners contact visual-review/sign-in; do
             slug="${route//\//-}"
             code="$(curl -sS --max-time 60 -o /dev/null -w '%{http_code}' "http://127.0.0.1:3000/$route" || true)"
             echo "$route -> HTTP $code" >> screenshots/route-status.txt
@@ -91,6 +93,14 @@ jobs:
               curl -fsS --max-time 60 "http://127.0.0.1:3000/$route" -o screenshots/community-review-response.html
               if ! grep -qF 'Fictional layout review' screenshots/community-review-response.html; then
                 echo "::error::The fictional Community content failed to render."
+                failures=$((failures + 1))
+                continue
+              fi
+            fi
+            if [ "$route" = "visual-review/sign-in" ]; then
+              curl -fsS --max-time 60 "http://127.0.0.1:3000/$route" -o screenshots/sign-in-review-response.html
+              if ! grep -qF 'Sign-in layout review' screenshots/sign-in-review-response.html; then
+                echo "::error::The no-auth sign-in preview content failed to render."
                 failures=$((failures + 1))
                 continue
               fi
@@ -105,7 +115,7 @@ jobs:
               failures=$((failures + 1))
             fi
           done
-          for route in about visual-review/community auth/sign-in; do
+          for route in about visual-review/community visual-review/sign-in; do
             slug="${route//\//-}"
             if ! npm exec --yes --package=playwright@1.56.1 -- playwright screenshot --browser chromium --viewport-size="1440,900" --color-scheme=light --full-page --wait-for-timeout=1200 "http://127.0.0.1:3000/$route" "screenshots/$slug-desktop-light.png"; then
               echo "::error::Desktop capture failed for $route"
@@ -116,6 +126,10 @@ jobs:
             echo "::error::$failures route or screenshot failures. Inspect screenshots and next-dev.log artifact."
             exit 1
           fi
+      - name: Verify responsive browser layout and disabled preview controls
+        run: |
+          npm install --prefix /tmp/bb-playwright --ignore-scripts --no-audit --no-fund playwright@1.56.1
+          NODE_PATH=/tmp/bb-playwright/node_modules node scripts/check-local-visual-browser.cjs
       - name: Upload fictional review screenshots and sanitized local logs
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

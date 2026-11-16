@@ -31,20 +31,12 @@ export default function SignInForm({ prefillEmail = "", prefillPassword = "", mf
   const { signIn } = useAuth()
   const router = useRouter()
 
-  console.log("🎯 SignInForm rendered with:")
-  console.log("📧 Prefill email:", prefillEmail)
-  console.log("🔒 Prefill password:", !!prefillPassword)
-  console.log("🔐 MFA required:", mfaRequired)
-  console.log("🔐 Show MFA input:", showMfaInput)
 
   useEffect(() => {
     setEmail(prefillEmail)
     setPassword(prefillPassword)
     setShowMfaInput(mfaRequired)
 
-    console.log("🔄 SignInForm useEffect:")
-    console.log("📧 Setting email to:", prefillEmail)
-    console.log("🔐 Setting showMfaInput to:", mfaRequired)
   }, [prefillEmail, prefillPassword, mfaRequired])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,44 +44,32 @@ export default function SignInForm({ prefillEmail = "", prefillPassword = "", mf
     setError("")
     setIsLoading(true)
 
-    console.log("🚀 === SIGN-IN FORM SUBMIT ===")
-    console.log("📧 Email:", email)
-    console.log("🔒 Password length:", password.length)
-    console.log("🔐 MFA Code:", mfaCode)
-    console.log("🔐 Show MFA Input:", showMfaInput)
 
     try {
       if (!email || !password) {
-        console.log("❌ Missing email or password")
         setError("Email and password are required")
         return
       }
 
       if (showMfaInput && !mfaCode) {
-        console.log("❌ Missing MFA code")
         setError("Verification code is required")
         return
       }
 
-      console.log("🔑 Calling signIn with MFA code:", !!mfaCode)
       const result = await signIn(email, password, mfaCode || undefined)
-      console.log("🔑 SignIn result:", JSON.stringify(result, null, 2))
 
       if (result.error) {
-        console.log("❌ SignIn error:", result.error)
         setError(result.error.message || "An error occurred during sign in")
         return
       }
 
       if (result.mfaRequired && !showMfaInput) {
-        console.log("🔐 MFA required - showing MFA input")
         setShowMfaInput(true)
         setError("")
         return
       }
 
       if (result.data?.user) {
-        console.log("✅ Sign in successful!")
         // Clear any stored MFA data
         sessionStorage.removeItem("mfaEmail")
         sessionStorage.removeItem("mfaRequired")
@@ -102,11 +82,9 @@ export default function SignInForm({ prefillEmail = "", prefillPassword = "", mf
         router.push("/profile")
       }
     } catch (error: any) {
-      console.error("💥 Sign in error:", error)
       setError(error.message || "An unexpected error occurred")
     } finally {
       setIsLoading(false)
-      console.log("🏁 === SIGN-IN FORM SUBMIT END ===")
     }
   }
 

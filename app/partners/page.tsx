@@ -10,7 +10,7 @@ export const viewport: Viewport = viewportConfig
 
 export default function PartnersPage() {
   return (
-    <div className="bb-2025-page min-h-screen px-4 py-8 sm:px-8">
+    <div className="bb-2025-page bb-2025-reading-page min-h-screen px-4 py-8 sm:px-8">
       <div className="bb-2025-panel max-w-4xl mx-auto p-5 sm:p-8">
         <h1 className="mb-6 text-2xl font-bold">Partners</h1>
 

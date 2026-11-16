@@ -120,3 +120,12 @@
   box-shadow: inset 3px 0 0 var(--bb-2025-selected);
   color: var(--bb-2025-selected) !important;
 }
+
+/* Preserve the original fixed left menu handle without covering paragraph
+ * text on short informational pages. The original profile and full-bleed
+ * social covers are deliberately excluded from this opt-in gutter. */
+@media (max-width: 639px) {
+  .bb-2025-page.bb-2025-reading-page {
+    padding-left: max(3.5rem, env(safe-area-inset-left));
+  }
+}
