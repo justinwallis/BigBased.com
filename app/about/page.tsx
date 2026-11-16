@@ -37,11 +37,12 @@ export default function AboutPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-white dark:bg-gray-900 p-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-6 dark:text-white">About Big Based</h1>
+      <div className="bb-2025-page min-h-screen px-4 py-8 sm:px-8">
+        <div className="bb-2025-container max-w-4xl">
+          <div className="bb-2025-panel p-5 sm:p-8">
+          <h1 className="mb-6 text-2xl font-bold">About Big Based</h1>
 
-          <p className="mb-4 dark:text-gray-200">
+          <p className="mb-4 bb-2025-dim">
             Big Based is a cultural revolution platform dedicated to reclaiming digital sovereignty, preserving truth,
             and building a parallel economy based on freedom and responsibility.
           </p>
@@ -51,7 +52,7 @@ export default function AboutPage() {
             and censorship while fostering connections between freedom-minded individuals.
           </p>
 
-          <p className="mb-8 dark:text-gray-200">
+          <p className="mb-8 bb-2025-dim">
             Founded on principles of truth, faith, and freedom, Big Based offers a comprehensive library of 10,000+
             meticulously researched pages, community connections, and practical solutions for navigating the challenges
             of our time.
@@ -59,10 +60,11 @@ export default function AboutPage() {
 
           <Link
             href="/"
-            className="bg-black dark:bg-white text-white dark:text-black px-6 py-3 rounded-full font-medium inline-block hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+            className="bb-2025-action inline-flex items-center px-4 text-sm transition-colors"
           >
             Back to Home
           </Link>
+          </div>
         </div>
       </div>
       <StructuredData data={structuredData} />
