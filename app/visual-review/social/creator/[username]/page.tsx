@@ -37,9 +37,6 @@ export default async function SocialCreatorVisualReviewPage({ params }: Props) {
       <main className="bb-2025-container px-3 pt-3 sm:px-5">
         <section className="bb-2025-panel overflow-hidden">
           <div className="bb-2025-cover relative h-[clamp(200px,25vw+75px,455px)] w-full">
-            <div className="absolute top-4 left-5 rounded-md bg-black/25 px-3 py-1 text-xs text-white">
-              BigBased · Creator community
-            </div>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none" aria-hidden="true">
               <div className="bb-2025-avatar flex h-[196px] w-[196px] items-center justify-center text-6xl font-bold text-white">
                 {initials}
