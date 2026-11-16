@@ -37,7 +37,7 @@ export default function AboutPage() {
 
   return (
     <>
-      <div className="bb-2025-page min-h-screen px-4 py-8 sm:px-8">
+      <div className="bb-2025-page bb-2025-reading-page min-h-screen px-4 py-8 sm:px-8">
         <div className="bb-2025-container max-w-4xl">
           <div className="bb-2025-panel p-5 sm:p-8">
           <h1 className="mb-6 text-2xl font-bold">About Big Based</h1>
