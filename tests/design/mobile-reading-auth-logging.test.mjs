@@ -82,3 +82,18 @@ test("FAQ has one visible title while preserving content and structured-data out
   assert.match(section, /className=\{\`bb-2025-tab text-sm capitalize transition-colors/)
   assert.doesNotMatch(section, /rounded-full text-sm font-medium capitalize transition-colors/)
 })
+
+test("browser QA verifies on-screen branding, overflow, and disabled auth locally", () => {
+  const code = read("scripts/check-local-visual-browser.cjs")
+  const workflow = read(".github/workflows/bigbased-local-visual-qa.yml")
+  assert.match(code, /http:\/\/127\.0\.0\.1:3000/)
+  assert.match(code, /document\.documentElement\.scrollWidth/)
+  assert.match(code, /document\.body\.scrollWidth/)
+  assert.match(code, /one on-screen BB logo/)
+  assert.match(code, /input\[type="email"\]:disabled/)
+  assert.match(code, /input\[type="password"\]:disabled/)
+  assert.match(code, /path === "\/faq"/)
+  assert.doesNotMatch(code, /https?:\/\/(?!127\.0\.0\.1)|OPENAI_API_KEY|SUPABASE_SERVICE_ROLE_KEY/)
+  assert.match(workflow, /NODE_PATH=\/tmp\/bb-playwright\/node_modules node scripts\/check-local-visual-browser.cjs/)
+  assert.match(workflow, /--ignore-scripts/)
+})
