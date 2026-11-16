@@ -5,6 +5,12 @@ on:
       - "styles/bigbased-2025.css"
       - "components/social-preview/**"
       - "app/visual-review/social/**"
+      - "app/about/**"
+      - "app/features/**"
+      - "app/partners/**"
+      - "app/contact/**"
+      - "app/community/**"
+      - "app/auth/**"
       - "app/client-layout.tsx"
       - "app/layout.tsx"
       - "components/faq-section.tsx"
@@ -70,6 +76,35 @@ jobs:
           npm exec --yes --package=playwright@1.56.1 -- playwright screenshot --browser chromium --viewport-size="390,844" --color-scheme=dark --full-page --wait-for-timeout=2000 http://127.0.0.1:3000/visual-review/social/creator/samplecreator screenshots/creator-mobile-dark.png
           npm exec --yes --package=playwright@1.56.1 -- playwright screenshot --browser chromium --viewport-size="1440,900" --color-scheme=light --full-page --wait-for-timeout=2000 http://127.0.0.1:3000/visual-review/social/creator/samplecreator screenshots/creator-desktop-light.png
           npm exec --yes --package=playwright@1.56.1 -- playwright screenshot --browser chromium --viewport-size="390,844" --color-scheme=dark --full-page --wait-for-timeout=2000 http://127.0.0.1:3000/faq screenshots/faq-mobile-dark.png
+      - name: Render six more original-style public pages on localhost
+        shell: bash
+        run: |
+          failures=0
+          for route in about features community partners contact auth/sign-in; do
+            slug="${route//\//-}"
+            code="$(curl -sS --max-time 60 -o /dev/null -w '%{http_code}' "http://127.0.0.1:3000/$route" || true)"
+            echo "$route -> HTTP $code" >> screenshots/route-status.txt
+            if [ "$code" != "200" ]; then
+              echo "::error::Route $route returned HTTP $code in credential-free QA"
+              failures=$((failures + 1))
+              continue
+            fi
+            if ! npm exec --yes --package=playwright@1.56.1 -- playwright screenshot --browser chromium --viewport-size="390,844" --color-scheme=dark --full-page --wait-for-timeout=1200 "http://127.0.0.1:3000/$route" "screenshots/$slug-mobile-dark.png"; then
+              echo "::error::Mobile capture failed for $route"
+              failures=$((failures + 1))
+            fi
+          done
+          for route in about community auth/sign-in; do
+            slug="${route//\//-}"
+            if ! npm exec --yes --package=playwright@1.56.1 -- playwright screenshot --browser chromium --viewport-size="1440,900" --color-scheme=light --full-page --wait-for-timeout=1200 "http://127.0.0.1:3000/$route" "screenshots/$slug-desktop-light.png"; then
+              echo "::error::Desktop capture failed for $route"
+              failures=$((failures + 1))
+            fi
+          done
+          if [ "$failures" -ne 0 ]; then
+            echo "::error::$failures route or screenshot failures. Inspect screenshots and next-dev.log artifact."
+            exit 1
+          fi
       - name: Upload fictional review screenshots and sanitized local logs
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -78,5 +113,6 @@ jobs:
           path: |
             screenshots/*.png
             screenshots/next-dev.log
+            screenshots/route-status.txt
           if-no-files-found: warn
           retention-days: 7
