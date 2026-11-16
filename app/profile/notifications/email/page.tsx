@@ -4,11 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function EmailNotificationsPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bb-2025-page min-h-screen">
       <Suspense
         fallback={
-          <div className="container mx-auto py-10">
-            <Card>
+          <div className="bb-2025-container py-10 px-4">
+            <Card className="bb-2025-panel">
               <CardHeader>
                 <CardTitle>Loading Email Notifications...</CardTitle>
               </CardHeader>
