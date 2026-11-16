@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { SocialFeedPreviewClient } from "@/components/social-preview/SocialFeedPreviewClient"
+import { getFictionalReviewFeed } from "@/lib/social-v1/preview.mjs"
 
 export const metadata: Metadata = {
   title: "BigBased social feed — fictional design review",
@@ -15,5 +16,5 @@ export default function SocialFeedVisualReviewPage() {
     notFound()
   }
 
-  return <SocialFeedPreviewClient />
+  return <SocialFeedPreviewClient seedPosts={getFictionalReviewFeed()} />
 }
