@@ -81,6 +81,17 @@ layout. The production sign-in needs separate authenticated verification; a
 credential-free static screenshot containing `Loading...` is not proof that
 the real sign-in experience renders correctly.
 
+### Isolated sign-in visual comparison
+
+The credential-free screenshot of the real `/auth/sign-in` route showed only
+a transient `Loading...` state. Rather than treating this as a verified
+sign-in UI or enabling credentials, `/visual-review/sign-in` now reuses the
+actual `app/auth/layout.tsx` shell with **disabled** email, password and
+Sign In controls. It is available in development/review only and marked noindex.
+The screenshot workflow checks for the actual `Sign-in layout review`
+marker before capturing. This is a **visual fixture**, not the functional
+sign-in route or authentication validation.
+
 ## Acceptance before merging
 
 1. Original profile's complete JSX blob SHA remains unchanged; compare the original page at phone widths and desktop widths against the user's 2025 video/stills.
