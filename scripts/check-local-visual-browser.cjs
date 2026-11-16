@@ -121,6 +121,13 @@ async function checkPage(browser, path, marker, width, height, colorScheme) {
     for (const [path, marker] of scenarios) {
       await checkPage(browser, path, marker, 390, 844, "dark")
     }
+    // The user-authored 2025 iPhone recording is closest to this narrower
+    // mobile width. Verify its layout independently of 390px screenshots.
+    for (const [path, marker] of [
+      scenarios[3], scenarios[5], scenarios[7],
+    ]) {
+      await checkPage(browser, path, marker, 375, 812, "dark")
+    }
     for (const [path, marker] of [
       scenarios[3], scenarios[4], scenarios[5], scenarios[6],
     ]) {
