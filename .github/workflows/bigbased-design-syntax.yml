@@ -1,0 +1,38 @@
+name: BigBased Design Syntax QA
+on:
+  pull_request:
+    paths:
+      - "styles/bigbased-2025.css"
+      - "app/**"
+      - "components/faq-section.tsx"
+      - "components/chat/**"
+      - "components/social-preview/**"
+      - "scripts/check-design-syntax.mjs"
+      - ".github/workflows/bigbased-design-syntax.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  parse-styled-pages:
+    name: Parse JSX and CSS without starting application
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout without persisting credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+      - name: Install locked dependencies without app scripts
+        run: |
+          npm install --global pnpm@9.15.9
+          pnpm install --frozen-lockfile --ignore-scripts
+        env:
+          CI: "true"
+      - name: Parse styled TSX components and CSS safely
+        run: node scripts/check-design-syntax.mjs
