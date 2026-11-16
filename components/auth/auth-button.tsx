@@ -125,7 +125,7 @@ export default function AuthButton({ onLogin, isLoggingIn = false }: AuthButtonP
   }
 
   if (loading) {
-    return <div className="w-[140px] h-[35px] bg-gray-300 dark:bg-gray-700 rounded-md animate-pulse"></div>
+    return <div role="status" aria-live="polite" className="inline-flex h-[35px] min-w-[140px] items-center justify-center rounded-md bg-gray-200 px-3 text-xs font-medium text-gray-700 dark:bg-[#131313] dark:text-gray-300">Checking account…</div>
   }
 
   if (user) {
