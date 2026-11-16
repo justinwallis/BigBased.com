@@ -29,13 +29,13 @@ export function ChatInput({ onSendMessage, isLoading }: ChatInputProps) {
         <ChevronDownIcon className="h-4 w-4" />
       </Button>
       <Input
-        className="w-full rounded-lg py-2 pl-10 pr-12 text-sm focus-visible:ring-0 focus-visible:ring-offset-0 border-none bg-gray-100 dark:bg-gray-800"
+        className="bb-2025-field w-full py-2 pl-10 pr-12 text-sm"
         placeholder="Type anything to BigBased..."
         value={currentInput}
         onChange={(e) => setCurrentInput(e.target.value)}
         disabled={isLoading}
       />
-      <Button type="submit" size="icon" className="absolute right-2 border-none" disabled={isLoading}>
+      <Button type="submit" size="icon" className="bb-2025-action absolute right-2 border-none" disabled={isLoading}>
         <SendIcon className="h-4 w-4" />
         <span className="sr-only">Send message</span>
       </Button>
