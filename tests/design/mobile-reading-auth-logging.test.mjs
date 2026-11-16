@@ -55,3 +55,16 @@ test("sign-in visual review reuses real auth shell but cannot submit credentials
   assert.match(w, /Sign-in layout review/)
   assert.doesNotMatch(w, /for route in about features visual-review\/community partners contact auth\/sign-in/)
 })
+
+test("auth screens inherit the single canonical BigBased header and theme provider", () => {
+  const root = read("app/layout.tsx")
+  const shell = read("app/auth/layout.tsx")
+  const preview = read("app/visual-review/sign-in/page.tsx")
+  assert.match(root, /<ThemeProvider/)
+  assert.match(root, /<ClientLayout>/)
+  assert.match(shell, /bb-2025-page/)
+  assert.match(shell, /bb-2025-panel/)
+  assert.match(shell, /<ThemeToggle/)
+  assert.doesNotMatch(shell, /<ThemeProvider|<Image|<BBLogo|BIG BASED/)
+  assert.match(preview, /<AuthLayout>/)
+})
