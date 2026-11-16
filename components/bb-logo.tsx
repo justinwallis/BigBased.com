@@ -2,8 +2,6 @@
 
 import Image from "next/image"
 import { cn } from "@/lib/utils"
-import { useTheme } from "@/components/theme-provider"
-import { useEffect, useState } from "react"
 
 interface BBLogoProps {
   size?: "sm" | "md" | "lg" | "xl"
@@ -11,14 +9,10 @@ interface BBLogoProps {
   inverted?: boolean
 }
 
+// Use the existing original light/inverted assets. Let the actual dark
+// class drive visibility instead of relying on mount-time theme detection.
+// This avoids low-contrast logo flashes during hydration and SSR previews.
 export default function BBLogo({ size = "md", className, inverted = false }: BBLogoProps) {
-  const [mounted, setMounted] = useState(false)
-  const { theme, systemTheme } = useTheme()
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
   const sizeClasses = {
     sm: "w-8 h-8",
     md: "w-12 h-12",
@@ -26,21 +20,16 @@ export default function BBLogo({ size = "md", className, inverted = false }: BBL
     xl: "w-24 h-24",
   }
 
-  // Determine the effective theme (handle system theme detection)
-  const effectiveTheme = theme === "system" ? systemTheme : theme
-
-  // Use the inverted logo in dark mode, unless explicitly overridden by the inverted prop
-  const logoSrc = mounted
-    ? inverted || effectiveTheme === "dark"
-      ? "/BigBasedIconInvert.png"
-      : "/bb-logo.png"
-    : typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "/BigBasedIconInvert.png"
-      : "/bb-logo.png"
-
   return (
     <div className={cn(sizeClasses[size], "relative", className)}>
-      <Image src={logoSrc || "/placeholder.svg"} alt="BigBased Logo" fill className="object-contain" priority />
+      {inverted ? (
+        <Image src="/BigBasedIconInvert.png" alt="BigBased Logo" fill className="object-contain" priority />
+      ) : (
+        <>
+          <Image src="/bb-logo.png" alt="BigBased Logo" fill className="object-contain dark:hidden" priority />
+          <Image src="/BigBasedIconInvert.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
+        </>
+      )}
     </div>
   )
 }
