@@ -144,7 +144,7 @@ export default function EmailNotificationsClientPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="bb-2025-page min-h-screen">
         <div className="container py-10">
           <Card>
             <CardHeader>
@@ -160,7 +160,7 @@ export default function EmailNotificationsClientPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="bb-2025-page min-h-screen">
       <div className="container mx-auto max-w-4xl py-10 px-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">
