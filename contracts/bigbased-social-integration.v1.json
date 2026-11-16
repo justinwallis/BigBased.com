@@ -1,0 +1,129 @@
+{
+  "contractVersion": "bigbased.social.integration.v1",
+  "status": "proposed-offline-only",
+  "ownsProduct": "bigbased",
+  "optionalServiceProvider": "opentrestle",
+  "authorization": {
+    "default": "deny",
+    "identitySource": "server-validated-identity-and-membership",
+    "crossProductAccess": "not-implicit",
+    "requiresVerifiedResourceScope": true,
+    "requiresFreshAuthorization": true,
+    "requiresExplicitActionApproval": true,
+    "allowAutomatedPublication": false,
+    "allowAutomatedModerationEnforcement": false
+  },
+  "allowedPublicProfileFields": [
+    "creator_id",
+    "username",
+    "display_name",
+    "bio",
+    "avatar_url",
+    "banner_url",
+    "website"
+  ],
+  "publicProfilePublication": "explicit-creator-opt-in",
+  "neverExposeInPublicProfile": [
+    "email",
+    "phone",
+    "date_of_birth",
+    "precise_location",
+    "password",
+    "provider_tokens",
+    "service_role",
+    "social_links._extended",
+    "contact_info",
+    "personal_details",
+    "private_message_history",
+    "billing_details"
+  ],
+  "integrationRequests": [
+    {
+      "operation": "creator.draft.assist",
+      "authority": "bigbased",
+      "service": "opentrestle",
+      "result": "proposal-only",
+      "sideEffectOnSocialContent": false,
+      "requiresConsent": true
+    },
+    {
+      "operation": "creator.publish.prepare",
+      "authority": "bigbased",
+      "service": "opentrestle",
+      "result": "delivery-proposal-only",
+      "sideEffectOnSocialContent": false,
+      "requiresConsent": true
+    },
+    {
+      "operation": "community.moderation.suggest",
+      "authority": "bigbased",
+      "service": "opentrestle",
+      "result": "review-suggestion-only",
+      "sideEffectOnSocialContent": false,
+      "requiresConsent": true
+    }
+  ],
+  "requiredRequestFields": [
+    "contractVersion",
+    "request_id",
+    "idempotency_key",
+    "product",
+    "tenant_id",
+    "actor_ref",
+    "resource_ref",
+    "scope",
+    "purpose",
+    "consent_ref"
+  ],
+  "serverDerivedFields": [
+    "tenant_id",
+    "actor_ref",
+    "scope"
+  ],
+  "allowedRequestPayload": [
+    "content_ref",
+    "requested_operation",
+    "destination_ref",
+    "metadata_classification"
+  ],
+  "disallowedRequestPayload": [
+    "raw_private_profile",
+    "raw_account_email",
+    "raw_credentials",
+    "full_private_chat_history",
+    "steadlamp_customer_data",
+    "opentrestle_code_data"
+  ],
+  "responseFields": [
+    "contractVersion",
+    "request_id",
+    "status",
+    "proposal_ref",
+    "receipt_ref",
+    "error_code"
+  ],
+  "publicationOwner": "bigbased",
+  "moderationDecisionOwner": "bigbased",
+  "noImplicitConsumerSync": [
+    "mybased.ai",
+    "steadlamp",
+    "opentrestle.code"
+  ],
+  "exampleFictionalRequest": {
+    "contractVersion": "bigbased.social.integration.v1",
+    "request_id": "req-synthetic-001",
+    "idempotency_key": "synthetic-key-001",
+    "product": "bigbased",
+    "tenant_id": "tenant-synthetic-001",
+    "actor_ref": "creator-synthetic-001",
+    "resource_ref": "draft-synthetic-001",
+    "scope": "creator.draft.assist",
+    "purpose": "draft-assistance-only",
+    "consent_ref": "consent-synthetic-001",
+    "payload": {
+      "content_ref": "content-synthetic-001",
+      "requested_operation": "creator.draft.assist",
+      "metadata_classification": "creator-owned-draft"
+    }
+  }
+}
