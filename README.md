@@ -10,6 +10,10 @@
 This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
 Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
 
+## Creator AI product architecture (documentation only)
+
+The accepted strategy is recorded in [BigBased / MyBased Creator AI Product Boundaries v1](docs/architecture/creator-ai-product-boundaries-v1.md), with the shared technology approach in [OpenTrestle architecture PR #155](https://github.com/OpenTrestle/opentrestle-platform/pull/155). BigBased.com remains the creator/community/publishing destination; MyBased.ai is planned as a separate personal AI workspace and app. The restored historical `/chat` remains a visual-reference draft, not approved AI infrastructure. No public deployment or customer account federation is authorized by this document.
+
 ## Deployment
 
 Your project is live at:
