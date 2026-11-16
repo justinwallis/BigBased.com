@@ -92,6 +92,29 @@ The screenshot workflow checks for the actual `Sign-in layout review`
 marker before capturing. This is a **visual fixture**, not the functional
 sign-in route or authentication validation.
 
+### Actual screenshot findings and fixes (follow-on)
+
+The latest credential-free browser captures showed that the left-edge reading
+gutter successfully separates the original floating menu handle from About
+and Contact copy at 390px. The independent sign-in fixture revealed a
+**duplicate large BB logo/title below the canonical global header**, because
+`app/auth/layout.tsx` wrapped its children in a second ThemeProvider and
+brand header. This branch now reuses **one canonical global header/provider**,
+while retaining the original-style sign-in panel, Return Home link and the
+theme toggle. No real auth logic is changed.
+
+The FAQ screenshot also exposed a repeated large title and unnecessary
+vertical spacing. `app/faq/page.tsx` retains the single `<h1>`, FAQ
+structured data and exact FAQ records; `FAQSection` may suppress its own
+intro when an outer page owns the heading. Every category selector uses the
+same original amber tab class instead of one tab behaving differently.
+
+An independent localhost Chromium DOM audit now checks eight fixture/public
+routes at 390px dark and four representative routes at 1440px light, with
+guards against document-width overflow, duplicated on-screen BB logos,
+duplicate FAQ headings and accidentally operable sign-in form controls.
+It is still not a pixel-difference or production auth/security assessment.
+
 ## Acceptance before merging
 
 1. Original profile's complete JSX blob SHA remains unchanged; compare the original page at phone widths and desktop widths against the user's 2025 video/stills.
