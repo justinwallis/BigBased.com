@@ -42,8 +42,16 @@ async function checkPage(browser, path, marker, width, height, colorScheme) {
     if (path === "/visual-review/sign-in") {
       // The original BB header is already provided by app/layout.tsx.
       // Hidden alternate-theme images do not count as duplicate logos.
-      const visibleLogos = await page.locator('img[alt="BigBased Logo"]:visible').count()
-      assert.equal(visibleLogos, 1, "auth visual review must have one visible BB logo")
+      const onScreenLogos = await page.locator('img[alt="BigBased Logo"]').evaluateAll((images) =>
+        images.filter((img) => {
+          const box = img.getBoundingClientRect()
+          const style = getComputedStyle(img)
+          return box.width > 0 && box.height > 0 && box.right > 0 &&
+            box.left < window.innerWidth && box.bottom > 0 &&
+            box.top < window.innerHeight && style.visibility !== "hidden"
+        }).length,
+      )
+      assert.equal(onScreenLogos, 1, "auth visual review must have one on-screen BB logo")
       assert.equal(await page.locator('input[type="email"]:disabled').count(), 1)
       assert.equal(await page.locator('input[type="password"]:disabled').count(), 1)
       assert.equal(await page.getByRole("button", { name: /Sign In · disabled in preview/i }).isDisabled(), true)
