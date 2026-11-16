@@ -145,7 +145,7 @@ export function SocialFeedPreviewClient({ seedPosts }: { seedPosts: DemoPost[] }
         </aside>
 
         <main className="min-w-0 space-y-4" aria-label="BigBased social preview">
-          <div className="bb-2025-panel rounded-2xl border border-violet-200 bg-white p-4 shadow-sm dark:border-violet-400/20 dark:bg-[#141316]">
+          <div className="bb-2025-panel rounded-2xl border border-violet-200 bg-white p-4 pl-10 shadow-sm dark:border-violet-400/20 dark:bg-[#141316] sm:pl-4">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-violet-600 dark:text-violet-300">BigBased community</p>
@@ -272,10 +272,10 @@ export function SocialFeedPreviewClient({ seedPosts }: { seedPosts: DemoPost[] }
                   </div>
                   <div className="px-4 pb-4 pt-4">
                     <p className="whitespace-pre-wrap text-sm leading-relaxed sm:text-[15px]">{post.text}</p>
-                    <div className="mt-4 flex min-h-[116px] items-center justify-center rounded-xl bg-gradient-to-br from-violet-100 via-[#f0e7fa] to-[#e4dcf0] px-5 text-center dark:from-[#2e203c] dark:via-[#39284a] dark:to-[#18121e]">
+                    <div className="bb-2025-cover mt-4 flex min-h-[116px] items-center justify-center rounded-md px-5 text-center">
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-violet-600 dark:text-violet-300">BigBased · Creator community</p>
-                        <p className="mt-2 text-xl font-bold tracking-tight text-[#372346] dark:text-[#eee1ff]">{post.topic}</p>
+                        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/90">BigBased · Creator community</p>
+                        <p className="mt-2 text-xl font-bold tracking-tight text-white">{post.topic}</p>
                       </div>
                     </div>
                   </div>
