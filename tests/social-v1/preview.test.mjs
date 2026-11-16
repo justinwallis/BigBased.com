@@ -6,11 +6,11 @@ import {
   getFictionalReviewCreator,
 } from "../../lib/social-v1/preview.mjs"
 
-test("review feed uses the single policy-filtered fictional social source", () => {
+test("anonymous review feed shows only public fictional social records", () => {
   const feed = getFictionalReviewFeed()
-  assert.equal(feed.length, 4)
+  assert.equal(feed.length, 2)
   assert.deepEqual(feed.map((post) => post.username), [
-    "samplecreator", "fictionalstudio", "samplecreator", "fictionalstudio",
+    "samplecreator", "fictionalstudio",
   ])
   assert.ok(feed.every((post) => post.time === "Fictional sample"))
   assert.ok(feed.every((post) => post.id.startsWith("10000000-")))
@@ -28,6 +28,8 @@ test("server projection never ships the fixture's private account fields", () =>
   }
   assert.equal(data.includes("suspended user's"), false)
   assert.equal(data.includes("private draft"), false)
+  assert.equal(data.includes("members-only"), false)
+  assert.equal(data.includes("Followers-only"), false)
   assert.equal(data.includes("Deleted posts"), false)
   assert.equal(data.includes("separate fictional tenant"), false)
 })
@@ -35,7 +37,7 @@ test("server projection never ships the fixture's private account fields", () =>
 test("fictional creator page respects public opt-in and preview tenant boundary", () => {
   const creator = getFictionalReviewCreator("samplecreator")
   assert.equal(creator.username, "samplecreator")
-  assert.equal(creator.posts.length, 2)
+  assert.equal(creator.posts.length, 1)
   assert.ok(creator.posts.every((post) => post.username === "samplecreator"))
   const text = JSON.stringify(creator)
   assert.equal(text.includes("private_email"), false)
