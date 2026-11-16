@@ -1,0 +1,32 @@
+name: BigBased Social Contracts (offline)
+on:
+  pull_request:
+    paths:
+      - "lib/social-v1/**"
+      - "tests/social-v1/**"
+      - "tests/contracts/bigbased-social-openapi.test.mjs"
+      - "tests/contracts/bigbased-social-integration.test.mjs"
+      - "contracts/**"
+      - ".github/workflows/bigbased-social-contracts.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-contracts:
+    name: Offline social contract checks (no external services)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout untrusted PR code without persistent credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Display runner Node version
+        run: node --version
+      - name: Verify local fixture, privacy and REST contract policies
+        run: |
+          node --test tests/social-v1/*.test.mjs \
+            tests/contracts/bigbased-social-integration.test.mjs \
+            tests/contracts/bigbased-social-openapi.test.mjs

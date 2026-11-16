@@ -1,15 +1,19 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { useTheme } from "next-themes"
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import Image from "next/image"
+import Link from "next/link"
 import {
   Bell, Bookmark, Check, Compass, FileText, Heart, Home, ImageIcon,
-  MessageCircle, PenLine, Search, Send, Share2, ShieldCheck, Users, X,
+  MessageCircle, PenLine, Search, Send, Share2, ShieldCheck, Users, X, Moon, Sun,
 } from "lucide-react"
 
 type Tab = "Home" | "Communities" | "Explore" | "Saved" | "Profile"
 type DemoPost = {
   id: string
+  username: string
   author: string
   handle: string
   initials: string
@@ -20,41 +24,6 @@ type DemoPost = {
   avatarClass: string
 }
 
-const samplePosts: DemoPost[] = [
-  {
-    id: "fictional-post-1",
-    author: "Sample Creator",
-    handle: "@samplecreator",
-    initials: "SC",
-    community: "Creator Commons",
-    time: "Sample post",
-    text: "What if your work, audience, and publishing tools actually belonged to you? Here is a place to share an idea, start a discussion, and build something together.",
-    topic: "Creator independence",
-    avatarClass: "bg-violet-500",
-  },
-  {
-    id: "fictional-post-2",
-    author: "BigBased Demo Team",
-    handle: "@demo",
-    initials: "BB",
-    community: "Community Showcase",
-    time: "Sample post",
-    text: "Welcome to a social space made for creators. Explore community posts, bookmark ideas, and prepare your next project. Everything on this screen is fictional review data.",
-    topic: "Community showcase",
-    avatarClass: "bg-slate-800",
-  },
-  {
-    id: "fictional-post-3",
-    author: "Fictional Studio",
-    handle: "@fictionalstudio",
-    initials: "FS",
-    community: "Independent Publishing",
-    time: "Sample post",
-    text: "A better publishing workflow begins with control: write a draft, choose your audience, revise your work, and decide where to publish.",
-    topic: "Publishing",
-    avatarClass: "bg-amber-700",
-  },
-]
 
 const tabs: { label: Tab; icon: typeof Home }[] = [
   { label: "Home", icon: Home },
@@ -64,13 +33,22 @@ const tabs: { label: Tab; icon: typeof Home }[] = [
   { label: "Profile", icon: FileText },
 ]
 
+const mobileTabs: Array<{ label: string; icon: typeof Home; tab?: Tab; compose?: true }> = [
+  { label: "Home", icon: Home, tab: "Home" },
+  { label: "Communities", icon: Users, tab: "Communities" },
+  { label: "Create", icon: PenLine, compose: true },
+  { label: "Explore", icon: Compass, tab: "Explore" },
+  { label: "Profile", icon: FileText, tab: "Profile" },
+]
+
 const communities = [
   "Creator Commons",
   "Independent Publishing",
   "Community Showcase",
 ]
 
-export function SocialFeedPreviewClient() {
+export function SocialFeedPreviewClient({ seedPosts }: { seedPosts: DemoPost[] }) {
+  const { resolvedTheme, setTheme } = useTheme()
   const [activeTab, setActiveTab] = useState<Tab>("Home")
   const [query, setQuery] = useState("")
   const [showSearch, setShowSearch] = useState(false)
@@ -86,7 +64,7 @@ export function SocialFeedPreviewClient() {
   const [selectedCommunity, setSelectedCommunity] = useState<string | null>(null)
 
   const visiblePosts = useMemo(() => {
-    return samplePosts.filter((post) => {
+    return seedPosts.filter((post) => {
       if (activeTab === "Saved" && !saved.has(post.id)) return false
       if (activeTab === "Communities" && selectedCommunity && post.community !== selectedCommunity) return false
       if (activeTab === "Profile") return false
@@ -95,7 +73,7 @@ export function SocialFeedPreviewClient() {
       return [post.author, post.community, post.text, post.topic]
         .some((value) => value.toLowerCase().includes(search))
     })
-  }, [activeTab, selectedCommunity, query, saved])
+  }, [activeTab, selectedCommunity, query, saved, seedPosts])
 
   function selectTab(tab: Tab) {
     setActiveTab(tab)
@@ -162,6 +140,14 @@ export function SocialFeedPreviewClient() {
           <div className="flex items-center gap-2">
             <button type="button" onClick={() => setShowSearch((value) => !value)} className="rounded-full p-2 hover:bg-violet-50 dark:hover:bg-white/10 md:hidden" aria-label="Toggle sample search">
               <Search className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+              className="rounded-full p-2 hover:bg-violet-50 dark:hover:bg-white/10"
+              aria-label={resolvedTheme === "dark" ? "Switch to light appearance" : "Switch to dark appearance"}
+            >
+              {resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </button>
             <button
               type="button"
@@ -253,6 +239,16 @@ export function SocialFeedPreviewClient() {
                 <h2 className="mt-2 text-lg font-bold">Sample Creator</h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400">@samplecreator · fictional profile</p>
                 <p className="mt-3 text-sm">Your creator portfolio, public posts, private drafts and approved publishing destinations would live here.</p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <button type="button" onClick={() => selectTab("Saved")}
+                    className="flex items-center gap-2 rounded-xl border border-violet-200 px-3 py-2 text-sm font-semibold text-violet-700 hover:bg-violet-50 dark:border-violet-400/30 dark:text-violet-300 dark:hover:bg-violet-500/10">
+                    <Bookmark className="h-4 w-4" /> Saved examples ({saved.size})
+                  </button>
+                  <button type="button" onClick={() => setComposerOpen(true)}
+                    className="flex items-center gap-2 rounded-xl bg-violet-700 px-3 py-2 text-sm font-semibold text-white hover:bg-violet-800">
+                    <PenLine className="h-4 w-4" /> New local draft
+                  </button>
+                </div>
                 <h3 className="mb-2 mt-6 text-sm font-bold">Private local drafts ({drafts.length})</h3>
                 {drafts.length === 0 ? <p className="text-sm text-slate-500">No local drafts. Try the Create button below.</p> : (
                   <div className="space-y-2">
@@ -301,7 +297,9 @@ export function SocialFeedPreviewClient() {
                   <div className="flex items-start gap-3 px-4 pt-4">
                     <span className={"flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white " + post.avatarClass}>{post.initials}</span>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold">{post.author} <span className="font-normal text-slate-500">{post.handle}</span></p>
+                      <Link href={`/visual-review/social/creator/${post.username}`} className="block truncate text-sm font-bold hover:text-violet-700 dark:hover:text-violet-300">
+                        {post.author} <span className="font-normal text-slate-500">{post.handle}</span>
+                      </Link>
                       <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{post.community} · {post.time} · Public example</p>
                     </div>
                     <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-500 dark:bg-white/10">Demo</span>
@@ -386,48 +384,52 @@ export function SocialFeedPreviewClient() {
       </div>
 
       <nav aria-label="Mobile social preview navigation" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-slate-200 bg-white/95 px-1 pb-[env(safe-area-inset-bottom)] shadow-lg backdrop-blur dark:border-white/10 dark:bg-[#141316]/95 lg:hidden">
-        {tabs.map(({ label, icon: Icon }) => (
-          <button type="button" key={label} onClick={() => selectTab(label)} aria-current={activeTab === label ? "page" : undefined}
-            className={"flex flex-col items-center gap-1 py-3 text-[10px] font-semibold " +
-              (activeTab === label ? "text-violet-700 dark:text-violet-300" : "text-slate-500 dark:text-slate-400")}>
-            <Icon className="h-5 w-5" />{label}
+        {mobileTabs.map(({ label, icon: Icon, tab, compose }) => (
+          <button
+            type="button"
+            key={label}
+            onClick={() => compose ? setComposerOpen(true) : tab && selectTab(tab)}
+            aria-current={!compose && activeTab === tab ? "page" : undefined}
+            aria-label={compose ? "Create a private example draft" : label}
+            className={"flex min-h-14 flex-col items-center justify-center gap-1 px-1 py-2 text-[10px] font-semibold " +
+              (compose ? "text-violet-700 dark:text-violet-300" :
+                activeTab === tab ? "text-violet-700 dark:text-violet-300" : "text-slate-500 dark:text-slate-400")}
+          >
+            <Icon className={compose ? "h-6 w-6" : "h-5 w-5"} />
+            {label}
           </button>
         ))}
       </nav>
 
       <button type="button" onClick={() => setComposerOpen(true)} aria-label="Create a private local draft"
-        className="fixed bottom-20 right-4 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-violet-700 text-white shadow-xl transition hover:bg-violet-800 lg:bottom-6">
+        className="fixed bottom-6 right-4 z-20 hidden h-12 w-12 items-center justify-center rounded-full bg-violet-700 text-white shadow-xl transition hover:bg-violet-800 lg:flex">
         <PenLine className="h-5 w-5" />
       </button>
 
-      {composerOpen && (
-        <div role="presentation" className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-3 py-6" onMouseDown={(event) => { if (event.target === event.currentTarget) setComposerOpen(false) }}>
-          <div role="dialog" aria-modal="true" aria-labelledby="social-preview-compose-title" className="w-full max-w-lg rounded-2xl bg-white p-5 text-[#24202c] shadow-2xl dark:bg-[#1d1824] dark:text-white">
-            <div className="flex items-center justify-between">
-              <h2 id="social-preview-compose-title" className="text-lg font-bold">Create a private draft</h2>
-              <button type="button" onClick={() => setComposerOpen(false)} aria-label="Close composer" className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-white/10"><X className="h-5 w-5" /></button>
-            </div>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Saved in memory in this browser tab only. No real account, upload, database or publishing action.</p>
-            <textarea
-              autoFocus
-              rows={6}
-              value={draftText}
-              maxLength={1500}
-              onChange={(event) => setDraftText(event.target.value)}
-              placeholder="What would you like to share with your future community?"
-              aria-label="Write private example draft"
-              className="mt-4 w-full resize-y rounded-xl border border-slate-200 bg-[#f7f6fa] p-4 text-sm outline-none focus:border-violet-500 dark:border-white/20 dark:bg-white/5"
-            />
-            <div className="mt-3 flex items-center justify-between">
-              <span className="flex items-center gap-1 text-xs text-slate-500"><ShieldCheck className="h-4 w-4" /> Private · demo only</span>
-              <button type="button" onClick={saveDraft} disabled={!draftText.trim()}
-                className="flex items-center gap-2 rounded-xl bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40">
-                <Check className="h-4 w-4" /> Save local draft
-              </button>
-            </div>
+      <Dialog open={composerOpen} onOpenChange={setComposerOpen}>
+        <DialogContent className="w-[calc(100vw-1.5rem)] max-w-lg rounded-2xl border-violet-200 bg-white p-5 text-[#24202c] shadow-2xl dark:border-violet-400/20 dark:bg-[#1d1824] dark:text-white">
+          <DialogTitle className="pr-8 text-lg font-bold">Create a private draft</DialogTitle>
+          <DialogDescription className="text-xs text-slate-500 dark:text-slate-400">
+            Saved in memory in this browser tab only. No real account, upload, database or publishing action.
+          </DialogDescription>
+          <textarea
+            rows={6}
+            value={draftText}
+            maxLength={1500}
+            onChange={(event) => setDraftText(event.target.value)}
+            placeholder="What would you like to share with your future community?"
+            aria-label="Write private example draft"
+            className="mt-2 w-full resize-y rounded-xl border border-slate-200 bg-[#f7f6fa] p-4 text-sm outline-none focus:border-violet-500 dark:border-white/20 dark:bg-white/5"
+          />
+          <div className="mt-1 flex items-center justify-between">
+            <span className="flex items-center gap-1 text-xs text-slate-500"><ShieldCheck className="h-4 w-4" /> Private · demo only</span>
+            <button type="button" onClick={saveDraft} disabled={!draftText.trim()}
+              className="flex items-center gap-2 rounded-xl bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40">
+              <Check className="h-4 w-4" /> Save local draft
+            </button>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
