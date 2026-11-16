@@ -50,6 +50,16 @@ A second, stacked review pass aligns **actual nested components**, not only the 
 - Shared profile-style CSS includes keyboard focus visibility, reduced-motion behavior and pressed-state amber tabs.
 - Independent GitHub Actions syntax job parses the impacted TSX components and CSS via TypeScript/PostCSS **without executing the application or accessing any real service**. This catches syntax issues, but is **not a production build, typecheck, accessibility audit or pixel comparison**.
 
+## Screenshot-based creator geometry and anonymous review safety
+
+Follow-up from the first six real localhost captures and the user-supplied original 2025 iPhone recording:
+
+- Creator review cover no longer sits inside a rounded 1220px card. It spans the viewport up to the original author's **1250px cover maximum**, while profile details and the content columns remain constrained to the original **1220px content width**.
+- Profile name, handle and bio are centered on narrow phones, with compact actions beneath them; desktop returns to the source's left-aligned name/right-aligned actions.
+- The source-authored **196×196 centered avatar** and `clamp(200px, 25vw + 75px, 455px)` cover height remain intact.
+- A publicly reachable, anonymous fictional review route now projects **only fictional posts marked `visibility: "public"`**. The earlier prototype's community-only and follower-only samples are kept in isolated fixtures for authorization testing, not exposed as unrestricted front-end examples.
+- These are adjustments to fictional preview routes and their presentation tests only; they do not enable real social accounts, users, posts or publish actions.
+
 ## Acceptance before merging
 
 1. Original profile's complete JSX blob SHA remains unchanged; compare the original page at phone widths and desktop widths against the user's 2025 video/stills.
