@@ -48,9 +48,9 @@ export default function FAQPage() {
     <>
       <div className="bb-2025-page min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Frequently Asked Questions</h1>
-            <p className="mt-4 text-xl text-gray-600 dark:text-gray-300">
+          <div className="mb-8 text-center">
+            <h1 className="text-2xl font-bold">Frequently Asked Questions</h1>
+            <p className="bb-2025-dim mt-3 text-base">
               Find answers to common questions about Big Based, our mission, and how to get involved.
             </p>
           </div>
@@ -58,7 +58,8 @@ export default function FAQPage() {
           <FAQSection
             faqs={faqItems}
             categories={categories}
-            description="Browse our comprehensive FAQ by category or search for specific topics."
+            title={null}
+            description={null}
           />
         </div>
       </div>
