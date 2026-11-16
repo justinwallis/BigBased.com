@@ -51,7 +51,7 @@ function MobileMenu({ categories }: { categories: any[] }) {
       {isOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="fixed inset-0 bg-black/50" onClick={() => setIsOpen(false)} />
-          <div className="fixed left-0 top-0 h-full w-80 bg-white dark:bg-black p-6 border-r border-gray-200 dark:border-gray-800">
+          <div className="bb-2025-panel fixed left-0 top-0 h-full w-[min(20rem,90vw)] !rounded-none p-6 border-r">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Documentation</h2>
               <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)}>
@@ -87,14 +87,14 @@ export default function DocsClientLayout({
   return (
     <div className="bb-2025-page flex min-h-screen">
       {/* Left Sidebar */}
-      <aside className="hidden md:flex w-64 flex-col border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-black">
+      <aside className="bb-2025-panel hidden md:flex w-64 shrink-0 flex-col !rounded-none border-r">
         <div className="p-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
             <Input
               type="search"
               placeholder="Search..."
-              className="w-full bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 pl-10 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-blue-500 dark:focus:border-blue-400"
+              className="bb-2025-field w-full pl-10 pr-10 placeholder:text-gray-500 dark:placeholder:text-gray-400"
             />
             <kbd className="absolute right-3 top-1/2 -translate-y-1/2 rounded border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 text-xs text-gray-500 dark:text-gray-400">
               ⌘K
