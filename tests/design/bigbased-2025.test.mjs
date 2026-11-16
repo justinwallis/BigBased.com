@@ -44,6 +44,20 @@ test("key public-facing pages use the reusable visual system without copying the
     "app/revolution/page.tsx",
     "app/profile/page.tsx",
     "app/chat/layout.tsx",
+    "app/community/CommunityClientLayout.tsx",
+    "app/faq/page.tsx",
+    "app/transform/page.tsx",
+    "app/auth/layout.tsx",
+    "app/docs/DocsClientLayout.tsx",
+    "app/profile/ProfileClientPage.tsx",
+    "app/profile/notifications/email/page.tsx",
+    "app/profile/notifications/email/EmailNotificationsClientPage.tsx",
+    "app/profile/notifications/push/PushNotificationsClientPage.tsx",
+    "app/profile/security/change-password/ChangePasswordClientPage.tsx",
+    "app/profile/security/two-factor/TwoFactorClientPage.tsx",
+    "app/profile/security/sessions/SessionsClientPage.tsx",
+    "app/checkout/layout.tsx",
+    "app/not-found.tsx",
     "components/social-preview/SocialFeedPreviewClient.tsx",
     "app/visual-review/social/creator/[username]/page.tsx",
   ]
@@ -51,6 +65,8 @@ test("key public-facing pages use the reusable visual system without copying the
     assert.match(text(path), /bb-2025-page/, path)
   }
   assert.match(text("app/community/page.tsx"), /bb-2025-panel/)
+  assert.match(text("components/chat/chat-input.tsx"), /bb-2025-field/)
+  assert.match(text("components/chat/chat-suggestions.tsx"), /bb-2025-action/)
   assert.match(text("app/visual-review/social/creator/[username]/page.tsx"), /bb-2025-cover/)
   assert.match(text("app/visual-review/social/creator/[username]/page.tsx"), /bb-2025-avatar/)
 })
