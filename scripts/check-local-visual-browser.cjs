@@ -84,7 +84,7 @@ async function checkPage(browser, path, marker, width, height, colorScheme) {
       assert.equal(onScreenLogos, 1, "auth visual review must inherit the one global header BB logo")
       // The original 2025 iPhone recording also includes an intentional
       // centered 64px auth mark. It is distinct from the global header.
-      const authLogoCount = await page.locator('[data-bb-auth-brand] img[alt="Big Based Logo"]').evaluateAll(
+      const authLogoCount = await page.locator('[data-bb-auth-brand] img').evaluateAll(
         (images) => images.filter((img) => {
           const box = img.getBoundingClientRect()
           return box.width > 0 && box.height > 0 && box.left < window.innerWidth
