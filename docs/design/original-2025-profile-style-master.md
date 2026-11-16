@@ -95,14 +95,14 @@ sign-in route or authentication validation.
 ### Actual screenshot findings and fixes (follow-on)
 
 The latest credential-free browser captures showed that the left-edge reading
-gutter successfully separates the original floating menu handle from About
-and Contact copy at 390px. The independent sign-in fixture revealed a
-**duplicate large BB logo/title below the canonical global header**, because
-`app/auth/layout.tsx` wrapped its children in a second ThemeProvider and
-brand header. This branch now reuses **one canonical global header/provider**,
-while retaining the original-style sign-in panel, Return Home link and the
-theme toggle. No real auth logic is changed.
-
+gutter separates the original floating menu handle from About and Contact copy
+at 390px. The disabled sign-in preview has both the site header logo **and**
+a second large centered BB mark. Rechecking the user's original 2025 iPhone
+recording confirms **this centered mark and BIG BASED title are intentional**
+on the auth screen, not a layout defect. Keep them; only the nested
+`ThemeProvider` is redundant because `app/layout.tsx` already owns
+theme state. Do not flatten original page-specific branding just to force
+every page into an identical layout.
 The FAQ screenshot also exposed a repeated large title and unnecessary
 vertical spacing. `app/faq/page.tsx` retains the single `<h1>`, FAQ
 structured data and exact FAQ records; `FAQSection` may suppress its own
