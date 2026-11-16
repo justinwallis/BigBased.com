@@ -1,0 +1,99 @@
+/* BigBased 2025 Original Profile Visual Language
+ * Reference: app/[username]/PublicProfilePageClient.tsx
+ * Reference source blob: 04ef8e7d6a8a9f1d14afdadd869e62750bf948a8
+ *
+ * Intent: reuse EXACT existing authored surface, action, cover, and tab styling.
+ * Scoped on bb-2025-page, so the original profile master stays unchanged.
+ * Do not invent replacement colors/themes or globally override original CSS.
+ */
+.bb-2025-page {
+  --bb-2025-backdrop: #f3f4f6;
+  --bb-2025-surface: #ffffff;
+  --bb-2025-action: #e5e7eb;
+  --bb-2025-action-hover: #d1d5db;
+  --bb-2025-ink: #111827;
+  --bb-2025-muted: #4b5563;
+  --bb-2025-border: #e5e7eb;
+  --bb-2025-selected: #f59e0b;
+  background-color: var(--bb-2025-backdrop);
+  color: var(--bb-2025-ink);
+}
+.dark .bb-2025-page {
+  --bb-2025-backdrop: #080808;
+  --bb-2025-surface: #0d0d0d;
+  --bb-2025-action: #131313;
+  --bb-2025-action-hover: #1f1f1f;
+  --bb-2025-ink: #ffffff;
+  --bb-2025-muted: #9ca3af;
+  --bb-2025-border: #262626;
+  --bb-2025-selected: #fbbf24;
+}
+.bb-2025-page .bb-2025-container {
+  max-width: 1220px;
+  margin-inline: auto;
+  width: 100%;
+}
+.bb-2025-page .bb-2025-panel {
+  background-color: var(--bb-2025-surface) !important;
+  color: var(--bb-2025-ink);
+  border: 1px solid var(--bb-2025-border) !important;
+  border-radius: 0.5rem !important;
+}
+.bb-2025-page .bb-2025-action {
+  min-height: 35px;
+  border-radius: 0.375rem !important;
+  background: var(--bb-2025-action) !important;
+  color: var(--bb-2025-ink) !important;
+  font-weight: 500;
+  transition: background-color 160ms ease;
+}
+.bb-2025-page .bb-2025-action:hover:not(:disabled) {
+  background: var(--bb-2025-action-hover) !important;
+}
+.bb-2025-page .bb-2025-tabs {
+  border-bottom: 1px solid var(--bb-2025-border);
+  background: transparent;
+}
+.bb-2025-page .bb-2025-tab {
+  border-bottom: 3px solid transparent;
+  padding: 12px 16px;
+  border-radius: 0;
+  color: var(--bb-2025-muted);
+  font-weight: 500;
+}
+.bb-2025-page .bb-2025-tab:hover {
+  background-color: var(--bb-2025-action);
+}
+.bb-2025-page .bb-2025-tab[aria-current="page"],
+.bb-2025-page .bb-2025-tab[aria-selected="true"],
+.bb-2025-page .bb-2025-tab[data-state="active"] {
+  color: var(--bb-2025-selected);
+  border-bottom-color: var(--bb-2025-selected);
+}
+.bb-2025-page .bb-2025-cover {
+  background: linear-gradient(to right, #2563eb, #9333ea, #4f46e5) !important;
+}
+.bb-2025-page .bb-2025-avatar {
+  border: 4px solid #ffffff;
+  border-radius: 9999px;
+  background: linear-gradient(to bottom right, #3b82f6, #9333ea);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.12);
+}
+.dark .bb-2025-page .bb-2025-avatar {
+  border-color: #080808;
+}
+.bb-2025-page .bb-2025-dim {
+  color: var(--bb-2025-muted) !important;
+}
+.bb-2025-page .bb-2025-field {
+  background-color: var(--bb-2025-surface) !important;
+  color: var(--bb-2025-ink);
+  border: 1px solid var(--bb-2025-border);
+  border-radius: 0.375rem;
+}
+.bb-2025-page .bb-2025-field:focus-visible {
+  outline: 2px solid var(--bb-2025-selected);
+  outline-offset: 2px;
+}
+/* The user's original site header is rendered by app/client-layout.tsx.
+ * Do not insert another site-wide brand header into individual pages. */
