@@ -1,0 +1,431 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "BigBased Social API — proposed contract",
+    "version": "0.1.0-review",
+    "description": "Design-only, not implemented or deployed. No endpoint is operational. Public creator profiles require explicit opt-in and reviewed authorization. All bearer-protected routes require independently verified identity, resource scope and per-user ownership checks."
+  },
+  "servers": [
+    {
+      "url": "https://api.bigbased.com/v1",
+      "description": "Proposed address only; do not infer an existing service"
+    }
+  ],
+  "x-review-status": "offline-design-only",
+  "tags": [
+    {
+      "name": "Creators"
+    },
+    {
+      "name": "Feed"
+    },
+    {
+      "name": "Posts"
+    }
+  ],
+  "paths": {
+    "/creators/{username}": {
+      "get": {
+        "tags": [
+          "Creators"
+        ],
+        "summary": "Read a creator-approved minimal public profile",
+        "description": "Only explicitly published, allowlisted fields; never private account/profile JSON. Default deny if publication/visibility is not approved.",
+        "operationId": "getPublicCreator",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 30,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/CreatorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/feed": {
+      "get": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Get authorized chronological social feed",
+        "description": "Per-actor visibility, membership, block/mute and content-state constraints enforced on the server; no public unrestricted personal feed. Cursor is opaque and bounded. Ordering by created_at+id.",
+        "operationId": "listFeed",
+        "security": [
+          {
+            "SessionBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 512
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current actor's visible posts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/posts/drafts": {
+      "post": {
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Create private creator-owned draft",
+        "description": "Authenticated creator only, requires resource-level authorization. Draft remains private and is never automatically published or distributed. Idempotency key required.",
+        "operationId": "createDraft",
+        "security": [
+          {
+            "SessionBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDraft"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Private draft created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftCreated"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "SessionBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Proposed bearer client authentication only. Token claims alone do not authorize BigBased resource access. Actual auth design is not approved."
+      }
+    },
+    "schemas": {
+      "CreatorPublic": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "creator_id",
+          "username",
+          "display_name",
+          "bio",
+          "avatar_url",
+          "banner_url",
+          "website"
+        ],
+        "properties": {
+          "creator_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "bio": {
+            "type": "string"
+          },
+          "avatar_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "banner_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "website": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          }
+        }
+      },
+      "FeedPost": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "post_id",
+          "creator",
+          "text",
+          "created_at",
+          "visibility"
+        ],
+        "properties": {
+          "post_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "creator": {
+            "$ref": "#/components/schemas/CreatorPublic"
+          },
+          "text": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "community",
+              "followers"
+            ]
+          }
+        }
+      },
+      "FeedPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/FeedPost"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "CreateDraft": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "text"
+        ],
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20000
+          },
+          "community_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "DraftCreated": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "draft_id",
+          "status"
+        ],
+        "properties": {
+          "draft_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "const": "private-draft"
+          }
+        }
+      },
+      "ApiError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error",
+          "request_id"
+        ],
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "responses": {
+      "CreatorResponse": {
+        "description": "Explicitly published minimal public presentation",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CreatorPublic"
+            }
+          }
+        }
+      },
+      "InvalidRequest": {
+        "description": "Invalid or malformed request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Authentication is required",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Permission or scope denied",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Not found or not publicly disclosed",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "Idempotency conflict",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "Too many requests",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          }
+        }
+      }
+    }
+  }
+}
