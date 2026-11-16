@@ -17,7 +17,7 @@ permissions:
 jobs:
   capture-local-previews:
     name: Screenshot fictional preview on isolated localhost
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # Pin supported Playwright 1.56 Chromium Linux host
     timeout-minutes: 20
     env:
       NEXT_TELEMETRY_DISABLED: "1"
