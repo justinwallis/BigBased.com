@@ -16,6 +16,7 @@ on:
       - "app/client-layout.tsx"
       - "app/layout.tsx"
       - "components/faq-section.tsx"
+      - "scripts/check-local-visual-browser.cjs"
       - ".github/workflows/bigbased-local-visual-qa.yml"
   workflow_dispatch:
 
@@ -125,6 +126,10 @@ jobs:
             echo "::error::$failures route or screenshot failures. Inspect screenshots and next-dev.log artifact."
             exit 1
           fi
+      - name: Verify responsive browser layout and disabled preview controls
+        run: |
+          npm install --prefix /tmp/bb-playwright --ignore-scripts --no-audit --no-fund playwright@1.56.1
+          NODE_PATH=/tmp/bb-playwright/node_modules node scripts/check-local-visual-browser.cjs
       - name: Upload fictional review screenshots and sanitized local logs
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
