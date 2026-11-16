@@ -3,6 +3,16 @@ import { ragSystem } from "@/lib/ai-rag-system"
 import { createClient } from "@/lib/supabase/server"
 
 export async function POST(request: NextRequest) {
+  // The old streaming adapter is not compatible with the isolated visual
+  // restoration. Fail closed until an explicitly approved integration
+  // replaces this route; never spend model tokens during visual review.
+  if (process.env.BIGBASED_ENABLE_LEGACY_AI !== "reviewed-and-approved") {
+    return NextResponse.json(
+      { error: "The historical BigBased chat AI endpoint is not enabled." },
+      { status: 503, headers: { "Cache-Control": "no-store" } },
+    )
+  }
+
   try {
     const { message, domain, conversation_history } = await request.json()
 
