@@ -22,6 +22,23 @@
 
 Do not enable the old NextAuth/Supabase-mixed community action endpoints to make this preview work. Do not relax the restricted public `profiles` SELECT policy. Do not expose historical nested `social_links._extended` details or author email joins.
 
+## Creator publishing lifecycle (design and offline policy evaluation only)
+
+The source now includes `lib/social-v1/publishing.mjs` and `tests/social-v1/publishing.test.mjs`. This defines proposal-only transitions:
+
+```text
+private-draft → review-requested → review-approved → publication-prepared
+       ↑              |               |
+       └── withdraw / reject ──────────┘ (review never publishes)
+```
+
+- Draft owner may submit/withdraw review; a separately scoped moderator may approve/reject, but may not approve their own post.
+- Publication *preparation* requires matching owner consent, selected BigBased destination and actor-specific destination permissions.
+- Every transition is evaluated against tenant, product, owner, expected draft version and status.
+- **No function in this slice publishes, persists, records a true approval, or submits to OpenTrestle**. It returns an explicit `would_transition_to` and `persisted: false`, `published: false`.
+- The caller's fictional `verified`, `moderator`, and `consent.verified` fields are trusted **only inside unit tests**, never from HTTP requests. An eventual server must verify authenticated identity, moderation membership and consent against authoritative records before committing a transition.
+- The public REST `POST /api/v1/posts/drafts` route remains disabled with 503. There is no real publish endpoint.
+
 ## Running the offline tests
 
 Use Node.js 20+:
