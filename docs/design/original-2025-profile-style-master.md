@@ -60,6 +60,27 @@ Follow-up from the first six real localhost captures and the user-supplied origi
 - A publicly reachable, anonymous fictional review route now projects **only fictional posts marked `visibility: "public"`**. The earlier prototype's community-only and follower-only samples are kept in isolated fixtures for authorization testing, not exposed as unrestricted front-end examples.
 - These are adjustments to fictional preview routes and their presentation tests only; they do not enable real social accounts, users, posts or publish actions.
 
+## Mobile reading gutter and authentication log hygiene
+
+A rendered 390px screenshot audit revealed that the original fixed left menu handle
+can overlay information-page body copy. Only the five affected informational
+routes (About, Features, Partners, Contact, Transform) now opt in to
+`bb-2025-reading-page`. At viewport widths up to 639px, this reserves
+**3.5rem left padding** (or safe-area padding if greater) without changing
+the fixed menu, the user-authored public profile, or full-width creator covers.
+
+The legacy sign-in page and form also contained extensive browser-console
+diagnostics that could print supplied email addresses, MFA codes, and sign-in
+response details. Those console statements are removed in this review branch,
+while the sign-in submission and error-handling logic stays unchanged. This is
+a **log-hygiene improvement only**, not evidence that the legacy auth flow,
+RLS policies, production MFA, sessions or logging in other modules are secure.
+
+The independent screenshot workflow must still compare the mobile reading-page
+layout. The production sign-in needs separate authenticated verification; a
+credential-free static screenshot containing `Loading...` is not proof that
+the real sign-in experience renders correctly.
+
 ## Acceptance before merging
 
 1. Original profile's complete JSX blob SHA remains unchanged; compare the original page at phone widths and desktop widths against the user's 2025 video/stills.
