@@ -29,7 +29,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             <h1 className="text-2xl font-bold text-center text-gray-900 dark:text-white">BIG BASED</h1>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-8 border border-gray-200 dark:border-gray-700">
+          <div className="bb-2025-panel p-5 shadow-md sm:p-8">
             {children}
           </div>
 

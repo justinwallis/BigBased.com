@@ -40,6 +40,16 @@ Do not make every page *literally* have a person-avatar cover. Different functio
 
 Do not invent a secondary global nav, alternate violet brand palette, fake friends, follower counters, invented community engagement or real social claims in fictional previews.
 
+## Deep styling and source QA follow-up
+
+A second, stacked review pass aligns **actual nested components**, not only the route shell:
+
+- FAQ categories use the authored **amber active tab** behavior, and switching category closes any previously selected answer. Accordion buttons expose `aria-expanded`, `aria-controls`, and collapsed answers use the `hidden` attribute.
+- Docs sidebar and mobile drawer adopt original-profile dark panels and input field styling instead of generic dark gray / blue focus colors.
+- Auth sign-in panel uses the original surface treatment without changing login logic or exposing credentials.
+- Shared profile-style CSS includes keyboard focus visibility, reduced-motion behavior and pressed-state amber tabs.
+- Independent GitHub Actions syntax job parses the impacted TSX components and CSS via TypeScript/PostCSS **without executing the application or accessing any real service**. This catches syntax issues, but is **not a production build, typecheck, accessibility audit or pixel comparison**.
+
 ## Acceptance before merging
 
 1. Original profile's complete JSX blob SHA remains unchanged; compare the original page at phone widths and desktop widths against the user's 2025 video/stills.
