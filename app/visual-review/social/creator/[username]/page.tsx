@@ -41,7 +41,7 @@ export default async function SocialCreatorVisualReviewPage({ params }: Props) {
               BigBased · Creator community
             </div>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none" aria-hidden="true">
-              <div className="bb-2025-avatar flex h-[clamp(110px,16vw,196px)] w-[clamp(110px,16vw,196px)] items-center justify-center text-4xl font-bold text-white sm:text-6xl">
+              <div className="bb-2025-avatar flex h-[196px] w-[196px] items-center justify-center text-6xl font-bold text-white">
                 {initials}
               </div>
             </div>
