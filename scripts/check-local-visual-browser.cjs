@@ -39,6 +39,36 @@ async function checkPage(browser, path, marker, width, height, colorScheme) {
       path + ": horizontal document overflow: " + JSON.stringify(geometry),
     )
 
+    // Check rendered computed values, not just authored class names. Wait for
+    // the existing system-theme hydration (no theme changes are written).
+    if (path === "/about" || path === "/faq" || path === "/visual-review/sign-in") {
+      await page.waitForFunction(
+        (expectDark) => document.documentElement.classList.contains("dark") === expectDark,
+        colorScheme === "dark",
+        { timeout: 10000 },
+      )
+      const themeColors = await page.evaluate(() => {
+        const root = document.querySelector(".bb-2025-page")
+        const panel = root?.querySelector(".bb-2025-panel")
+        return {
+          page: root ? getComputedStyle(root).backgroundColor : null,
+          panel: panel ? getComputedStyle(panel).backgroundColor : null,
+        }
+      })
+      assert.equal(
+        themeColors.page,
+        colorScheme === "dark" ? "rgb(8, 8, 8)" : "rgb(243, 244, 246)",
+        path + ": original page backdrop",
+      )
+      if (themeColors.panel !== null) {
+        assert.equal(
+          themeColors.panel,
+          colorScheme === "dark" ? "rgb(13, 13, 13)" : "rgb(255, 255, 255)",
+          path + ": original panel surface",
+        )
+      }
+    }
+
     if (path === "/visual-review/sign-in") {
       // The original BB header is already provided by app/layout.tsx.
       // Hidden alternate-theme images do not count as duplicate logos.
@@ -60,6 +90,14 @@ async function checkPage(browser, path, marker, width, height, colorScheme) {
     if (path === "/faq") {
       assert.equal(await page.getByRole("heading", { name: "Frequently Asked Questions" }).count(), 1)
       assert.equal(await page.getByRole("button", { name: "All", exact: true }).getAttribute("aria-pressed"), "true")
+      const selectedColor = await page.getByRole("button", { name: "All", exact: true }).evaluate(
+        (node) => getComputedStyle(node).borderBottomColor,
+      )
+      assert.equal(
+        selectedColor,
+        colorScheme === "dark" ? "rgb(251, 191, 36)" : "rgb(245, 158, 11)",
+        "FAQ must inherit the original 2025 amber selected-tab color",
+      )
     }
     console.log("PASS", width + "px", colorScheme, path, geometry)
   } finally {
