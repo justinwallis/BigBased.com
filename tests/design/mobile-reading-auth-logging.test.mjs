@@ -68,3 +68,17 @@ test("auth screens inherit the single canonical BigBased header and theme provid
   assert.doesNotMatch(shell, /<ThemeProvider|<Image|<BBLogo|BIG BASED/)
   assert.match(preview, /<AuthLayout>/)
 })
+
+test("FAQ has one visible title while preserving content and structured-data output", () => {
+  const page = read("app/faq/page.tsx")
+  const section = read("components/faq-section.tsx")
+  assert.match(page, /<h1[^>]*>Frequently Asked Questions<\/h1>/)
+  assert.match(page, /title=\{null\}/)
+  assert.match(page, /description=\{null\}/)
+  assert.match(page, /getFAQPageData/)
+  assert.match(page, /<StructuredData data=\{structuredData\}/)
+  assert.match(section, /const showIntro = Boolean\(title \|\| description\)/)
+  assert.match(section, /\{showIntro && \(/)
+  assert.match(section, /className=\{\`bb-2025-tab text-sm capitalize transition-colors/)
+  assert.doesNotMatch(section, /rounded-full text-sm font-medium capitalize transition-colors/)
+})
