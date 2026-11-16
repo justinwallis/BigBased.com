@@ -81,7 +81,7 @@
   box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.12);
 }
 .dark .bb-2025-page .bb-2025-avatar {
-  border-color: #080808;
+  border-color: #111827; /* matches original dark:border-gray-900 */
 }
 .bb-2025-page .bb-2025-dim {
   color: var(--bb-2025-muted) !important;
