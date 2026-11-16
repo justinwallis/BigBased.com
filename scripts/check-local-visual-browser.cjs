@@ -81,7 +81,17 @@ async function checkPage(browser, path, marker, width, height, colorScheme) {
             box.top < window.innerHeight && style.visibility !== "hidden"
         }).length,
       )
-      assert.equal(onScreenLogos, 1, "auth visual review must have one on-screen BB logo")
+      assert.equal(onScreenLogos, 1, "auth visual review must inherit the one global header BB logo")
+      // The original 2025 iPhone recording also includes an intentional
+      // centered 64px auth mark. It is distinct from the global header.
+      const authLogoCount = await page.locator('[data-bb-auth-brand] img[alt="Big Based Logo"]').evaluateAll(
+        (images) => images.filter((img) => {
+          const box = img.getBoundingClientRect()
+          return box.width > 0 && box.height > 0 && box.left < window.innerWidth
+        }).length,
+      )
+      assert.equal(authLogoCount, 1, "preserve the original visible centered sign-in brand")
+      assert.equal(await page.getByRole("heading", { name: "BIG BASED" }).count(), 1)
       assert.equal(await page.locator('input[type="email"]:disabled').count(), 1)
       assert.equal(await page.locator('input[type="password"]:disabled').count(), 1)
       assert.equal(await page.getByRole("button", { name: /Sign In · disabled in preview/i }).isDisabled(), true)
