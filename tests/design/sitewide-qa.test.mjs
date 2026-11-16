@@ -4,8 +4,8 @@ import { readFileSync } from "node:fs"
 
 const workflow = readFileSync(new URL("../../.github/workflows/bigbased-local-visual-qa.yml", import.meta.url), "utf8")
 
-test("site-wide visual QA captures six additional routes, not just the social preview", () => {
-  for (const route of ["about", "features", "community", "partners", "contact", "auth/sign-in"]) {
+test("site-wide visual QA captures six safe routes including fictional community and sign-in", () => {
+  for (const route of ["about", "features", "visual-review/community", "partners", "contact", "visual-review/sign-in"]) {
     assert.ok(workflow.includes(route), route)
   }
   assert.match(workflow, /route-status\.txt/)
