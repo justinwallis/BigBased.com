@@ -27,6 +27,8 @@ Maintain the user's approved crowned BB brand assets, Futura STD and the origina
 
 **STOP after one homepage concept/review.** No secondary page designs or production edits until approved.
 
+**Latest guest/public-homepage study:** [Creator Launchpad public homepage — guest UX and conversion design v1](../design/creator-launchpad-public-homepage-guest-ux-v1.md). This documents the selected three-column guest-accessible workbench, public search, collapsible MyBased chat section, sign-in-to-save handoff, public Connect discovery, and optional creator-profile invitation. It does not authorize implementation or change the source-authored 2025 profile.
+
 ## Product and technology ownership
 
 - **BigBased** owns one creator-facing product experience, creator identity/session decision (to be security-reviewed), private workspace authorization, private projects, publishable artifacts, creator profiles, social graph, communities, visibility and publishing policy.
