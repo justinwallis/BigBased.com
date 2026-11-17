@@ -2,6 +2,24 @@
 
 **Status:** Working design direction authorized for study on 2026-11-16; **not approved application implementation**. This page is a design/experience specification, not a live feature claim. Source for positioning: [ADR — MyBased inside BigBased](../architecture/adr-mybased-private-workspace-inside-bigbased-v2.md). Source for site-wide visual fidelity: [Original 2025 BigBased Profile — Exact Visual Master](./original-2025-profile-style-master.md).
 
+## Selected visual benchmark — owner preference (2026-11-16)
+
+**Selected image:** owner-uploaded **“BigBased Creator Launchpad Showcase(1).png”**, a wide **Creator Launchpad Homepage Concept (v2.0)** presentation board. The owner explicitly stated this **entire composition is their strongest direction so far** and previously singled out its main workbench as the best-looking concept. **Treat this as the current preferred visual reference, not a production screenshot or proof of functionality.** The original image is retained in the conversation; this documentation deliberately does not copy a potentially personal/user-provided image into the public repository.
+
+**Preserve when interpreting the chosen composition:**
+- **Full dark premium visual identity**: black/charcoal base, compact warm amber indicators, official BB crown/wordmark treatment as *approved brand assets* (not text recreated from generated pixels), crisp typography, restrained lighting, and tight but readable spacing.
+- **Compact top navigation**: Launchpad, Chat, Build, Connect, Explore, a clearly available **global search for guests**, Sign in and unobtrusive onboarding.
+- **Left creator workspace rail**: useful navigation, a collapsible **MyBased Chats** group with new chat / conversation entries where actually supported, and a restrained sign-in-to-save invitation; a compact sidebar, not a feature-card marketing column.
+- **Dominant central creation experience**: the heading “The Creator Launchpad” and “CHAT · BUILD · CONNECT”; the MyBased AI composer immediately above the Build workspace; creator options including Website, Publication, Video, Mini-App and Business (capabilities labeled accurately); real-looking content/layout controls next to a substantial sample project **live preview**. No giant SaaS hero.
+- **Right Connect surface**: a familiar social feed/discovery experience, tabs for Feed / Creators / Groups / Discover, project-driven posts and recognizable conversation actions. No invented *real* members, activity or engagement: use clearly labeled fictional fixture content in design previews.
+- **Lower supporting strip** in the *showcase board*: a preview of the owner's original distinctive creator profile, a fuller MyBased conversation workspace example, an Explore → Create → Save → Showcase journey, and bounded design next steps. These illustrate how the homepage leads naturally into the creator ecosystem. **Do not discard them silently** or treat the bottom row as a mandate to build secondary pages. Their exact placement on a functioning public homepage remains an approved-next-design question.
+- **Far-right concept rationale column** in this presentation: “Purpose,” “Key Experiences,” “Guest vs. Signed-in,” and “The Goal.” This is part of the **selected reference/showcase presentation**, not automatically an application sidebar required on production home. Preserve its decisions in documentation; decide presentation placement with the owner rather than deleting it by default.
+- Guest-first product meaning is unchanged: **try Build, search public items, and explore Connect before sign-in; sign in only to save to the user's account, create their identity, and undertake protected social actions**. Private drafts/chats remain private by default.
+
+**Interpretation rule:** distinguish (1) what the owner likes aesthetically about the **whole rendered showcase** from (2) what belongs literally in the running public homepage. Preserve the selected visual as a comparison baseline before proposing any different composition. Do not switch back to the simpler promotional hero, add a globe, or replace the established 2025 source-authored profile.
+
+**Design status:** selected as the strongest **direction so far**, not a final pixel-perfect implementation approval; the existing 2025 profile source remains the exact profile-style master. Do not infer that MyBased AI, guest sessions, search, saved projects, builder exports or social feeds work just because the generated board depicts them.
+
 ## Owner choices from homepage study (in order)
 
 1. **One main page at a time.** Do not expand this study into Chat, Projects, Profile, or Connect interior-page designs without a distinct request.
