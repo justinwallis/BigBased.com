@@ -5,15 +5,15 @@
 
 ## The decision
 
-**BigBased is one connected creator/entrepreneur platform. MyBased is the name of its private AI-assisted creative workspace—not a separately required consumer application at launch.**
+**BigBased is one connected creator/entrepreneur platform organized around Chat, Build and Connect. The Chat entry leads to MyBased AI, its private creative workspace—not a separately required consumer application at launch.**
 
 An optional `mybased.ai` entry may later point to this BigBased workspace or serve as a marketing/directory site for creator-chatbot offerings. Domain routing, chatbot names/domains, identity federation, and independent apps are **not decided or configured** by this ADR.
 
 The user selected the **embedded workspace** direction rather than a separate MyBased app or two customer products with federated identity. Any old docs that say MyBased must have separate user accounts or its own independent chat datastore are **superseded as product positioning**. Privacy isolation remains mandatory even within one product.
 
-## One creator journey, three recognizable actions
+## One creator journey: Chat. Build. Connect.
 
-1. **Think / MyBased:** An independent person starts with an idea, conversation, draft, research question, or project. Private by default; it can work alongside other creation tools rather than requiring every user to chat.
+1. **Chat → MyBased AI:** The BigBased **Chat** entry opens the private **MyBased AI** creative workspace where an independent person can brainstorm, research, plan, draft and work on projects. Chat is an optional entry and helper, not a requirement to use Build or Connect. Whether this is embedded in BigBased, a routed app surface or a dedicated `mybased.ai` entry remains a later UX/routing choice. Do not implement a second general-purpose chat engine in BigBased when an approved OpenTrestle conversation contract can be consumed.
 2. **Build:** The person transforms a selected idea into an **owned project or artifact**—for example a launch page, media kit, publication, mini-app, website plan or creator platform. Work has explicit files, versions, export options and permissions; it must not live only in an ephemeral chat transcript.
 3. **Connect:** The person deliberately chooses which project, excerpt, showcase, post or publication becomes visible to followers or communities. **No MyBased chat, private project, credential, draft or attachment becomes public by default.**
 
@@ -21,7 +21,7 @@ The user selected the **embedded workspace** direction rather than a separate My
 
 ## BigBased public homepage — next and ONLY design target
 
-Before any further page images or site build, design the **main public homepage** around a useful invitation to create, such as *"What do you want to create?"*, with clear entry to MyBased/private workspace, build paths and the community. This is proposed content, not yet an approved headline, layout or visual mock.
+Before any further page images or site build, design the **main public homepage** around the product's three clear actions: **Chat. Build. Connect.** A possible supporting invitation is *"What do you want to create?"*, but neither exact headline nor layout is approved. The Chat entry leads to the private MyBased AI workspace; Build to creator tools; Connect to social/community discovery. This is proposed content, not yet an approved headline, layout or visual mock.
 
 Maintain the user's approved crowned BB brand assets, Futura STD and the original user-authored 2025 near-black visual language. Do not silently overwrite the exact 2025 master, add dominant green styling or replace the master with generic generated logos.
 
