@@ -14,6 +14,10 @@ Any changes you make to your deployed app will be automatically pushed to this r
 
 The accepted strategy is recorded in [BigBased / MyBased Creator AI Product Boundaries v1](docs/architecture/creator-ai-product-boundaries-v1.md), with the shared technology approach in [OpenTrestle architecture PR #155](https://github.com/OpenTrestle/opentrestle-platform/pull/155). BigBased.com remains the creator/community/publishing destination; MyBased.ai is planned as a separate personal AI workspace and app. The restored historical `/chat` remains a visual-reference draft, not approved AI infrastructure. No public deployment or customer account federation is authorized by this document.
 
+## Current product direction — Chat · Build · Connect
+
+BigBased is a creator/entrepreneur platform. **Chat** leads to the private **MyBased AI** workspace; **Build** provides project/platform/media creation paths; **Connect** provides social/community discovery and creator sharing. This is the [selected design direction (ADR v2)](docs/architecture/adr-mybased-private-workspace-inside-bigbased-v2.md), not an implemented or launched AI chat. The MyBased entry route and future `mybased.ai` domain behavior remain undecided; private work is never public by default.
+
 ## BigBased in the OpenTrestle product family (review only)
 
 The [BigBased Product-Family Fit and Integration Blueprint v1](docs/architecture/bigbased-product-family-fit-v1.md) clarifies which parts BigBased owns independently, how optional MyBased.ai draft handoff and OpenTrestle/OTPE services would work behind explicit creator consent and separate product authority, and why SteadLamp private Home/Life/Business data never flows into BigBased by default. The original 2025 BigBased dark visual identity stays authoritative. **No live service, identity linkage or publishing integration is enabled by this proposal.**

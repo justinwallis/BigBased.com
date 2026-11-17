@@ -1,6 +1,6 @@
 # BigBased in the Product Family — Non-Overlap and Opt-In Integration Blueprint v1
 
-**Status:** Proposed documentation-only integration boundary for review (2026-11-16). No live API, account federation, licensing agreement, RLS policy, deployment, publishing operation or provider execution is authorized. Preserve the user's existing original 2025 BigBased visual design.
+**Status:** Historical proposed product-family map (2026-11-16). **MyBased's standalone product placement and social-first homepage assumption are superseded** by [ADR v2: Chat · Build · Connect, with Chat leading to private MyBased AI](./adr-mybased-private-workspace-inside-bigbased-v2.md). Preserve this document's privacy, technical-service, company-separation and authorization constraints. No live API, account federation, licensing agreement, RLS policy, deployment, publishing operation or provider execution is authorized. Preserve the user's existing original 2025 BigBased visual design.
 
 ## Sources and authority
 

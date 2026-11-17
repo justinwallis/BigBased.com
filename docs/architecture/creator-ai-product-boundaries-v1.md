@@ -1,6 +1,6 @@
 # BigBased / MyBased Creator AI — Product Boundaries v1
 
-**Status:** Accepted strategic direction; documentation only (2026-11-15).
+**Status:** Historical v1 strategy (2026-11-15), **superseded for MyBased product placement** by [ADR: MyBased private workspace inside BigBased v2](./adr-mybased-private-workspace-inside-bigbased-v2.md), selected 2026-11-16. Retain v1 for rationale and safety constraints. BigBased now plans MyBased as an internal, private creator workspace, not a separately required application/account at launch. No live implementation authorized.
 **Cross-product authority:** [OpenTrestle Conversation Product Family PR #155](https://github.com/OpenTrestle/opentrestle-platform/pull/155), `docs/architecture/conversation-product-family-v1.md`.
 
 ## Which product does what?
