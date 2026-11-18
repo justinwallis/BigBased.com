@@ -81,7 +81,8 @@ export default function SecurityLogClientPage() {
   // Check if user is authenticated
   useEffect(() => {
     const checkAuth = async () => {
-      if (!supabase) return\n      const { data } = await supabase.auth.getSession()
+      if (!supabase) return
+      const { data } = await supabase.auth.getSession()
       if (!data.session) {
         router.push("/login")
       }
