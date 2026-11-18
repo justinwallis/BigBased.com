@@ -1,0 +1,53 @@
+name: Vercel Preview Deployment
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vercel-preview-${{ github.event.pull_request.number }}-${{ matrix.project }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    name: Build and deploy preview (${{ matrix.project }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - bigbased.com
+          - big-based-visual
+    env:
+      VERCEL_SCOPE: justinwallis-projects
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable the repository package manager
+        run: corepack enable
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Link the canonical Vercel project
+        run: vercel link --yes --project="${{ matrix.project }}" --scope="$VERCEL_SCOPE" --token="${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Pull preview settings
+        run: vercel pull --yes --environment=preview --scope="$VERCEL_SCOPE" --token="${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Refresh dependency lockfile
+        run: pnpm install --lockfile-only --ignore-scripts
+
+      - name: Deploy with Vercel remote build
+        run: vercel deploy --scope="$VERCEL_SCOPE" --token="${{ secrets.VERCEL_TOKEN }}"
