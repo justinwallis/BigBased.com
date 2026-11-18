@@ -46,8 +46,5 @@ jobs:
       - name: Pull production settings
         run: vercel pull --yes --environment=production --scope="$VERCEL_SCOPE" --token="${{ secrets.VERCEL_TOKEN }}"
 
-      - name: Build the approved package
-        run: vercel build --prod --scope="$VERCEL_SCOPE" --token="${{ secrets.VERCEL_TOKEN }}"
-
-      - name: Deploy the prebuilt package
-        run: vercel deploy --prebuilt --prod --scope="$VERCEL_SCOPE" --token="${{ secrets.VERCEL_TOKEN }}"
+      - name: Deploy with Vercel remote build
+        run: vercel deploy --prod --scope="$VERCEL_SCOPE" --token="${{ secrets.VERCEL_TOKEN }}"
