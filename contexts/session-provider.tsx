@@ -29,6 +29,11 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const supabase = supabaseClient()
 
   useEffect(() => {
+    if (!supabase) {
+      setIsLoading(false)
+      return
+    }
+
     async function getSession() {
       setIsLoading(true)
       try {
