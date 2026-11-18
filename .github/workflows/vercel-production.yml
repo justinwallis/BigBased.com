@@ -9,15 +9,14 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: vercel-production-${{ matrix.project }}
-  cancel-in-progress: true
-
 jobs:
   deploy:
     name: Build and deploy
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    concurrency:
+      group: vercel-production-${{ matrix.project }}
+      cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:
