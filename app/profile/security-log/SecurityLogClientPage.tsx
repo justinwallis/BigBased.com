@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { supabaseClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -61,7 +61,7 @@ function formatEventType(eventType: string) {
 
 export default function SecurityLogClientPage() {
   const router = useRouter()
-  const supabase = createClientComponentClient()
+  const supabase = supabaseClient()
 
   const [logs, setLogs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -81,7 +81,7 @@ export default function SecurityLogClientPage() {
   // Check if user is authenticated
   useEffect(() => {
     const checkAuth = async () => {
-      const { data } = await supabase.auth.getSession()
+      if (!supabase) return\n      const { data } = await supabase.auth.getSession()
       if (!data.session) {
         router.push("/login")
       }
