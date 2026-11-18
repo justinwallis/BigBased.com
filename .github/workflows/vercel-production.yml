@@ -46,5 +46,8 @@ jobs:
       - name: Pull production settings
         run: vercel pull --yes --environment=production --scope="$VERCEL_SCOPE" --token="${{ secrets.VERCEL_TOKEN }}"
 
+      - name: Refresh dependency lockfile
+        run: pnpm install --lockfile-only --ignore-scripts
+
       - name: Deploy with Vercel remote build
         run: vercel deploy --prod --scope="$VERCEL_SCOPE" --token="${{ secrets.VERCEL_TOKEN }}"
