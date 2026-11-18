@@ -1,0 +1,51 @@
+name: Vercel Production Deployment
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vercel-production-${{ matrix.project }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - bigbased.com
+          - big-based-visual
+    env:
+      VERCEL_SCOPE: justinwallis-projects
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Link the canonical Vercel project
+        run: vercel link --yes --project="${{ matrix.project }}" --scope="$VERCEL_SCOPE" --token="${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Pull production settings
+        run: vercel pull --yes --environment=production --scope="$VERCEL_SCOPE" --token="${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Build the approved package
+        run: vercel build --prod --scope="$VERCEL_SCOPE" --token="${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Deploy the prebuilt package
+        run: vercel deploy --prebuilt --prod --scope="$VERCEL_SCOPE" --token="${{ secrets.VERCEL_TOKEN }}"
