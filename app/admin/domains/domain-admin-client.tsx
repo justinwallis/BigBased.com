@@ -20,7 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/hooks/use-toast"
 import { Globe, Plus, Search, Filter, Settings, BarChart3, Eye, Trash2, Edit, Database } from "lucide-react"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { supabaseClient } from "@/lib/supabase/client"
 
 interface Domain {
   id: string
@@ -80,7 +80,7 @@ export default function DomainAdminClient() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  const supabase = createClientComponentClient()
+  const supabase = supabaseClient()!
 
   useEffect(() => {
     fetchDomains()
